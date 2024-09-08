@@ -103,6 +103,11 @@ func generateGQLAdapterInternalAPI(apiState APIState, gqlRoute *GQLRouteState, e
 		adapterInternalAPI.SetDisableMtls(true)
 	}
 
+	if apiState.AIProvider != nil && apiState.AIProvider.Name != "" {
+		adapterInternalAPI.SetAIProvider(*apiState.AIProvider)
+	}
+	loggers.LoggerAPKOperator.Infof("Generated AdapterInternalAPI AI Provider for GQL API: %v", adapterInternalAPI.GetAIProvider())
+
 	return &adapterInternalAPI, nil
 }
 

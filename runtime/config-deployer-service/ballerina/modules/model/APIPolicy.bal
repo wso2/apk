@@ -16,7 +16,7 @@
 // under the License.
 //
 public type APIPolicy record {|
-    string apiVersion = "dp.wso2.com/v1alpha2";
+    string apiVersion = "dp.wso2.com/v1alpha3";
     string kind = "APIPolicy";
     Metadata metadata;
     APIPolicySpec spec;
@@ -45,7 +45,7 @@ public type BackendJwtReference record {
 };
 
 public type APIPolicyList record {
-    string apiVersion = "dp.wso2.com/v1alpha2";
+    string apiVersion = "dp.wso2.com/v1alpha3";
     string kind = "APIPolicyList";
     ListMeta metadata;
     APIPolicy[] items;

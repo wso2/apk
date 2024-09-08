@@ -37,8 +37,9 @@ type APIState struct {
 	RateLimitPolicies         map[string]v1alpha3.RateLimitPolicy
 	ResourceAuthentications   map[string]v1alpha2.Authentication
 	ResourceRateLimitPolicies map[string]v1alpha3.RateLimitPolicy
-	ResourceAPIPolicies       map[string]v1alpha2.APIPolicy
-	APIPolicies               map[string]v1alpha2.APIPolicy
+	ResourceAPIPolicies       map[string]v1alpha3.APIPolicy
+	APIPolicies               map[string]v1alpha3.APIPolicy
+	AIProvider                *v1alpha3.AIProvider
 	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	BackendJWTMapping         map[string]v1alpha1.BackendJWT
 	APIDefinitionFile         []byte

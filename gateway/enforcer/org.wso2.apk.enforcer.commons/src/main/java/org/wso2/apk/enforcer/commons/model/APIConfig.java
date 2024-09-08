@@ -57,6 +57,15 @@ public class APIConfig {
     private boolean subscriptionValidation;
     private EndpointSecurity[] endpointSecurity;
     private EndpointCluster endpoints;
+    private AIProvider aiProvider;
+
+    public AIProvider getAiProvider() {
+        return aiProvider;
+    }
+
+    public void setAiProvider(AIProvider aiProvider) {
+        this.aiProvider = aiProvider;
+    }
 
     public EndpointCluster getEndpoints() {
         return endpoints;
@@ -295,6 +304,8 @@ public class APIConfig {
         private String environment;
         private boolean transportSecurity;
 
+        private AIProvider aiProvider;
+
         public Builder(String name) {
             this.name = name;
         }
@@ -306,6 +317,11 @@ public class APIConfig {
 
         public Builder vhost(String vhost) {
             this.vhost = vhost;
+            return this;
+        }
+
+        public Builder aiProvider(AIProvider aiProvider) {
+            this.aiProvider = aiProvider;
             return this;
         }
 
@@ -440,6 +456,7 @@ public class APIConfig {
             apiConfig.apiDefinition = this.apiDefinition;
             apiConfig.environment = this.environment;
             apiConfig.subscriptionValidation = this.subscriptionValidation;
+            apiConfig.aiProvider = this.aiProvider;
             return apiConfig;
         }
     }

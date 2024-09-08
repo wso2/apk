@@ -80,6 +80,7 @@ type AdapterInternalAPI struct {
 	environment      string
 	Endpoints        *EndpointCluster
 	EndpointSecurity []*EndpointSecurity
+	AIProvider       InternalAIProvider
 }
 
 // BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator
@@ -90,6 +91,24 @@ type BackendJWTTokenInfo struct {
 	SigningAlgorithm string
 	TokenTTL         uint32
 	CustomClaims     []ClaimMapping
+}
+
+// InternalAIProvider represents the object structure holding the information related to the AI Provider
+type InternalAIProvider struct {
+	Enabled            bool
+	ProviderName       string
+	ProviderAPIVersion string
+	Organization       string
+	Model              ValueDetails
+	PromptTokens       ValueDetails
+	CompletionToken    ValueDetails
+	TotalToken         ValueDetails
+}
+
+// ValueDetails defines the value details
+type ValueDetails struct {
+	In    string `json:"in"`
+	Value string `json:"value"`
 }
 
 // ClaimMapping represents the object structure holding the information related to the JWT Generator Claims
@@ -426,6 +445,37 @@ func (adapterInternalAPI *AdapterInternalAPI) GetEnvironment() string {
 	return adapterInternalAPI.environment
 }
 
+// SetAIProvider sets the AIProvider of the API.
+func (adapterInternalAPI *AdapterInternalAPI) SetAIProvider(aiProvider dpv1alpha3.AIProvider) {
+	adapterInternalAPI.AIProvider = InternalAIProvider{
+		Enabled:            true,
+		ProviderName:       aiProvider.Spec.ProviderName,
+		ProviderAPIVersion: aiProvider.Spec.ProviderAPIVersion,
+		Organization:       aiProvider.Spec.Organization,
+		Model: ValueDetails{
+			In:    aiProvider.Spec.Model.In,
+			Value: aiProvider.Spec.Model.Value,
+		},
+		PromptTokens: ValueDetails{
+			In:    aiProvider.Spec.RateLimitFields.PromptTokens.In,
+			Value: aiProvider.Spec.RateLimitFields.PromptTokens.Value,
+		},
+		CompletionToken: ValueDetails{
+			In:    aiProvider.Spec.RateLimitFields.CompletionToken.In,
+			Value: aiProvider.Spec.RateLimitFields.CompletionToken.Value,
+		},
+		TotalToken: ValueDetails{
+			In:    aiProvider.Spec.RateLimitFields.TotalToken.In,
+			Value: aiProvider.Spec.RateLimitFields.TotalToken.Value,
+		},
+	}
+}
+
+// GetAIProvider returns the AIProvider of the API
+func (adapterInternalAPI *AdapterInternalAPI) GetAIProvider() InternalAIProvider {
+	return adapterInternalAPI.AIProvider
+}
+
 // Validate method confirms that the adapterInternalAPI has all required fields in the required format.
 // This needs to be checked prior to generate router/enforcer related resources.
 func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
@@ -460,7 +510,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha2.APIPolicy
+	var apiPolicy *dpv1alpha3.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
@@ -925,6 +975,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		}.String()].Spec
 		adapterInternalAPI.backendJWTTokenInfo = parseBackendJWTTokenToInternal(backendJWTPolicy)
 	}
+
 	return nil
 }
 
@@ -943,7 +994,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha2.APIPolicy
+	var apiPolicy *dpv1alpha3.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}

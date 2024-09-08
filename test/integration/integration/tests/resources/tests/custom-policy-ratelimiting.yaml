@@ -31,7 +31,7 @@ spec:
     name: wso2-apk-default
     group: gateway.networking.k8s.io
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: APIPolicy
 metadata:
   name: interceptor-api-policy-api-level

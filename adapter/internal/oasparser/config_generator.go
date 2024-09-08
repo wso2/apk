@@ -181,6 +181,38 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 		}
 	}
 
+	var aiProvider *api.AIProvider
+
+	aiProviderFromInternalAPI := adapterInternalAPI.GetAIProvider()
+	logger.LoggerOasparser.Debugf("Before Internal AI Provider: %+v", aiProviderFromInternalAPI)
+
+	if aiProviderFromInternalAPI.Enabled {
+		aiProvider = &api.AIProvider{
+			Enabled:            aiProviderFromInternalAPI.Enabled,
+			ProviderName:       aiProviderFromInternalAPI.ProviderName,
+			ProviderAPIVersion: aiProviderFromInternalAPI.ProviderAPIVersion,
+			Organization:       aiProviderFromInternalAPI.Organization,
+			Model: &api.ValueDetails{
+				In:    aiProviderFromInternalAPI.Model.In,
+				Value: aiProviderFromInternalAPI.Model.Value,
+			},
+			PromptTokens: &api.ValueDetails{
+				In:    aiProviderFromInternalAPI.PromptTokens.In,
+				Value: aiProviderFromInternalAPI.PromptTokens.Value,
+			},
+			CompletionToken: &api.ValueDetails{
+				In:    aiProviderFromInternalAPI.CompletionToken.In,
+				Value: aiProviderFromInternalAPI.CompletionToken.Value,
+			},
+			TotalToken: &api.ValueDetails{
+				In:    aiProviderFromInternalAPI.TotalToken.In,
+				Value: aiProviderFromInternalAPI.TotalToken.Value,
+			},
+		}
+	}
+
+	logger.LoggerOasparser.Debugf("After Conversion AI Provider: %+v", aiProvider)
+
 	return &api.Api{
 		Id:                     adapterInternalAPI.UUID,
 		Title:                  adapterInternalAPI.GetTitle(),
@@ -209,6 +241,12 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 		ApiDefinitionFile:      adapterInternalAPI.GetAPIDefinitionFile(),
 		Environment:            adapterInternalAPI.GetEnvironment(),
 		SubscriptionValidation: adapterInternalAPI.GetSubscriptionValidation(),
+		Aiprovider: func() *api.AIProvider {
+			if aiProvider != nil && aiProvider.Enabled {
+				return aiProvider
+			}
+			return nil
+		}(),
 	}
 }
 

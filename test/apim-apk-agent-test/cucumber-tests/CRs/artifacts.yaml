@@ -225,7 +225,7 @@ spec:
           configMap:
             name: "interceptor-service-config-toml" 
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: APIPolicy
 metadata:
   name: interceptor-policy-gateway-level
