@@ -304,7 +304,7 @@ spec:
     - response_headers
     - invocation_context
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha3
 kind: RateLimitPolicy
 metadata:
   name: gw-ratelimit-user
@@ -322,7 +322,7 @@ spec:
     name: wso2-apk-default
     group: gateway.networking.k8s.io
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha3
 kind: RateLimitPolicy
 metadata:
   name: gw-ratelimit-org
