@@ -37,8 +37,10 @@ import (
 	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
 	"github.com/wso2/apk/common-controller/pkg/metrics"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -63,6 +65,8 @@ func init() {
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
+	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
+	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
