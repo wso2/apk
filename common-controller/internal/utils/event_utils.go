@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/subscription"
 )
@@ -58,7 +59,7 @@ func SendAddApplicationEvent(application cpv1alpha2.Application) {
 }
 
 // SendAddSubscriptionEvent sends an subscription creation event to the enforcer
-func SendAddSubscriptionEvent(sub cpv1alpha2.Subscription) {
+func SendAddSubscriptionEvent(sub cpv1alpha3.Subscription) {
 	SendSubscriptionEvent(constants.SubscriptionCreated, sub.ObjectMeta.Name, sub.Spec.SubscriptionStatus,
 		sub.Spec.Organization, sub.Spec.API.Name, sub.Spec.API.Version, sub.Spec.RatelimitRef.Name)
 }
@@ -86,13 +87,13 @@ func SendSubscriptionEvent(eventType, subscriptionID, subscriptionStatus, organi
 }
 
 // SendDeleteSubscriptionEvent sends an subscription deletion event to the enforcer
-func SendDeleteSubscriptionEvent(subscriptionUUID string, sub cpv1alpha2.Subscription) {
+func SendDeleteSubscriptionEvent(subscriptionUUID string, sub cpv1alpha3.Subscription) {
 	SendSubscriptionEvent(constants.SubscriptionDeleted, subscriptionUUID, sub.Spec.SubscriptionStatus,
 		sub.Spec.Organization, sub.Spec.API.Name, sub.Spec.API.Version, sub.Spec.RatelimitRef.Name)
 }
 
 // SendCreateApplicationMappingEvent sends an application mapping event to the enforcer
-func SendCreateApplicationMappingEvent(applicationMapping cpv1alpha2.ApplicationMapping, application cpv1alpha2.Application, subscriptionCr cpv1alpha2.Subscription) {
+func SendCreateApplicationMappingEvent(applicationMapping cpv1alpha2.ApplicationMapping, application cpv1alpha2.Application, subscriptionCr cpv1alpha3.Subscription) {
 	SendApplicationMappingEvent(constants.ApplicationMappingCreated, applicationMapping.ObjectMeta.Name, applicationMapping.Spec.ApplicationRef,
 		applicationMapping.Spec.SubscriptionRef, application.Spec.Organization)
 }

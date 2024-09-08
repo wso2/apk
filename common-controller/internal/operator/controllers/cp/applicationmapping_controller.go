@@ -41,6 +41,8 @@ import (
 
 	"github.com/wso2/apk/common-controller/internal/utils"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
+
 	"github.com/wso2/apk/common-go-libs/constants"
 )
 
@@ -87,7 +89,7 @@ func NewApplicationMappingController(mgr manager.Manager, subscriptionStore *cac
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.Subscription{}), handler.EnqueueRequestsFromMapFunc(r.getApplicationMappingsForSubscription),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha3.Subscription{}), handler.EnqueueRequestsFromMapFunc(r.getApplicationMappingsForSubscription),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching Subscription resources: %v", err))
 		return err
@@ -135,7 +137,7 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2614, logging.CRITICAL, "Error getting Application: %v", err))
 			return ctrl.Result{}, nil
 		}
-		var subscription cpv1alpha2.Subscription
+		var subscription cpv1alpha3.Subscription
 		if err := r.client.Get(ctx, types.NamespacedName{Name: string(applicationMapping.Spec.SubscriptionRef), Namespace: applicationMapping.Namespace}, &subscription); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.CRITICAL, "Error getting Subscription: %v", err))
 			return ctrl.Result{}, nil
@@ -148,7 +150,7 @@ func (r *ApplicationMappingReconciler) Reconcile(ctx context.Context, req ctrl.R
 	return ctrl.Result{}, nil
 }
 
-func sendUpdates(applicationMapping *cpv1alpha2.ApplicationMapping, application cpv1alpha2.Application, subscription cpv1alpha2.Subscription) {
+func sendUpdates(applicationMapping *cpv1alpha2.ApplicationMapping, application cpv1alpha2.Application, subscription cpv1alpha3.Subscription) {
 	resolvedApplication := marshalApplication(application)
 	appMapping := marshalApplicationMapping(applicationMapping, resolvedApplication)
 	server.AddApplicationMapping(appMapping)
@@ -233,7 +235,7 @@ func (r *ApplicationMappingReconciler) getApplicationMappingsForApplication(ctx 
 // getApplicationMappingsForSubscription triggers the ApplicationMapping controller reconcile method based on the changes detected
 // from Subscription objects. If the changes are done for an API stored in the Operator Data store,
 func (r *ApplicationMappingReconciler) getApplicationMappingsForSubscription(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	subscription, ok := obj.(*cpv1alpha2.Subscription)
+	subscription, ok := obj.(*cpv1alpha3.Subscription)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", subscription))
 		return []reconcile.Request{}

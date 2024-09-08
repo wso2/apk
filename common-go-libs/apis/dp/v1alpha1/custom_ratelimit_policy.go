@@ -17,6 +17,10 @@
 
 package v1alpha1
 
+import (
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+)
+
 // CustomRateLimitPolicyDef defines the desired state of CustomPolicy
 type CustomRateLimitPolicyDef struct {
 	Key             string `json:"key,omitempty"`
@@ -29,7 +33,7 @@ type CustomRateLimitPolicyDef struct {
 }
 
 // ParseCustomRateLimitPolicy parses the custom rate limit policy
-func ParseCustomRateLimitPolicy(customRateLimitCR RateLimitPolicy) *CustomRateLimitPolicyDef {
+func ParseCustomRateLimitPolicy(customRateLimitCR dpv1alpha3.RateLimitPolicy) *CustomRateLimitPolicyDef {
 	return &CustomRateLimitPolicyDef{
 		Key:             customRateLimitCR.Spec.Override.Custom.Key,
 		Value:           customRateLimitCR.Spec.Override.Custom.Value,

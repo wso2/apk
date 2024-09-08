@@ -34,6 +34,7 @@ import (
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 )
 
 // EnvoyInternalAPI struct use to hold envoy resources and adapter internal resources
@@ -191,12 +192,12 @@ func DeleteResourceLevelRateLimitPolicies(resolveRatelimitPolicyList []dpv1alpha
 }
 
 // DeleteSubscriptionRateLimitPolicies delete the ratelimit xds cache
-func DeleteSubscriptionRateLimitPolicies(resolveSubscriptionRatelimit dpv1alpha1.ResolveSubscriptionRatelimitPolicy) {
+func DeleteSubscriptionRateLimitPolicies(resolveSubscriptionRatelimit dpv1alpha3.ResolveSubscriptionRatelimitPolicy) {
 	rlsPolicyCache.RemoveSubscriptionRateLimitPolicy(resolveSubscriptionRatelimit)
 }
 
 // UpdateRateLimitXDSCacheForSubscriptionPolicies updates the xDS cache of the RateLimiter for subscription policies.
-func UpdateRateLimitXDSCacheForSubscriptionPolicies(resolveSubscriptionRatelimit dpv1alpha1.ResolveSubscriptionRatelimitPolicy) {
+func UpdateRateLimitXDSCacheForSubscriptionPolicies(resolveSubscriptionRatelimit dpv1alpha3.ResolveSubscriptionRatelimitPolicy) {
 	rlsPolicyCache.AddSubscriptionLevelRateLimitPolicy(resolveSubscriptionRatelimit)
 }
 

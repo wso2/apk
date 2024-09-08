@@ -22,8 +22,8 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -512,7 +512,7 @@ func (ods *OperatorDataStore) UpdateGatewayState(gatewayDef *gwapiv1.Gateway,
 
 // processGatewayState process and update the GatewayState on ref updates
 func (ods *OperatorDataStore) processGatewayState(gatewayDef *gwapiv1.Gateway,
-	customRateLimitPolicies map[string]*dpv1alpha1.RateLimitPolicy) (GatewayState, []string, bool) {
+	customRateLimitPolicies map[string]*dpv1alpha3.RateLimitPolicy) (GatewayState, []string, bool) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	var updated bool

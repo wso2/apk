@@ -42,8 +42,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 )
 
 // SubscriptionReconciler reconciles a Subscription object
@@ -76,13 +76,13 @@ func NewSubscriptionController(mgr manager.Manager, subscriptionStore *cache.Sub
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.Subscription{}), &handler.EnqueueRequestForObject{},
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha3.Subscription{}), &handler.EnqueueRequestForObject{},
 		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2609, logging.BLOCKER, "Error watching Subscription resources: %v", err.Error()))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(r.getSubscriptionForRatelimit),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(r.getSubscriptionForRatelimit),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching Subscription resources: %v", err))
 		return err
@@ -111,7 +111,7 @@ func (subscriptionReconciler *SubscriptionReconciler) Reconcile(ctx context.Cont
 	loggers.LoggerAPKOperator.Debugf("Reconciling subscription: %v", req.NamespacedName.String())
 
 	subscriptionKey := req.NamespacedName
-	var subscription cpv1alpha2.Subscription
+	var subscription cpv1alpha3.Subscription
 	if err := subscriptionReconciler.client.Get(ctx, req.NamespacedName, &subscription); err != nil {
 		if k8error.IsNotFound(err) {
 			_, state := subscriptionReconciler.ods.GetSubscriptionFromStore(subscriptionKey)
@@ -132,12 +132,12 @@ func (subscriptionReconciler *SubscriptionReconciler) Reconcile(ctx context.Cont
 	return ctrl.Result{}, nil
 }
 
-func sendSubUpdates(subscription cpv1alpha2.Subscription) {
+func sendSubUpdates(subscription cpv1alpha3.Subscription) {
 	subList := marshalSubscription(subscription)
 	server.AddSubscription(subList)
 }
 
-func marshalSubscription(subscription cpv1alpha2.Subscription) server.Subscription {
+func marshalSubscription(subscription cpv1alpha3.Subscription) server.Subscription {
 	subscribedAPI := &server.SubscribedAPI{}
 	sub := server.Subscription{
 		UUID:         subscription.Name,
@@ -155,9 +155,9 @@ func marshalSubscription(subscription cpv1alpha2.Subscription) server.Subscripti
 
 // addSubscriptionControllerIndexes adds indexes to the Subscription controller
 func addSubscriptionControllerIndexes(ctx context.Context, mgr manager.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &cpv1alpha2.Subscription{}, subscriptionRatelimitIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &cpv1alpha3.Subscription{}, subscriptionRatelimitIndex,
 		func(rawObj k8client.Object) []string {
-			subscription := rawObj.(*cpv1alpha2.Subscription)
+			subscription := rawObj.(*cpv1alpha3.Subscription)
 			var subscriptionRatelimit []string
 			subscriptionRatelimit = append(subscriptionRatelimit,
 				types.NamespacedName{
@@ -175,13 +175,13 @@ func addSubscriptionControllerIndexes(ctx context.Context, mgr manager.Manager) 
 // getApplicationMappingsForSubscription triggers the ApplicationMapping controller reconcile method based on the changes detected
 // from Subscription objects. If the changes are done for an API stored in the Operator Data store,
 func (subscriptionReconciler *SubscriptionReconciler) getSubscriptionForRatelimit(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	ratelimit, ok := obj.(*dpv1alpha1.RateLimitPolicy)
+	ratelimit, ok := obj.(*dpv1alpha3.RateLimitPolicy)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", ratelimit))
 		return []reconcile.Request{}
 	}
 
-	subList := &cpv1alpha2.SubscriptionList{}
+	subList := &cpv1alpha3.SubscriptionList{}
 	if err := subscriptionReconciler.client.List(ctx, subList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(subscriptionIndex, utils.NamespacedName(ratelimit).String()),
 	}); err != nil {

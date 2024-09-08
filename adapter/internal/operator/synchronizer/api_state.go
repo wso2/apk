@@ -20,6 +20,7 @@ package synchronizer
 import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -33,9 +34,9 @@ type APIState struct {
 	ProdGQLRoute              *GQLRouteState
 	SandGQLRoute              *GQLRouteState
 	Authentications           map[string]v1alpha2.Authentication
-	RateLimitPolicies         map[string]v1alpha1.RateLimitPolicy
+	RateLimitPolicies         map[string]v1alpha3.RateLimitPolicy
 	ResourceAuthentications   map[string]v1alpha2.Authentication
-	ResourceRateLimitPolicies map[string]v1alpha1.RateLimitPolicy
+	ResourceRateLimitPolicies map[string]v1alpha3.RateLimitPolicy
 	ResourceAPIPolicies       map[string]v1alpha2.APIPolicy
 	APIPolicies               map[string]v1alpha2.APIPolicy
 	InterceptorServiceMapping map[string]v1alpha1.InterceptorService

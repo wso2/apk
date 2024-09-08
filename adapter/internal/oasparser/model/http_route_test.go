@@ -21,43 +21,43 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 )
 
 func TestConcatRateLimitPolicies(t *testing.T) {
 	type testItem struct {
-		schemeUpSpec   dpv1alpha1.RateLimitPolicySpec
-		schemeDownSpec dpv1alpha1.RateLimitPolicySpec
-		result         dpv1alpha1.RateLimitPolicySpec
+		schemeUpSpec   dpv1alpha3.RateLimitPolicySpec
+		schemeDownSpec dpv1alpha3.RateLimitPolicySpec
+		result         dpv1alpha3.RateLimitPolicySpec
 		message        string
 	}
 
-	schemeUp := &dpv1alpha1.RateLimitPolicy{}
-	schemeDown := &dpv1alpha1.RateLimitPolicy{}
-	resultScheme := &dpv1alpha1.RateLimitPolicy{}
+	schemeUp := &dpv1alpha3.RateLimitPolicy{}
+	schemeDown := &dpv1alpha3.RateLimitPolicy{}
+	resultScheme := &dpv1alpha3.RateLimitPolicy{}
 
 	dataItems := []testItem{
 		{
-			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeUpSpec: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 10,
 						Unit:            "Minute",
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeDownSpec: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 20,
 						Unit:            "Day",
 					},
 				},
 			},
-			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			result: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 10,
 						Unit:            "Minute",
 					},
@@ -66,25 +66,25 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 			message: "When API level override and Resource level override policies both provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeUpSpec: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 10,
 						Unit:            "Minute",
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeDownSpec: dpv1alpha3.RateLimitPolicySpec{
+				Default: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 20,
 						Unit:            "Day",
 					},
 				},
 			},
-			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			result: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 10,
 						Unit:            "Minute",
 					},
@@ -93,25 +93,25 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 			message: "When API level override and Resource level default policies both provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeUpSpec: dpv1alpha3.RateLimitPolicySpec{
+				Default: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 10,
 						Unit:            "Minute",
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeDownSpec: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 20,
 						Unit:            "Day",
 					},
 				},
 			},
-			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			result: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 20,
 						Unit:            "Day",
 					},
@@ -120,25 +120,25 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 			message: "When API level default and Resource level override policies both provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeUpSpec: dpv1alpha3.RateLimitPolicySpec{
+				Default: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 10,
 						Unit:            "Minute",
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeDownSpec: dpv1alpha3.RateLimitPolicySpec{
+				Default: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 20,
 						Unit:            "Day",
 					},
 				},
 			},
-			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			result: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 20,
 						Unit:            "Day",
 					},
@@ -147,37 +147,37 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 			message: "When API level default and Resource level default policies both provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeUpSpec: dpv1alpha3.RateLimitPolicySpec{
+				Default: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 10,
 						Unit:            "Minute",
 					},
 				},
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 20,
 						Unit:            "Second",
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha1.RateLimitPolicySpec{
-				Default: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			schemeDownSpec: dpv1alpha3.RateLimitPolicySpec{
+				Default: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 30,
 						Unit:            "Day",
 					},
 				},
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 40,
 						Unit:            "Hour",
 					},
 				},
 			},
-			result: dpv1alpha1.RateLimitPolicySpec{
-				Override: &dpv1alpha1.RateLimitAPIPolicy{
-					API: &dpv1alpha1.APIRateLimitPolicy{
+			result: dpv1alpha3.RateLimitPolicySpec{
+				Override: &dpv1alpha3.RateLimitAPIPolicy{
+					API: &dpv1alpha3.APIRateLimitPolicy{
 						RequestsPerUnit: 20,
 						Unit:            "Second",
 					},

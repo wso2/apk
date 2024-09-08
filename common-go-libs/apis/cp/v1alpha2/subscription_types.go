@@ -26,22 +26,15 @@ import (
 
 // SubscriptionSpec defines the desired state of Subscription
 type SubscriptionSpec struct {
-	SubscriptionStatus string       `json:"subscriptionStatus"`
-	Organization       string       `json:"organization"`
-	API                API          `json:"api"`
-	RatelimitRef       RatelimitRef `json:"ratelimitRef"`
+	SubscriptionStatus string `json:"subscriptionStatus"`
+	Organization       string `json:"organization"`
+	API                API    `json:"api"`
 }
 
 // API defines the API associated with the subscription
 type API struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
-}
-
-// RatelimitRef defines the ratelimit associated with the subscription
-type RatelimitRef struct {
-	Name  string `json:"name"`
-	Level string `json:"level"`
 }
 
 // SubscriptionStatus defines the observed state of Subscription

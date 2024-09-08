@@ -30,8 +30,8 @@ import (
 	logger "github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/constants"
 )
 
@@ -365,7 +365,7 @@ func (r *rateLimitPolicyCache) updateXdsCache(label string) bool {
 // }
 
 // RemoveSubscriptionRateLimitPolicy removes a subscription level rate limit policy from the rate-limit cache.
-func (r *rateLimitPolicyCache) RemoveSubscriptionRateLimitPolicy(policy v1alpha1.ResolveSubscriptionRatelimitPolicy) {
+func (r *rateLimitPolicyCache) RemoveSubscriptionRateLimitPolicy(policy dpv1alpha3.ResolveSubscriptionRatelimitPolicy) {
 	rlsPolicyCache.metadataBasedMu.Lock()
 	defer rlsPolicyCache.metadataBasedMu.Unlock()
 	if policiesForOrg, ok := rlsPolicyCache.metadataBasedPolicies[subscriptionPolicyType][policy.Organization]; ok {
@@ -388,7 +388,7 @@ func (r *rateLimitPolicyCache) RemoveSubscriptionRateLimitPolicy(policy v1alpha1
 // }
 
 // AddSubscriptionLevelRateLimitPolicy adds a subscription level rate limit policy to the rate-limit cache.
-func (r *rateLimitPolicyCache) AddSubscriptionLevelRateLimitPolicy(policy v1alpha1.ResolveSubscriptionRatelimitPolicy) error {
+func (r *rateLimitPolicyCache) AddSubscriptionLevelRateLimitPolicy(policy dpv1alpha3.ResolveSubscriptionRatelimitPolicy) error {
 	rateLimitUnit, err := parseRateLimitUnitFromSubscriptionPolicy(policy.RequestCount.Unit)
 	if err != nil {
 		loggers.LoggerXds.Error("Error while getting the rate limit unit: ", err)
