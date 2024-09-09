@@ -143,9 +143,15 @@ func (r *AIRateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 	} else {
 		loggers.LoggerAPKOperator.Infof("ratelimits found")
-		r.ods.AddorUpdateAIRatelimitToStore(ratelimitKey, ratelimitPolicy.Spec)
-		xds.UpdateRateLimitXDSCacheForAIRatelimitPolicies(r.ods.GetAIRatelimitPolicySpecs())
-		xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
+		if ratelimitPolicy.Spec.TargetRef.Name != "" {
+			r.ods.AddorUpdateAIRatelimitToStore(ratelimitKey, ratelimitPolicy.Spec)
+			xds.UpdateRateLimitXDSCacheForAIRatelimitPolicies(r.ods.GetAIRatelimitPolicySpecs())
+			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
+		} else {
+			r.ods.DeleteAIRatelimitPolicySpec(ratelimitKey)
+			xds.UpdateRateLimitXDSCacheForAIRatelimitPolicies(r.ods.GetAIRatelimitPolicySpecs())
+			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
+		}
 	}
 	loggers.LoggerAPKOperator.Infof("AIRatelimit reconcile..*****.")
 	return ctrl.Result{}, nil

@@ -176,7 +176,7 @@ func InitOperator(metricsConfig config.Metrics) {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3115, logging.MAJOR,
 				"Error creating Application controller, error: %v", err))
 		}
-		if err := cpcontrollers.NewSubscriptionController(mgr, subscriptionStore); err != nil {
+		if err := cpcontrollers.NewSubscriptionController(mgr, subscriptionStore, ratelimitStore); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3116, logging.MAJOR,
 				"Error creating Subscription controller, error: %v", err))
 		}
