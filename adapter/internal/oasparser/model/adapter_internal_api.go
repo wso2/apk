@@ -1183,7 +1183,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
-	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
+	var ratelimitPolicy *dpv1alpha3.RateLimitPolicy
 	if outputRatelimitPolicy != nil {
 		ratelimitPolicy = *outputRatelimitPolicy
 	}

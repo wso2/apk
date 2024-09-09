@@ -76,9 +76,23 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 			(*out)[key] = *val.DeepCopy()
 		}
 	}
+	if in.RateLimitPolicies != nil {
+		in, out := &in.RateLimitPolicies, &out.RateLimitPolicies
+		*out = make(map[string]v1alpha3.RateLimitPolicy, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
 	if in.ResourceAuthentications != nil {
 		in, out := &in.ResourceAuthentications, &out.ResourceAuthentications
 		*out = make(map[string]v1alpha2.Authentication, len(*in))
+		for key, val := range *in {
+			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.ResourceRateLimitPolicies != nil {
+		in, out := &in.ResourceRateLimitPolicies, &out.ResourceRateLimitPolicies
+		*out = make(map[string]v1alpha3.RateLimitPolicy, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}
@@ -215,14 +229,14 @@ func (in *GRPCRouteState) DeepCopyInto(out *GRPCRouteState) {
 	}
 	if in.BackendMapping != nil {
 		in, out := &in.BackendMapping, &out.BackendMapping
-		*out = make(map[string]*v1alpha1.ResolvedBackend, len(*in))
+		*out = make(map[string]*v1alpha2.ResolvedBackend, len(*in))
 		for key, val := range *in {
-			var outVal *v1alpha1.ResolvedBackend
+			var outVal *v1alpha2.ResolvedBackend
 			if val == nil {
 				(*out)[key] = nil
 			} else {
 				in, out := &val, &outVal
-				*out = new(v1alpha1.ResolvedBackend)
+				*out = new(v1alpha2.ResolvedBackend)
 				(*in).DeepCopyInto(*out)
 			}
 			(*out)[key] = outVal
@@ -327,6 +341,21 @@ func (in *GatewayStateData) DeepCopyInto(out *GatewayStateData) {
 		*out = make(map[string]v1alpha1.InterceptorService, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
+		}
+	}
+	if in.GatewayCustomRateLimitPolicies != nil {
+		in, out := &in.GatewayCustomRateLimitPolicies, &out.GatewayCustomRateLimitPolicies
+		*out = make(map[string]*v1alpha3.RateLimitPolicy, len(*in))
+		for key, val := range *in {
+			var outVal *v1alpha3.RateLimitPolicy
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = new(v1alpha3.RateLimitPolicy)
+				(*in).DeepCopyInto(*out)
+			}
+			(*out)[key] = outVal
 		}
 	}
 }

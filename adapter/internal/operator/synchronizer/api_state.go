@@ -78,6 +78,6 @@ type GQLRouteState struct {
 type GRPCRouteState struct {
 	GRPCRouteCombined   *gwapiv1a2.GRPCRoute
 	GRPCRoutePartitions map[string]*gwapiv1a2.GRPCRoute
-	BackendMapping      map[string]*v1alpha1.ResolvedBackend
+	BackendMapping      map[string]*v1alpha2.ResolvedBackend
 	Scopes              map[string]v1alpha1.Scope
 }

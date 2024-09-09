@@ -639,7 +639,7 @@ func (apiReconciler *APIReconciler) concatGRPCRoutes(ctx context.Context, grpcRo
 	}
 	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
 	if resolvedBackend != nil {
-		grpcRouteState.BackendMapping = map[string]*dpv1alpha1.ResolvedBackend{
+		grpcRouteState.BackendMapping = map[string]*dpv1alpha2.ResolvedBackend{
 			backendNamespacedName.String(): resolvedBackend,
 		}
 		return grpcRouteState, nil
