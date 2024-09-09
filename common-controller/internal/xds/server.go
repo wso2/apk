@@ -167,11 +167,7 @@ func UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicies dpv1alpha1
 
 // UpdateRateLimitXDSCacheForAIRatelimitPolicies updates the xDS cache of the RateLimiter for AI ratelimit policies.
 func UpdateRateLimitXDSCacheForAIRatelimitPolicies(aiRatelimitPolicySpecs map[apimachiner_types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
-	loggers.LoggerAPKOperator.Infof("000000")
-	if len(aiRatelimitPolicySpecs) != 0 {
-		loggers.LoggerAPKOperator.Infof("1111111")
-		rlsPolicyCache.ProcessAIRatelimitPolicySpecsAndUpdateCache(aiRatelimitPolicySpecs)
-	}
+	rlsPolicyCache.ProcessAIRatelimitPolicySpecsAndUpdateCache(aiRatelimitPolicySpecs)
 }
 
 // DeleteAPILevelRateLimitPolicies delete the ratelimit xds cache

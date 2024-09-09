@@ -1486,7 +1486,7 @@ func (apiReconciler *APIReconciler) getAPIsForAIRatelimitPolicy(ctx context.Cont
 	}
 
 	if aiRatelimitPolicy.Spec.TargetRef.Kind == constants.KindBackend {
-		backend := &dpv1alpha1.Backend{}
+		backend := &dpv1alpha2.Backend{}
 		namespacedName := types.NamespacedName{
 			Name:      string(aiRatelimitPolicy.Spec.TargetRef.Name),
 			Namespace: utils.GetNamespace(aiRatelimitPolicy.Spec.TargetRef.Namespace, aiRatelimitPolicy.GetNamespace()),
