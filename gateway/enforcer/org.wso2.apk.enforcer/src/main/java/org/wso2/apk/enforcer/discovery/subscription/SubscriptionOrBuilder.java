@@ -57,4 +57,16 @@ public interface SubscriptionOrBuilder extends
    * <code>.wso2.discovery.subscription.SubscribedAPI subscribedApi = 4;</code>
    */
   org.wso2.apk.enforcer.discovery.subscription.SubscribedAPIOrBuilder getSubscribedApiOrBuilder();
+
+  /**
+   * <code>string ratelimitTier = 5;</code>
+   * @return The ratelimitTier.
+   */
+  java.lang.String getRatelimitTier();
+  /**
+   * <code>string ratelimitTier = 5;</code>
+   * @return The bytes for ratelimitTier.
+   */
+  com.google.protobuf.ByteString
+      getRatelimitTierBytes();
 }

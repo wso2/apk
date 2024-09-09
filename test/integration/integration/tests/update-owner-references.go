@@ -22,11 +22,10 @@ import (
 	"testing"
 	"time"
 
+	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-
 )
 
 func init() {
@@ -164,7 +163,7 @@ var UpdateOwnerReferences = suite.IntegrationTest{
 		}
 		// Wait 5 seconds
 		time.Sleep(5 * time.Second)
-		
+
 		// Verify hr2 has only one parent in the ownerReferences
 		if err := suite.Client.Get(context.TODO(), hr2Key, &hr2); err != nil {
 			t.Fatalf("Unable to load http route with key %+v error: %+v", hr2Key, err)

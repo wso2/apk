@@ -24,6 +24,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/server"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/common-go-libs/utils"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
@@ -104,8 +105,8 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateKeyMappings(keyMapping serv
 
 // DeploySubscription deploys a subscription
 func (k8sArtifactDeployer K8sArtifactDeployer) DeploySubscription(subscription server.Subscription) error {
-	crSubscription := cpv1alpha2.Subscription{ObjectMeta: v1.ObjectMeta{Name: subscription.UUID, Namespace: utils.GetOperatorPodNamespace()},
-		Spec: cpv1alpha2.SubscriptionSpec{Organization: subscription.Organization, API: cpv1alpha2.API{Name: subscription.SubscribedAPI.Name, Version: subscription.SubscribedAPI.Version}, SubscriptionStatus: subscription.SubStatus}}
+	crSubscription := cpv1alpha3.Subscription{ObjectMeta: v1.ObjectMeta{Name: subscription.UUID, Namespace: utils.GetOperatorPodNamespace()},
+		Spec: cpv1alpha3.SubscriptionSpec{Organization: subscription.Organization, API: cpv1alpha3.API{Name: subscription.SubscribedAPI.Name, Version: subscription.SubscribedAPI.Version}, SubscriptionStatus: subscription.SubStatus}}
 	err := k8sArtifactDeployer.client.Create(context.Background(), &crSubscription)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1101, logging.CRITICAL, "Failed to create subscription in k8s %v", err.Error()))
@@ -116,7 +117,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeploySubscription(subscription s
 
 // UpdateSubscription updates a subscription
 func (k8sArtifactDeployer K8sArtifactDeployer) UpdateSubscription(subscription server.Subscription) error {
-	crSubscription := cpv1alpha2.Subscription{}
+	crSubscription := cpv1alpha3.Subscription{}
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: subscription.UUID, Namespace: utils.GetOperatorPodNamespace()}, &crSubscription)
 	if err != nil {
 		if !k8error.IsNotFound(err) {
@@ -283,7 +284,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteKeyMappings(keyMapping serv
 
 // DeleteSubscription deletes a subscription
 func (k8sArtifactDeployer K8sArtifactDeployer) DeleteSubscription(subscriptionID string) error {
-	crSubscription := cpv1alpha2.Subscription{}
+	crSubscription := cpv1alpha3.Subscription{}
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: subscriptionID, Namespace: utils.GetOperatorPodNamespace()}, &crSubscription)
 	if err != nil {
 		if !k8error.IsNotFound(err) {
@@ -416,7 +417,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllSubscriptions(subscripti
 	if err != nil {
 		return err
 	}
-	clonedSubscriptionsFromK8s := make([]cpv1alpha2.Subscription, len(subscriptionsFromK8s))
+	clonedSubscriptionsFromK8s := make([]cpv1alpha3.Subscription, len(subscriptionsFromK8s))
 	copy(clonedSubscriptionsFromK8s, subscriptionsFromK8s)
 	clonedSubscriptions := make([]server.Subscription, len(subscriptions.List))
 	copy(clonedSubscriptions, subscriptions.List)
@@ -424,7 +425,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllSubscriptions(subscripti
 	sameSubscriptions := make([]server.Subscription, 0)
 	for _, subscription := range clonedSubscriptions {
 		found := false
-		unFilteredSubscriptionsInK8s := make([]cpv1alpha2.Subscription, 0)
+		unFilteredSubscriptionsInK8s := make([]cpv1alpha3.Subscription, 0)
 		for _, subscriptionFromK8s := range clonedSubscriptionsFromK8s {
 			if subscription.UUID == subscriptionFromK8s.Name {
 				sameSubscriptions = append(sameSubscriptions, subscription)
@@ -528,9 +529,9 @@ func (k8sArtifactDeployer K8sArtifactDeployer) retrieveAllApplicationsFromK8s(ne
 	return resolvedApplicationList, applicationList.Continue, nil
 }
 
-func (k8sArtifactDeployer K8sArtifactDeployer) retrieveAllSubscriptionsFromK8s(nextToken string) ([]cpv1alpha2.Subscription, string, error) {
-	subscriptionList := cpv1alpha2.SubscriptionList{}
-	resolvedSubscripitonList := make([]cpv1alpha2.Subscription, 0)
+func (k8sArtifactDeployer K8sArtifactDeployer) retrieveAllSubscriptionsFromK8s(nextToken string) ([]cpv1alpha3.Subscription, string, error) {
+	subscriptionList := cpv1alpha3.SubscriptionList{}
+	resolvedSubscripitonList := make([]cpv1alpha3.Subscription, 0)
 	var err error
 	if nextToken == "" {
 		err = k8sArtifactDeployer.client.List(context.Background(), &subscriptionList, &client.ListOptions{Namespace: utils.GetOperatorPodNamespace()})

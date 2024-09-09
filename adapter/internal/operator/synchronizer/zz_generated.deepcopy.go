@@ -63,23 +63,9 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 			(*out)[key] = *val.DeepCopy()
 		}
 	}
-	if in.RateLimitPolicies != nil {
-		in, out := &in.RateLimitPolicies, &out.RateLimitPolicies
-		*out = make(map[string]v1alpha1.RateLimitPolicy, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
 	if in.ResourceAuthentications != nil {
 		in, out := &in.ResourceAuthentications, &out.ResourceAuthentications
 		*out = make(map[string]v1alpha2.Authentication, len(*in))
-		for key, val := range *in {
-			(*out)[key] = *val.DeepCopy()
-		}
-	}
-	if in.ResourceRateLimitPolicies != nil {
-		in, out := &in.ResourceRateLimitPolicies, &out.ResourceRateLimitPolicies
-		*out = make(map[string]v1alpha1.RateLimitPolicy, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}
@@ -271,21 +257,6 @@ func (in *GatewayStateData) DeepCopyInto(out *GatewayStateData) {
 		*out = make(map[string]v1alpha1.InterceptorService, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
-		}
-	}
-	if in.GatewayCustomRateLimitPolicies != nil {
-		in, out := &in.GatewayCustomRateLimitPolicies, &out.GatewayCustomRateLimitPolicies
-		*out = make(map[string]*v1alpha1.RateLimitPolicy, len(*in))
-		for key, val := range *in {
-			var outVal *v1alpha1.RateLimitPolicy
-			if val == nil {
-				(*out)[key] = nil
-			} else {
-				in, out := &val, &outVal
-				*out = new(v1alpha1.RateLimitPolicy)
-				(*in).DeepCopyInto(*out)
-			}
-			(*out)[key] = outVal
 		}
 	}
 }

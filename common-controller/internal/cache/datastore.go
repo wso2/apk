@@ -22,23 +22,53 @@ import (
 
 	logger "github.com/sirupsen/logrus"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // RatelimitDataStore is a cache for rate limit policies.
 type RatelimitDataStore struct {
-	resolveRatelimitStore map[types.NamespacedName][]dpv1alpha1.ResolveRateLimitAPIPolicy
-	customRatelimitStore  map[types.NamespacedName]*dpv1alpha1.CustomRateLimitPolicyDef
-	mu                    sync.Mutex
+	resolveRatelimitStore             map[types.NamespacedName][]dpv1alpha1.ResolveRateLimitAPIPolicy
+	resolveSubscriptionRatelimitStore map[types.NamespacedName]dpv1alpha3.ResolveSubscriptionRatelimitPolicy
+	customRatelimitStore              map[types.NamespacedName]*dpv1alpha1.CustomRateLimitPolicyDef
+	mu                                sync.Mutex
 }
 
 // CreateNewOperatorDataStore creates a new RatelimitDataStore.
 func CreateNewOperatorDataStore() *RatelimitDataStore {
 	return &RatelimitDataStore{
-		resolveRatelimitStore: map[types.NamespacedName][]dpv1alpha1.ResolveRateLimitAPIPolicy{},
-		customRatelimitStore:  map[types.NamespacedName]*dpv1alpha1.CustomRateLimitPolicyDef{},
+		resolveRatelimitStore:             map[types.NamespacedName][]dpv1alpha1.ResolveRateLimitAPIPolicy{},
+		customRatelimitStore:              map[types.NamespacedName]*dpv1alpha1.CustomRateLimitPolicyDef{},
+		resolveSubscriptionRatelimitStore: map[types.NamespacedName]dpv1alpha3.ResolveSubscriptionRatelimitPolicy{},
 	}
+}
+
+// AddorUpdateResolveSubscriptionRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
+func (ods *RatelimitDataStore) AddorUpdateResolveSubscriptionRatelimitToStore(rateLimit types.NamespacedName,
+	resolveSubscriptionRatelimit dpv1alpha3.ResolveSubscriptionRatelimitPolicy) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	logger.Debug("Adding/Updating ratelimit to cache")
+	ods.resolveSubscriptionRatelimitStore[rateLimit] = resolveSubscriptionRatelimit
+}
+
+// GetResolveSubscriptionRatelimitPolicy get cached ratelimit
+func (ods *RatelimitDataStore) GetResolveSubscriptionRatelimitPolicy(rateLimit types.NamespacedName) (dpv1alpha3.ResolveSubscriptionRatelimitPolicy, bool) {
+	var rateLimitPolicy dpv1alpha3.ResolveSubscriptionRatelimitPolicy
+	if cachedRatelimit, found := ods.resolveSubscriptionRatelimitStore[rateLimit]; found {
+		logger.Debug("Found cached ratelimit")
+		return cachedRatelimit, true
+	}
+	return rateLimitPolicy, false
+}
+
+// DeleteSubscriptionRatelimitPolicy delete from ratelimit cache
+func (ods *RatelimitDataStore) DeleteSubscriptionRatelimitPolicy(rateLimit types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	logger.Debug("Deleting ratelimit from cache")
+	delete(ods.resolveSubscriptionRatelimitStore, rateLimit)
 }
 
 // AddorUpdateResolveRatelimitToStore adds a new ratelimit to the RatelimitDataStore.

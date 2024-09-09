@@ -61,6 +61,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -192,7 +193,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForRateLimitPolicy),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForRateLimitPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER, "Error watching Ratelimit resources: %v", err))
 		return err
@@ -607,10 +608,10 @@ func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context
 }
 
 func (apiReconciler *APIReconciler) getRatelimitPoliciesForAPI(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha1.RateLimitPolicy, error) {
+	api dpv1alpha2.API) (map[string]dpv1alpha3.RateLimitPolicy, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
-	ratelimitPolicies := make(map[string]dpv1alpha1.RateLimitPolicy)
-	ratelimitPolicyList := &dpv1alpha1.RateLimitPolicyList{}
+	ratelimitPolicies := make(map[string]dpv1alpha3.RateLimitPolicy)
+	ratelimitPolicyList := &dpv1alpha3.RateLimitPolicyList{}
 	if err := apiReconciler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiRateLimitIndex, nameSpacedName),
 	}); err != nil {
@@ -683,10 +684,10 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 }
 
 func (apiReconciler *APIReconciler) getRatelimitPoliciesForResources(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha1.RateLimitPolicy, error) {
+	api dpv1alpha2.API) (map[string]dpv1alpha3.RateLimitPolicy, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
-	ratelimitpolicies := make(map[string]dpv1alpha1.RateLimitPolicy)
-	ratelimitPolicyList := &dpv1alpha1.RateLimitPolicyList{}
+	ratelimitpolicies := make(map[string]dpv1alpha3.RateLimitPolicy)
+	ratelimitPolicyList := &dpv1alpha3.RateLimitPolicyList{}
 	if err := apiReconciler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiRateLimitResourceIndex, nameSpacedName),
 	}); err != nil {
@@ -1085,8 +1086,8 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForScope(ctx, &scope)
 		apiReconciler.handleOwnerReference(ctx, &scope, &requests)
-	case *dpv1alpha1.RateLimitPolicy:
-		var rl dpv1alpha1.RateLimitPolicy
+	case *dpv1alpha3.RateLimitPolicy:
+		var rl dpv1alpha3.RateLimitPolicy
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
 			Namespace: string(obj.GetNamespace()),
@@ -1464,7 +1465,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackendJWT(ctx context.Context, ob
 // from RateLimitPolicy objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForRateLimitPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
+	ratelimitPolicy, ok := obj.(*dpv1alpha3.RateLimitPolicy)
 	requests := []reconcile.Request{}
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", ratelimitPolicy))
@@ -1994,9 +1995,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// ratelimit policy to API indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, apiRateLimitIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.RateLimitPolicy{}, apiRateLimitIndex,
 		func(rawObj k8client.Object) []string {
-			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
+			ratelimitPolicy := rawObj.(*dpv1alpha3.RateLimitPolicy)
 			var apis []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 
@@ -2023,9 +2024,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
 	// we will use a temporary kindName called Resource for policy attachments
 	// TODO(amali) Fix after the official support is available
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, apiRateLimitResourceIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.RateLimitPolicy{}, apiRateLimitResourceIndex,
 		func(rawObj k8client.Object) []string {
-			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
+			ratelimitPolicy := rawObj.(*dpv1alpha3.RateLimitPolicy)
 			var apis []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindResource {
 

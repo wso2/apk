@@ -23,6 +23,7 @@ private static final long serialVersionUID = 0L;
     subStatus_ = "";
     uuid_ = "";
     organization_ = "";
+    ratelimitTier_ = "";
   }
 
   @java.lang.Override
@@ -84,6 +85,12 @@ private static final long serialVersionUID = 0L;
               subscribedApi_ = subBuilder.buildPartial();
             }
 
+            break;
+          }
+          case 42: {
+            java.lang.String s = input.readStringRequireUtf8();
+
+            ratelimitTier_ = s;
             break;
           }
           default: {
@@ -258,6 +265,44 @@ private static final long serialVersionUID = 0L;
     return getSubscribedApi();
   }
 
+  public static final int RATELIMITTIER_FIELD_NUMBER = 5;
+  private volatile java.lang.Object ratelimitTier_;
+  /**
+   * <code>string ratelimitTier = 5;</code>
+   * @return The ratelimitTier.
+   */
+  @java.lang.Override
+  public java.lang.String getRatelimitTier() {
+    java.lang.Object ref = ratelimitTier_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      ratelimitTier_ = s;
+      return s;
+    }
+  }
+  /**
+   * <code>string ratelimitTier = 5;</code>
+   * @return The bytes for ratelimitTier.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getRatelimitTierBytes() {
+    java.lang.Object ref = ratelimitTier_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      ratelimitTier_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -284,6 +329,9 @@ private static final long serialVersionUID = 0L;
     if (subscribedApi_ != null) {
       output.writeMessage(4, getSubscribedApi());
     }
+    if (!getRatelimitTierBytes().isEmpty()) {
+      com.google.protobuf.GeneratedMessageV3.writeString(output, 5, ratelimitTier_);
+    }
     unknownFields.writeTo(output);
   }
 
@@ -305,6 +353,9 @@ private static final long serialVersionUID = 0L;
     if (subscribedApi_ != null) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(4, getSubscribedApi());
+    }
+    if (!getRatelimitTierBytes().isEmpty()) {
+      size += com.google.protobuf.GeneratedMessageV3.computeStringSize(5, ratelimitTier_);
     }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
@@ -332,6 +383,8 @@ private static final long serialVersionUID = 0L;
       if (!getSubscribedApi()
           .equals(other.getSubscribedApi())) return false;
     }
+    if (!getRatelimitTier()
+        .equals(other.getRatelimitTier())) return false;
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -353,6 +406,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + SUBSCRIBEDAPI_FIELD_NUMBER;
       hash = (53 * hash) + getSubscribedApi().hashCode();
     }
+    hash = (37 * hash) + RATELIMITTIER_FIELD_NUMBER;
+    hash = (53 * hash) + getRatelimitTier().hashCode();
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -502,6 +557,8 @@ private static final long serialVersionUID = 0L;
         subscribedApi_ = null;
         subscribedApiBuilder_ = null;
       }
+      ratelimitTier_ = "";
+
       return this;
     }
 
@@ -536,6 +593,7 @@ private static final long serialVersionUID = 0L;
       } else {
         result.subscribedApi_ = subscribedApiBuilder_.build();
       }
+      result.ratelimitTier_ = ratelimitTier_;
       onBuilt();
       return result;
     }
@@ -598,6 +656,10 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasSubscribedApi()) {
         mergeSubscribedApi(other.getSubscribedApi());
+      }
+      if (!other.getRatelimitTier().isEmpty()) {
+        ratelimitTier_ = other.ratelimitTier_;
+        onChanged();
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -973,6 +1035,82 @@ private static final long serialVersionUID = 0L;
         subscribedApi_ = null;
       }
       return subscribedApiBuilder_;
+    }
+
+    private java.lang.Object ratelimitTier_ = "";
+    /**
+     * <code>string ratelimitTier = 5;</code>
+     * @return The ratelimitTier.
+     */
+    public java.lang.String getRatelimitTier() {
+      java.lang.Object ref = ratelimitTier_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        ratelimitTier_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <code>string ratelimitTier = 5;</code>
+     * @return The bytes for ratelimitTier.
+     */
+    public com.google.protobuf.ByteString
+        getRatelimitTierBytes() {
+      java.lang.Object ref = ratelimitTier_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        ratelimitTier_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <code>string ratelimitTier = 5;</code>
+     * @param value The ratelimitTier to set.
+     * @return This builder for chaining.
+     */
+    public Builder setRatelimitTier(
+        java.lang.String value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  
+      ratelimitTier_ = value;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string ratelimitTier = 5;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearRatelimitTier() {
+      
+      ratelimitTier_ = getDefaultInstance().getRatelimitTier();
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>string ratelimitTier = 5;</code>
+     * @param value The bytes for ratelimitTier to set.
+     * @return This builder for chaining.
+     */
+    public Builder setRatelimitTierBytes(
+        com.google.protobuf.ByteString value) {
+      if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+      
+      ratelimitTier_ = value;
+      onChanged();
+      return this;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

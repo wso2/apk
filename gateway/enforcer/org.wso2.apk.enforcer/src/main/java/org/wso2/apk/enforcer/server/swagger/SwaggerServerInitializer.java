@@ -12,7 +12,6 @@ import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 public class SwaggerServerInitializer extends ChannelInitializer<SocketChannel> {
     private final SslContext sslCtx;
     public SwaggerServerInitializer(SslContext sslCtx) {
-        System.out.println("SwaggerServerInitializer constructor");
         this.sslCtx = sslCtx;
     }
 

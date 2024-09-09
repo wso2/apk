@@ -24,6 +24,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -38,8 +39,8 @@ type ResourceParams struct {
 	BackendJWTMapping         map[string]dpv1alpha1.BackendJWT
 	BackendMapping            map[string]*dpv1alpha2.ResolvedBackend
 	ResourceScopes            map[string]dpv1alpha1.Scope
-	RateLimitPolicies         map[string]dpv1alpha1.RateLimitPolicy
-	ResourceRateLimitPolicies map[string]dpv1alpha1.RateLimitPolicy
+	RateLimitPolicies         map[string]dpv1alpha3.RateLimitPolicy
+	ResourceRateLimitPolicies map[string]dpv1alpha3.RateLimitPolicy
 }
 
 func parseBackendJWTTokenToInternal(backendJWTToken dpv1alpha1.BackendJWTSpec) *BackendJWTTokenInfo {
@@ -96,7 +97,7 @@ func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha2.APIPolicy) *CorsConfig {
 	return &corsConfig
 }
 
-func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha1.RateLimitPolicy) *RateLimitPolicy {
+func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha3.RateLimitPolicy) *RateLimitPolicy {
 	var rateLimitPolicyInternal *RateLimitPolicy
 	if ratelimitPolicy != nil && ratelimitPolicy.Spec.Override != nil {
 		if ratelimitPolicy.Spec.Override.API.RequestsPerUnit > 0 {
@@ -191,8 +192,8 @@ func GetBackendBasePath(backendName types.NamespacedName, backendMapping map[str
 	return ""
 }
 
-func concatRateLimitPolicies(schemeUp *dpv1alpha1.RateLimitPolicy, schemeDown *dpv1alpha1.RateLimitPolicy) *dpv1alpha1.RateLimitPolicy {
-	finalRateLimit := dpv1alpha1.RateLimitPolicy{}
+func concatRateLimitPolicies(schemeUp *dpv1alpha3.RateLimitPolicy, schemeDown *dpv1alpha3.RateLimitPolicy) *dpv1alpha3.RateLimitPolicy {
+	finalRateLimit := dpv1alpha3.RateLimitPolicy{}
 	if schemeUp != nil && schemeDown != nil {
 		finalRateLimit.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {

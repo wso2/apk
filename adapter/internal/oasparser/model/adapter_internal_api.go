@@ -33,6 +33,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -463,7 +464,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
-	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
+	var ratelimitPolicy *dpv1alpha3.RateLimitPolicy
 	if outputRatelimitPolicy != nil {
 		ratelimitPolicy = *outputRatelimitPolicy
 	}
@@ -946,7 +947,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
-	var ratelimitPolicy *dpv1alpha1.RateLimitPolicy
+	var ratelimitPolicy *dpv1alpha3.RateLimitPolicy
 	if outputRatelimitPolicy != nil {
 		ratelimitPolicy = *outputRatelimitPolicy
 	}

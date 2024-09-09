@@ -39,6 +39,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -99,7 +100,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}),
 		handler.EnqueueRequestsFromMapFunc(r.handleCustomRateLimitPolicies), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3121, logging.BLOCKER, "Error watching Ratelimit resources: %v", err))
 		return err
@@ -494,7 +495,7 @@ func (gatewayReconciler *GatewayReconciler) handleGatewayStatus(gatewayKey types
 
 // handleCustomRateLimitPolicies returns the list of gateway reconcile requests
 func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
+	ratelimitPolicy, ok := obj.(*dpv1alpha3.RateLimitPolicy)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", ratelimitPolicy))
 		return []reconcile.Request{}
@@ -521,10 +522,10 @@ func (gatewayReconciler *GatewayReconciler) handleCustomRateLimitPolicies(ctx co
 }
 
 // getCustomRateLimitPoliciesForGateway returns the list of custom rate limit policies for a gateway
-func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway(gatewayName types.NamespacedName) (map[string]*dpv1alpha1.RateLimitPolicy, error) {
+func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway(gatewayName types.NamespacedName) (map[string]*dpv1alpha3.RateLimitPolicy, error) {
 	ctx := context.Background()
-	var ratelimitPolicyList dpv1alpha1.RateLimitPolicyList
-	rateLimitPolicies := make(map[string]*dpv1alpha1.RateLimitPolicy)
+	var ratelimitPolicyList dpv1alpha3.RateLimitPolicyList
+	rateLimitPolicies := make(map[string]*dpv1alpha3.RateLimitPolicy)
 	if err := gatewayReconciler.client.List(ctx, &ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayRateLimitPolicyIndex, gatewayName.String()),
 	}); err != nil {
@@ -569,9 +570,9 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(ctx context.
 // addGatewayIndexes adds indexers related to Gateways
 func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 	// Gateway to RateLimitPolicy indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, gatewayRateLimitPolicyIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.RateLimitPolicy{}, gatewayRateLimitPolicyIndex,
 		func(rawObj k8client.Object) []string {
-			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
+			ratelimitPolicy := rawObj.(*dpv1alpha3.RateLimitPolicy)
 			var gateways []string
 			if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
 

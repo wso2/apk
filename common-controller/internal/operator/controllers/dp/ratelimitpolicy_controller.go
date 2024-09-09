@@ -47,6 +47,7 @@ import (
 	xds "github.com/wso2/apk/common-controller/internal/xds"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/constants"
 )
 
@@ -101,7 +102,7 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
 			"Error watching Ratelimit resources: %v", err.Error()))
 		return err
@@ -130,7 +131,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 	loggers.LoggerAPKOperator.Infof("Reconciling ratelimit...")
 	conf := config.ReadConfigs()
 	ratelimitKey := req.NamespacedName
-	var ratelimitPolicy dpv1alpha1.RateLimitPolicy
+	var ratelimitPolicy dpv1alpha3.RateLimitPolicy
 
 	// Check k8s RatelimitPolicy Availbility
 	if err := ratelimitReconsiler.client.Get(ctx, ratelimitKey, &ratelimitPolicy); err != nil {
@@ -149,6 +150,14 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 			xds.DeleteCustomRateLimitPolicies(resolveCustomRateLimitPolicy)
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
+		resolveSubscriptionRatelimitPolicy, foundSubscription := ratelimitReconsiler.ods.GetResolveSubscriptionRatelimitPolicy(req.NamespacedName)
+		if foundSubscription && k8error.IsNotFound(err) {
+			ratelimitReconsiler.ods.DeleteSubscriptionRatelimitPolicy(req.NamespacedName)
+			logger.Debug("Deleting SubscriptionRateLimitPolicy : ", resolveSubscriptionRatelimitPolicy)
+			xds.DeleteSubscriptionRateLimitPolicies(resolveSubscriptionRatelimitPolicy)
+			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
+		}
+
 		if k8error.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
@@ -162,8 +171,12 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 		ratelimitReconsiler.ods.AddorUpdateCustomRatelimitToStore(ratelimitKey, customRateLimitPolicy)
 		xds.UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicy)
 		xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
+	} else if ratelimitPolicy.Spec.Override != nil && ratelimitPolicy.Spec.Override.Subscription != nil {
+		var resolveSubscriptionRatelimitPolicy = ratelimitReconsiler.marshelSubscriptionRateLimit(ratelimitPolicy)
+		ratelimitReconsiler.ods.AddorUpdateResolveSubscriptionRatelimitToStore(ratelimitKey, resolveSubscriptionRatelimitPolicy)
+		xds.UpdateRateLimitXDSCacheForSubscriptionPolicies(resolveSubscriptionRatelimitPolicy)
+		xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 	} else {
-
 		if resolveRatelimitPolicyList, err := ratelimitReconsiler.marshelRateLimit(ctx, ratelimitKey, ratelimitPolicy); err != nil {
 			return ctrl.Result{}, err
 		} else if len(resolveRatelimitPolicyList) > 0 {
@@ -186,7 +199,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx con
 
 	requests := []reconcile.Request{}
 
-	ratelimitPolicyList := &dpv1alpha1.RateLimitPolicyList{}
+	ratelimitPolicyList := &dpv1alpha3.RateLimitPolicyList{}
 	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiRateLimitIndex, NamespacedName(api).String()),
 	}); err != nil {
@@ -203,7 +216,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx con
 
 // AddRatelimitRequest adds a request to reconcile for the given ratelimit policy
 func (ratelimitReconsiler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8client.Object) []reconcile.Request {
-	ratelimitPolicy, ok := obj.(*dpv1alpha1.RateLimitPolicy)
+	ratelimitPolicy, ok := obj.(*dpv1alpha3.RateLimitPolicy)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
 			"Unexpected object type, bypassing reconciliation: %v", ratelimitPolicy))
@@ -228,7 +241,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(c
 
 	requests := []reconcile.Request{}
 
-	ratelimitPolicyList := &dpv1alpha1.RateLimitPolicyList{}
+	ratelimitPolicyList := &dpv1alpha3.RateLimitPolicyList{}
 	if err := ratelimitReconsiler.client.List(ctx, ratelimitPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httprouteRateLimitIndex, NamespacedName(httpRoute).String()),
 	}); err != nil {
@@ -242,8 +255,24 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(c
 	return requests
 }
 
+func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelSubscriptionRateLimit(
+	ratelimitPolicy dpv1alpha3.RateLimitPolicy) dpv1alpha3.ResolveSubscriptionRatelimitPolicy {
+
+	var resolveSubscriptionRatelimit dpv1alpha3.ResolveSubscriptionRatelimitPolicy
+	resolveSubscriptionRatelimit.Name = ratelimitPolicy.Name
+	resolveSubscriptionRatelimit.RequestCount.RequestsPerUnit = ratelimitPolicy.Spec.Override.Subscription.RequestCount.RequestsPerUnit
+	resolveSubscriptionRatelimit.RequestCount.Unit = ratelimitPolicy.Spec.Override.Subscription.RequestCount.Unit
+	if ratelimitPolicy.Spec.Override.Subscription.BurstControl != nil {
+		resolveSubscriptionRatelimit.BurstControl.RequestsPerUnit = ratelimitPolicy.Spec.Override.Subscription.BurstControl.RequestsPerUnit
+		resolveSubscriptionRatelimit.BurstControl.Unit = ratelimitPolicy.Spec.Override.Subscription.BurstControl.Unit
+	}
+	resolveSubscriptionRatelimit.StopOnQuotaReach = ratelimitPolicy.Spec.Override.Subscription.StopOnQuotaReach
+	resolveSubscriptionRatelimit.Organization = ratelimitPolicy.Spec.Override.Subscription.Organization
+	return resolveSubscriptionRatelimit
+}
+
 func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx context.Context, ratelimitKey types.NamespacedName,
-	ratelimitPolicy dpv1alpha1.RateLimitPolicy) ([]dpv1alpha1.ResolveRateLimitAPIPolicy, error) {
+	ratelimitPolicy dpv1alpha3.RateLimitPolicy) ([]dpv1alpha1.ResolveRateLimitAPIPolicy, error) {
 
 	policyList := []dpv1alpha1.ResolveRateLimitAPIPolicy{}
 	var api dpv1alpha2.API
@@ -317,7 +346,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 }
 
 func (ratelimitReconsiler *RateLimitPolicyReconciler) getHTTPRouteResourceList(ctx context.Context, ratelimitKey types.NamespacedName,
-	ratelimitPolicy dpv1alpha1.RateLimitPolicy, httpRefs []string) ([]dpv1alpha1.ResolveResource, error) {
+	ratelimitPolicy dpv1alpha3.RateLimitPolicy, httpRefs []string) ([]dpv1alpha1.ResolveResource, error) {
 
 	var resolveResourceList []dpv1alpha1.ResolveResource
 	var httpRoute gwapiv1.HTTPRoute
@@ -363,7 +392,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) getHTTPRouteResourceList(c
 }
 
 func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelCustomRateLimit(ctx context.Context, ratelimitKey types.NamespacedName,
-	ratelimitPolicy dpv1alpha1.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
+	ratelimitPolicy dpv1alpha3.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
 	var customRateLimitPolicy dpv1alpha1.CustomRateLimitPolicyDef
 	// Custom Rate limit policy
 	if ratelimitPolicy.Spec.TargetRef.Kind == constants.KindGateway {
@@ -374,7 +403,7 @@ func (ratelimitReconsiler *RateLimitPolicyReconciler) marshelCustomRateLimit(ctx
 }
 
 // getCustomRateLimitPolicy returns the custom rate limit policy.
-func getCustomRateLimitPolicy(customRateLimitPolicy *dpv1alpha1.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
+func getCustomRateLimitPolicy(customRateLimitPolicy *dpv1alpha3.RateLimitPolicy) dpv1alpha1.CustomRateLimitPolicyDef {
 	customRLPolicy := *dpv1alpha1.ParseCustomRateLimitPolicy(*customRateLimitPolicy)
 	logger.Debug("customRLPolicy:", customRLPolicy)
 	return customRLPolicy
@@ -404,9 +433,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// ratelimite policy to API indexer
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.RateLimitPolicy{}, apiRateLimitIndex,
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.RateLimitPolicy{}, apiRateLimitIndex,
 		func(rawObj k8client.Object) []string {
-			ratelimitPolicy := rawObj.(*dpv1alpha1.RateLimitPolicy)
+			ratelimitPolicy := rawObj.(*dpv1alpha3.RateLimitPolicy)
 			var apis []string
 			apis = append(apis,
 				types.NamespacedName{
@@ -437,6 +466,6 @@ func GetNamespace(namespace *gwapiv1.Namespace, defaultNamespace string) string 
 // SetupWithManager sets up the controller with the Manager.
 func (ratelimitReconsiler *RateLimitPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&dpv1alpha1.RateLimitPolicy{}).
+		For(&dpv1alpha3.RateLimitPolicy{}).
 		Complete(ratelimitReconsiler)
 }

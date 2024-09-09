@@ -28,6 +28,7 @@ import (
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
+	metadatav3 "github.com/envoyproxy/go-control-plane/envoy/type/metadata/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes/any"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
@@ -39,6 +40,21 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+)
+
+// Constants for Rate Limiting
+const (
+	DescriptorKeyForSubscription = "subscription"
+	DescriptorKeyForPolicy       = "policy"
+	DescriptorKeyForOrganization = "organization"
+	extAuthzFilterName           = "envoy.filters.http.ext_authz"
+
+	descriptorMetadataKeyForSubscription          = "ratelimit:subscription"
+	descriptorMetadataKeyForUsagePolicy           = "ratelimit:usage-policy"
+	descriptorMetadataKeyForOrganization          = "ratelimit:organization"
+	descriptorMetadataKeyForBurstCtrlSubscription = "burstCtrl:subscription"
+	descriptorMetadataKeyForBurstCtrlUsagePolicy  = "burstCtrl:usage-policy"
+	descriptorMetadataKeyForBurstCtrlOrganization = "burstCtrl:organization"
 )
 
 func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *routev3.Route_Route, redirectAction *routev3.Route_Redirect,
@@ -168,7 +184,6 @@ func mapStatusCodeToEnum(statusCode int) int {
 }
 
 func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.RateLimit {
-
 	environmentValue := ratelimitCriteria.environment
 	if ratelimitCriteria.level != RateLimitPolicyAPILevel && ratelimitCriteria.envType == opConstants.Sandbox {
 		environmentValue += "_sandbox"
@@ -223,7 +238,10 @@ func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.Ra
 			},
 		})
 	}
-	return []*routev3.RateLimit{&rateLimit}
+
+	ratelimits := []*routev3.RateLimit{&rateLimit}
+	ratelimits = addSubscriptionRatelimitActions(ratelimits)
+	return ratelimits
 }
 
 func generateHTTPMethodMatcher(methodRegex string, sandClusterName string) []*routev3.HeaderMatcher {
@@ -261,6 +279,139 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 		},
 	}
 	return headerMatcherArray
+}
+
+func addSubscriptionRatelimitActions(actions []*routev3.RateLimit) []*routev3.RateLimit {
+	return append(actions,
+		&routev3.RateLimit{
+			Actions: []*routev3.RateLimit_Action{
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
+						Metadata: &routev3.RateLimit_Action_MetaData{
+							DescriptorKey: DescriptorKeyForOrganization,
+							MetadataKey: &metadatav3.MetadataKey{
+								Key: extAuthzFilterName,
+								Path: []*metadatav3.MetadataKey_PathSegment{
+									{
+										Segment: &metadatav3.MetadataKey_PathSegment_Key{
+											Key: descriptorMetadataKeyForOrganization,
+										},
+									},
+								},
+							},
+							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
+							SkipIfAbsent: true,
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
+						Metadata: &routev3.RateLimit_Action_MetaData{
+							DescriptorKey: DescriptorKeyForSubscription,
+							MetadataKey: &metadatav3.MetadataKey{
+								Key: extAuthzFilterName,
+								Path: []*metadatav3.MetadataKey_PathSegment{
+									{
+										Segment: &metadatav3.MetadataKey_PathSegment_Key{
+											Key: descriptorMetadataKeyForSubscription,
+										},
+									},
+								},
+							},
+							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
+							SkipIfAbsent: true,
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
+						Metadata: &routev3.RateLimit_Action_MetaData{
+							DescriptorKey: DescriptorKeyForPolicy,
+							MetadataKey: &metadatav3.MetadataKey{
+								Key: extAuthzFilterName,
+								Path: []*metadatav3.MetadataKey_PathSegment{
+									{
+										Segment: &metadatav3.MetadataKey_PathSegment_Key{
+											Key: descriptorMetadataKeyForUsagePolicy,
+										},
+									},
+								},
+							},
+							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
+							SkipIfAbsent: true,
+						},
+					},
+				},
+			},
+		}, &routev3.RateLimit{
+			Actions: []*routev3.RateLimit_Action{
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
+						Metadata: &routev3.RateLimit_Action_MetaData{
+							DescriptorKey: DescriptorKeyForOrganization,
+							MetadataKey: &metadatav3.MetadataKey{
+								Key: extAuthzFilterName,
+								Path: []*metadatav3.MetadataKey_PathSegment{
+									{
+										Segment: &metadatav3.MetadataKey_PathSegment_Key{
+											Key: descriptorMetadataKeyForOrganization,
+										},
+									},
+								},
+							},
+							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
+							SkipIfAbsent: true,
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
+						Metadata: &routev3.RateLimit_Action_MetaData{
+							DescriptorKey: DescriptorKeyForSubscription,
+							MetadataKey: &metadatav3.MetadataKey{
+								Key: extAuthzFilterName,
+								Path: []*metadatav3.MetadataKey_PathSegment{
+									{
+										Segment: &metadatav3.MetadataKey_PathSegment_Key{
+											Key: descriptorMetadataKeyForSubscription,
+										},
+									},
+								},
+							},
+							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
+							SkipIfAbsent: true,
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
+						Metadata: &routev3.RateLimit_Action_MetaData{
+							DescriptorKey: DescriptorKeyForPolicy,
+							MetadataKey: &metadatav3.MetadataKey{
+								Key: extAuthzFilterName,
+								Path: []*metadatav3.MetadataKey_PathSegment{
+									{
+										Segment: &metadatav3.MetadataKey_PathSegment_Key{
+											Key: descriptorMetadataKeyForUsagePolicy,
+										},
+									},
+								},
+							},
+							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
+							SkipIfAbsent: true,
+						},
+					},
+				},
+				{
+					ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
+						GenericKey: &routev3.RateLimit_Action_GenericKey{
+							DescriptorKey:   "burst",
+							DescriptorValue: "enabled",
+						},
+					},
+				},
+			},
+		})
 }
 
 func generateRegexMatchAndSubstitute(routePath, endpointResourcePath string,

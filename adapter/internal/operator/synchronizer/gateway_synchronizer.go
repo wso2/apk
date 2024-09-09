@@ -32,6 +32,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/logging"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -126,7 +127,7 @@ func DeleteGateway(gateway *gwapiv1.Gateway) (string, error) {
 }
 
 // getCustomRateLimitPolicies returns the custom rate limit policies.
-func getCustomRateLimitPolicies(customRateLimitPoliciesDef map[string]*dpv1alpha1.RateLimitPolicy) []*model.CustomRateLimitPolicy {
+func getCustomRateLimitPolicies(customRateLimitPoliciesDef map[string]*dpv1alpha3.RateLimitPolicy) []*model.CustomRateLimitPolicy {
 	var customRateLimitPolicies []*model.CustomRateLimitPolicy
 	for _, customRateLimitPolicy := range customRateLimitPoliciesDef {
 		customRLPolicy := model.ParseCustomRateLimitPolicy(*customRateLimitPolicy)

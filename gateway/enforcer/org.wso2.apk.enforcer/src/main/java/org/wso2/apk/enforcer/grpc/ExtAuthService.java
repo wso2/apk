@@ -146,7 +146,6 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
                 responseObject.getMetaDataMap().forEach((key, value) ->
                         addMetadata(metadataStructBuilder, key, value));
             }
-
             addMetadata(metadataStructBuilder, "correlationID", responseObject.getCorrelationID());
             addMetadata(metadataStructBuilder, MetadataConstants.APK_ENFORCER_REPLY, "Ok");
 

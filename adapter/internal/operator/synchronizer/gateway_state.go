@@ -20,6 +20,7 @@ package synchronizer
 import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -38,5 +39,5 @@ type GatewayStateData struct {
 	GatewayAPIPolicies               map[string]v1alpha2.APIPolicy
 	GatewayBackendMapping            map[string]*v1alpha2.ResolvedBackend
 	GatewayInterceptorServiceMapping map[string]v1alpha1.InterceptorService
-	GatewayCustomRateLimitPolicies   map[string]*v1alpha1.RateLimitPolicy
+	GatewayCustomRateLimitPolicies   map[string]*v1alpha3.RateLimitPolicy
 }

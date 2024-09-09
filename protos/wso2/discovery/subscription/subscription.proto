@@ -31,9 +31,11 @@ message Subscription {
     string uuid = 2;
     string organization = 3;
     SubscribedAPI subscribedApi = 4;
+    string ratelimitTier = 5;
 }
 
 message SubscribedAPI {
     string name = 1;
     string version = 2;
 }
+

@@ -34,16 +34,17 @@ public final class SubscriptionProto {
   static {
     java.lang.String[] descriptorData = {
       "\n.wso2/discovery/subscription/subscripti" +
-      "on.proto\022\033wso2.discovery.subscription\"\210\001" +
+      "on.proto\022\033wso2.discovery.subscription\"\237\001" +
       "\n\014Subscription\022\021\n\tsubStatus\030\001 \001(\t\022\014\n\004uui" +
       "d\030\002 \001(\t\022\024\n\014organization\030\003 \001(\t\022A\n\rsubscri" +
       "bedApi\030\004 \001(\0132*.wso2.discovery.subscripti" +
-      "on.SubscribedAPI\".\n\rSubscribedAPI\022\014\n\004nam" +
-      "e\030\001 \001(\t\022\017\n\007version\030\002 \001(\tB\225\001\n,org.wso2.ap" +
-      "k.enforcer.discovery.subscriptionB\021Subsc" +
-      "riptionProtoP\001ZPgithub.com/wso2/apk/comm" +
-      "on-go-libs/pkg/discovery/api/wso2/discov" +
-      "ery/subscriptionb\006proto3"
+      "on.SubscribedAPI\022\025\n\rratelimitTier\030\005 \001(\t\"" +
+      ".\n\rSubscribedAPI\022\014\n\004name\030\001 \001(\t\022\017\n\007versio" +
+      "n\030\002 \001(\tB\225\001\n,org.wso2.apk.enforcer.discov" +
+      "ery.subscriptionB\021SubscriptionProtoP\001ZPg" +
+      "ithub.com/wso2/apk/common-go-libs/pkg/di" +
+      "scovery/api/wso2/discovery/subscriptionb" +
+      "\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -54,7 +55,7 @@ public final class SubscriptionProto {
     internal_static_wso2_discovery_subscription_Subscription_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_wso2_discovery_subscription_Subscription_descriptor,
-        new java.lang.String[] { "SubStatus", "Uuid", "Organization", "SubscribedApi", });
+        new java.lang.String[] { "SubStatus", "Uuid", "Organization", "SubscribedApi", "RatelimitTier", });
     internal_static_wso2_discovery_subscription_SubscribedAPI_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_wso2_discovery_subscription_SubscribedAPI_fieldAccessorTable = new

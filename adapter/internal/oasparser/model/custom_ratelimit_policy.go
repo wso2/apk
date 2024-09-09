@@ -17,7 +17,9 @@
 
 package model
 
-import dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+import (
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+)
 
 // RateLimit is the rate limit values for a policy
 type RateLimit struct {
@@ -39,7 +41,7 @@ type CustomRateLimitPolicy struct {
 }
 
 // ParseCustomRateLimitPolicy parses the custom rate limit policy
-func ParseCustomRateLimitPolicy(customRateLimitCR dpv1alpha1.RateLimitPolicy) *CustomRateLimitPolicy {
+func ParseCustomRateLimitPolicy(customRateLimitCR dpv1alpha3.RateLimitPolicy) *CustomRateLimitPolicy {
 	rlPolicy := concatRateLimitPolicies(&customRateLimitCR, nil)
 	return &CustomRateLimitPolicy{
 		Key:   rlPolicy.Spec.Override.Custom.Key,

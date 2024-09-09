@@ -22,13 +22,14 @@ import (
 
 	logger "github.com/sirupsen/logrus"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 // SubscriptionDataStore is a cache subscription data.
 type SubscriptionDataStore struct {
 	applicationStore        map[types.NamespacedName]*cpv1alpha2.ApplicationSpec
-	subscriptionStore       map[types.NamespacedName]*cpv1alpha2.SubscriptionSpec
+	subscriptionStore       map[types.NamespacedName]*cpv1alpha3.SubscriptionSpec
 	applicationMappingStore map[types.NamespacedName]*cpv1alpha2.ApplicationMappingSpec
 	mu                      sync.Mutex
 }
@@ -37,7 +38,7 @@ type SubscriptionDataStore struct {
 func CreateNewSubscriptionDataStore() *SubscriptionDataStore {
 	return &SubscriptionDataStore{
 		applicationStore:        map[types.NamespacedName]*cpv1alpha2.ApplicationSpec{},
-		subscriptionStore:       map[types.NamespacedName]*cpv1alpha2.SubscriptionSpec{},
+		subscriptionStore:       map[types.NamespacedName]*cpv1alpha3.SubscriptionSpec{},
 		applicationMappingStore: map[types.NamespacedName]*cpv1alpha2.ApplicationMappingSpec{},
 	}
 }
@@ -51,7 +52,7 @@ func (ods *SubscriptionDataStore) AddorUpdateApplicationToStore(name types.Names
 }
 
 // AddorUpdateSubscriptionToStore adds a new subscription to the DataStore.
-func (ods *SubscriptionDataStore) AddorUpdateSubscriptionToStore(name types.NamespacedName, subscription cpv1alpha2.SubscriptionSpec) {
+func (ods *SubscriptionDataStore) AddorUpdateSubscriptionToStore(name types.NamespacedName, subscription cpv1alpha3.SubscriptionSpec) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	logger.Debug("Adding/Updating subscription to cache")
@@ -77,8 +78,8 @@ func (ods *SubscriptionDataStore) GetApplicationFromStore(name types.NamespacedN
 }
 
 // GetSubscriptionFromStore get cached subscription
-func (ods *SubscriptionDataStore) GetSubscriptionFromStore(name types.NamespacedName) (cpv1alpha2.SubscriptionSpec, bool) {
-	var subscription cpv1alpha2.SubscriptionSpec
+func (ods *SubscriptionDataStore) GetSubscriptionFromStore(name types.NamespacedName) (cpv1alpha3.SubscriptionSpec, bool) {
+	var subscription cpv1alpha3.SubscriptionSpec
 	if cachedSubscription, found := ods.subscriptionStore[name]; found {
 		logger.Debug("Found cached subscription")
 		return *cachedSubscription, true
