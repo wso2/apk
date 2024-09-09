@@ -33,7 +33,6 @@ import (
 
 	wso2_cache "github.com/wso2/apk/adapter/pkg/discovery/protocol/cache/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
-	"github.com/wso2/apk/common-controller/internal/loggers"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	apimachiner_types "k8s.io/apimachinery/pkg/types"
