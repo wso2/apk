@@ -37,11 +37,6 @@ type RateLimitAPIPolicy struct {
 	// +optional
 	API *APIRateLimitPolicy `json:"api,omitempty"`
 
-	// Subscription level ratelimit policy
-	//
-	// +optional
-	Subscription *SubscriptionRateLimitPolicy `json:"subscription,omitempty"`
-
 	// Custom ratelimit policy
 	//
 	// +optional
@@ -59,26 +54,6 @@ type APIRateLimitPolicy struct {
 	//
 	// +kubebuilder:validation:Enum=Minute;Hour;Day
 	Unit string `json:"unit,omitempty"`
-}
-
-// SubscriptionRateLimitPolicy defines the subscription-level rate limiting policy.
-type SubscriptionRateLimitPolicy struct {
-	StopOnQuotaReach bool          `json:"stopOnQuotaReach"`
-	Organization     string        `json:"organization"`
-	RequestCount     *RequestCount `json:"requestCount,omitempty"`
-	BurstControl     *BurstControl `json:"burstControl,omitempty"`
-}
-
-// RequestCount defines the rule for request count quota.
-type RequestCount struct {
-	RequestsPerUnit uint32 `json:"requestsPerUnit,omitempty"`
-	Unit            string `json:"unit,omitempty"`
-}
-
-// BurstControl defines the rule for token count quota.
-type BurstControl struct {
-	RequestsPerUnit uint32 `json:"requestsPerUnit,omitempty"`
-	Unit            string `json:"unit,omitempty"`
 }
 
 // CustomRateLimitPolicy defines the desired state of CustomPolicy

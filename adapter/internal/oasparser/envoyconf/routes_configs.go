@@ -241,7 +241,6 @@ func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.Ra
 
 	ratelimits := []*routev3.RateLimit{&rateLimit}
 	ratelimits = addSubscriptionRatelimitActions(ratelimits)
-	logger.LoggerAPK.Infof("RENUKA: Rate limit policy generated: %v", ratelimits)
 	return ratelimits
 }
 
