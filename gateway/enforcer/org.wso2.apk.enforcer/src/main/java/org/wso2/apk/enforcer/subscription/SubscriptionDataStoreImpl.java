@@ -291,7 +291,6 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
         resolvedSubscription.setOrganization(subscription.getOrganization());
         resolvedSubscription.setSubscribedApi(new SubscribedAPI(subscription.getSubscribedApi()));
         resolvedSubscription.setRatelimitTier(subscription.getRatelimitTier());
-        System.out.println(subscription.getRatelimitTier());
         if (subscriptionMap.containsKey(resolvedSubscription.getSubscriptionId())) {
             subscriptionMap.replace(resolvedSubscription.getSubscriptionId(), resolvedSubscription);
         } else {

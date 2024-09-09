@@ -60,7 +60,6 @@ public class JWKSClient {
 
     public JWKSet getJWKSet() throws EnforcerException {
         try {
-            System.out.print(jwksEndpoint + "haha");
             HttpGet httpGet = new HttpGet(jwksEndpoint);
             try (CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet)) {
                 if (response.getStatusLine().getStatusCode() == 200) {

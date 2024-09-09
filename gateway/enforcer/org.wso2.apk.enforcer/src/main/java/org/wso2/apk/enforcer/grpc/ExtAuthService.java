@@ -146,7 +146,6 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
                 responseObject.getMetaDataMap().forEach((key, value) ->
                         addMetadata(metadataStructBuilder, key, value));
             }
-            System.out.println("correlationID:" + responseObject.getCorrelationID());
             addMetadata(metadataStructBuilder, "correlationID", responseObject.getCorrelationID());
             addMetadata(metadataStructBuilder, MetadataConstants.APK_ENFORCER_REPLY, "Ok");
 
@@ -194,7 +193,6 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
             addMetadata(structBuilder, RouterAccessLogConstants.ORIGINAL_PATH_DATA_NAME,
                     responseObject.getRequestPath().split("\\?")[0]);
             // adding org level ratelimit key to metadata
-            System.out.println(MetadataConstants.RATELIMIT_WSO2_ORG_PREFIX + responseObject.getOrganizationId());
             addMetadata(structBuilder, MetadataConstants.RATELIMIT_WSO2_ORG_PREFIX, responseObject.getOrganizationId());
             addMetadata(structBuilder, MetadataConstants.APK_ENFORCER_REPLY, "Ok");
 
@@ -266,8 +264,6 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
      * @param value
      */
     private void addMetadata(Struct.Builder structBuilder, String key, String value) {
-        System.out.print("key: " +key);
-        System.out.print("value: "+ value);
         structBuilder.putFields(key, Value.newBuilder().setStringValue(value).build());
     }
 
