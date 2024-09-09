@@ -68,7 +68,7 @@ ARG APK_USER_GROUP_ID=10001
 ARG APK_USER_HOME=/home/${APK_USER}
 ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
 ARG TARGETARCH
-ARG APK_VERSION=1.1.0-SNAPSHOT
+ARG APK_VERSION=1.0-SNAPSHOT
 
 ENV VERSION=${APK_VERSION}
 ENV JAVA_OPTS=""
@@ -127,4 +127,5 @@ COPY resources/check_health.sh .
 #todo add applicationinsights.json file and point it to the appInsightsAgent jar
 #Add the agent using JVM arg -javaagent:/home/wso2/conf/applicationinsights-agent-3.1.1.jar
 #Add the config file using System property -Dapplicationinsights.configuration.file=/home/wso2/conf/applicationinsights.json
-CMD java -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${ENFORCER_HOME}/logs/heap-dump.hprof" $JAVA_OPTS -Dlog4j.configurationFile="${ENFORCER_HOME}/conf/log4j2.properties" -DtracingEnabled="true" -jar lib/enforcer-${VERSION}.jar
+
+CMD java -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath="${ENFORCER_HOME}/logs/heap-dump.hprof" $JAVA_OPTS -Dlog4j.configurationFile="${ENFORCER_HOME}/conf/log4j2.properties" -DtracingEnabled="true" -cp "lib/*:lib/dropins/*" org.wso2.apk.enforcer.server.AuthServer

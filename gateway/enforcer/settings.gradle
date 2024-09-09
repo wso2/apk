@@ -18,6 +18,7 @@
 rootProject.name = 'enforcer-parent'
  include(':org.wso2.apk.enforcer')
  include(':org.wso2.apk.enforcer.commons')
+ include(':resources')
  include(':org.wso2.apk.enforcer.analytics.publishers')
 
 dependencyResolutionManagement {
