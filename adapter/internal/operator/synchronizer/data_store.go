@@ -75,6 +75,11 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 	var updated bool
 	events := []string{}
 	cachedAPI := ods.apiStore[apiNamespacedName]
+	if cachedAPI.IsAiSubscriptionRatelimitEnabled != apiState.IsAiSubscriptionRatelimitEnabled {
+		cachedAPI.IsAiSubscriptionRatelimitEnabled = apiState.IsAiSubscriptionRatelimitEnabled
+		updated = true
+		events = append(events, "Subscription based AI RatelimitPolicy")
+	}
 
 	if apiState.APIDefinition.Generation > cachedAPI.APIDefinition.Generation {
 		cachedAPI.APIDefinition = apiState.APIDefinition

@@ -268,6 +268,8 @@ public class Oauth2Authenticator implements Authenticator {
                                 requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
                                 requestContext.addMetadataToMap("ratelimit:usage-policy", subscription.getRatelimitTier());
                                 requestContext.addMetadataToMap("ratelimit:organization", subscription.getOrganization());
+                                System.out.println("Value: "+ String.format("%s-%s", subscription.getOrganization(), subscription.getRatelimitTier()));
+                                requestContext.addMetadataToMap("ratelimit:organization-and-rlpolicy", String.format("%s-%s", subscription.getOrganization(), subscription.getRatelimitTier()));
                             }
                         }
                     }

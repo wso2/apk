@@ -448,7 +448,8 @@ func (r *rateLimitPolicyCache) ProcessAIRatelimitPolicySpecsAndUpdateCache(aiRat
 }
 
 func prepareSubscriptionBasedAIRatelimitIdentifier(org string, namespacedName types.NamespacedName) string {
-	return fmt.Sprintf("%s-%s-%s", org, string(namespacedName.Namespace), string(namespacedName.Name))
+	// return fmt.Sprintf("%s-%s-%s", org, string(namespacedName.Namespace), string(namespacedName.Name))
+	return fmt.Sprintf("%s-%s", org, string(namespacedName.Name))
 }
 
 func prepareAIRatelimitIdentifier(org string, namespacedName types.NamespacedName, spec *dpv1alpha3.AIRateLimitPolicySpec) string {

@@ -865,12 +865,18 @@ func (apiReconciler *APIReconciler) resolveAiSubscriptionRatelimitPolicies(ctx c
 	}
 	for _, subscription := range subscriptionList.Items {
 		aiRatelimitPolicy := &dpv1alpha3.AIRateLimitPolicy{}
-		if err := apiReconciler.client.Get(ctx, utils.NamespacedName(&subscription), aiRatelimitPolicy, ); err != nil {
-			loggers.LoggerAPKOperator.Infof("No associated aiRatelimitPolicy found for Subscription: %s", utils.NamespacedName(&subscription))
-			return
+		nn:= types.NamespacedName{
+			Name: subscription.Spec.RatelimitRef.Name,
+			Namespace: subscription.GetNamespace(),
 		}
-		apiState.IsAiSubscriptionRatelimitEnabled = true
-		return
+		if err := apiReconciler.client.Get(ctx, nn, aiRatelimitPolicy, ); err != nil {
+			loggers.LoggerAPKOperator.Infof("No associated aiRatelimitPolicy found for Subscription: %s", utils.NamespacedName(&subscription))
+			continue
+		} else {
+			loggers.LoggerAPKOperator.Infof("API state set as AI subscription enabled")
+			apiState.IsAiSubscriptionRatelimitEnabled = true
+			break
+		}
 	}
 }
 

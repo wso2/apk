@@ -52,14 +52,22 @@ public class RatelimitClient {
         executorService.submit(() -> {
             System.out.println("Ratelimitclient test");
             for (KeyValueHitsAddend config : configs) {
+
                 System.out.println("For: " + config.getKey());
-                RateLimitDescriptor descriptor = RateLimitDescriptor.newBuilder()
-                        .addEntries(RateLimitDescriptor.Entry.newBuilder().setKey(config.getKey()).setValue(config.getValue()).build())
-                        .build();
+                RateLimitDescriptor.Builder builder = RateLimitDescriptor.newBuilder()
+                        .addEntries(RateLimitDescriptor.Entry.newBuilder().setKey(config.getKey()).setValue(config.getValue()).build());
+                KeyValueHitsAddend internalKeyValueHitsAddend = config.keyValueHitsAddend;
+                int hitsAddend = config.getHitsAddend();
+                while (internalKeyValueHitsAddend != null) {
+                    builder.addEntries(RateLimitDescriptor.Entry.newBuilder().setKey(internalKeyValueHitsAddend.getKey()).setValue(internalKeyValueHitsAddend.getValue()).build());
+                    hitsAddend = internalKeyValueHitsAddend.getHitsAddend();
+                    internalKeyValueHitsAddend = internalKeyValueHitsAddend.keyValueHitsAddend;
+                }
+                RateLimitDescriptor descriptor = builder.build();
                 RateLimitRequest rateLimitRequest = RateLimitRequest.newBuilder()
                         .addDescriptors(descriptor)
                         .setDomain("Default")
-                        .setHitsAddend(config.getHitsAddend())
+                        .setHitsAddend(hitsAddend)
                         .build();
                 RateLimitResponse rateLimitResponse = stub.shouldRateLimit(rateLimitRequest);
                 System.out.println(rateLimitResponse.getOverallCode());
@@ -73,11 +81,19 @@ public class RatelimitClient {
         private String key;
         private String value;
         private int hitsAddend;
+        private KeyValueHitsAddend keyValueHitsAddend;
 
         public KeyValueHitsAddend(String key, String value, int hitsAddend) {
             this.key = key;
             this.value = value;
             this.hitsAddend = hitsAddend;
+            this.keyValueHitsAddend = null;
+        }
+        public KeyValueHitsAddend(String key, String value, KeyValueHitsAddend keyValueHitsAddend) {
+            this.key = key;
+            this.value = value;
+            this.hitsAddend = -1;
+            this.keyValueHitsAddend = keyValueHitsAddend;
         }
 
         public String getKey() {

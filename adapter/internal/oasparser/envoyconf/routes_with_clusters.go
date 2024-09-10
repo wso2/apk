@@ -930,6 +930,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	}
 	routeConfig := resource.GetEndpoints().Config
 	metaData := &corev3.Metadata{}
+	logger.LoggerAPI.Infof("Is backend based rl enabled: %+v, Is subs based rl enabled: %+v", resource.GetEnableBackendBasedAIRatelimit(), resource.GetEnableSubscriptionBasedAIRatelimit())
 	if resource.GetEnableBackendBasedAIRatelimit() || resource.GetEnableSubscriptionBasedAIRatelimit() {
 		metaData = &corev3.Metadata{
 			FilterMetadata: map[string]*structpb.Struct{

@@ -152,6 +152,9 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 	if isBackendBasedAIRatelimitEnabled {
 		action.Route.RateLimits = append(action.Route.RateLimits, generateBackendBasedAIRatelimit(descriptorValueForBackendBasedAIRatelimit)...)
 	}
+	if isSubscriptionBasedAIRatelimitEnabled {
+		action.Route.RateLimits = append(action.Route.RateLimits, generateSubscriptionBasedAIRatelimit()...)
+	}
 
 	// Add request mirroring configurations
 	if mirrorClusterNames != nil && len(mirrorClusterNames) > 0 {
@@ -260,7 +263,7 @@ func generateBackendBasedAIRatelimit(descValue string) []*routev3.RateLimit {
 }
 
 
-func generateSubscriptionBasedAIRatelimit(descValue string) []*routev3.RateLimit {
+func generateSubscriptionBasedAIRatelimit() []*routev3.RateLimit {
 	rateLimitForRequestTokenCount := routev3.RateLimit{
 		Actions: []*routev3.RateLimit_Action{
 			{

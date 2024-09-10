@@ -18,10 +18,13 @@
 
 package org.wso2.apk.enforcer.grpc;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
+import io.envoyproxy.envoy.config.core.v3.Metadata;
 import io.envoyproxy.envoy.service.ext_proc.v3.BodyMutation;
 import io.envoyproxy.envoy.service.ext_proc.v3.BodyResponse;
 import io.envoyproxy.envoy.service.ext_proc.v3.CommonResponse;
@@ -47,6 +50,12 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
     private static final String DESCRIPTOR_KEY_FOR_AI_REQUEST_TOKEN_COUNT  = "airequesttokencount";
     private static final String DESCRIPTOR_KEY_FOR_AI_RESPONSE_TOKEN_COUNT = "airesponsetokencount";
     private static final String DESCRIPTOR_KEY_FOR_AI_TOTAL_TOKEN_COUNT    = "aitotaltokencount";
+    private static final String DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_REQUEST_TOKEN_COUNT  = "airequesttokencountsubs";
+    private static final String DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_RESPONSE_TOKEN_COUNT = "airesponsetokencountsubs";
+    private static final String DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_TOTAL_TOKEN_COUNT    = "aitotaltokencountsubs";
+    private static final String DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION = "subscription";
+    private static final String DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY = "ratelimit:organization-and-rlpolicy";
+    private static final String DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION = "ratelimit:subscription";
     RatelimitClient ratelimitClient = new RatelimitClient();
     @Override
     public StreamObserver<ProcessingRequest> process(
@@ -92,13 +101,25 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                                 return;
                             }
                             System.out.println("body: " +request.getResponseBody().getBody().toStringUtf8());
+                            List<RatelimitClient.KeyValueHitsAddend> configs = new ArrayList<>();
                             if (filterMetadata.enableBackendBasedAIRatelimit) {
-                                List<RatelimitClient.KeyValueHitsAddend> configs = new ArrayList<>();
                                 configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_REQUEST_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getPrompt_tokens()));
                                 configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_RESPONSE_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getCompletion_tokens()));
                                 configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_TOTAL_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getTotal_tokens()));
-                                ratelimitClient.shouldRatelimit(configs);
                             }
+                            if (filterMetadata.enableSubscriptionBasedAIRatelimit) {
+                                if (request.hasMetadataContext()) {
+                                    Struct filterMetadataFromAuthZ = request.getMetadataContext().getFilterMetadataOrDefault("envoy.filters.http.ext_authz", null);
+                                    if (filterMetadataFromAuthZ != null) {
+                                        String orgAndAIRLPolicyValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY).getStringValue();
+                                        String aiRLSubsValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION).getStringValue();
+                                        configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_REQUEST_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getPrompt_tokens())));
+                                        configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_RESPONSE_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getPrompt_tokens())));
+                                        configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_TOTAL_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getPrompt_tokens())));
+                                    }
+                                }
+                            }
+                            ratelimitClient.shouldRatelimit(configs);
                             responseObserver.onCompleted();
                         } else {
                             System.out.println("Request does not have response body");
@@ -258,8 +279,8 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
             System.out.println("Usage extracted: "+ usage);
             return usage;
 
-        } catch (JsonProcessingException e) {
-            logger.error(String.format("Unexpected error while extracting usage from the body: %s", body), e);
+        } catch (Exception e) {
+            System.out.println(String.format("Unexpected error while extracting usage from the body: %s", body) + " \n" + e);
             return null;
         }
     }
