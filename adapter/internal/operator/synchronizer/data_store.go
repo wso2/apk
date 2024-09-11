@@ -81,6 +81,20 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		events = append(events, "Subscription based AI RatelimitPolicy")
 	}
 
+	if cachedAPI.AIProvider == nil && apiState.AIProvider != nil {
+		cachedAPI.AIProvider = apiState.AIProvider
+		updated = true
+		events = append(events, "API provider")
+	} else if cachedAPI.AIProvider != nil && apiState.AIProvider == nil{
+		cachedAPI.AIProvider = nil
+		updated = true
+		events = append(events, "API provider")
+	} else if cachedAPI.AIProvider.Generation != apiState.AIProvider.Generation {
+		cachedAPI.AIProvider = apiState.AIProvider
+		updated = true
+		events = append(events, "API provider")
+	}
+
 	if apiState.APIDefinition.Generation > cachedAPI.APIDefinition.Generation {
 		cachedAPI.APIDefinition = apiState.APIDefinition
 		updated = true

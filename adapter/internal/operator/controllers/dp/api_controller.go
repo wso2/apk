@@ -869,14 +869,12 @@ func (apiReconciler *APIReconciler) resolveAiSubscriptionRatelimitPolicies(ctx c
 			Name: subscription.Spec.RatelimitRef.Name,
 			Namespace: subscription.GetNamespace(),
 		}
-		if err := apiReconciler.client.Get(ctx, nn, aiRatelimitPolicy, ); err != nil {
-			loggers.LoggerAPKOperator.Infof("No associated aiRatelimitPolicy found for Subscription: %s", utils.NamespacedName(&subscription))
-			continue
-		} else {
+		if err := apiReconciler.client.Get(ctx, nn, aiRatelimitPolicy, ); err == nil {
 			loggers.LoggerAPKOperator.Infof("API state set as AI subscription enabled")
 			apiState.IsAiSubscriptionRatelimitEnabled = true
 			break
 		}
+		loggers.LoggerAPKOperator.Infof("No associated aiRatelimitPolicy found for Subscription: %s", utils.NamespacedName(&subscription))
 	}
 }
 
