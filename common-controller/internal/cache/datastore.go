@@ -103,7 +103,7 @@ func (ods *RatelimitDataStore) AddorUpdateAIRatelimitToStore(rateLimit types.Nam
 	ods.aiRatelimitPolicySpecs[rateLimit] = &aiRatelimitSpec
 }
 
-// MarkAIRatelimitAsSubscriptionEnabled
+// MarkAIRatelimitAsSubscriptionEnabled add an entry to specify an AI RatelimitPolicy is associated with a subscription
 func (ods *RatelimitDataStore) MarkAIRatelimitAsSubscriptionEnabled(nn types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
@@ -113,7 +113,7 @@ func (ods *RatelimitDataStore) MarkAIRatelimitAsSubscriptionEnabled(nn types.Nam
 	ods.subscriptionEnabledAIRatelimitPolicies[nn] = struct{}{}
 }
 
-// MarkAIRatelimitAsSubscriptionDisabled
+// MarkAIRatelimitAsSubscriptionDisabled  deletes the entry which was added to specify an AI RatelimitPolicy is associated with a subscription
 func (ods *RatelimitDataStore) MarkAIRatelimitAsSubscriptionDisabled(nn types.NamespacedName) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
@@ -148,7 +148,7 @@ func (ods *RatelimitDataStore) GetAIRatelimitPolicySpecs() map[types.NamespacedN
 	return ods.aiRatelimitPolicySpecs
 }
 
-// GetAIRatelimitPolicySpecs gets all the AIRatelimitPolicy stored in ods
+// GetSubscriptionEnabledAIRatelimitPolicies gets all the AIRatelimitPolicy stored in ods
 func (ods *RatelimitDataStore) GetSubscriptionEnabledAIRatelimitPolicies() map[types.NamespacedName]struct{} {
 	return ods.subscriptionEnabledAIRatelimitPolicies
 }
