@@ -17,6 +17,7 @@
  */
 package org.wso2.apk.enforcer.api;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.analytics.AnalyticsFilter;
@@ -31,11 +32,7 @@ import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.HttpConstants;
 import org.wso2.apk.enforcer.cors.CorsFilter;
-import org.wso2.apk.enforcer.discovery.api.Api;
-import org.wso2.apk.enforcer.discovery.api.BackendJWTTokenInfo;
-import org.wso2.apk.enforcer.discovery.api.Claim;
-import org.wso2.apk.enforcer.discovery.api.Operation;
-import org.wso2.apk.enforcer.discovery.api.Resource;
+import org.wso2.apk.enforcer.discovery.api.*;
 import org.wso2.apk.enforcer.interceptor.MediationPolicyFilter;
 import org.wso2.apk.enforcer.security.AuthFilter;
 import org.wso2.apk.enforcer.security.mtls.MtlsUtils;
@@ -115,6 +112,22 @@ public class RestAPI implements API {
                     enforcerConfig.getJwtConfigurationDto().getKidValue());
         }
 
+        org.wso2.apk.enforcer.commons.model.AIProvider aiProvider = new org.wso2.apk.enforcer.commons.model.AIProvider();
+        if (api.getAiprovider().getEnabled()) {
+            aiProvider.setProviderName(api.getAiprovider().getProviderName());
+            aiProvider.setProviderAPIVersion(api.getAiprovider().getProviderAPIVersion());
+            aiProvider.setOrganization(api.getAiprovider().getOrganization());
+            aiProvider.setEnabled(api.getAiprovider().getEnabled());
+            aiProvider.setModel(new org.wso2.apk.enforcer.commons.model.ValueDetails(
+                    api.getAiprovider().getModel().getIn(), api.getAiprovider().getModel().getValue()));
+            aiProvider.setPromptTokens(new org.wso2.apk.enforcer.commons.model.ValueDetails(
+                    api.getAiprovider().getPromptTokens().getIn(), api.getAiprovider().getPromptTokens().getValue()));
+            aiProvider.setCompletionToken(new org.wso2.apk.enforcer.commons.model.ValueDetails(
+                    api.getAiprovider().getCompletionToken().getIn(), api.getAiprovider().getCompletionToken().getValue()));
+            aiProvider.setTotalToken(new org.wso2.apk.enforcer.commons.model.ValueDetails(
+                    api.getAiprovider().getTotalToken().getIn(), api.getAiprovider().getTotalToken().getValue()));
+        }
+        //System.out.println("AIProvider: " + aiProvider.getProviderName() + " " + aiProvider.getProviderAPIVersion() + " " + aiProvider.getOrganization() + " " + aiProvider.getEnabled() );
         byte[] apiDefinition = api.getApiDefinitionFile().toByteArray();
 
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
@@ -125,6 +138,7 @@ public class RestAPI implements API {
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
                 .apiDefinition(apiDefinition).environment(api.getEnvironment())
                 .subscriptionValidation(api.getSubscriptionValidation()).transportSecurity(api.getTransportSecurity())
+                .aiProvider(aiProvider)
                 .build();
 
         initFilters();

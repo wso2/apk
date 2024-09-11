@@ -125,6 +125,12 @@ func generateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 		return nil, err
 	}
 
+	if apiState.AIProvider != nil && apiState.AIProvider.Name != "" {
+		loggers.LoggerAPKOperator.Debugf("AI Provider: %+v", *apiState.AIProvider)
+		adapterInternalAPI.SetAIProvider(*apiState.AIProvider)
+	}
+	loggers.LoggerAPKOperator.Infof("AdapterInternalAPI AI Provider: %+v", adapterInternalAPI.GetAIProvider())
+
 	return &adapterInternalAPI, nil
 }
 

@@ -130,7 +130,6 @@ type APIPolicyStatus struct {
 // +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
 
 // APIPolicy is the Schema for the apipolicies API
 type APIPolicy struct {

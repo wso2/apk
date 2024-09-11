@@ -67,6 +67,7 @@ func init() {
 	utilruntime.Must(gwapiv1a2.AddToScheme(scheme))
 
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
+
 	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }

@@ -239,6 +239,19 @@ private static final long serialVersionUID = 0L;
                 input.readMessage(org.wso2.apk.enforcer.discovery.api.SecurityInfo.parser(), extensionRegistry));
             break;
           }
+          case 250: {
+            org.wso2.apk.enforcer.discovery.api.AIProvider.Builder subBuilder = null;
+            if (aiprovider_ != null) {
+              subBuilder = aiprovider_.toBuilder();
+            }
+            aiprovider_ = input.readMessage(org.wso2.apk.enforcer.discovery.api.AIProvider.parser(), extensionRegistry);
+            if (subBuilder != null) {
+              subBuilder.mergeFrom(aiprovider_);
+              aiprovider_ = subBuilder.buildPartial();
+            }
+
+            break;
+          }
           default: {
             if (!parseUnknownField(
                 input, unknownFields, extensionRegistry, tag)) {
@@ -1068,6 +1081,32 @@ private static final long serialVersionUID = 0L;
     return endpointSecurity_.get(index);
   }
 
+  public static final int AIPROVIDER_FIELD_NUMBER = 31;
+  private org.wso2.apk.enforcer.discovery.api.AIProvider aiprovider_;
+  /**
+   * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+   * @return Whether the aiprovider field is set.
+   */
+  @java.lang.Override
+  public boolean hasAiprovider() {
+    return aiprovider_ != null;
+  }
+  /**
+   * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+   * @return The aiprovider.
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.AIProvider getAiprovider() {
+    return aiprovider_ == null ? org.wso2.apk.enforcer.discovery.api.AIProvider.getDefaultInstance() : aiprovider_;
+  }
+  /**
+   * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+   */
+  @java.lang.Override
+  public org.wso2.apk.enforcer.discovery.api.AIProviderOrBuilder getAiproviderOrBuilder() {
+    return getAiprovider();
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -1156,6 +1195,9 @@ private static final long serialVersionUID = 0L;
     }
     for (int i = 0; i < endpointSecurity_.size(); i++) {
       output.writeMessage(30, endpointSecurity_.get(i));
+    }
+    if (aiprovider_ != null) {
+      output.writeMessage(31, getAiprovider());
     }
     unknownFields.writeTo(output);
   }
@@ -1254,6 +1296,10 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(30, endpointSecurity_.get(i));
     }
+    if (aiprovider_ != null) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(31, getAiprovider());
+    }
     size += unknownFields.getSerializedSize();
     memoizedSize = size;
     return size;
@@ -1325,6 +1371,11 @@ private static final long serialVersionUID = 0L;
     }
     if (!getEndpointSecurityList()
         .equals(other.getEndpointSecurityList())) return false;
+    if (hasAiprovider() != other.hasAiprovider()) return false;
+    if (hasAiprovider()) {
+      if (!getAiprovider()
+          .equals(other.getAiprovider())) return false;
+    }
     if (!unknownFields.equals(other.unknownFields)) return false;
     return true;
   }
@@ -1403,6 +1454,10 @@ private static final long serialVersionUID = 0L;
     if (getEndpointSecurityCount() > 0) {
       hash = (37 * hash) + ENDPOINTSECURITY_FIELD_NUMBER;
       hash = (53 * hash) + getEndpointSecurityList().hashCode();
+    }
+    if (hasAiprovider()) {
+      hash = (37 * hash) + AIPROVIDER_FIELD_NUMBER;
+      hash = (53 * hash) + getAiprovider().hashCode();
     }
     hash = (29 * hash) + unknownFields.hashCode();
     memoizedHashCode = hash;
@@ -1619,6 +1674,12 @@ private static final long serialVersionUID = 0L;
       } else {
         endpointSecurityBuilder_.clear();
       }
+      if (aiproviderBuilder_ == null) {
+        aiprovider_ = null;
+      } else {
+        aiprovider_ = null;
+        aiproviderBuilder_ = null;
+      }
       return this;
     }
 
@@ -1710,6 +1771,11 @@ private static final long serialVersionUID = 0L;
         result.endpointSecurity_ = endpointSecurity_;
       } else {
         result.endpointSecurity_ = endpointSecurityBuilder_.build();
+      }
+      if (aiproviderBuilder_ == null) {
+        result.aiprovider_ = aiprovider_;
+      } else {
+        result.aiprovider_ = aiproviderBuilder_.build();
       }
       onBuilt();
       return result;
@@ -1937,6 +2003,9 @@ private static final long serialVersionUID = 0L;
             endpointSecurityBuilder_.addAllMessages(other.endpointSecurity_);
           }
         }
+      }
+      if (other.hasAiprovider()) {
+        mergeAiprovider(other.getAiprovider());
       }
       this.mergeUnknownFields(other.unknownFields);
       onChanged();
@@ -4440,6 +4509,125 @@ private static final long serialVersionUID = 0L;
         endpointSecurity_ = null;
       }
       return endpointSecurityBuilder_;
+    }
+
+    private org.wso2.apk.enforcer.discovery.api.AIProvider aiprovider_;
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.AIProvider, org.wso2.apk.enforcer.discovery.api.AIProvider.Builder, org.wso2.apk.enforcer.discovery.api.AIProviderOrBuilder> aiproviderBuilder_;
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     * @return Whether the aiprovider field is set.
+     */
+    public boolean hasAiprovider() {
+      return aiproviderBuilder_ != null || aiprovider_ != null;
+    }
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     * @return The aiprovider.
+     */
+    public org.wso2.apk.enforcer.discovery.api.AIProvider getAiprovider() {
+      if (aiproviderBuilder_ == null) {
+        return aiprovider_ == null ? org.wso2.apk.enforcer.discovery.api.AIProvider.getDefaultInstance() : aiprovider_;
+      } else {
+        return aiproviderBuilder_.getMessage();
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     */
+    public Builder setAiprovider(org.wso2.apk.enforcer.discovery.api.AIProvider value) {
+      if (aiproviderBuilder_ == null) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        aiprovider_ = value;
+        onChanged();
+      } else {
+        aiproviderBuilder_.setMessage(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     */
+    public Builder setAiprovider(
+        org.wso2.apk.enforcer.discovery.api.AIProvider.Builder builderForValue) {
+      if (aiproviderBuilder_ == null) {
+        aiprovider_ = builderForValue.build();
+        onChanged();
+      } else {
+        aiproviderBuilder_.setMessage(builderForValue.build());
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     */
+    public Builder mergeAiprovider(org.wso2.apk.enforcer.discovery.api.AIProvider value) {
+      if (aiproviderBuilder_ == null) {
+        if (aiprovider_ != null) {
+          aiprovider_ =
+            org.wso2.apk.enforcer.discovery.api.AIProvider.newBuilder(aiprovider_).mergeFrom(value).buildPartial();
+        } else {
+          aiprovider_ = value;
+        }
+        onChanged();
+      } else {
+        aiproviderBuilder_.mergeFrom(value);
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     */
+    public Builder clearAiprovider() {
+      if (aiproviderBuilder_ == null) {
+        aiprovider_ = null;
+        onChanged();
+      } else {
+        aiprovider_ = null;
+        aiproviderBuilder_ = null;
+      }
+
+      return this;
+    }
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.AIProvider.Builder getAiproviderBuilder() {
+      
+      onChanged();
+      return getAiproviderFieldBuilder().getBuilder();
+    }
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     */
+    public org.wso2.apk.enforcer.discovery.api.AIProviderOrBuilder getAiproviderOrBuilder() {
+      if (aiproviderBuilder_ != null) {
+        return aiproviderBuilder_.getMessageOrBuilder();
+      } else {
+        return aiprovider_ == null ?
+            org.wso2.apk.enforcer.discovery.api.AIProvider.getDefaultInstance() : aiprovider_;
+      }
+    }
+    /**
+     * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+     */
+    private com.google.protobuf.SingleFieldBuilderV3<
+        org.wso2.apk.enforcer.discovery.api.AIProvider, org.wso2.apk.enforcer.discovery.api.AIProvider.Builder, org.wso2.apk.enforcer.discovery.api.AIProviderOrBuilder> 
+        getAiproviderFieldBuilder() {
+      if (aiproviderBuilder_ == null) {
+        aiproviderBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+            org.wso2.apk.enforcer.discovery.api.AIProvider, org.wso2.apk.enforcer.discovery.api.AIProvider.Builder, org.wso2.apk.enforcer.discovery.api.AIProviderOrBuilder>(
+                getAiprovider(),
+                getParentForChildren(),
+                isClean());
+        aiprovider_ = null;
+      }
+      return aiproviderBuilder_;
     }
     @java.lang.Override
     public final Builder setUnknownFields(

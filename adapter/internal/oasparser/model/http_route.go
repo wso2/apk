@@ -33,8 +33,8 @@ import (
 type ResourceParams struct {
 	AuthSchemes               map[string]dpv1alpha2.Authentication
 	ResourceAuthSchemes       map[string]dpv1alpha2.Authentication
-	APIPolicies               map[string]dpv1alpha2.APIPolicy
-	ResourceAPIPolicies       map[string]dpv1alpha2.APIPolicy
+	APIPolicies               map[string]dpv1alpha3.APIPolicy
+	ResourceAPIPolicies       map[string]dpv1alpha3.APIPolicy
 	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
 	BackendJWTMapping         map[string]dpv1alpha1.BackendJWT
 	BackendMapping            map[string]*dpv1alpha2.ResolvedBackend
@@ -69,7 +69,7 @@ func parseBackendJWTTokenToInternal(backendJWTToken dpv1alpha1.BackendJWTSpec) *
 	return backendJWTTokenInternal
 }
 
-func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha2.APIPolicy) *CorsConfig {
+func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha3.APIPolicy) *CorsConfig {
 	globalCorsConfig := config.ReadConfigs().Enforcer.Cors
 
 	var corsConfig = CorsConfig{
@@ -111,7 +111,7 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha3.RateLimitPolicy)
 }
 
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
-func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha2.APIPolicy,
+func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha3.APIPolicy,
 	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService,
 	backendMapping map[string]*dpv1alpha2.ResolvedBackend, namespace string) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
@@ -204,8 +204,8 @@ func concatRateLimitPolicies(schemeUp *dpv1alpha3.RateLimitPolicy, schemeDown *d
 	return &finalRateLimit
 }
 
-func concatAPIPolicies(schemeUp *dpv1alpha2.APIPolicy, schemeDown *dpv1alpha2.APIPolicy) *dpv1alpha2.APIPolicy {
-	apiPolicy := dpv1alpha2.APIPolicy{}
+func concatAPIPolicies(schemeUp *dpv1alpha3.APIPolicy, schemeDown *dpv1alpha3.APIPolicy) *dpv1alpha3.APIPolicy {
+	apiPolicy := dpv1alpha3.APIPolicy{}
 	if schemeUp != nil && schemeDown != nil {
 		apiPolicy.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {

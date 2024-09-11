@@ -16,7 +16,7 @@
 // under the License.
 //
 public type Backend record {
-    string apiVersion = "dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "Backend";
     Metadata metadata;
     BackendSpec spec;
@@ -85,7 +85,7 @@ public type TLSConfig record {
 
 };
 public type BackendList record {
-    string apiVersion="dp.wso2.com/v1alpha1";
+    string apiVersion="dp.wso2.com/v1alpha2";
     string kind = "BackendList";
     Backend [] items;
     ListMeta metadata;

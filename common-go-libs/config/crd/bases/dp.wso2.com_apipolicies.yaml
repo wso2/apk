@@ -503,7 +503,7 @@ spec:
             type: object
         type: object
     served: true
-    storage: true
+    storage: false
     subresources:
       status: {}
   - name: v1alpha3
@@ -537,8 +537,6 @@ spec:
                         description: Name is the referced CR's name of AIProvider
                           resource.
                         type: string
-                    required:
-                    - name
                     type: object
                   backendJwtPolicy:
                     description: BackendJWTPolicy holds reference to backendJWT policy
@@ -642,8 +640,6 @@ spec:
                         description: Name is the referced CR's name of AIProvider
                           resource.
                         type: string
-                    required:
-                    - name
                     type: object
                   backendJwtPolicy:
                     description: BackendJWTPolicy holds reference to backendJWT policy
