@@ -167,10 +167,15 @@ public isolated function RuntimeAPICommonUtil_getAPIFromDefinition(string arg0, 
 # + arg0 - The `byte[]` value required to map with the Java method parameter.
 # + arg1 - The `string` value required to map with the Java method parameter.
 # + return - The `orgwso2apkconfigmodel:API` value returning from the Java mapping.
-public isolated function RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(byte[] arg0, string arg1) returns orgwso2apkconfigmodel:API|error {
-    handle externalObj = org_wso2_apk_config_RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(check jarrays:toHandle(arg0, "byte"), java:fromString(arg1));
-    orgwso2apkconfigmodel:API newObj = new (externalObj);
-    return newObj;
+public isolated function RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(byte[] arg0, string arg1) returns orgwso2apkconfigmodel:API|orgwso2apkconfigapi:APIManagementException|error {
+    handle|error externalObj = org_wso2_apk_config_RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(check jarrays:toHandle(arg0, "byte"), java:fromString(arg1));
+    if (externalObj is error) {
+        orgwso2apkconfigapi:APIManagementException e = error orgwso2apkconfigapi:APIManagementException(orgwso2apkconfigapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
+        return e;
+    } else {
+        orgwso2apkconfigmodel:API newObj = new (externalObj);
+        return newObj;
+    }
 }
 
 # The function that maps to the `validateOpenAPIDefinition` method of `org.wso2.apk.config.RuntimeAPICommonUtil`.
@@ -228,7 +233,7 @@ isolated function org_wso2_apk_config_RuntimeAPICommonUtil_getClass(handle recei
     paramTypes: []
 } external;
 
-isolated function org_wso2_apk_config_RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(handle arg0, handle arg1) returns handle = @java:Method {
+isolated function org_wso2_apk_config_RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(handle arg0, handle arg1) returns handle|error = @java:Method {
     name: "getGRPCAPIFromProtoDefinition",
     'class: "org.wso2.apk.config.RuntimeAPICommonUtil",
     paramTypes: ["[B", "java.lang.String"]

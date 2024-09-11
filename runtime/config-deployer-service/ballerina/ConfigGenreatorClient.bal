@@ -50,7 +50,14 @@ public class ConfigGeneratorClient {
                             record {|byte[] fileContent; string fileName; anydata...;|} definition = <record {|byte[] fileContent; string fileName; anydata...;|}>definitionBody.definition;
                             fileName = <string>definition.fileName;
                         }
-                        apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(check validateAndRetrieveDefinitionResult.getProtoContent(), fileName);
+                        do {
+                            apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(check validateAndRetrieveDefinitionResult.getProtoContent(), fileName);
+                        }
+                        on fail var e {
+                            if e is error {
+                                return e909022("Error occurred while validating the .proto definition", ());
+                            }
+                        }
                     } else {
                         apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent(), apiType);
                     }
@@ -72,17 +79,21 @@ public class ConfigGeneratorClient {
                     BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Definition", 'error: errorItems}};
                     return badRequest;
                 }
-            } else if validateAndRetrieveDefinitionResult is runtimeapi:APIManagementException {
+            }
+            else if validateAndRetrieveDefinitionResult is runtimeapi:APIManagementException {
                 return e909022("Error occured while validating the definition", validateAndRetrieveDefinitionResult.cause());
             } else {
                 return e909022("Error occured while validating the definition", ());
             }
-        } on fail var e {
-            if e is commons:APKError {
+        }
+on fail var e {
+            if e
+    is commons:APKError {
                 return e;
             }
             return e909022("Internal error occured while creating APK conf", e);
         }
+
     }
     private isolated function prepareDefinitionBodyFromRequest(http:Request request) returns DefinitionBody|error {
         DefinitionBody definitionBody = {};
@@ -102,6 +113,7 @@ public class ConfigGeneratorClient {
         }
         return definitionBody;
     }
+
     private isolated function validateAndRetrieveDefinition(string 'type, string? url, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|commons:APKError {
         runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error validationResponse;
         boolean typeAvailable = 'type.length() > 0;
@@ -122,6 +134,7 @@ public class ConfigGeneratorClient {
         }
         return validationResponse;
     }
+
     private isolated function retrieveDefinitionFromUrl(string url) returns string|error {
         string domain = getDomain(url);
         string path = getPath(url);
@@ -136,6 +149,7 @@ public class ConfigGeneratorClient {
         }
         return e909044();
     }
+
     public isolated function getGeneratedK8sResources(http:Request request, commons:Organization organization) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         GenerateK8sResourcesBody body = {};
         do {
@@ -167,6 +181,7 @@ public class ConfigGeneratorClient {
             return e909052(e);
         }
     }
+
     private isolated function zipAPIArtifact(string apiId, model:APIArtifact apiArtifact) returns [string, string]|error {
         string zipDir = check file:createTempDir(uuid:createType1AsString());
         model:API? k8sAPI = apiArtifact.api;
@@ -245,6 +260,7 @@ public class ConfigGeneratorClient {
         }
         return e909022("Error while converting json to yaml", convertedYaml);
     }
+
     private isolated function storeFile(string jsonString, string fileName, string? directroy = ()) returns error? {
         string fullPath = directroy ?: "";
         fullPath = fullPath + file:pathSeparator + fileName + ".yaml";

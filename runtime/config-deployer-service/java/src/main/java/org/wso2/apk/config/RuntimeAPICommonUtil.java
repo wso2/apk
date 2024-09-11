@@ -80,13 +80,9 @@ public class RuntimeAPICommonUtil {
         return validationResponse;
     }
 
-    public static API getGRPCAPIFromProtoDefinition(byte[] definition, String fileName) {
+    public static API getGRPCAPIFromProtoDefinition(byte[] definition, String fileName) throws APIManagementException {
         ProtoParser protoParser = new ProtoParser();
-        try {
-            return protoParser.getAPIFromProtoFile(definition, fileName);
-        } catch (APIManagementException e) {
-            throw new RuntimeException(e);
-        }
+        return protoParser.getAPIFromProtoFile(definition, fileName);
     }
 
     public static Set<URITemplate> generateUriTemplatesFromAPIDefinition(String apiType, String content)
