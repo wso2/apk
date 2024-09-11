@@ -70,6 +70,7 @@ public class RatelimitClient {
                         .setHitsAddend(hitsAddend)
                         .build();
                 RateLimitResponse rateLimitResponse = stub.shouldRateLimit(rateLimitRequest);
+                System.out.println("ratelimit response: " + rateLimitResponse.getStatuses(0).getCurrentLimit() + " " + rateLimitResponse.getStatuses(0).getLimitRemaining());
                 System.out.println(rateLimitResponse.getOverallCode());
             }
         });

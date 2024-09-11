@@ -169,6 +169,10 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 		Domain:                  RateLimiterDomain,
 		FailureModeDeny:         conf.Envoy.RateLimit.FailureModeDeny,
 		EnableXRatelimitHeaders: enableXRatelimitHeaders,
+		Timeout: &durationpb.Duration{
+			Nanos:   (int32(conf.Envoy.RateLimit.RequestTimeoutInMillis) % 1000) * 1000000,
+			Seconds: conf.Envoy.RateLimit.RequestTimeoutInMillis / 1000,
+		},
 		RateLimitService: &envoy_config_ratelimit_v3.RateLimitServiceConfig{
 			TransportApiVersion: corev3.ApiVersion_V3,
 			GrpcService: &corev3.GrpcService{
