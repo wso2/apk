@@ -1179,7 +1179,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha2.APIPolicy
+	var apiPolicy *dpv1alpha3.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
@@ -1300,7 +1300,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 			resourcePath := adapterInternalAPI.GetXWso2Basepath() + "." + *match.Method.Service + "/" + *match.Method.Method
 			endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
 			resource := &Resource{path: resourcePath, pathMatchType: "Exact",
-				methods: []*Operation{{iD: uuid.New().String(), method: "post", policies: policies,
+				methods: []*Operation{{iD: uuid.New().String(), method: "GRPC", policies: policies,
 					auth: apiAuth, rateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
 				iD: uuid.New().String(),
 			}

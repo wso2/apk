@@ -229,7 +229,6 @@ public class AnalyticsFilter {
                 analyticsSpanScope = analyticsSpan.getSpan().makeCurrent();
                 Utils.setTag(analyticsSpan, APIConstants.LOG_TRACE_ID,
                         ThreadContext.get(APIConstants.LOG_TRACE_ID));
-
             }
             if (publisher == null) {
                 logger.error("Cannot publish the failure event as analytics publisher is null.",

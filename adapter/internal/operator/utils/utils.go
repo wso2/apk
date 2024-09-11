@@ -628,7 +628,7 @@ func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
 
 // GetAIProvider reads AIProvider when aiProviderReference is given
 func GetAIProvider(ctx context.Context, client k8client.Client, namespace string,
-	aiProviderReference string, api *dpv1alpha2.API) *dpv1alpha3.AIProvider {
+	aiProviderReference string, api *dpv1beta1.API) *dpv1alpha3.AIProvider {
 	aiProvider := &dpv1alpha3.AIProvider{}
 	aiProviderRef := types.NamespacedName{
 		Namespace: namespace,
