@@ -99,6 +99,7 @@ public class SubscriptionDataStoreImpl implements SubscriptionDataStore {
             newSubscription.setOrganization(subscription.getOrganization());
             newSubscription.setSubscribedApi(subscribedAPI);
             newSubscriptionMap.put(newSubscription.getCacheKey(), newSubscription);
+            newSubscription.setRatelimitTier(subscription.getRatelimitTier());
         }
 
         if (log.isDebugEnabled()) {

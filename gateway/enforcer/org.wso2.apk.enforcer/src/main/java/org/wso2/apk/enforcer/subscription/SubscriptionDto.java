@@ -12,6 +12,7 @@ public class SubscriptionDto implements Serializable {
     private String organization;
     private String subStatus;
     private SubscribedAPIDto subscribedApi;
+    private String ratelimitTier;
 
     public String getUuid() {
 
@@ -51,5 +52,15 @@ public class SubscriptionDto implements Serializable {
     public void setSubscribedApi(SubscribedAPIDto subscribedApi) {
 
         this.subscribedApi = subscribedApi;
+    }
+
+    public String getRatelimitTier() {
+
+        return ratelimitTier;
+    }
+
+    public void setRatelimitTier(String ratelimitTier) {
+
+        this.ratelimitTier = ratelimitTier;
     }
 }
