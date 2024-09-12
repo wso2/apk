@@ -392,7 +392,7 @@ spec:
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
-    name: v1beta1
+    name: v1alpha3
     schema:
       openAPIV3Schema:
         description: API is the Schema for the apis API

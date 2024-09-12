@@ -47,7 +47,6 @@ import (
 	xds "github.com/wso2/apk/common-controller/internal/xds"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"github.com/wso2/apk/common-go-libs/constants"
 )
 
@@ -88,7 +87,7 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 	conf := config.ReadConfigs()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1beta1.API{}),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.API{}),
 		handler.EnqueueRequestsFromMapFunc(ratelimitReconciler.getRatelimitForAPI), predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER,
 			"Error watching API resources: %v", err))
@@ -190,7 +189,7 @@ func (ratelimitReconciler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 }
 
 func (ratelimitReconciler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	api, ok := obj.(*dpv1beta1.API)
+	api, ok := obj.(*dpv1alpha3.API)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
 			"Unexpected object type, bypassing reconciliation: %v", api))
@@ -275,7 +274,7 @@ func (ratelimitReconciler *RateLimitPolicyReconciler) marshelRateLimit(ctx conte
 	ratelimitPolicy dpv1alpha3.RateLimitPolicy) ([]dpv1alpha1.ResolveRateLimitAPIPolicy, error) {
 
 	policyList := []dpv1alpha1.ResolveRateLimitAPIPolicy{}
-	var api dpv1beta1.API
+	var api dpv1alpha3.API
 
 	if err := ratelimitReconciler.client.Get(ctx, types.NamespacedName{
 		Namespace: ratelimitKey.Namespace,

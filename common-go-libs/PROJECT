@@ -195,9 +195,10 @@ resources:
   domain: wso2.com
   group: dp
   kind: API
-  path: github.com/wso2/apk/common-go-libs/apis/dp/v1beta1
-  version: v1beta1
+  path: github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3
+  version: v1alpha3
   webhooks:
+    conversion: true
     defaulting: true
     validation: true
     webhookVersion: v1

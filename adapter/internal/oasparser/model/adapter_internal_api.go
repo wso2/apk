@@ -34,7 +34,6 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -74,7 +73,7 @@ type AdapterInternalAPI struct {
 	apiDefinitionFile        []byte
 	apiDefinitionEndpoint    string
 	subscriptionValidation   bool
-	APIProperties            []dpv1beta1.Property
+	APIProperties            []dpv1alpha3.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
 	IsSystemAPI      bool
@@ -1323,10 +1322,18 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		adapterInternalAPI.disableAuthentications = *authScheme.Spec.Override.Disabled
 	}
 	authSpec := utils.SelectPolicy(&authScheme.Spec.Override, &authScheme.Spec.Default, nil, nil)
-	if authSpec != nil && authSpec.AuthTypes != nil && authSpec.AuthTypes.Oauth2.Required != "" {
-		adapterInternalAPI.SetXWSO2ApplicationSecurity(authSpec.AuthTypes.Oauth2.Required == "mandatory")
+	if authSpec != nil && authSpec.AuthTypes != nil {
+		if authSpec.AuthTypes.OAuth2.Required != "" {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, authSpec.AuthTypes.OAuth2.Required == "mandatory")
+		} else {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
+		}
+
+		if authSpec.AuthTypes.APIKey != nil {
+			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
+		}
 	} else {
-		adapterInternalAPI.SetXWSO2ApplicationSecurity(true)
+		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
 	}
 	adapterInternalAPI.disableScopes = disableScopes
 	// Check whether the API has a backend JWT token

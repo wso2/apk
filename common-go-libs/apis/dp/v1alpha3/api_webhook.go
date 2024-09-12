@@ -15,7 +15,7 @@
  *
  */
 
-package v1beta1
+package v1alpha3
 
 import (
 	"bytes"
@@ -62,7 +62,7 @@ func (r *API) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1beta1-api,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1beta1,name=mapi.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-dp-wso2-com-v1alpha3-api,mutating=true,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha3,name=mapi.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &API{}
 
@@ -74,7 +74,7 @@ func (r *API) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1beta1-api,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1beta1,name=vapi.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-dp-wso2-com-v1alpha3-api,mutating=false,failurePolicy=fail,sideEffects=None,groups=dp.wso2.com,resources=apis,verbs=create;update,versions=v1alpha3,name=vapi.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &API{}
 

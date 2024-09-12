@@ -19,7 +19,7 @@ package envoyconf
 
 import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 )
 
 // routeCreateParams is the DTO used to provide information to the envoy route create function
@@ -41,7 +41,7 @@ type routeCreateParams struct {
 	isDefaultVersion             bool
 	createDefaultPath            bool
 	apiLevelRateLimitPolicy      *model.RateLimitPolicy
-	apiProperties                []v1beta1.Property
+	apiProperties                []v1alpha3.Property
 	environment                  string
 	envType                      string
 	mirrorClusterNames           map[string][]string

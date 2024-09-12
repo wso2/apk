@@ -54,7 +54,7 @@ public class GRPCAPI implements API {
         List<ResourceConfig> resources = new ArrayList<>();
 
         String mutualSSL = api.getMutualSSL();
-        boolean applicationSecurity = api.getApplicationSecurity();
+        Map<String, Boolean> applicationSecurity = api.getApplicationSecurityMap();
 
         EndpointCluster endpoints = Utils.processEndpoints(api.getEndpoints());
         EndpointSecurity[] endpointSecurity = APIProcessUtils.convertProtoEndpointSecurity(

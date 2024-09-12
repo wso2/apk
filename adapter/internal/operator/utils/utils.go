@@ -36,7 +36,6 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	dpv1beta1 "github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -350,7 +349,7 @@ func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*dp
 // ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
 func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 	backendMapping map[string]*dpv1alpha2.ResolvedBackend,
-	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string, api *dpv1beta1.API) {
+	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string, api *dpv1alpha3.API) {
 	backendName := types.NamespacedName{
 		Name:      backendRef.Name,
 		Namespace: interceptorServiceNamespace,
@@ -362,7 +361,7 @@ func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
 }
 
 // ResolveRef this function will return k8client object and update owner
-func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1beta1.API,
+func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha3.API,
 	namespacedName types.NamespacedName, isReplace bool, obj k8client.Object, opts ...k8client.GetOption) error {
 	err := client.Get(ctx, namespacedName, obj, opts...)
 	return err
@@ -370,7 +369,7 @@ func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1beta1.API,
 
 // GetResolvedBackend resolves backend TLS configurations.
 func GetResolvedBackend(ctx context.Context, client k8client.Client,
-	backendNamespacedName types.NamespacedName, api *dpv1beta1.API) *dpv1alpha2.ResolvedBackend {
+	backendNamespacedName types.NamespacedName, api *dpv1alpha3.API) *dpv1alpha2.ResolvedBackend {
 	resolvedBackend := dpv1alpha2.ResolvedBackend{}
 	resolvedTLSConfig := dpv1alpha2.ResolvedTLSConfig{}
 	var backend dpv1alpha2.Backend
@@ -596,7 +595,7 @@ func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
 
 // GetInterceptorService reads InterceptorService when interceptorReference is given
 func GetInterceptorService(ctx context.Context, client k8client.Client, namespace string,
-	interceptorReference *dpv1alpha3.InterceptorReference, api *dpv1beta1.API) *dpv1alpha1.InterceptorService {
+	interceptorReference *dpv1alpha3.InterceptorReference, api *dpv1alpha3.API) *dpv1alpha1.InterceptorService {
 	interceptorService := &dpv1alpha1.InterceptorService{}
 	interceptorRef := types.NamespacedName{
 		Namespace: namespace,
@@ -612,7 +611,7 @@ func GetInterceptorService(ctx context.Context, client k8client.Client, namespac
 
 // GetBackendJWT reads BackendJWT when backendJWTReference is given
 func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
-	backendJWTReference string, api *dpv1beta1.API) *dpv1alpha1.BackendJWT {
+	backendJWTReference string, api *dpv1alpha3.API) *dpv1alpha1.BackendJWT {
 	backendJWT := &dpv1alpha1.BackendJWT{}
 	backendJWTRef := types.NamespacedName{
 		Namespace: namespace,
@@ -628,7 +627,7 @@ func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
 
 // GetAIProvider reads AIProvider when aiProviderReference is given
 func GetAIProvider(ctx context.Context, client k8client.Client, namespace string,
-	aiProviderReference string, api *dpv1beta1.API) *dpv1alpha3.AIProvider {
+	aiProviderReference string, api *dpv1alpha3.API) *dpv1alpha3.AIProvider {
 	aiProvider := &dpv1alpha3.AIProvider{}
 	aiProviderRef := types.NamespacedName{
 		Namespace: namespace,
@@ -645,21 +644,21 @@ func GetAIProvider(ctx context.Context, client k8client.Client, namespace string
 }
 
 // RetrieveAPIList retrieves API list from the given kubernetes client
-func RetrieveAPIList(k8sclient k8client.Client) ([]dpv1beta1.API, error) {
+func RetrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha3.API, error) {
 	ctx := context.Background()
 	conf := config.ReadConfigs()
 	namespaces := conf.Adapter.Operator.Namespaces
-	var apis []dpv1beta1.API
+	var apis []dpv1alpha3.API
 	if namespaces == nil {
-		apiList := &dpv1beta1.APIList{}
+		apiList := &dpv1alpha3.APIList{}
 		if err := k8sclient.List(ctx, apiList, &k8client.ListOptions{}); err != nil {
 			return nil, err
 		}
-		apis = make([]dpv1beta1.API, len(apiList.Items))
+		apis = make([]dpv1alpha3.API, len(apiList.Items))
 		copy(apis[:], apiList.Items[:])
 	} else {
 		for _, namespace := range namespaces {
-			apiList := &dpv1beta1.APIList{}
+			apiList := &dpv1alpha3.APIList{}
 			if err := k8sclient.List(ctx, apiList, &k8client.ListOptions{Namespace: namespace}); err != nil {
 				return nil, err
 			}

@@ -26,7 +26,6 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	"sigs.k8s.io/gateway-api/apis/v1"
 	apisv1alpha2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
@@ -36,7 +35,7 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 	*out = *in
 	if in.APIDefinition != nil {
 		in, out := &in.APIDefinition, &out.APIDefinition
-		*out = new(v1beta1.API)
+		*out = new(v1alpha3.API)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.ProdHTTPRoute != nil {
@@ -110,6 +109,11 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}
+	}
+	if in.AIProvider != nil {
+		in, out := &in.AIProvider, &out.AIProvider
+		*out = new(v1alpha3.AIProvider)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.InterceptorServiceMapping != nil {
 		in, out := &in.InterceptorServiceMapping, &out.InterceptorServiceMapping

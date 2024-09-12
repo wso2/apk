@@ -30,6 +30,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-dp-wso2-com-v1alpha3-api
+  failurePolicy: Fail
+  name: mapi.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha3
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apis
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-dp-wso2-com-v1alpha2-apipolicy
   failurePolicy: Fail
   name: mapipolicy.kb.io
@@ -224,6 +244,26 @@ webhooks:
     - dp.wso2.com
     apiVersions:
     - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apis
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-dp-wso2-com-v1alpha3-api
+  failurePolicy: Fail
+  name: vapi.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha3
     operations:
     - CREATE
     - UPDATE

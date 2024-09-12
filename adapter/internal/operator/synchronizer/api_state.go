@@ -21,7 +21,6 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1beta1"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
@@ -30,7 +29,7 @@ import (
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type APIState struct {
-	APIDefinition             *v1beta1.API
+	APIDefinition             *v1alpha3.API
 	ProdHTTPRoute             *HTTPRouteState
 	SandHTTPRoute             *HTTPRouteState
 	ProdGQLRoute              *GQLRouteState
