@@ -182,7 +182,8 @@ func (in *GQLRouteState) DeepCopyInto(out *GQLRouteState) {
 			if val == nil {
 				(*out)[key] = nil
 			} else {
-				in, out := &val, &outVal
+				inVal := (*in)[key]
+				in, out := &inVal, &outVal
 				*out = new(v1alpha2.ResolvedBackend)
 				(*in).DeepCopyInto(*out)
 			}
@@ -335,7 +336,8 @@ func (in *GatewayStateData) DeepCopyInto(out *GatewayStateData) {
 			if val == nil {
 				(*out)[key] = nil
 			} else {
-				in, out := &val, &outVal
+				inVal := (*in)[key]
+				in, out := &inVal, &outVal
 				*out = new(v1alpha2.ResolvedBackend)
 				(*in).DeepCopyInto(*out)
 			}
@@ -408,7 +410,8 @@ func (in *HTTPRouteState) DeepCopyInto(out *HTTPRouteState) {
 			if val == nil {
 				(*out)[key] = nil
 			} else {
-				in, out := &val, &outVal
+				inVal := (*in)[key]
+				in, out := &inVal, &outVal
 				*out = new(v1alpha2.ResolvedBackend)
 				(*in).DeepCopyInto(*out)
 			}
