@@ -37,6 +37,7 @@ import org.wso2.apk.enforcer.commons.exception.APISecurityException;
 import org.wso2.apk.enforcer.commons.jwtgenerator.AbstractAPIMgtGatewayJWTGenerator;
 import org.wso2.apk.enforcer.commons.logging.ErrorDetails;
 import org.wso2.apk.enforcer.commons.logging.LoggingConstants;
+import org.wso2.apk.enforcer.commons.model.APIConfig;
 import org.wso2.apk.enforcer.commons.model.APIKeyAuthenticationConfig;
 import org.wso2.apk.enforcer.commons.model.AuthenticationContext;
 import org.wso2.apk.enforcer.commons.model.RequestContext;
@@ -48,7 +49,12 @@ import org.wso2.apk.enforcer.constants.APISecurityConstants;
 import org.wso2.apk.enforcer.constants.GeneralErrorCodeConstants;
 import org.wso2.apk.enforcer.dto.APIKeyValidationInfoDTO;
 import org.wso2.apk.enforcer.dto.JWTTokenPayloadInfo;
+import org.wso2.apk.enforcer.models.Application;
+import org.wso2.apk.enforcer.models.ApplicationMapping;
+import org.wso2.apk.enforcer.models.Subscription;
 import org.wso2.apk.enforcer.security.KeyValidator;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataHolder;
+import org.wso2.apk.enforcer.subscription.SubscriptionDataStore;
 import org.wso2.apk.enforcer.util.BackendJwtUtils;
 import org.wso2.apk.enforcer.util.FilterUtils;
 import org.wso2.apk.enforcer.util.JWTUtils;
@@ -59,6 +65,9 @@ import java.net.UnknownHostException;
 import java.security.cert.Certificate;
 import java.text.ParseException;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Extends the APIKeyHandler to authenticate request using API Key.
@@ -213,8 +222,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                         .getMandateSubscriptionValidation();
                 if (!requestContext.getMatchedAPI().isSystemAPI() && (isGatewayLevelSubscriptionValidationEnabled || requestContext.getMatchedAPI()
                         .isSubscriptionValidation())) {
-//                    validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext,
-//                                requestContext.getMatchedAPI(), payload);
+                    validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext,
+                                requestContext.getMatchedAPI(), payload);
                     log.debug("Validating subscription for API Key using JWT claims against invoked API info."
                             + " context: {} version: {}", apiContext, apiVersion);
                     validationInfoDto = getAPIKeyValidationDTO(requestContext, payload);
@@ -283,6 +292,32 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                             jwtInfoDto, isGatewayTokenCacheEnabled, organization);
                     // Set generated jwt token as a response header
                     requestContext.addOrModifyHeaders(jwtConfigurationDto.getJwtHeader(), endUserToken);
+                }
+                SubscriptionDataStore datastore = SubscriptionDataHolder.getInstance().
+                        getSubscriptionDataStore(organization);
+                Application app = getApplication(requestContext.getMatchedAPI(), payload);
+                Set<ApplicationMapping> appMappings = datastore.getMatchingApplicationMappings(app.getUUID());
+                for (ApplicationMapping appMapping : appMappings) {
+                    String subscriptionUUID = appMapping.getSubscriptionUUID();
+                    Subscription subscription = datastore.getMatchingSubscription(subscriptionUUID);
+                    if (requestContext.getMatchedAPI().getName().equals(subscription.getSubscribedApi().getName())) {
+                        // Validate API version
+                        Pattern pattern = subscription.getSubscribedApi().getVersionRegexPattern();
+                        String versionToMatch = requestContext.getMatchedAPI().getVersion();
+                        Matcher matcher = pattern.matcher(versionToMatch);
+                        if (matcher.matches()) {
+                            if (!"Unlimited".equals(subscription.getRatelimitTier())) {
+                                String subscriptionId = subscription.getSubscribedApi().getName() + ":" +
+                                        app.getUUID();
+                                requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
+                                requestContext.addMetadataToMap("ratelimit:usage-policy", subscription.getRatelimitTier());
+                                requestContext.addMetadataToMap("ratelimit:organization", subscription.getOrganization());
+                                System.out.println("Value: "+ String.format("%s-%s", subscription.getOrganization(), subscription.getRatelimitTier()));
+                                requestContext.addMetadataToMap("ratelimit:organization-and-rlpolicy", String.format("%s-%s", subscription.getOrganization(), subscription.getRatelimitTier()));
+                            }
+                            break;
+                        }
+                    }
                 }
 
                 // Create authentication context
@@ -500,5 +535,24 @@ public class APIKeyAuthenticator extends APIKeyHandler {
     public int getPriority() {
 
         return 30;
+    }
+
+    public static Application getApplication(APIConfig api, JWTClaimsSet payload) {
+        Application app = null;
+
+        SubscriptionDataStore datastore =
+                SubscriptionDataHolder.getInstance().getSubscriptionDataStore(api.getOrganizationId());
+        if (datastore != null) {
+            JSONObject appObject = (JSONObject) payload.getClaim(APIConstants.JwtTokenConstants.APPLICATION);
+            String appUuid = appObject.getAsString("uuid");
+            if (!appObject.isEmpty() && !appUuid.isEmpty()) {
+                app = datastore.getApplicationById(appUuid);
+            } else {
+                log.info("Application claim not found in jwt for uuid");
+            }
+        } else {
+            log.error("Subscription data store is null");
+        }
+        return app;
     }
 }

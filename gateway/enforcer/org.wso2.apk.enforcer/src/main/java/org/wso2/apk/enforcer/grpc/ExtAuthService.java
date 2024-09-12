@@ -52,9 +52,15 @@ import org.wso2.apk.enforcer.tracing.TracingSpan;
 import org.wso2.apk.enforcer.tracing.TracingTracer;
 import org.wso2.apk.enforcer.tracing.Utils;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.InflaterInputStream;
 
 /**
  * This is the gRPC server written to match with the envoy ext-authz filter proto file. Envoy proxy call this service.
@@ -303,4 +309,6 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
                 .setDeniedResponse(deniedResponsePreparer.build())
                 .build();
     }
+
+
 }

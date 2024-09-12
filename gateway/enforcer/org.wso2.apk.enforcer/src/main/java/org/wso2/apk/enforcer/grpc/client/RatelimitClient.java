@@ -19,10 +19,7 @@ import javax.net.ssl.SSLException;
 
 public class RatelimitClient {
     RateLimitServiceGrpc.RateLimitServiceBlockingStub stub;
-    private final ExecutorService executorService; // Add an ExecutorService field
-
-    public RatelimitClient(){//String server, int port) {
-        System.out.println("Ratelimitclient construct");
+    public RatelimitClient(){
         File certFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPublicKeyPath()).toFile();
         File keyFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPrivateKeyPath()).toFile();
         SslContext sslContext = null;
@@ -37,45 +34,33 @@ public class RatelimitClient {
         }
         String rlHost = ConfigHolder.getInstance().getEnvVarConfig().getRatelimiterHost();
         int port = ConfigHolder.getInstance().getEnvVarConfig().getRatelimiterPort();
-        System.out.println("rl host and port "+ rlHost + port);
         ManagedChannel channel = NettyChannelBuilder.forAddress(rlHost, port)
                 .useTransportSecurity()
                 .sslContext(sslContext)
                 .build();
         this.stub = RateLimitServiceGrpc.newBlockingStub(channel);
-        // Initialize the ExecutorService
-        this.executorService = Executors.newFixedThreadPool(10);
     }
 
     public void shouldRatelimit(List<KeyValueHitsAddend> configs) {
-//        System.out.println("RL task submitted");
-        executorService.submit(() -> {
-            System.out.println("Ratelimitclient test");
-            for (KeyValueHitsAddend config : configs) {
-
-                System.out.println("For: " + config.getKey());
-                RateLimitDescriptor.Builder builder = RateLimitDescriptor.newBuilder()
-                        .addEntries(RateLimitDescriptor.Entry.newBuilder().setKey(config.getKey()).setValue(config.getValue()).build());
-                KeyValueHitsAddend internalKeyValueHitsAddend = config.keyValueHitsAddend;
-                int hitsAddend = config.getHitsAddend();
-                while (internalKeyValueHitsAddend != null) {
-                    builder.addEntries(RateLimitDescriptor.Entry.newBuilder().setKey(internalKeyValueHitsAddend.getKey()).setValue(internalKeyValueHitsAddend.getValue()).build());
-                    hitsAddend = internalKeyValueHitsAddend.getHitsAddend();
-                    internalKeyValueHitsAddend = internalKeyValueHitsAddend.keyValueHitsAddend;
-                }
-                RateLimitDescriptor descriptor = builder.build();
-                RateLimitRequest rateLimitRequest = RateLimitRequest.newBuilder()
-                        .addDescriptors(descriptor)
-                        .setDomain("Default")
-                        .setHitsAddend(hitsAddend)
-                        .build();
-                RateLimitResponse rateLimitResponse = stub.shouldRateLimit(rateLimitRequest);
-                System.out.println("ratelimit response: " + rateLimitResponse.getStatuses(0).getCurrentLimit() + " " + rateLimitResponse.getStatuses(0).getLimitRemaining());
-                System.out.println(rateLimitResponse.getOverallCode());
+        for (KeyValueHitsAddend config : configs) {
+            RateLimitDescriptor.Builder builder = RateLimitDescriptor.newBuilder()
+                    .addEntries(RateLimitDescriptor.Entry.newBuilder().setKey(config.getKey()).setValue(config.getValue()).build());
+            KeyValueHitsAddend internalKeyValueHitsAddend = config.keyValueHitsAddend;
+            int hitsAddend = config.getHitsAddend();
+            while (internalKeyValueHitsAddend != null) {
+                builder.addEntries(RateLimitDescriptor.Entry.newBuilder().setKey(internalKeyValueHitsAddend.getKey()).setValue(internalKeyValueHitsAddend.getValue()).build());
+                hitsAddend = internalKeyValueHitsAddend.getHitsAddend();
+                internalKeyValueHitsAddend = internalKeyValueHitsAddend.keyValueHitsAddend;
             }
-        });
-        System.out.println("RL task submitted");
-
+            RateLimitDescriptor descriptor = builder.build();
+            RateLimitRequest rateLimitRequest = RateLimitRequest.newBuilder()
+                    .addDescriptors(descriptor)
+                    .setDomain("Default")
+                    .setHitsAddend(hitsAddend)
+                    .build();
+            RateLimitResponse rateLimitResponse = stub.shouldRateLimit(rateLimitRequest);
+            System.out.println(rateLimitResponse.getOverallCode());
+        }
     }
 
     public static class KeyValueHitsAddend {

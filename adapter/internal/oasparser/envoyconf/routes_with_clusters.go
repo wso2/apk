@@ -1095,10 +1095,16 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableSubscriptionBasedAIRatelimit() && params.isAiAPI, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
 				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableSubscriptionBasedAIRatelimit() && params.isAiAPI, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
 
+				requestHeadersToRemove := make([]string,0)
+				if params.isAiAPI {
+					requestHeadersToRemove = append(requestHeadersToRemove, "Accept-Encoding", "accept-encoding")
+				} else {
+					requestHeadersToRemove = nil
+				}
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
 				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
-					nil, nil, nil, nil)
+					nil, requestHeadersToRemove, nil, nil)
 
 				// Create route2 for new method.
 				// Add all policies to route config. Do not send via enforcer.
@@ -1108,6 +1114,9 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
+				if params.isAiAPI {
+					requestHeadersToRemove = append(requestHeadersToRemove, "Accept-Encoding", "accept-encoding")
+				}
 				route2 := generateRouteConfig(xWso2Basepath, match2, action2, requestRedirectAction, metaData, decorator, configToSkipEnforcer,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
 
@@ -1128,6 +1137,9 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				} else if requestRedirectAction == nil {
 					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
+				if params.isAiAPI {
+					requestHeadersToRemove = append(requestHeadersToRemove, "Accept-Encoding", "accept-encoding")
+				}
 				route := generateRouteConfig(xWso2Basepath, match, action, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
 				routes = append(routes, route)
@@ -1145,9 +1157,14 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableSubscriptionBasedAIRatelimit(), resource.GetEnableBackendBasedAIRatelimit(), resource.GetBackendBasedAIRatelimitDescriptorValue())
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
-
+		requestHeadersToRemove := make([]string,0)
+		if params.isAiAPI {
+			requestHeadersToRemove = append(requestHeadersToRemove, "Accept-Encoding", "accept-encoding")
+		} else {
+			requestHeadersToRemove = nil
+		}
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, metaData, decorator, perRouteFilterConfigs,
-			nil, nil, nil, nil) // general headers to add and remove are included in this methods
+			nil, requestHeadersToRemove, nil, nil) // general headers to add and remove are included in this methods
 		routes = append(routes, route)
 	}
 	return routes, nil
