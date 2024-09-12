@@ -14,8 +14,7 @@
           initialStreamWindowSize: 65536
           maxConcurrentStreams: 100
         httpFilters:
-        - disabled: true
-          name: envoy.filters.http.ext_authz_httproute/default/httproute-1/rule/0/match/0/www_example_com
+        - name: envoy.filters.http.ext_authz_
           typedConfig:
             '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
             httpService:
@@ -29,20 +28,6 @@
                 cluster: securitypolicy/default/policy-for-first-route/http-backend
                 timeout: 10s
                 uri: http://http-backend.envoy-gateway:80/auth
-            transportApiVersion: V3
-        - disabled: true
-          name: envoy.filters.http.ext_authz_httproute/default/httproute-2/rule/0/match/0/www_example_com
-          typedConfig:
-            '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
-            allowedHeaders:
-              patterns:
-              - exact: header1
-              - exact: header2
-            grpcService:
-              envoyGrpc:
-                authority: grpc-backend.default:9000
-                clusterName: securitypolicy/default/policy-for-second-route/grpc-backend
-              timeout: 10s
             transportApiVersion: V3
         - name: envoy.filters.http.router
           typedConfig:
