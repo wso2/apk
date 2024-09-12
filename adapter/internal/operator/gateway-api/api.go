@@ -89,7 +89,7 @@ func buildExtAuth() *ir.ExtAuth {
 	}
 	flag := true
 	extAuth := &ir.ExtAuth{
-		Name:                ExtAuthName,
+		Name:                "",
 		GRPC:                &grpcExtAuthService,
 		UseBootstrapCluster: &flag,
 	}
