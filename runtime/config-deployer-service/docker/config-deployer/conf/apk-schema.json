@@ -35,6 +35,10 @@
       ],
       "description": "The type of the API. Can be one of: REST, GraphQL, GRPC."
     },
+    "aiProvider": {
+      "$ref": "#/schemas/AIProvider",
+      "description": "The AI provider for the API."
+    },
     "definitionPath": {
       "type": "string",
       "description": "Endpoint to expose API Definition"
@@ -469,6 +473,25 @@
       },
       "additionalProperties": false
     },
+    "AIProvider": {
+      "title": "AI Provider",
+      "type": "object",
+      "required": [
+        "name",
+        "apiVersion"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the AI provider."
+        },
+        "apiVersion": {
+          "type": "string",
+          "description": "The version of the AI provider."
+        }
+      },
+      "additionalProperties": false
+    },
     "EndpointConfigurations": {
       "title": "Endpoint Configurations",
       "properties": {
@@ -539,6 +562,9 @@
           "oneOf": [
             {
               "$ref": "#/schemas/BasicEndpointSecurity"
+            },
+            {
+              "$ref": "#/schemas/APIKeyEndpointSecurity"
             }
           ],
           "description": "The type of security to be applied to the API endpoint."
@@ -560,6 +586,32 @@
         "passwordKey": {
           "type": "string",
           "description": "The key within the secret that holds the password for basic authentication."
+        }
+      },
+      "additionalProperties": false
+    },
+    "APIKeyEndpointSecurity": {
+      "type": "object",
+      "properties": {
+        "secretName": {
+          "type": "string",
+          "description": "The name of the secret containing the certificate."
+        },
+        "in": {
+          "type": "string",
+          "enum": [
+            "Header",
+            "Query"
+          ],
+          "description": "The location of the API key in the request."
+        },
+        "apiKeyNameKey": {
+          "type": "string",
+          "description": "The name of key in the request."
+        },
+        "apiKeyValueKey": {
+          "type": "string",
+          "description": "The value of key in the request."
         }
       },
       "additionalProperties": false

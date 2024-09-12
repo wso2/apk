@@ -44,6 +44,18 @@ public type BasicSecurityConfig record {
 
 public type SecurityConfig record {
     BasicSecurityConfig basic?;
+    APIKeySecurityConfig apiKey?;
+};
+
+public type APIKeySecurityConfig record {
+    string name;
+    string 'in;
+    ValueFrom valueFrom;
+};
+
+public type ValueFrom record {
+    string name;
+    string valueKey;
 };
 
 public type SecretRefConfig record {
@@ -51,7 +63,6 @@ public type SecretRefConfig record {
    string usernameKey = "username";
    string passwordKey = "password"; 
 };
-
 
 public type RefConfig record {
     string key;

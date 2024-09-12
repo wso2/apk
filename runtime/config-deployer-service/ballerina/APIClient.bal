@@ -336,7 +336,7 @@ public class APIClient {
                 apiArtifact.rateLimitPolicies[rateLimitPolicyCR.metadata.name] = rateLimitPolicyCR;
             }
         }
-        if apkConf.apiPolicies != () || apkConf.corsConfiguration != () || apkConf.subscriptionValidation == true {
+        if apkConf.apiPolicies != () || apkConf.corsConfiguration != () || apkConf.aiProvider != () || apkConf.subscriptionValidation == true {
             model:APIPolicy? apiPolicyCR = check self.generateAPIPolicyAndBackendCR(apiArtifact, apkConf, (), apkConf.apiPolicies, organization, apiArtifact.uniqueId);
             if apiPolicyCR != () {
                 apiArtifact.apiPolicies[apiPolicyCR.metadata.name] = apiPolicyCR;
@@ -720,6 +720,21 @@ public class APIClient {
             if cORSPolicy is model:CORSPolicy {
                 defaultSpecData.cORSPolicy = cORSPolicy;
             }
+        }
+        AIProvider? aiProvider = apkConf.aiProvider;
+        if aiProvider is AIProvider {
+            string aiProviderRef;
+            if aiProvider.name == "AzureAI" {
+                aiProviderRef = "ai-provider-azure-ai";
+            } else if aiProvider.name == "OpenAI" {
+                aiProviderRef = "ai-provider-open-ai";
+            } else if aiProvider.name == "GoogleAI" {
+                aiProviderRef = "ai-provider-google-ai";
+            } else {
+                aiProviderRef = aiProvider.name;
+            }
+            model:AIProviderReference aIProviderPolicy = {name: aiProviderRef};
+            defaultSpecData.aiProvider = aIProviderPolicy;
         }
         if defaultSpecData != {} {
             model:APIPolicy? apiPolicyCR = self.generateAPIPolicyCR(apkConf, targetRefName, operations, organization, defaultSpecData);
@@ -1278,8 +1293,10 @@ public class APIClient {
         }
         if endpointSecurity is EndpointSecurity {
             if endpointSecurity?.enabled ?: false {
-                // When user adds basic auth endpoint security username and password
-                BasicEndpointSecurity? securityType = endpointSecurity.securityType;
+                // When user adds basic auth endpoint security username and password should be provided.
+                // When user adds api key endpoint security api key name and api key value should be provided.
+                BasicEndpointSecurity|APIKeyEndpointSecurity? securityType = endpointSecurity.securityType;
+                log:printDebug("Security Type: "+ securityType.toString());
 
                 if securityType is BasicEndpointSecurity {
                     securityConfig = {
@@ -1288,6 +1305,18 @@ public class APIClient {
                                 name: <string>securityType.secretName,
                                 usernameKey: <string>securityType.userNameKey,
                                 passwordKey: <string>securityType.passwordKey
+                            }
+                        }
+                    };
+                }
+                if securityType is APIKeyEndpointSecurity {
+                    securityConfig = {
+                        apiKey: {
+                            name: <string>securityType.apiKeyNameKey,
+                            'in: <string>securityType.'in,
+                            valueFrom: {
+                                name: <string>securityType.secretName, 
+                                valueKey: <string>securityType.apiKeyValueKey
                             }
                         }
                     };
