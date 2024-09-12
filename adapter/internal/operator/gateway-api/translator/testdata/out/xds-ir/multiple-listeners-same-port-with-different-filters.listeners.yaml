@@ -17,8 +17,7 @@
           maxConcurrentStreams: 100
         http3ProtocolOptions: {}
         httpFilters:
-        - disabled: true
-          name: envoy.filters.http.ext_authz_httproute/default/httproute-2/rule/0/match/0/www_foo_com
+        - name: envoy.filters.http.ext_authz_securitypolicy/default/policy-for-http-route-2
           typedConfig:
             '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
             httpService:
@@ -74,8 +73,7 @@
           initialStreamWindowSize: 65536
           maxConcurrentStreams: 100
         httpFilters:
-        - disabled: true
-          name: envoy.filters.http.ext_authz_httproute/default/httproute-2/rule/0/match/0/www_foo_com
+        - name: envoy.filters.http.ext_authz_securitypolicy/default/policy-for-http-route-2
           typedConfig:
             '@type': type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
             httpService:

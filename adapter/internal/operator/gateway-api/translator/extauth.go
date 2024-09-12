@@ -101,9 +101,11 @@ func buildHCMExtAuthFilter(extAuth *ir.ExtAuth) (*hcmv3.HttpFilter, error) {
 		return nil, err
 	}
 
+	disabled := extAuth == nil || (extAuth.GRPC == nil && extAuth.HTTP == nil)
+
 	return &hcmv3.HttpFilter{
 		Name:     extAuthFilterName(extAuth),
-		Disabled: false,
+		Disabled: disabled,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: extAuthAny,
 		},
