@@ -308,7 +308,7 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                         if (matcher.matches()) {
                             if (!"Unlimited".equals(subscription.getRatelimitTier())) {
                                 String subscriptionId = subscription.getSubscribedApi().getName() + ":" +
-                                        app.getUUID();
+                                        app.getUUID() + subscription.getSubscriptionId();
                                 requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
                                 requestContext.addMetadataToMap("ratelimit:usage-policy", subscription.getRatelimitTier());
                                 requestContext.addMetadataToMap("ratelimit:organization", subscription.getOrganization());
