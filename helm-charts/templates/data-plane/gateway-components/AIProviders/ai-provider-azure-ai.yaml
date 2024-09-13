@@ -1,0 +1,23 @@
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIProvider
+metadata:
+  name: ai-provider-azure-ai
+  namespace: {{ .Release.Namespace }}
+spec:
+  providerName : "AzureAI"
+  providerAPIVersion : "2024-06-01"
+  organization : "default"
+  model:
+    in: "Body"
+    value: "model"
+  rateLimitFields:
+    promptTokens: 
+      in: "Body"
+      value: "$usage.promptTokens"
+    completionToken:
+      in: "Body"
+      value: "$usage.completionTokens"
+    totalToken:
+      in: "Body"
+      value: "$usage.totalTokens"
+  

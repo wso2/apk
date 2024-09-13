@@ -34,6 +34,7 @@ public type APIPolicyData record {
     CORSPolicy cORSPolicy?;
     BackendJwtReference backendJwtPolicy?;
     boolean subscriptionValidation?;
+    AIProviderReference aiProvider?;
 };
 
 public type InterceptorReference record {
@@ -41,6 +42,10 @@ public type InterceptorReference record {
 };
 
 public type BackendJwtReference record {
+    string name?;
+};
+
+public type AIProviderReference record {
     string name?;
 };
 

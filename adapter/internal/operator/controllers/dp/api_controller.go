@@ -1086,10 +1086,6 @@ func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx
 	for _, backendJwt := range apiState.BackendJWTMapping {
 		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backendJwt)
 	}
-	if apiState.AIProvider != nil && apiState.AIProvider.Name != "" {
-		loggers.LoggerAPKOperator.Infof("Owner Reference .AIProvider override found in API State. AI Provider Name %s", apiState.AIProvider.Name)
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, apiState.AIProvider)
-	}
 
 }
 
