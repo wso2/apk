@@ -335,10 +335,8 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicy 
 // ProcessSubscriptionBasedAIRatelimitPolicySpecsAndUpdateCache process the specs and update the cache
 func (r *rateLimitPolicyCache) ProcessSubscriptionBasedAIRatelimitPolicySpecsAndUpdateCache(subscriptionEnabledAIRatelimitPolicies map[types.NamespacedName]struct{}, aiRatelimitPolicySpecs map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
 	aiRlDescriptors := make([]*rls_config.RateLimitDescriptor, 0)
-	loggers.LoggerAPKOperator.Infof("222222")
 	for namespacedNameRl := range subscriptionEnabledAIRatelimitPolicies {
 		if airl, exists := aiRatelimitPolicySpecs[namespacedNameRl]; exists {
-			loggers.LoggerAPKOperator.Infof("----- %s %s %s", DescriptorKeyForSubscriptionBasedAIRequestTokenCount, prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl), DescriptorKeyForSubscription)
 			// Add descriptor for RequestTokenCount
 			aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
 				Key:   DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
@@ -403,10 +401,7 @@ func (r *rateLimitPolicyCache) ProcessSubscriptionBasedAIRatelimitPolicySpecsAnd
 // ProcessAIratelimitPolicySpecsAndUpdateCache process the specs and update the cache
 func (r *rateLimitPolicyCache) ProcessAIRatelimitPolicySpecsAndUpdateCache(aiRateLimitPolicySpecs map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
 	aiRlDescriptors := make([]*rls_config.RateLimitDescriptor, 0)
-	loggers.LoggerAPKOperator.Infof("222222")
 	for namespacedName, spec := range aiRateLimitPolicySpecs {
-		logger.Infof("Adding : %s, %s", DescriptorKeyForAIRequestCount, prepareAIRatelimitIdentifier(spec.Override.Organization, namespacedName, spec))
-		logger.Infof("For airl: %s", namespacedName)
 		// Add descriptor for RequestTokenCount
 		aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
 			Key:   DescriptorKeyForAIRequestTokenCount,

@@ -58,7 +58,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
-	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
@@ -232,12 +231,6 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha3.Subscription{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForSubscription),
-		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching Subscription resources: %v", err))
-		return err
-	}
-
 	loggers.LoggerAPKOperator.Info("API Controller successfully started. Watching API Objects....")
 	go apiReconciler.handleStatus()
 	go apiReconciler.handleLabels(ctx)
@@ -399,7 +392,6 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				apiRef.String(), namespace, string(api.ObjectMeta.UID), "api definition file not found")
 		}
 	}
-	apiReconciler.resolveAiSubscriptionRatelimitPolicies(ctx, apiState)
 	if len(apiState.Authentications) > 0 {
 		if apiState.MutualSSL, err = apiReconciler.resolveAuthentications(ctx, apiState.Authentications); err != nil {
 			return nil, fmt.Errorf("error while resolving authentication %v in namespace: %s was not found. %s",
@@ -854,30 +846,6 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 	return interceptorServices, backendJWTs, subscriptionValidation, aiProvider, nil
 }
 
-func (apiReconciler *APIReconciler) resolveAiSubscriptionRatelimitPolicies(ctx context.Context, apiState *synchronizer.APIState) {
-	apiState.IsAiSubscriptionRatelimitEnabled = false
-	subscriptionList := &cpv1alpha3.SubscriptionList{}
-	if err := apiReconciler.client.List(ctx, subscriptionList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(subscriptionToAPIIndex, utils.GetSubscriptionToAPIIndexID(apiState.APIDefinition.Spec.APIName, apiState.APIDefinition.Spec.APIVersion)),
-	}); err != nil {
-		loggers.LoggerAPKOperator.Infof("No associated subscription found for API: %s", utils.NamespacedName(apiState.APIDefinition))
-		return
-	}
-	for _, subscription := range subscriptionList.Items {
-		aiRatelimitPolicy := &dpv1alpha3.AIRateLimitPolicy{}
-		nn:= types.NamespacedName{
-			Name: subscription.Spec.RatelimitRef.Name,
-			Namespace: subscription.GetNamespace(),
-		}
-		if err := apiReconciler.client.Get(ctx, nn, aiRatelimitPolicy, ); err == nil {
-			loggers.LoggerAPKOperator.Infof("API state set as AI subscription enabled")
-			apiState.IsAiSubscriptionRatelimitEnabled = true
-			break
-		}
-		loggers.LoggerAPKOperator.Infof("No associated aiRatelimitPolicy found for Subscription: %s", utils.NamespacedName(&subscription))
-	}
-}
-
 func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
 	authentications map[string]dpv1alpha2.Authentication) (*dpv1alpha2.MutualSSL, error) {
 	resolvedMutualSSL := dpv1alpha2.MutualSSL{}
@@ -909,10 +877,10 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 			if err := apiReconciler.client.List(ctx, aiRLPolicyList, &k8client.ListOptions{
 				FieldSelector: fields.OneTermEqualSelector(aiRatelimitPolicyToBackendIndex, backendNamespacedName.String()),
 			}); err != nil {
-				loggers.LoggerAPKOperator.Infof("No associated AI ratelimit policy found for : %s", backendNamespacedName.String())
+				loggers.LoggerAPKOperator.Debugf("No associated AI ratelimit policy found for : %s", backendNamespacedName.String())
 			} else {
 				for _, aiRLPolicy := range aiRLPolicyList.Items {
-					loggers.LoggerAPKOperator.Infof("Adding mapping for ruleid: %d to aiRLPolicy: %s", id, utils.NamespacedName(&aiRLPolicy))
+					loggers.LoggerAPKOperator.Debugf("Adding mapping for ruleid: %d to aiRLPolicy: %s", id, utils.NamespacedName(&aiRLPolicy))
 					ruleIdxToAiRatelimitPolicyMapping[id] = &aiRLPolicy
 				}
 			}
@@ -1009,14 +977,6 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIRatelimitPo
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
 	}
-	return requests
-}
-
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForSubscription(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	requests := apiReconciler.getAPIsForSubscription(ctx, obj)
-	// if len(requests) > 0 {
-	// 	apiReconciler.handleOwnerReference(ctx, obj, &requests)
-	// }
 	return requests
 }
 
@@ -1480,35 +1440,6 @@ func (apiReconciler *APIReconciler) getAPIsForAIRatelimitPolicy(ctx context.Cont
 		return apiReconciler.getAPIsForBackend(ctx, backend)
 	}
 	return []reconcile.Request{}
-}
-
-// getAPIsForAIRatelimitPolicy triggers the API controller reconcile method based on the changes detected
-// in subscription resources.
-func (apiReconciler *APIReconciler) getAPIsForSubscription(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	subscription, ok := obj.(*cpv1alpha3.Subscription)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", obj))
-		return []reconcile.Request{}
-	}
-	apiList := &dpv1alpha2.APIList{}
-	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(apiToSubscriptionIndex, utils.GetSubscriptionToAPIIndexID(subscription.Spec.API.Name, subscription.Spec.API.Version)),
-	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2649, logging.CRITICAL, "Unable to find associated APIs for subscription: %s, error: %v", utils.NamespacedName(subscription).String(), err.Error()))
-		return []reconcile.Request{}
-	}
-	requests := []reconcile.Request{}
-	for _, api := range apiList.Items {
-		req := reconcile.Request{
-			NamespacedName: types.NamespacedName{
-				Name:      api.Name,
-				Namespace: api.Namespace},
-		}
-		requests = append(requests, req)
-		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v due to change in subscription: %v", api.Namespace, api.Name,
-			string(api.ObjectMeta.UID), utils.NamespacedName(subscription).String())
-	}
-	return requests
 }
 
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
@@ -2078,33 +2009,6 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				Namespace: namespace,
 			}.String())
 			return backends
-		}); err != nil {
-		return err
-	}
-
-	// // AIRatelimitPolicy to Subscription indexer
-	// if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.AIRateLimitPolicy{}, aiRatelimitPolicyToSubscriptionIndex,
-	// 	func(rawObj k8client.Object) []string {
-	// 		aiRatelimitPolicy := rawObj.(*dpv1alpha3.AIRateLimitPolicy)
-	// 		var subscriptions []string
-	// 		namespace := utils.GetNamespace(aiRatelimitPolicy.Spec.TargetRef.Namespace, aiRatelimitPolicy.GetNamespace())
-	// 		subscriptions = append(subscriptions, types.NamespacedName{
-	// 			Name:      string(aiRatelimitPolicy.Spec.TargetRef.Name),
-	// 			Namespace: namespace,
-	// 		}.String())
-	// 		return subscriptions
-	// 	}); err != nil {
-	// 	return err
-	// }
-
-	// Subscription to API indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &cpv1alpha3.Subscription{}, subscriptionToAPIIndex,
-		func(rawObj k8client.Object) []string {
-			subscription := rawObj.(*cpv1alpha3.Subscription)
-			var subscriptions []string
-			subscriptionIdentifierForIndex := fmt.Sprintf("%s_%s", subscription.Spec.API.Name, subscription.Spec.API.Version)
-			subscriptions = append(subscriptions, subscriptionIdentifierForIndex)
-			return subscriptions
 		}); err != nil {
 		return err
 	}

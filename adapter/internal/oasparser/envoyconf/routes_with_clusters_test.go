@@ -31,6 +31,7 @@ import (
 	operatorutils "github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8types "k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -131,6 +132,8 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
+	apiState.AIProvider = new(v1alpha3.AIProvider)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = make(map[int]*v1alpha3.AIRateLimitPolicy)
 	adapterInternalAPI, labels, err := synchronizer.UpdateInternalMapsFromHTTPRoute(apiState, &httpRouteState, constants.Production)
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
@@ -186,6 +189,8 @@ func TestExtractAPIDetailsFromHTTPRouteForDefaultCase(t *testing.T) {
 	apiState := generateSampleAPI("test-api-1", "1.0.0", "/test-api/1.0.0")
 	httpRouteState := synchronizer.HTTPRouteState{}
 	httpRouteState = *apiState.ProdHTTPRoute
+	apiState.AIProvider = new(v1alpha3.AIProvider)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = make(map[int]*v1alpha3.AIRateLimitPolicy)
 	xds.SanitizeGateway("default-gateway", true)
 	adapterInternalAPI, labels, err := synchronizer.UpdateInternalMapsFromHTTPRoute(apiState, &httpRouteState, constants.Production)
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
@@ -201,6 +206,8 @@ func TestExtractAPIDetailsFromHTTPRouteForSpecificEnvironment(t *testing.T) {
 	apiState.APIDefinition.Spec.Environment = "dev"
 	xds.SanitizeGateway("default-gateway", true)
 
+	apiState.AIProvider = new(v1alpha3.AIProvider)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = make(map[int]*v1alpha3.AIRateLimitPolicy)
 	adapterInternalAPI, labels, err := synchronizer.UpdateInternalMapsFromHTTPRoute(apiState, &httpRouteState, constants.Production)
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
@@ -267,6 +274,9 @@ func generateSampleAPI(apiName string, apiVersion string, basePath string) synch
 	httpRouteState.BackendMapping = backendMapping
 
 	apiState.ProdHTTPRoute = &httpRouteState
+
+	apiState.AIProvider = new(v1alpha3.AIProvider)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = make(map[int]*v1alpha3.AIRateLimitPolicy)
 	return apiState
 }
 
@@ -294,6 +304,8 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	apiState.APIDefinition = &apiDefinition
 	httpRouteState := synchronizer.HTTPRouteState{}
 
+	apiState.AIProvider = new(v1alpha3.AIProvider)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = make(map[int]*v1alpha3.AIRateLimitPolicy)
 	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
@@ -444,6 +456,8 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	httpRouteState := synchronizer.HTTPRouteState{}
 	methodTypeGet := gwapiv1.HTTPMethodGet
 
+	apiState.AIProvider = new(v1alpha3.AIProvider)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = make(map[int]*v1alpha3.AIRateLimitPolicy)
 	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
@@ -567,6 +581,8 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	httpRouteState := synchronizer.HTTPRouteState{}
 	methodTypeGet := gwapiv1.HTTPMethodGet
 
+	apiState.AIProvider = new(v1alpha3.AIProvider)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = make(map[int]*v1alpha3.AIRateLimitPolicy)
 	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
@@ -659,6 +675,8 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	httpRouteState := synchronizer.HTTPRouteState{}
 	methodTypeGet := gwapiv1.HTTPMethodGet
 
+	apiState.AIProvider = new(v1alpha3.AIProvider)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = make(map[int]*v1alpha3.AIRateLimitPolicy)
 	httpRoute := gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",

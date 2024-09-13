@@ -45,9 +45,9 @@ type Resource struct {
 	vendorExtensions                       map[string]interface{}
 	hasPolicies                            bool
 	hasRequestRedirectFilter               bool
-	enableSubscriptionBasedAIRatelimit     bool
 	enableBackendBasedAIRatelimit          bool
 	backendBasedAIRatelimitDescriptorValue string
+	extractTokenFrom                       string
 }
 
 // GetEndpointSecurity returns the endpoint security object of a given resource.
@@ -193,11 +193,6 @@ func SortResources(resources []*Resource) []*Resource {
 	return resources
 }
 
-// GetEnableSubscriptionBasedAIRatelimit returns the value of enableSubscriptionBasedAIRatelimit.
-func (resource *Resource) GetEnableSubscriptionBasedAIRatelimit() bool {
-	return resource.enableSubscriptionBasedAIRatelimit
-}
-
 // GetEnableBackendBasedAIRatelimit returns the value of enableBackendBasedAIRatelimit.
 func (resource *Resource) GetEnableBackendBasedAIRatelimit() bool {
 	return resource.enableBackendBasedAIRatelimit
@@ -206,4 +201,9 @@ func (resource *Resource) GetEnableBackendBasedAIRatelimit() bool {
 // GetBackendBasedAIRatelimitDescriptorValue returns the value of backendBasedAIRatelimitDescriptorValue.
 func (resource *Resource) GetBackendBasedAIRatelimitDescriptorValue() string {
 	return resource.backendBasedAIRatelimitDescriptorValue
+}
+
+// GetExtractTokenFromValue returns the value of extractTokenFrom
+func (resource *Resource) GetExtractTokenFromValue() string {
+	return resource.extractTokenFrom
 }

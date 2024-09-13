@@ -29,7 +29,6 @@ import (
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	extProcessorv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
-	metadatav3 "github.com/envoyproxy/go-control-plane/envoy/type/metadata/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/golang/protobuf/ptypes/any"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
@@ -41,7 +40,6 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	v35 "github.com/envoyproxy/go-control-plane/envoy/type/metadata/v3"
 )
 
 // Constants for Rate Limiting
@@ -118,7 +116,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	return match
 }
 
-func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria, mirrorClusterNames []string, isSubscriptionBasedAIRatelimitEnabled bool, isBackendBasedAIRatelimitEnabled bool, descriptorValueForBackendBasedAIRatelimit string) (action *routev3.Route_Route) {
+func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria, mirrorClusterNames []string, isBackendBasedAIRatelimitEnabled bool, descriptorValueForBackendBasedAIRatelimit string) (action *routev3.Route_Route) {
 	action = &routev3.Route_Route{
 		Route: &routev3.RouteAction{
 			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -151,9 +149,6 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 	}
 	if isBackendBasedAIRatelimitEnabled {
 		action.Route.RateLimits = append(action.Route.RateLimits, generateBackendBasedAIRatelimit(descriptorValueForBackendBasedAIRatelimit)...)
-	}
-	if isSubscriptionBasedAIRatelimitEnabled {
-		action.Route.RateLimits = append(action.Route.RateLimits, generateSubscriptionBasedAIRatelimit()...)
 	}
 
 	// Add request mirroring configurations
@@ -263,177 +258,7 @@ func generateBackendBasedAIRatelimit(descValue string) []*routev3.RateLimit {
 }
 
 
-func generateSubscriptionBasedAIRatelimit() []*routev3.RateLimit {
-	rateLimitForRequestTokenCount := routev3.RateLimit{
-		Actions: []*routev3.RateLimit_Action{
-			{
-				ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-					Metadata: &routev3.RateLimit_Action_MetaData{
-						DescriptorKey: DescriptorKeyForAIRequestTokenCountForSubscriptionBasedAIRL,
-						MetadataKey: &v35.MetadataKey{
-							Key: extAuthzFilterName,
-							Path: []*v35.MetadataKey_PathSegment{
-								&v35.MetadataKey_PathSegment{
-									Segment: &v35.MetadataKey_PathSegment_Key{
-										Key: DynamicMetadataKeyForOrganizationAndAIRLPolicy,
-									},
-								},
-							},
-						},
-						Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-						SkipIfAbsent: true,
-					},
-				},
-			},
-			{
-				ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-					Metadata: &routev3.RateLimit_Action_MetaData{
-						DescriptorKey: DescriptorKeyForAISubscription,
-						MetadataKey: &v35.MetadataKey{
-							Key: extAuthzFilterName,
-							Path: []*v35.MetadataKey_PathSegment{
-								&v35.MetadataKey_PathSegment{
-									Segment: &v35.MetadataKey_PathSegment_Key{
-										Key: DynamicMetadataKeyForSubscription,
-									},
-								},
-							},
-						},
-						Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-						SkipIfAbsent: true,
-					},
-				},
-			},
-		},
-	}
-	rateLimitForResponseTokenCount := routev3.RateLimit{
-		Actions: []*routev3.RateLimit_Action{
-			{
-				ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-					Metadata: &routev3.RateLimit_Action_MetaData{
-						DescriptorKey: DescriptorKeyForAIResponseTokenCountForSubscriptionBasedAIRL,
-						MetadataKey: &v35.MetadataKey{
-							Key: extAuthzFilterName,
-							Path: []*v35.MetadataKey_PathSegment{
-								&v35.MetadataKey_PathSegment{
-									Segment: &v35.MetadataKey_PathSegment_Key{
-										Key: DynamicMetadataKeyForOrganizationAndAIRLPolicy,
-									},
-								},
-							},
-						},
-						Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-						SkipIfAbsent: true,
-					},
-				},
-			},
-			{
-				ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-					Metadata: &routev3.RateLimit_Action_MetaData{
-						DescriptorKey: DescriptorKeyForAISubscription,
-						MetadataKey: &v35.MetadataKey{
-							Key: extAuthzFilterName,
-							Path: []*v35.MetadataKey_PathSegment{
-								&v35.MetadataKey_PathSegment{
-									Segment: &v35.MetadataKey_PathSegment_Key{
-										Key: DynamicMetadataKeyForSubscription,
-									},
-								},
-							},
-						},
-						Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-						SkipIfAbsent: true,
-					},
-				},
-			},
-		},
-	}
-	rateLimitForRequestCount := routev3.RateLimit{
-		Actions: []*routev3.RateLimit_Action{
-			{
-				ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-					Metadata: &routev3.RateLimit_Action_MetaData{
-						DescriptorKey: DescriptorKeyForAIRequestCountForSubscriptionBasedAIRL,
-						MetadataKey: &v35.MetadataKey{
-							Key: extAuthzFilterName,
-							Path: []*v35.MetadataKey_PathSegment{
-								&v35.MetadataKey_PathSegment{
-									Segment: &v35.MetadataKey_PathSegment_Key{
-										Key: DynamicMetadataKeyForOrganizationAndAIRLPolicy,
-									},
-								},
-							},
-						},
-						Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-						SkipIfAbsent: true,
-					},
-				},
-			},
-			{
-				ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-					Metadata: &routev3.RateLimit_Action_MetaData{
-						DescriptorKey: DescriptorKeyForAISubscription,
-						MetadataKey: &v35.MetadataKey{
-							Key: extAuthzFilterName,
-							Path: []*v35.MetadataKey_PathSegment{
-								&v35.MetadataKey_PathSegment{
-									Segment: &v35.MetadataKey_PathSegment_Key{
-										Key: DynamicMetadataKeyForSubscription,
-									},
-								},
-							},
-						},
-						Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-						SkipIfAbsent: true,
-					},
-				},
-			},
-		},
-	}
-	rateLimitForTotalTokenCount := routev3.RateLimit{
-		Actions: []*routev3.RateLimit_Action{
-			{
-				ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-					Metadata: &routev3.RateLimit_Action_MetaData{
-						DescriptorKey: DescriptorKeyForAITotalTokenCountForSubscriptionBasedAIRL,
-						MetadataKey: &v35.MetadataKey{
-							Key: extAuthzFilterName,
-							Path: []*v35.MetadataKey_PathSegment{
-								&v35.MetadataKey_PathSegment{
-									Segment: &v35.MetadataKey_PathSegment_Key{
-										Key: DynamicMetadataKeyForOrganizationAndAIRLPolicy,
-									},
-								},
-							},
-						},
-						Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-						SkipIfAbsent: true,
-					},
-				},
-			},
-			{
-				ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-					Metadata: &routev3.RateLimit_Action_MetaData{
-						DescriptorKey: DescriptorKeyForAISubscription,
-						MetadataKey: &v35.MetadataKey{
-							Key: extAuthzFilterName,
-							Path: []*v35.MetadataKey_PathSegment{
-								&v35.MetadataKey_PathSegment{
-									Segment: &v35.MetadataKey_PathSegment_Key{
-										Key: DynamicMetadataKeyForSubscription,
-									},
-								},
-							},
-						},
-						Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-						SkipIfAbsent: true,
-					},
-				},
-			},
-		},
-	}
-	return []*routev3.RateLimit{&rateLimitForRequestTokenCount, &rateLimitForResponseTokenCount, &rateLimitForRequestCount, &rateLimitForTotalTokenCount}
-}
+
 
 func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.RateLimit {
 	environmentValue := ratelimitCriteria.environment
@@ -492,7 +317,6 @@ func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.Ra
 	}
 
 	ratelimits := []*routev3.RateLimit{&rateLimit}
-	ratelimits = addSubscriptionRatelimitActions(ratelimits)
 	return ratelimits
 }
 
@@ -533,138 +357,6 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 	return headerMatcherArray
 }
 
-func addSubscriptionRatelimitActions(actions []*routev3.RateLimit) []*routev3.RateLimit {
-	return append(actions,
-		&routev3.RateLimit{
-			Actions: []*routev3.RateLimit_Action{
-				{
-					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-						Metadata: &routev3.RateLimit_Action_MetaData{
-							DescriptorKey: DescriptorKeyForOrganization,
-							MetadataKey: &metadatav3.MetadataKey{
-								Key: extAuthzFilterName,
-								Path: []*metadatav3.MetadataKey_PathSegment{
-									{
-										Segment: &metadatav3.MetadataKey_PathSegment_Key{
-											Key: descriptorMetadataKeyForOrganization,
-										},
-									},
-								},
-							},
-							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-							SkipIfAbsent: true,
-						},
-					},
-				},
-				{
-					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-						Metadata: &routev3.RateLimit_Action_MetaData{
-							DescriptorKey: DescriptorKeyForSubscription,
-							MetadataKey: &metadatav3.MetadataKey{
-								Key: extAuthzFilterName,
-								Path: []*metadatav3.MetadataKey_PathSegment{
-									{
-										Segment: &metadatav3.MetadataKey_PathSegment_Key{
-											Key: descriptorMetadataKeyForSubscription,
-										},
-									},
-								},
-							},
-							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-							SkipIfAbsent: true,
-						},
-					},
-				},
-				{
-					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-						Metadata: &routev3.RateLimit_Action_MetaData{
-							DescriptorKey: DescriptorKeyForPolicy,
-							MetadataKey: &metadatav3.MetadataKey{
-								Key: extAuthzFilterName,
-								Path: []*metadatav3.MetadataKey_PathSegment{
-									{
-										Segment: &metadatav3.MetadataKey_PathSegment_Key{
-											Key: descriptorMetadataKeyForUsagePolicy,
-										},
-									},
-								},
-							},
-							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-							SkipIfAbsent: true,
-						},
-					},
-				},
-			},
-		}, &routev3.RateLimit{
-			Actions: []*routev3.RateLimit_Action{
-				{
-					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-						Metadata: &routev3.RateLimit_Action_MetaData{
-							DescriptorKey: DescriptorKeyForOrganization,
-							MetadataKey: &metadatav3.MetadataKey{
-								Key: extAuthzFilterName,
-								Path: []*metadatav3.MetadataKey_PathSegment{
-									{
-										Segment: &metadatav3.MetadataKey_PathSegment_Key{
-											Key: descriptorMetadataKeyForOrganization,
-										},
-									},
-								},
-							},
-							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-							SkipIfAbsent: true,
-						},
-					},
-				},
-				{
-					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-						Metadata: &routev3.RateLimit_Action_MetaData{
-							DescriptorKey: DescriptorKeyForSubscription,
-							MetadataKey: &metadatav3.MetadataKey{
-								Key: extAuthzFilterName,
-								Path: []*metadatav3.MetadataKey_PathSegment{
-									{
-										Segment: &metadatav3.MetadataKey_PathSegment_Key{
-											Key: descriptorMetadataKeyForSubscription,
-										},
-									},
-								},
-							},
-							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-							SkipIfAbsent: true,
-						},
-					},
-				},
-				{
-					ActionSpecifier: &routev3.RateLimit_Action_Metadata{
-						Metadata: &routev3.RateLimit_Action_MetaData{
-							DescriptorKey: DescriptorKeyForPolicy,
-							MetadataKey: &metadatav3.MetadataKey{
-								Key: extAuthzFilterName,
-								Path: []*metadatav3.MetadataKey_PathSegment{
-									{
-										Segment: &metadatav3.MetadataKey_PathSegment_Key{
-											Key: descriptorMetadataKeyForUsagePolicy,
-										},
-									},
-								},
-							},
-							Source:       routev3.RateLimit_Action_MetaData_DYNAMIC,
-							SkipIfAbsent: true,
-						},
-					},
-				},
-				{
-					ActionSpecifier: &routev3.RateLimit_Action_GenericKey_{
-						GenericKey: &routev3.RateLimit_Action_GenericKey{
-							DescriptorKey:   "burst",
-							DescriptorValue: "enabled",
-						},
-					},
-				},
-			},
-		})
-}
 
 func generateRegexMatchAndSubstitute(routePath, endpointResourcePath string,
 	pathMatchType gwapiv1.PathMatchType) *envoy_type_matcherv3.RegexMatchAndSubstitute {

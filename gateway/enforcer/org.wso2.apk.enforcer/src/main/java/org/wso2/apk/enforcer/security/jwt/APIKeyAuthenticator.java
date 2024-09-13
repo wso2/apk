@@ -222,8 +222,8 @@ public class APIKeyAuthenticator extends APIKeyHandler {
                         .getMandateSubscriptionValidation();
                 if (!requestContext.getMatchedAPI().isSystemAPI() && (isGatewayLevelSubscriptionValidationEnabled || requestContext.getMatchedAPI()
                         .isSubscriptionValidation())) {
-                    validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext,
-                                requestContext.getMatchedAPI(), payload);
+//                    validationInfoDto = KeyValidator.validateSubscription(apiUuid, apiContext,
+//                                requestContext.getMatchedAPI(), payload);
                     log.debug("Validating subscription for API Key using JWT claims against invoked API info."
                             + " context: {} version: {}", apiContext, apiVersion);
                     validationInfoDto = getAPIKeyValidationDTO(requestContext, payload);

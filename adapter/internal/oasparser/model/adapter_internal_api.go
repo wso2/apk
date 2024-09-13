@@ -501,7 +501,7 @@ func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
 
 // SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams, isAiSubscriptionRatelimitEnabled bool, ruleIdxToAiRatelimitPolicyMapping map[int]*dpv1alpha3.AIRateLimitPolicy) error {
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams, ruleIdxToAiRatelimitPolicyMapping map[int]*dpv1alpha3.AIRateLimitPolicy, extractTokenFrom string) error {
 	var resources []*Resource
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
@@ -548,11 +548,11 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		enableBackendBasedAIRatelimit := false
 		descriptorValue := ""
 		if aiRatelimitPolicy, exists := ruleIdxToAiRatelimitPolicyMapping[ruleID]; exists {
-			loggers.LoggerAPI.Infof("Found AI ratelimit mapping for ruleId: %d, related api: %s", ruleID, adapterInternalAPI.UUID)
+			loggers.LoggerAPI.Debugf("Found AI ratelimit mapping for ruleId: %d, related api: %s", ruleID, adapterInternalAPI.UUID)
 			enableBackendBasedAIRatelimit = true
 			descriptorValue = prepareAIRatelimitIdentifier(adapterInternalAPI.OrganizationID, utils.NamespacedName(aiRatelimitPolicy), &aiRatelimitPolicy.Spec)
 		} else {
-			loggers.LoggerAPI.Infof("Could not find AIratelimit for ruleId: %d, len of map: %d, related api: %s", ruleID, len(ruleIdxToAiRatelimitPolicyMapping), adapterInternalAPI.UUID)
+			loggers.LoggerAPI.Debugf("Could not find AIratelimit for ruleId: %d, len of map: %d, related api: %s", ruleID, len(ruleIdxToAiRatelimitPolicyMapping), adapterInternalAPI.UUID)
 		}
 
 		backendBasePath := ""
@@ -919,9 +919,9 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				hasPolicies:              true,
 				iD:                       uuid.New().String(),
 				hasRequestRedirectFilter: hasRequestRedirectPolicy,
-				enableSubscriptionBasedAIRatelimit: isAiSubscriptionRatelimitEnabled,
 				enableBackendBasedAIRatelimit: enableBackendBasedAIRatelimit,
 				backendBasedAIRatelimitDescriptorValue: descriptorValue,
+				extractTokenFrom: extractTokenFrom,
 			}
 
 			resource.endpoints = &EndpointCluster{

@@ -66,7 +66,7 @@ func TestCreateVirtualHost(t *testing.T) {
 		"*":           testCreateRoutesForUnitTests(t),
 		"mg.wso2.com": testCreateRoutesForUnitTests(t),
 	}
-	vHosts := CreateVirtualHosts(vhostToRouteArrayMap, nil)
+	vHosts := CreateVirtualHosts(vhostToRouteArrayMap, nil, make(map[string]bool), make(map[string]bool))
 
 	if len(vHosts) != 2 {
 		t.Error("Virtual Host creation failed")
@@ -92,7 +92,7 @@ func TestCreateRoutesConfigForRds(t *testing.T) {
 		"mg.wso2.com": testCreateRoutesForUnitTests(t),
 	}
 	httpListeners := "httpslistener"
-	vHosts := CreateVirtualHosts(vhostToRouteArrayMap, nil)
+	vHosts := CreateVirtualHosts(vhostToRouteArrayMap, nil, make(map[string]bool), make(map[string]bool))
 	rConfig := CreateRoutesConfigForRds(vHosts, httpListeners)
 
 	assert.NotNil(t, rConfig, "CreateRoutesConfigForRds is failed")

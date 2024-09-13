@@ -51,6 +51,8 @@ import (
 
 // HTTPExternalProcessor HTTP filter
 const HTTPExternalProcessor = "envoy.filters.http.ext_proc"
+// RatelimitFilterName Ratelimit filter name
+const RatelimitFilterName = "envoy.filters.http.ratelimit"
 
 // getHTTPFilters generates httpFilter configuration
 func getHTTPFilters(globalLuaScript string) []*hcmv3.HttpFilter {

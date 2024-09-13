@@ -107,7 +107,7 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 		RateLimitPolicies:         apiState.RateLimitPolicies,
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
-	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRouteState.HTTPRouteCombined, resourceParams, apiState.IsAiSubscriptionRatelimitEnabled, httpRouteState.RuleIdxToAiRatelimitPolicyMapping); err != nil {
+	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRouteState.HTTPRouteCombined, resourceParams, httpRouteState.RuleIdxToAiRatelimitPolicyMapping, apiState.AIProvider.Spec.RateLimitFields.PromptTokens.In); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting HttpRoute CR info to adapterInternalAPI. %v", err))
 		return nil, err
 	}

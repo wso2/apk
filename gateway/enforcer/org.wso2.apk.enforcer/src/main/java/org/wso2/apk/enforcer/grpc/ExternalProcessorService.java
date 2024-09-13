@@ -22,12 +22,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
+import io.envoyproxy.envoy.config.core.v3.HeaderValue;
 import io.envoyproxy.envoy.service.ext_proc.v3.BodyMutation;
 import io.envoyproxy.envoy.service.ext_proc.v3.BodyResponse;
 import io.envoyproxy.envoy.service.ext_proc.v3.CommonResponse;
 import io.envoyproxy.envoy.service.ext_proc.v3.ExternalProcessorGrpc;
 import io.envoyproxy.envoy.service.ext_proc.v3.HeaderMutation;
 import io.envoyproxy.envoy.service.ext_proc.v3.HeadersResponse;
+import io.envoyproxy.envoy.service.ext_proc.v3.HttpHeaders;
 import io.envoyproxy.envoy.service.ext_proc.v3.ProcessingRequest;
 import io.envoyproxy.envoy.service.ext_proc.v3.ProcessingResponse;
 import io.grpc.stub.StreamObserver;
@@ -73,26 +75,65 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
     public StreamObserver<ProcessingRequest> process(
             final StreamObserver<ProcessingResponse> responseObserver) {
         FilterMetadata filterMetadata = new FilterMetadata();
-        System.out.println("process ....");
         return new StreamObserver<ProcessingRequest>() {
 
             @Override
             public void onNext(ProcessingRequest request) {
                 ProcessingRequest.RequestCase r = request.getRequestCase();
                 switch (r) {
+                    case RESPONSE_HEADERS:
+                        if (!request.getAttributesMap().isEmpty() && request.getAttributesMap().get("envoy.filters.http.ext_proc") != null && request.getAttributesMap().get("envoy.filters.http.ext_proc").getFieldsMap().get("xds.route_metadata") != null){
+                            Value value = request.getAttributesMap().get("envoy.filters.http.ext_proc").getFieldsMap().get("xds.route_metadata");
+                            FilterMetadata metadata = convertStringToFilterMetadata(value.getStringValue());
+                            filterMetadata.backendBasedAIRatelimitDescriptorValue = metadata.backendBasedAIRatelimitDescriptorValue;
+                            filterMetadata.enableBackendBasedAIRatelimit = metadata.enableBackendBasedAIRatelimit;
+                        }
+                        executorService.submit(() -> {
+                            Struct filterMetadataFromAuthZ = request.getMetadataContext().getFilterMetadataOrDefault("envoy.filters.http.ext_authz", null);
+                            if (filterMetadataFromAuthZ != null) {
+                                String extractTokenFrom = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_EXTRACT_TOKEN_FROM).getStringValue();
+                                String promptTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_PROMPT_TOKEN_ID).getStringValue();
+                                String completionTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_COMPLETION_TOKEN_ID).getStringValue();
+                                String totalTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_TOTAL_TOKEN_ID).getStringValue();
+
+                                Usage usage = extractUsageFromHeaders(request.getResponseHeaders(), completionTokenID, promptTokenID, totalTokenID);
+                                if (usage == null) {
+                                    logger.error("Usage details not found..");
+                                    responseObserver.onCompleted();
+                                    return;
+                                }
+                                List<RatelimitClient.KeyValueHitsAddend> configs = new ArrayList<>();
+                                if (filterMetadata.enableBackendBasedAIRatelimit) {
+                                    configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_REQUEST_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getPrompt_tokens() - 1));
+                                    configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_RESPONSE_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getCompletion_tokens() - 1));
+                                    configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_TOTAL_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getTotal_tokens() - 1));
+                                }
+                                if (request.hasMetadataContext()) {
+                                    if (filterMetadataFromAuthZ != null) {
+                                        if (filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY) != null && filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION) != null) {
+                                            String orgAndAIRLPolicyValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY).getStringValue();
+                                            String aiRLSubsValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION).getStringValue();
+                                            configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_REQUEST_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getPrompt_tokens() - 1)));
+                                            configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_RESPONSE_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getCompletion_tokens() - 1)));
+                                            configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_TOTAL_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getTotal_tokens() - 1)));
+                                        }
+                                    }
+                                }
+                                ratelimitClient.shouldRatelimit(configs);
+                            }
+                        });
+                        responseObserver.onCompleted();
                     case RESPONSE_BODY:
                         if (!request.getAttributesMap().isEmpty() && request.getAttributesMap().get("envoy.filters.http.ext_proc") != null && request.getAttributesMap().get("envoy.filters.http.ext_proc").getFieldsMap().get("xds.route_metadata") != null){
                             Value value = request.getAttributesMap().get("envoy.filters.http.ext_proc").getFieldsMap().get("xds.route_metadata");
                             FilterMetadata metadata = convertStringToFilterMetadata(value.getStringValue());
                             filterMetadata.backendBasedAIRatelimitDescriptorValue = metadata.backendBasedAIRatelimitDescriptorValue;
                             filterMetadata.enableBackendBasedAIRatelimit = metadata.enableBackendBasedAIRatelimit;
-                            filterMetadata.enableSubscriptionBasedAIRatelimit = metadata.enableSubscriptionBasedAIRatelimit;
                         }
-                        System.out.println("In the response flow metadata descirtor:" + filterMetadata.backendBasedAIRatelimitDescriptorValue);
                         if (request.hasResponseBody()) {
                             final byte[] bodyFromResponse = request.getResponseBody().getBody().toByteArray();
                             executorService.submit(() -> {
-                                String body = null;
+                                String body;
                                 try {
                                     body = decompress(bodyFromResponse);
                                 } catch (Exception e) {
@@ -118,16 +159,14 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                                         configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_RESPONSE_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getCompletion_tokens() - 1));
                                         configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_TOTAL_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getTotal_tokens() - 1));
                                     }
-                                    if (filterMetadata.enableSubscriptionBasedAIRatelimit) {
-                                        if (request.hasMetadataContext()) {
-                                            if (filterMetadataFromAuthZ != null) {
-                                                if (filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY) != null && filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION) != null) {
-                                                    String orgAndAIRLPolicyValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY).getStringValue();
-                                                    String aiRLSubsValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION).getStringValue();
-                                                    configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_REQUEST_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getPrompt_tokens() - 1)));
-                                                    configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_RESPONSE_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getCompletion_tokens() - 1)));
-                                                    configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_TOTAL_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getTotal_tokens() - 1)));
-                                                }
+                                    if (request.hasMetadataContext()) {
+                                        if (filterMetadataFromAuthZ != null) {
+                                            if (filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY) != null && filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION) != null) {
+                                                String orgAndAIRLPolicyValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY).getStringValue();
+                                                String aiRLSubsValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION).getStringValue();
+                                                configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_REQUEST_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getPrompt_tokens() - 1)));
+                                                configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_RESPONSE_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getCompletion_tokens() - 1)));
+                                                configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_TOTAL_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getTotal_tokens() - 1)));
                                             }
                                         }
                                     }
@@ -136,7 +175,6 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                             });
                             responseObserver.onCompleted();
                         } else {
-                            System.out.println("Request does not have response body");
                             responseObserver.onCompleted();
                         }
 
@@ -145,7 +183,7 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
 
             @Override
             public void onError(Throwable err) {
-                System.out.println("on error ...."+ err.getLocalizedMessage() + " " + err.getMessage() + " " + err.toString()+ " ****");
+                logger.error("Error initiated from envoy in the external processing session. Error: " + err);
             }
 
             @Override
@@ -180,13 +218,11 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
 
     // The FilterMetadata class as per your request
     private static class FilterMetadata {
-        boolean enableSubscriptionBasedAIRatelimit;
         boolean enableBackendBasedAIRatelimit;
         String backendBasedAIRatelimitDescriptorValue;
         @Override
         public String toString() {
             return "FilterMetadata{" +
-                    "enableSubscriptionBasedAIRatelimit=" + enableSubscriptionBasedAIRatelimit +
                     ", enableBackendBasedAIRatelimit=" + enableBackendBasedAIRatelimit +
                     ", backendBasedAIRatelimitDescriptorValue='" + backendBasedAIRatelimitDescriptorValue + '\'' +
                     '}';
@@ -199,12 +235,10 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
         // Regex patterns to extract specific fields
         String backendValuePattern = "key: \"BackendBasedAIRatelimitDescriptorValue\".*?string_value: \"(.*?)\"";
         String enableBackendPattern = "key: \"EnableBackendBasedAIRatelimit\".*?string_value: \"(.*?)\"";
-        String enableSubscriptionPattern = "key: \"EnableSubscriptionBasedAIRatelimit\".*?string_value: \"(.*?)\"";
 
         // Extract and assign to the FilterMetadata object
         metadata.backendBasedAIRatelimitDescriptorValue = extractValue(input, backendValuePattern);
         metadata.enableBackendBasedAIRatelimit = Boolean.parseBoolean(extractValue(input, enableBackendPattern));
-        metadata.enableSubscriptionBasedAIRatelimit = Boolean.parseBoolean(extractValue(input, enableSubscriptionPattern));
 
         return metadata;
     }
@@ -222,6 +256,27 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
     public static String sanitize(String input) {
         // Replace all newline characters and tabs with a space
         return input.replaceAll("[\\t\\n\\r]+", " ").trim();
+    }
+
+    private static Usage extractUsageFromHeaders(HttpHeaders headers, String completionTokenPath, String promptTokenPath, String totalTokenPath) {
+        try {
+            Usage usage = new Usage();
+            for (HeaderValue headerValue : headers.getHeaders().getHeadersList()) {
+                if (headerValue.getKey().equals(completionTokenPath)) {
+                    usage.completion_tokens = Integer.parseInt(headerValue.getValue());
+                }
+                if (headerValue.getKey().equals(promptTokenPath)) {
+                    usage.prompt_tokens = Integer.parseInt(headerValue.getValue());
+                }
+                if (headerValue.getKey().equals(totalTokenPath)) {
+                    usage.total_tokens = Integer.parseInt(headerValue.getValue());
+                }
+            }
+            return usage;
+        } catch (Exception e) {
+            logger.error("Error occured while getting yusage info from headers" + e);
+            return null;
+        }
     }
 
     private static Usage extractUsageFromBody(String body, String completionTokenPath, String promptTokenPath, String totalTokenPath) {
@@ -284,7 +339,7 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
             return usage;
 
         } catch (Exception e) {
-            System.out.println(String.format("Unexpected error while extracting usage from the body: %s", body) + " \n" + e);
+            logger.error(String.format("Unexpected error while extracting usage from the body: %s", body) + " \n" + e);
             return null;
         }
     }

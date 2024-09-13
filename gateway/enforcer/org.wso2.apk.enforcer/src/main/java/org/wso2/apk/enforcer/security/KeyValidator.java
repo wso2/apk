@@ -263,8 +263,6 @@ public class KeyValidator {
         return infoDTO;
     }
 
-
-
     private static void validate(APIKeyValidationInfoDTO infoDTO, Application app, Subscription sub) {
 
         // Validate subscription status

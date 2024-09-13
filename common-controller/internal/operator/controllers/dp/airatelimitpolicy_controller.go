@@ -26,27 +26,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	// "context"
-	// "fmt"
-	// "time"
-
-	// logger "github.com/sirupsen/logrus"
-	// k8error "k8s.io/apimachinery/pkg/api/errors"
-	// "k8s.io/apimachinery/pkg/fields"
-	// "k8s.io/apimachinery/pkg/runtime"
-	// "k8s.io/apimachinery/pkg/types"
-	// ctrl "sigs.k8s.io/controller-runtime"
-	// "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
-	// "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	// "sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	// k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	// gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	cache "github.com/wso2/apk/common-controller/internal/cache"
@@ -54,8 +38,6 @@ import (
 	loggers "github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/utils"
 	xds "github.com/wso2/apk/common-controller/internal/xds"
-	// dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	// dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/constants"
 )
 
@@ -73,12 +55,6 @@ func NewAIRatelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelim
 		ods: ratelimitStore,
 	}
 
-	// ctx := context.Background()
-	// if err := addIndexes(ctx, mgr); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER, "Error adding indexes: %v", err))
-	// 	return err
-	// }
-
 	c, err := controller.New(constants.AIRatelimitController, mgr, controller.Options{Reconciler: aiRateLimitPolicyReconciler})
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2663, logging.BLOCKER,
@@ -88,20 +64,6 @@ func NewAIRatelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelim
 
 	conf := config.ReadConfigs()
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
-
-	// if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.API{}),
-	// 	handler.EnqueueRequestsFromMapFunc(aiRateLimitPolicyReconciler.getRatelimitForAPI), predicates...); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER,
-	// 		"Error watching API resources: %v", err))
-	// 	return err
-	// }
-
-	// if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{}),
-	// 	handler.EnqueueRequestsFromMapFunc(aiRateLimitPolicyReconciler.getRatelimitForHTTPRoute), predicates...); err != nil {
-	// 	loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
-	// 		"Error watching HTTPRoute resources: %v", err))
-	// 	return err
-	// }
 
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIRateLimitPolicy{}), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
@@ -153,7 +115,6 @@ func (r *AIRateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
 	}
-	loggers.LoggerAPKOperator.Infof("AIRatelimit reconcile..*****.")
 	return ctrl.Result{}, nil
 }
 

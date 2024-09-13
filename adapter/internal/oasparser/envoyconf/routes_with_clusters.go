@@ -40,6 +40,7 @@ import (
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	extProcessorv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	ratelimitv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 	lua "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	upstreams "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
@@ -865,7 +866,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		LuaLocal:                            luaFilter,
 		wellknown.CORS:                      corsFilter,
 	}
-	if !params.isAiAPI || (!resource.GetEnableBackendBasedAIRatelimit() && !resource.GetEnableSubscriptionBasedAIRatelimit()) {
+	if !params.isAiAPI {
 		perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
 			Override: &extProcessorv3.ExtProcPerRoute_Disabled{
 				Disabled: true,
@@ -877,7 +878,36 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			Value:   dataExtProc,
 		}
 		perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
+	} else {
+		if strings.ToUpper(resource.GetExtractTokenFromValue()) == "HEADER" {
+			perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+				Override: &extProcessorv3.ExtProcPerRoute_Overrides{
+					Overrides: &extProcessorv3.ExtProcOverrides{
+						ProcessingMode: &extProcessorv3.ProcessingMode{
+							RequestHeaderMode: extProcessorv3.ProcessingMode_SKIP,
+							ResponseHeaderMode: extProcessorv3.ProcessingMode_SKIP,
+							ResponseBodyMode: extProcessorv3.ProcessingMode_NONE,
+						},
+					},
+				},
+			}
+			dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+			filterExtProc := &any.Any{
+				TypeUrl: extProcPerRouteName,
+				Value:   dataExtProc,
+			}
+			perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
+		}
 	}
+	perFilterConfigRL := ratelimitv3.RateLimitPerRoute{
+		VhRateLimits: ratelimitv3.RateLimitPerRoute_INCLUDE,
+	}
+	ratelimitPerRoute, _ := proto.Marshal(&perFilterConfigRL)
+	filterrl := &any.Any{
+		TypeUrl: ratelimitPerRouteName,
+		Value:   ratelimitPerRoute,
+	}
+	perRouteFilterConfigs[RatelimitFilterName] = filterrl
 
 	logger.LoggerOasparser.Debugf("adding route : %s for API : %s", resourcePath, title)
 
@@ -930,8 +960,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	}
 	routeConfig := resource.GetEndpoints().Config
 	metaData := &corev3.Metadata{}
-	logger.LoggerAPI.Infof("Is backend based rl enabled: %+v, Is subs based rl enabled: %+v", resource.GetEnableBackendBasedAIRatelimit(), resource.GetEnableSubscriptionBasedAIRatelimit())
-	if params.isAiAPI && (resource.GetEnableBackendBasedAIRatelimit() || resource.GetEnableSubscriptionBasedAIRatelimit()) {
+	if params.isAiAPI {
 		metaData = &corev3.Metadata{
 			FilterMetadata: map[string]*structpb.Struct{
 				"envoy.filters.http.ext_proc": &structpb.Struct{
@@ -939,11 +968,6 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 						"EnableBackendBasedAIRatelimit": &structpb.Value{
 							Kind: &structpb.Value_StringValue{
 								StringValue: fmt.Sprintf("%t", resource.GetEnableBackendBasedAIRatelimit()),
-							},
-						},
-						"EnableSubscriptionBasedAIRatelimit": &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: fmt.Sprintf("%t", resource.GetEnableSubscriptionBasedAIRatelimit()),
 							},
 						},
 						"BackendBasedAIRatelimitDescriptorValue": &structpb.Value{
@@ -1092,8 +1116,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				metadataValue := operation.GetMethod() + "_to_" + newMethod
 				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
 
-				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableSubscriptionBasedAIRatelimit() && params.isAiAPI, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
-				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableSubscriptionBasedAIRatelimit() && params.isAiAPI, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
+				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
+				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
 
 				requestHeadersToRemove := make([]string,0)
 				if params.isAiAPI {
@@ -1125,7 +1149,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			} else {
 				var action *routev3.Route_Route
 				if requestRedirectAction == nil {
-					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableSubscriptionBasedAIRatelimit() && params.isAiAPI, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
+					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
 				}
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
@@ -1154,7 +1178,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
-		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableSubscriptionBasedAIRatelimit(), resource.GetEnableBackendBasedAIRatelimit(), resource.GetBackendBasedAIRatelimitDescriptorValue())
+		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
 		requestHeadersToRemove := make([]string,0)

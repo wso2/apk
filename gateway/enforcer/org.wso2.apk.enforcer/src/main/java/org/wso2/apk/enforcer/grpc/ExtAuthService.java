@@ -270,7 +270,6 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
      * @param value
      */
     private void addMetadata(Struct.Builder structBuilder, String key, String value) {
-        System.out.println("Key: " + key + " value: " + value);
         structBuilder.putFields(key, Value.newBuilder().setStringValue(value).build());
     }
 
@@ -309,6 +308,4 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
                 .setDeniedResponse(deniedResponsePreparer.build())
                 .build();
     }
-
-
 }

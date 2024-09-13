@@ -8,17 +8,20 @@ import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.config.ConfigHolder;
+import org.wso2.apk.enforcer.grpc.ExternalProcessorService;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import javax.net.ssl.SSLException;
 
 public class RatelimitClient {
+    private static final Logger logger = LogManager.getLogger(RatelimitClient.class);
     RateLimitServiceGrpc.RateLimitServiceBlockingStub stub;
+
     public RatelimitClient(){
         File certFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPublicKeyPath()).toFile();
         File keyFile = Paths.get(ConfigHolder.getInstance().getEnvVarConfig().getEnforcerPrivateKeyPath()).toFile();
@@ -30,7 +33,7 @@ public class RatelimitClient {
                     .keyManager(certFile, keyFile)
                     .build();
         } catch (SSLException e) {
-            System.out.println("Error while generating SSL Context."+ e);
+            logger.error("Error while generating SSL Context."+ e);
         }
         String rlHost = ConfigHolder.getInstance().getEnvVarConfig().getRatelimiterHost();
         int port = ConfigHolder.getInstance().getEnvVarConfig().getRatelimiterPort();
@@ -59,7 +62,6 @@ public class RatelimitClient {
                     .setHitsAddend(hitsAddend)
                     .build();
             RateLimitResponse rateLimitResponse = stub.shouldRateLimit(rateLimitRequest);
-            System.out.println(rateLimitResponse.getOverallCode());
         }
     }
 

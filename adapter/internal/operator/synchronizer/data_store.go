@@ -75,11 +75,6 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 	var updated bool
 	events := []string{}
 	cachedAPI := ods.apiStore[apiNamespacedName]
-	if cachedAPI.IsAiSubscriptionRatelimitEnabled != apiState.IsAiSubscriptionRatelimitEnabled {
-		cachedAPI.IsAiSubscriptionRatelimitEnabled = apiState.IsAiSubscriptionRatelimitEnabled
-		updated = true
-		events = append(events, "Subscription based AI RatelimitPolicy")
-	}
 
 	if cachedAPI.AIProvider == nil && apiState.AIProvider != nil {
 		cachedAPI.AIProvider = apiState.AIProvider
@@ -114,18 +109,15 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 			for key, aiRl := range apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping {
 				if cachedAIRl, exists := cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping[key]; exists {
 					if utils.NamespacedName(cachedAIRl).String() != utils.NamespacedName(aiRl).String() || cachedAIRl.Generation != aiRl.Generation {
-						loggers.LoggerAPI.Infof("Returning true * %s %s %d %d", utils.NamespacedName(cachedAIRl).String(), utils.NamespacedName(aiRl).String(), cachedAIRl.Generation, aiRl.Generation)
 						updated = true
 						break
 					} 
 				} else {
-					loggers.LoggerAPI.Info("Returning true&&")
 					updated = true
 					break
 				}
 			}
 			if len(cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) != len(apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) {
-				loggers.LoggerAPI.Info("Returning true ***")
 				updated = true
 			}
 		}
@@ -169,18 +161,15 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 			for key, aiRl := range apiState.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping {
 				if cachedAIRl, exists := cachedAPI.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping[key]; exists {
 					if utils.NamespacedName(cachedAIRl).String() != utils.NamespacedName(aiRl).String() || cachedAIRl.Generation != aiRl.Generation {
-						loggers.LoggerAPI.Info("Returning true")
 						updated = true
 						break
 					} 
 				} else {
-					loggers.LoggerAPI.Info("Returning true")
 					updated = true
 					break
 				}
 			}
 			if len(cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) != len(apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) {
-				loggers.LoggerAPI.Info("Returning true")
 				updated = true
 			}
 		}
