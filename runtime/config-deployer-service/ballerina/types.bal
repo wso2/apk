@@ -60,7 +60,7 @@ public type ErrorListItem record {
 # + securityType - Configuration for the basic endpoint security.
 public type EndpointSecurity record {
     boolean enabled?;
-    BasicEndpointSecurity securityType?;
+    BasicEndpointSecurity|APIKeyEndpointSecurity securityType?;
 };
 
 # Configuration for Custom Claims.
@@ -102,9 +102,22 @@ public type RateLimit record {
 # + userNameKey - The key to retrieve the username from the secret.
 # + passwordKey - The key to retrieve the password from the secret.
 public type BasicEndpointSecurity record {
-    string secretName?;
-    string userNameKey?;
-    string passwordKey?;
+    string secretName;
+    string userNameKey;
+    string passwordKey;
+};
+
+# Configuration for API Key Endpoint Security.
+# 
+# + secretName - The name of the secret containing the API key.
+# + in - The mode of sending Ex: header/query.
+# + apiKeyNameKey - API key Header name.
+# + apiKeyValueKey - Key to retrieve API key Header value from the secret.
+public type APIKeyEndpointSecurity record {
+    string secretName;
+    string 'in;
+    string apiKeyNameKey;
+    string apiKeyValueKey;
 };
 
 # Configuration for APK Operations.
@@ -407,6 +420,7 @@ public type InterceptorPolicy record {
 # + subscriptionValidation - Is subscription validation enabled for the API.
 # + environment - Environment of the API.
 # + endpointConfigurations - Sandbox and production endpoint configurations of the API
+# + aiProvider - AI provider configuration for the API.
 # + operations - List of operations for this API.
 # + apiPolicies - Policies like interceptor to be added to the entire API.
 # + rateLimit - Rate limiting configuration for the API.
@@ -427,12 +441,22 @@ public type APKConf record {
     boolean subscriptionValidation = false;
     string environment?;
     EndpointConfigurations endpointConfigurations?;
+    AIProvider aiProvider?;
     APKOperations[] operations?;
     APIOperationPolicies apiPolicies?;
     RateLimit rateLimit?;
     AuthenticationRequest[] authentication?;
     APKConf_additionalProperties[] additionalProperties?;
     CORSConfiguration corsConfiguration?;
+};
+
+# Configuration for an AI provider.
+# 
+# + name - The name of the AI provider.
+# + apiVersion - The version of the AI provider.
+public type AIProvider record {
+    string name;
+    string apiVersion;
 };
 
 # Configuration for Interceptor Policy parameters.

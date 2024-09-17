@@ -55,6 +55,8 @@ components:
             Environment of the API
         endpointConfigurations:
           $ref: "#/components/schemas/EndpointConfigurations"
+        aiProvider:
+          $ref: "#/components/schemas/AIProvider"
         operations:
           type: array
           items:
@@ -325,6 +327,14 @@ components:
             - Day
           example: Minute
       additionalProperties: false
+    AIProvider:
+      title: AI Provider
+      properties:
+        name:
+          type: string
+        apiVersion:
+          type: string
+      additionalProperties: false
     EndpointConfigurations:
       title: Endpoint configs
       properties:
@@ -368,6 +378,7 @@ components:
         securityType:
           oneOf:
             - $ref: "#/components/schemas/BasicEndpointSecurity"
+            - $ref: "#/components/schemas/APIKeyEndpointSecurity"
       additionalProperties: false
     BasicEndpointSecurity:
       type: object
@@ -377,6 +388,22 @@ components:
         userNameKey:
           type: string
         passwordKey:
+          type: string
+      additionalProperties: false
+    APIKeyEndpointSecurity:
+      type: object
+      properties:
+        secretName:
+          type: string
+        in:
+          type: string
+          enum:
+            - Header
+            - Query
+          default: Header
+        apiKeyNameKey:
+          type: string
+        apiKeyValueKey:
           type: string
       additionalProperties: false
     Resiliency:

@@ -106,7 +106,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.APIPolicy{}), handler.EnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.APIPolicy{}), handler.EnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3101, logging.BLOCKER, "Error watching APIPolicy resources: %v", err))
 		return err
@@ -252,9 +252,9 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 }
 
 func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context.Context,
-	gateway *gwapiv1.Gateway) (map[string]dpv1alpha2.APIPolicy, error) {
-	apiPolicies := make(map[string]dpv1alpha2.APIPolicy)
-	apiPolicyList := &dpv1alpha2.APIPolicyList{}
+	gateway *gwapiv1.Gateway) (map[string]dpv1alpha3.APIPolicy, error) {
+	apiPolicies := make(map[string]dpv1alpha3.APIPolicy)
+	apiPolicyList := &dpv1alpha3.APIPolicyList{}
 	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayAPIPolicyIndex, utils.NamespacedName(gateway).String()),
 	}); err != nil {
@@ -269,7 +269,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context
 
 // getInterceptorServicesForGateway returns the list of interceptor services for the given gateway
 func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx context.Context,
-	gatewayAPIPolicies map[string]dpv1alpha2.APIPolicy) (map[string]dpv1alpha1.InterceptorService, error) {
+	gatewayAPIPolicies map[string]dpv1alpha3.APIPolicy) (map[string]dpv1alpha1.InterceptorService, error) {
 	allGatewayAPIPolicies := maps.Values(gatewayAPIPolicies)
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	for _, apiPolicy := range allGatewayAPIPolicies {
@@ -356,7 +356,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(ctx con
 
 	requests := []reconcile.Request{}
 
-	apiPolicyList := &dpv1alpha2.APIPolicyList{}
+	apiPolicyList := &dpv1alpha3.APIPolicyList{}
 	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
@@ -383,7 +383,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(ctx context.Con
 
 	requests := []reconcile.Request{}
 
-	apiPolicyList := &dpv1alpha2.APIPolicyList{}
+	apiPolicyList := &dpv1alpha3.APIPolicyList{}
 	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendJWTAPIPolicyIndex, utils.NamespacedName(backendJWT).String()),
 	}); err != nil {
@@ -541,7 +541,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 // getGatewaysForAPIPolicy triggers the Gateway controller reconcile method
 // based on the changes detected from APIPolicy objects.
 func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	apiPolicy, ok := obj.(*dpv1alpha2.APIPolicy)
+	apiPolicy, ok := obj.(*dpv1alpha3.APIPolicy)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", apiPolicy))
 		return nil
@@ -596,9 +596,9 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// Gateway to APIPolicy indexer
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.APIPolicy{}, gatewayAPIPolicyIndex,
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.APIPolicy{}, gatewayAPIPolicyIndex,
 		func(rawObj k8client.Object) []string {
-			apiPolicy := rawObj.(*dpv1alpha2.APIPolicy)
+			apiPolicy := rawObj.(*dpv1alpha3.APIPolicy)
 			var httpRoutes []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindGateway {
 

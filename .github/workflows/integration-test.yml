@@ -230,7 +230,7 @@ jobs:
        fail_on_test_failures: true
     - name: Archieve Logs
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: apk-integration-test-go-logs
         path: 'podlogs/*.log'
@@ -360,7 +360,7 @@ jobs:
            ls -l podlogs
     - name: Archieve Logs
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: apk-integration-test-cucmber-logs
         path: podlogs/*.log

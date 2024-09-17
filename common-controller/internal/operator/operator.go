@@ -141,7 +141,7 @@ func InitOperator(metricsConfig config.Metrics) {
 			"Unable to create webhook for Ratelimit, error: %v", err))
 	}
 
-	if err = (&dpv1alpha2.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+	if err = (&dpv1alpha3.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
 			"Unable to create webhook for APIPolicy, error: %v", err))
 	}

@@ -35,6 +35,7 @@ import (
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -594,7 +595,7 @@ func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
 
 // GetInterceptorService reads InterceptorService when interceptorReference is given
 func GetInterceptorService(ctx context.Context, client k8client.Client, namespace string,
-	interceptorReference *dpv1alpha2.InterceptorReference, api *dpv1alpha2.API) *dpv1alpha1.InterceptorService {
+	interceptorReference *dpv1alpha3.InterceptorReference, api *dpv1alpha2.API) *dpv1alpha1.InterceptorService {
 	interceptorService := &dpv1alpha1.InterceptorService{}
 	interceptorRef := types.NamespacedName{
 		Namespace: namespace,
@@ -622,6 +623,24 @@ func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
 		}
 	}
 	return backendJWT
+}
+
+// GetAIProvider reads AIProvider when aiProviderReference is given
+func GetAIProvider(ctx context.Context, client k8client.Client, namespace string,
+	aiProviderReference string, api *dpv1alpha2.API) *dpv1alpha3.AIProvider {
+	aiProvider := &dpv1alpha3.AIProvider{}
+	aiProviderRef := types.NamespacedName{
+		Namespace: namespace,
+		Name:      aiProviderReference,
+	}
+	loggers.LoggerAPKOperator.Debugf("AIProviderRef: %v", aiProviderRef)
+	if err := ResolveRef(ctx, client, api, aiProviderRef, false, aiProvider); err != nil {
+		if !apierrors.IsNotFound(err) {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2663, logging.CRITICAL, "Error while getting aiProvider %s, error: %v", aiProviderRef, err.Error()))
+		}
+	}
+	loggers.LoggerAPKOperator.Debugf("AIProvider: %v", aiProvider)
+	return aiProvider
 }
 
 // RetrieveAPIList retrieves API list from the given kubernetes client

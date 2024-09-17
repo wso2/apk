@@ -358,4 +358,19 @@ public interface ApiOrBuilder extends
    */
   org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder getEndpointSecurityOrBuilder(
       int index);
+
+  /**
+   * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+   * @return Whether the aiprovider field is set.
+   */
+  boolean hasAiprovider();
+  /**
+   * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+   * @return The aiprovider.
+   */
+  org.wso2.apk.enforcer.discovery.api.AIProvider getAiprovider();
+  /**
+   * <code>.wso2.discovery.api.AIProvider aiprovider = 31;</code>
+   */
+  org.wso2.apk.enforcer.discovery.api.AIProviderOrBuilder getAiproviderOrBuilder();
 }

@@ -128,7 +128,7 @@ type InterceptorReference struct {
 // AIProviderReference holds reference to AIProvider resource
 type AIProviderReference struct {
 	// Name is the referced CR's name of AIProvider resource.
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 }
 
 // APIPolicyStatus defines the observed state of APIPolicy

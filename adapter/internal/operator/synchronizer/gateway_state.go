@@ -36,7 +36,7 @@ type GatewayState struct {
 // +k8s:deepcopy-gen=true
 type GatewayStateData struct {
 	GatewayResolvedListenerCerts     map[string]map[string][]byte
-	GatewayAPIPolicies               map[string]v1alpha2.APIPolicy
+	GatewayAPIPolicies               map[string]v1alpha3.APIPolicy
 	GatewayBackendMapping            map[string]*v1alpha2.ResolvedBackend
 	GatewayInterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	GatewayCustomRateLimitPolicies   map[string]*v1alpha3.RateLimitPolicy

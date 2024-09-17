@@ -16,7 +16,7 @@
 // under the License.
 //
 public type Backend record {
-    string apiVersion = "dp.wso2.com/v1alpha1";
+    string apiVersion = "dp.wso2.com/v1alpha2";
     string kind = "Backend";
     Metadata metadata;
     BackendSpec spec;
@@ -44,6 +44,18 @@ public type BasicSecurityConfig record {
 
 public type SecurityConfig record {
     BasicSecurityConfig basic?;
+    APIKeySecurityConfig apiKey?;
+};
+
+public type APIKeySecurityConfig record {
+    string name;
+    string 'in;
+    ValueFrom valueFrom;
+};
+
+public type ValueFrom record {
+    string name;
+    string valueKey;
 };
 
 public type SecretRefConfig record {
@@ -51,7 +63,6 @@ public type SecretRefConfig record {
    string usernameKey = "username";
    string passwordKey = "password"; 
 };
-
 
 public type RefConfig record {
     string key;
@@ -85,7 +96,7 @@ public type TLSConfig record {
 
 };
 public type BackendList record {
-    string apiVersion="dp.wso2.com/v1alpha1";
+    string apiVersion="dp.wso2.com/v1alpha2";
     string kind = "BackendList";
     Backend [] items;
     ListMeta metadata;
