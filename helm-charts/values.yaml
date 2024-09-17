@@ -94,7 +94,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: IfNotPresent
-          image: apk-config-deployer-service:1.2.0-SNAPSHOT
+          image: apk-config-deployer-service:1.2.0-m1
         # debug: true
           # configs:
           #   tls:
