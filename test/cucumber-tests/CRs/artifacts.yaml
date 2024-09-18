@@ -1194,3 +1194,531 @@ type: Opaque
 data:
   apiKey: c2FtcGF0aA==
 ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-deployment-subs
+  namespace: apk-integration-test
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: llm-app-subs
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: llm-app-subs
+    spec:
+      containers:
+        - image: tharsanan/llm-backend:latest
+          imagePullPolicy: Always
+          name: llm-backend-container-subs
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service-subs
+  namespace: apk-integration-test
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: llm-app-subs
+  type: ClusterIP
+
+---
+
+apiVersion: dp.wso2.com/v1alpha2
+kind: API
+metadata:
+  name: llm-api-subs
+  namespace: apk-integration-test
+spec:
+  apiName: llm-api-subs
+  apiType: REST
+  apiVersion: v1.0.0
+  basePath: /llm-api-subs/v1.0.0
+  isDefaultVersion: true
+  production:
+    - routeRefs:
+        - llm-route-subs
+  organization: default
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: llm-route-subs
+  namespace: apk-integration-test
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
+  hostnames:
+    - default.gw.wso2.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: llm-backend-subs
+---
+apiVersion: dp.wso2.com/v1alpha2
+kind: Backend
+metadata:
+  name: llm-backend-subs
+  namespace: apk-integration-test
+spec:
+  services:
+    - host: llm-service-subs
+      port: 80
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIRateLimitPolicy
+metadata:
+  name: llm-backend-rl-subs
+  namespace: apk-integration-test
+spec:
+  override:
+    organization: default
+    tokenCount:
+      unit: Minute
+      requestTokenCount: 5000
+      responseTokenCount: 10000
+      totalTokenCount: 15000
+    requestCount:
+      requestsPerUnit: 6000
+      unit: Minute
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: APIPolicy
+metadata:
+  name: llm-policy-subs
+  namespace: apk-integration-test
+spec:
+  override:
+    aiProvider:
+      name: "llm-provider-subs"
+    subscriptionValidation: true
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name: llm-api-subs
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIProvider
+metadata:
+  name: llm-provider-subs
+  namespace: apk-integration-test
+spec:
+  providerName : "AzureAI"
+  providerAPIVersion : "2024-06-01"
+  organization : "default"
+  model:
+    in: "Body"
+    value: "model"
+  rateLimitFields:
+    promptTokens:
+      in: "Body"
+      value: "usage.prompt_tokens"
+    completionToken:
+      in: "Body"
+      value: "usage.completion_tokens"
+    totalToken:
+      in: "Body"
+      value: "usage.total_tokens"
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: Subscription
+metadata:
+  name: llm-subs
+  namespace: apk-integration-test
+spec:
+  organization: "default"
+  subscriptionStatus: "ACTIVE"
+  api:
+    name: "llm-api-subs"
+    version: "v1.0.0"
+  ratelimitRef:
+    name : llm-backend-rl-subs
+    level: application
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: llm-app-map
+  namespace: apk-integration-test
+spec:
+  applicationRef: llm-app
+  subscriptionRef: llm-subs
+---
+kind: Application
+apiVersion: cp.wso2.com/v1alpha2
+metadata:
+  name: llm-app
+  namespace : apk-integration-test
+spec:
+  name: sample-app
+  owner: admin
+  organization: default
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120005
+          keyType: PRODUCTION
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-deployment-header
+  namespace: apk-integration-test
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: llm-app-header
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: llm-app-header
+    spec:
+      containers:
+        - image: tharsanan/llm-backend:latest
+          imagePullPolicy: Always
+          name: llm-backend-container-header
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service-header
+  namespace: apk-integration-test
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: llm-app-header
+  type: ClusterIP
+
+---
+
+apiVersion: dp.wso2.com/v1alpha2
+kind: API
+metadata:
+  name: llm-api-header
+  namespace: apk-integration-test
+spec:
+  apiName: llm-api-header
+  apiType: REST
+  apiVersion: v1.0.0
+  basePath: /llm-api-header/v1.0.0
+  isDefaultVersion: true
+  production:
+    - routeRefs:
+        - llm-route-header
+  organization: default
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: llm-route-header
+  namespace: apk-integration-test
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
+  hostnames:
+    - default.gw.wso2.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: llm-backend-header
+---
+apiVersion: dp.wso2.com/v1alpha2
+kind: Backend
+metadata:
+  name: llm-backend-header
+  namespace: apk-integration-test
+spec:
+  services:
+    - host: llm-service-header
+      port: 80
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIRateLimitPolicy
+metadata:
+  name: llm-backend-rl-header
+  namespace: apk-integration-test
+spec:
+  override:
+    organization: default
+    tokenCount:
+      unit: Minute
+      requestTokenCount: 5000
+      responseTokenCount: 10000
+      totalTokenCount: 15000
+    requestCount:
+      requestsPerUnit: 6000
+      unit: Minute
+  targetRef:
+    kind: Backend
+    name: llm-backend-header
+    group: gateway.networking.k8s.io
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: APIPolicy
+metadata:
+  name: llm-policy-header
+  namespace: apk-integration-test
+spec:
+  override:
+    aiProvider:
+      name: "llm-provider-header"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name: llm-api-header
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIProvider
+metadata:
+  name: llm-provider-header
+  namespace: apk-integration-test
+spec:
+  providerName : "AzureAI"
+  providerAPIVersion : "2024-06-01"
+  organization : "default"
+  model:
+    in: "Header"
+    value: "model"
+  rateLimitFields:
+    promptTokens:
+      in: "Header"
+      value: "prompt_tokens"
+    completionToken:
+      in: "Header"
+      value: "completion_tokens"
+    totalToken:
+      in: "Header"
+      value: "total_tokens"
+---
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llm-deployment
+  namespace: apk-integration-test
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: llm-app
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: llm-app
+    spec:
+      containers:
+        - image: tharsanan/llm-backend:latest
+          imagePullPolicy: Always
+          name: llm-backend-container
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llm-service
+  namespace: apk-integration-test
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: llm-app
+  type: ClusterIP
+
+---
+
+apiVersion: dp.wso2.com/v1alpha2
+kind: API
+metadata:
+  name: llm-api
+  namespace: apk-integration-test
+spec:
+  apiName: llm-api
+  apiType: REST
+  apiVersion: v1.0.0
+  basePath: /llm-api/v1.0.0
+  isDefaultVersion: true
+  production:
+    - routeRefs:
+        - llm-route
+  organization: default
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: llm-route
+  namespace: apk-integration-test
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
+  hostnames:
+    - default.gw.wso2.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: llm-backend
+---
+apiVersion: dp.wso2.com/v1alpha2
+kind: Backend
+metadata:
+  name: llm-backend
+  namespace: apk-integration-test
+spec:
+  services:
+    - host: llm-service
+      port: 80
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIRateLimitPolicy
+metadata:
+  name: llm-backend-rl
+  namespace: apk-integration-test
+spec:
+  override:
+    organization: default
+    tokenCount:
+      unit: Minute
+      requestTokenCount: 5000
+      responseTokenCount: 10000
+      totalTokenCount: 15000
+    requestCount:
+      requestsPerUnit: 6000
+      unit: Minute
+  targetRef:
+    kind: Backend
+    name: llm-backend
+    group: gateway.networking.k8s.io
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: APIPolicy
+metadata:
+  name: llm-policy
+  namespace: apk-integration-test
+spec:
+  override:
+    aiProvider:
+      name: "llm-provider"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name: llm-api
+---
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIProvider
+metadata:
+  name: llm-provider
+  namespace: apk-integration-test
+spec:
+  providerName : "AzureAI"
+  providerAPIVersion : "2024-06-01"
+  organization : "default"
+  model:
+    in: "Body"
+    value: "model"
+  rateLimitFields:
+    promptTokens:
+      in: "Body"
+      value: "usage.prompt_tokens"
+    completionToken:
+      in: "Body"
+      value: "usage.completion_tokens"
+    totalToken:
+      in: "Body"
+      value: "usage.total_tokens"
+---
