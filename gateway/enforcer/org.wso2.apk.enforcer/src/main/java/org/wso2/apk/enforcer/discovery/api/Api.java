@@ -164,9 +164,17 @@ private static final long serialVersionUID = 0L;
             mutualSSL_ = s;
             break;
           }
-          case 128: {
-
-            applicationSecurity_ = input.readBool();
+          case 130: {
+            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+              applicationSecurity_ = com.google.protobuf.MapField.newMapField(
+                  ApplicationSecurityDefaultEntryHolder.defaultEntry);
+              mutable_bitField0_ |= 0x00000004;
+            }
+            com.google.protobuf.MapEntry<java.lang.String, java.lang.Boolean>
+            applicationSecurity__ = input.readMessage(
+                ApplicationSecurityDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
+            applicationSecurity_.getMutableMap().put(
+                applicationSecurity__.getKey(), applicationSecurity__.getValue());
             break;
           }
           case 136: {
@@ -175,9 +183,9 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 186: {
-            if (!((mutable_bitField0_ & 0x00000004) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
               graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity>();
-              mutable_bitField0_ |= 0x00000004;
+              mutable_bitField0_ |= 0x00000008;
             }
             graphqlComplexityInfo_.add(
                 input.readMessage(org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.parser(), extensionRegistry));
@@ -231,9 +239,9 @@ private static final long serialVersionUID = 0L;
             break;
           }
           case 242: {
-            if (!((mutable_bitField0_ & 0x00000008) != 0)) {
+            if (!((mutable_bitField0_ & 0x00000010) != 0)) {
               endpointSecurity_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityInfo>();
-              mutable_bitField0_ |= 0x00000008;
+              mutable_bitField0_ |= 0x00000010;
             }
             endpointSecurity_.add(
                 input.readMessage(org.wso2.apk.enforcer.discovery.api.SecurityInfo.parser(), extensionRegistry));
@@ -273,10 +281,10 @@ private static final long serialVersionUID = 0L;
       if (((mutable_bitField0_ & 0x00000002) != 0)) {
         clientCertificates_ = java.util.Collections.unmodifiableList(clientCertificates_);
       }
-      if (((mutable_bitField0_ & 0x00000004) != 0)) {
+      if (((mutable_bitField0_ & 0x00000008) != 0)) {
         graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
       }
-      if (((mutable_bitField0_ & 0x00000008) != 0)) {
+      if (((mutable_bitField0_ & 0x00000010) != 0)) {
         endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
       }
       this.unknownFields = unknownFields.build();
@@ -288,6 +296,18 @@ private static final long serialVersionUID = 0L;
     return org.wso2.apk.enforcer.discovery.api.ApiProto.internal_static_wso2_discovery_api_Api_descriptor;
   }
 
+  @SuppressWarnings({"rawtypes"})
+  @java.lang.Override
+  protected com.google.protobuf.MapField internalGetMapField(
+      int number) {
+    switch (number) {
+      case 16:
+        return internalGetApplicationSecurity();
+      default:
+        throw new RuntimeException(
+            "Invalid map field number: " + number);
+    }
+  }
   @java.lang.Override
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
@@ -837,14 +857,84 @@ private static final long serialVersionUID = 0L;
   }
 
   public static final int APPLICATIONSECURITY_FIELD_NUMBER = 16;
-  private boolean applicationSecurity_;
+  private static final class ApplicationSecurityDefaultEntryHolder {
+    static final com.google.protobuf.MapEntry<
+        java.lang.String, java.lang.Boolean> defaultEntry =
+            com.google.protobuf.MapEntry
+            .<java.lang.String, java.lang.Boolean>newDefaultInstance(
+                org.wso2.apk.enforcer.discovery.api.ApiProto.internal_static_wso2_discovery_api_Api_ApplicationSecurityEntry_descriptor, 
+                com.google.protobuf.WireFormat.FieldType.STRING,
+                "",
+                com.google.protobuf.WireFormat.FieldType.BOOL,
+                false);
+  }
+  private com.google.protobuf.MapField<
+      java.lang.String, java.lang.Boolean> applicationSecurity_;
+  private com.google.protobuf.MapField<java.lang.String, java.lang.Boolean>
+  internalGetApplicationSecurity() {
+    if (applicationSecurity_ == null) {
+      return com.google.protobuf.MapField.emptyMapField(
+          ApplicationSecurityDefaultEntryHolder.defaultEntry);
+    }
+    return applicationSecurity_;
+  }
+
+  public int getApplicationSecurityCount() {
+    return internalGetApplicationSecurity().getMap().size();
+  }
   /**
-   * <code>bool applicationSecurity = 16;</code>
-   * @return The applicationSecurity.
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+   */
+
+  @java.lang.Override
+  public boolean containsApplicationSecurity(
+      java.lang.String key) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    return internalGetApplicationSecurity().getMap().containsKey(key);
+  }
+  /**
+   * Use {@link #getApplicationSecurityMap()} instead.
    */
   @java.lang.Override
-  public boolean getApplicationSecurity() {
-    return applicationSecurity_;
+  @java.lang.Deprecated
+  public java.util.Map<java.lang.String, java.lang.Boolean> getApplicationSecurity() {
+    return getApplicationSecurityMap();
+  }
+  /**
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+   */
+  @java.lang.Override
+
+  public java.util.Map<java.lang.String, java.lang.Boolean> getApplicationSecurityMap() {
+    return internalGetApplicationSecurity().getMap();
+  }
+  /**
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+   */
+  @java.lang.Override
+
+  public boolean getApplicationSecurityOrDefault(
+      java.lang.String key,
+      boolean defaultValue) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    java.util.Map<java.lang.String, java.lang.Boolean> map =
+        internalGetApplicationSecurity().getMap();
+    return map.containsKey(key) ? map.get(key) : defaultValue;
+  }
+  /**
+   * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+   */
+  @java.lang.Override
+
+  public boolean getApplicationSecurityOrThrow(
+      java.lang.String key) {
+    if (key == null) { throw new java.lang.NullPointerException(); }
+    java.util.Map<java.lang.String, java.lang.Boolean> map =
+        internalGetApplicationSecurity().getMap();
+    if (!map.containsKey(key)) {
+      throw new java.lang.IllegalArgumentException();
+    }
+    return map.get(key);
   }
 
   public static final int TRANSPORTSECURITY_FIELD_NUMBER = 17;
@@ -1166,9 +1256,12 @@ private static final long serialVersionUID = 0L;
     if (!getMutualSSLBytes().isEmpty()) {
       com.google.protobuf.GeneratedMessageV3.writeString(output, 15, mutualSSL_);
     }
-    if (applicationSecurity_ != false) {
-      output.writeBool(16, applicationSecurity_);
-    }
+    com.google.protobuf.GeneratedMessageV3
+      .serializeStringMapTo(
+        output,
+        internalGetApplicationSecurity(),
+        ApplicationSecurityDefaultEntryHolder.defaultEntry,
+        16);
     if (transportSecurity_ != false) {
       output.writeBool(17, transportSecurity_);
     }
@@ -1257,9 +1350,15 @@ private static final long serialVersionUID = 0L;
     if (!getMutualSSLBytes().isEmpty()) {
       size += com.google.protobuf.GeneratedMessageV3.computeStringSize(15, mutualSSL_);
     }
-    if (applicationSecurity_ != false) {
+    for (java.util.Map.Entry<java.lang.String, java.lang.Boolean> entry
+         : internalGetApplicationSecurity().getMap().entrySet()) {
+      com.google.protobuf.MapEntry<java.lang.String, java.lang.Boolean>
+      applicationSecurity__ = ApplicationSecurityDefaultEntryHolder.defaultEntry.newBuilderForType()
+          .setKey(entry.getKey())
+          .setValue(entry.getValue())
+          .build();
       size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(16, applicationSecurity_);
+          .computeMessageSize(16, applicationSecurity__);
     }
     if (transportSecurity_ != false) {
       size += com.google.protobuf.CodedOutputStream
@@ -1345,8 +1444,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getClientCertificatesList())) return false;
     if (!getMutualSSL()
         .equals(other.getMutualSSL())) return false;
-    if (getApplicationSecurity()
-        != other.getApplicationSecurity()) return false;
+    if (!internalGetApplicationSecurity().equals(
+        other.internalGetApplicationSecurity())) return false;
     if (getTransportSecurity()
         != other.getTransportSecurity()) return false;
     if (!getGraphqlComplexityInfoList()
@@ -1423,9 +1522,10 @@ private static final long serialVersionUID = 0L;
     }
     hash = (37 * hash) + MUTUALSSL_FIELD_NUMBER;
     hash = (53 * hash) + getMutualSSL().hashCode();
-    hash = (37 * hash) + APPLICATIONSECURITY_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getApplicationSecurity());
+    if (!internalGetApplicationSecurity().getMap().isEmpty()) {
+      hash = (37 * hash) + APPLICATIONSECURITY_FIELD_NUMBER;
+      hash = (53 * hash) + internalGetApplicationSecurity().hashCode();
+    }
     hash = (37 * hash) + TRANSPORTSECURITY_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getTransportSecurity());
@@ -1570,6 +1670,28 @@ private static final long serialVersionUID = 0L;
       return org.wso2.apk.enforcer.discovery.api.ApiProto.internal_static_wso2_discovery_api_Api_descriptor;
     }
 
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMapField(
+        int number) {
+      switch (number) {
+        case 16:
+          return internalGetApplicationSecurity();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
+    @SuppressWarnings({"rawtypes"})
+    protected com.google.protobuf.MapField internalGetMutableMapField(
+        int number) {
+      switch (number) {
+        case 16:
+          return internalGetMutableApplicationSecurity();
+        default:
+          throw new RuntimeException(
+              "Invalid map field number: " + number);
+      }
+    }
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
@@ -1638,13 +1760,12 @@ private static final long serialVersionUID = 0L;
       }
       mutualSSL_ = "";
 
-      applicationSecurity_ = false;
-
+      internalGetMutableApplicationSecurity().clear();
       transportSecurity_ = false;
 
       if (graphqlComplexityInfoBuilder_ == null) {
         graphqlComplexityInfo_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
       } else {
         graphqlComplexityInfoBuilder_.clear();
       }
@@ -1670,7 +1791,7 @@ private static final long serialVersionUID = 0L;
       }
       if (endpointSecurityBuilder_ == null) {
         endpointSecurity_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
       } else {
         endpointSecurityBuilder_.clear();
       }
@@ -1738,12 +1859,13 @@ private static final long serialVersionUID = 0L;
         result.clientCertificates_ = clientCertificatesBuilder_.build();
       }
       result.mutualSSL_ = mutualSSL_;
-      result.applicationSecurity_ = applicationSecurity_;
+      result.applicationSecurity_ = internalGetApplicationSecurity();
+      result.applicationSecurity_.makeImmutable();
       result.transportSecurity_ = transportSecurity_;
       if (graphqlComplexityInfoBuilder_ == null) {
-        if (((bitField0_ & 0x00000004) != 0)) {
+        if (((bitField0_ & 0x00000008) != 0)) {
           graphqlComplexityInfo_ = java.util.Collections.unmodifiableList(graphqlComplexityInfo_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000008);
         }
         result.graphqlComplexityInfo_ = graphqlComplexityInfo_;
       } else {
@@ -1764,9 +1886,9 @@ private static final long serialVersionUID = 0L;
         result.endpoints_ = endpointsBuilder_.build();
       }
       if (endpointSecurityBuilder_ == null) {
-        if (((bitField0_ & 0x00000008) != 0)) {
+        if (((bitField0_ & 0x00000010) != 0)) {
           endpointSecurity_ = java.util.Collections.unmodifiableList(endpointSecurity_);
-          bitField0_ = (bitField0_ & ~0x00000008);
+          bitField0_ = (bitField0_ & ~0x00000010);
         }
         result.endpointSecurity_ = endpointSecurity_;
       } else {
@@ -1927,9 +2049,8 @@ private static final long serialVersionUID = 0L;
         mutualSSL_ = other.mutualSSL_;
         onChanged();
       }
-      if (other.getApplicationSecurity() != false) {
-        setApplicationSecurity(other.getApplicationSecurity());
-      }
+      internalGetMutableApplicationSecurity().mergeFrom(
+          other.internalGetApplicationSecurity());
       if (other.getTransportSecurity() != false) {
         setTransportSecurity(other.getTransportSecurity());
       }
@@ -1937,7 +2058,7 @@ private static final long serialVersionUID = 0L;
         if (!other.graphqlComplexityInfo_.isEmpty()) {
           if (graphqlComplexityInfo_.isEmpty()) {
             graphqlComplexityInfo_ = other.graphqlComplexityInfo_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
           } else {
             ensureGraphqlComplexityInfoIsMutable();
             graphqlComplexityInfo_.addAll(other.graphqlComplexityInfo_);
@@ -1950,7 +2071,7 @@ private static final long serialVersionUID = 0L;
             graphqlComplexityInfoBuilder_.dispose();
             graphqlComplexityInfoBuilder_ = null;
             graphqlComplexityInfo_ = other.graphqlComplexityInfo_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000008);
             graphqlComplexityInfoBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getGraphqlComplexityInfoFieldBuilder() : null;
@@ -1982,7 +2103,7 @@ private static final long serialVersionUID = 0L;
         if (!other.endpointSecurity_.isEmpty()) {
           if (endpointSecurity_.isEmpty()) {
             endpointSecurity_ = other.endpointSecurity_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000010);
           } else {
             ensureEndpointSecurityIsMutable();
             endpointSecurity_.addAll(other.endpointSecurity_);
@@ -1995,7 +2116,7 @@ private static final long serialVersionUID = 0L;
             endpointSecurityBuilder_.dispose();
             endpointSecurityBuilder_ = null;
             endpointSecurity_ = other.endpointSecurity_;
-            bitField0_ = (bitField0_ & ~0x00000008);
+            bitField0_ = (bitField0_ & ~0x00000010);
             endpointSecurityBuilder_ = 
               com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                  getEndpointSecurityFieldBuilder() : null;
@@ -3487,34 +3608,131 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean applicationSecurity_ ;
-    /**
-     * <code>bool applicationSecurity = 16;</code>
-     * @return The applicationSecurity.
-     */
-    @java.lang.Override
-    public boolean getApplicationSecurity() {
+    private com.google.protobuf.MapField<
+        java.lang.String, java.lang.Boolean> applicationSecurity_;
+    private com.google.protobuf.MapField<java.lang.String, java.lang.Boolean>
+    internalGetApplicationSecurity() {
+      if (applicationSecurity_ == null) {
+        return com.google.protobuf.MapField.emptyMapField(
+            ApplicationSecurityDefaultEntryHolder.defaultEntry);
+      }
       return applicationSecurity_;
     }
+    private com.google.protobuf.MapField<java.lang.String, java.lang.Boolean>
+    internalGetMutableApplicationSecurity() {
+      onChanged();;
+      if (applicationSecurity_ == null) {
+        applicationSecurity_ = com.google.protobuf.MapField.newMapField(
+            ApplicationSecurityDefaultEntryHolder.defaultEntry);
+      }
+      if (!applicationSecurity_.isMutable()) {
+        applicationSecurity_ = applicationSecurity_.copy();
+      }
+      return applicationSecurity_;
+    }
+
+    public int getApplicationSecurityCount() {
+      return internalGetApplicationSecurity().getMap().size();
+    }
     /**
-     * <code>bool applicationSecurity = 16;</code>
-     * @param value The applicationSecurity to set.
-     * @return This builder for chaining.
+     * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
      */
-    public Builder setApplicationSecurity(boolean value) {
-      
-      applicationSecurity_ = value;
-      onChanged();
+
+    @java.lang.Override
+    public boolean containsApplicationSecurity(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      return internalGetApplicationSecurity().getMap().containsKey(key);
+    }
+    /**
+     * Use {@link #getApplicationSecurityMap()} instead.
+     */
+    @java.lang.Override
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.Boolean> getApplicationSecurity() {
+      return getApplicationSecurityMap();
+    }
+    /**
+     * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+     */
+    @java.lang.Override
+
+    public java.util.Map<java.lang.String, java.lang.Boolean> getApplicationSecurityMap() {
+      return internalGetApplicationSecurity().getMap();
+    }
+    /**
+     * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+     */
+    @java.lang.Override
+
+    public boolean getApplicationSecurityOrDefault(
+        java.lang.String key,
+        boolean defaultValue) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.Boolean> map =
+          internalGetApplicationSecurity().getMap();
+      return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
+    /**
+     * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+     */
+    @java.lang.Override
+
+    public boolean getApplicationSecurityOrThrow(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      java.util.Map<java.lang.String, java.lang.Boolean> map =
+          internalGetApplicationSecurity().getMap();
+      if (!map.containsKey(key)) {
+        throw new java.lang.IllegalArgumentException();
+      }
+      return map.get(key);
+    }
+
+    public Builder clearApplicationSecurity() {
+      internalGetMutableApplicationSecurity().getMutableMap()
+          .clear();
       return this;
     }
     /**
-     * <code>bool applicationSecurity = 16;</code>
-     * @return This builder for chaining.
+     * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
      */
-    public Builder clearApplicationSecurity() {
+
+    public Builder removeApplicationSecurity(
+        java.lang.String key) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
+      internalGetMutableApplicationSecurity().getMutableMap()
+          .remove(key);
+      return this;
+    }
+    /**
+     * Use alternate mutation accessors instead.
+     */
+    @java.lang.Deprecated
+    public java.util.Map<java.lang.String, java.lang.Boolean>
+    getMutableApplicationSecurity() {
+      return internalGetMutableApplicationSecurity().getMutableMap();
+    }
+    /**
+     * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+     */
+    public Builder putApplicationSecurity(
+        java.lang.String key,
+        boolean value) {
+      if (key == null) { throw new java.lang.NullPointerException(); }
       
-      applicationSecurity_ = false;
-      onChanged();
+      internalGetMutableApplicationSecurity().getMutableMap()
+          .put(key, value);
+      return this;
+    }
+    /**
+     * <code>map&lt;string, bool&gt; applicationSecurity = 16;</code>
+     */
+
+    public Builder putAllApplicationSecurity(
+        java.util.Map<java.lang.String, java.lang.Boolean> values) {
+      internalGetMutableApplicationSecurity().getMutableMap()
+          .putAll(values);
       return this;
     }
 
@@ -3552,9 +3770,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity> graphqlComplexityInfo_ =
       java.util.Collections.emptyList();
     private void ensureGraphqlComplexityInfoIsMutable() {
-      if (!((bitField0_ & 0x00000004) != 0)) {
+      if (!((bitField0_ & 0x00000008) != 0)) {
         graphqlComplexityInfo_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.GraphqlComplexity>(graphqlComplexityInfo_);
-        bitField0_ |= 0x00000004;
+        bitField0_ |= 0x00000008;
        }
     }
 
@@ -3748,7 +3966,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearGraphqlComplexityInfo() {
       if (graphqlComplexityInfoBuilder_ == null) {
         graphqlComplexityInfo_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000008);
         onChanged();
       } else {
         graphqlComplexityInfoBuilder_.clear();
@@ -3853,7 +4071,7 @@ private static final long serialVersionUID = 0L;
         graphqlComplexityInfoBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             org.wso2.apk.enforcer.discovery.api.GraphqlComplexity, org.wso2.apk.enforcer.discovery.api.GraphqlComplexity.Builder, org.wso2.apk.enforcer.discovery.api.GraphqlComplexityOrBuilder>(
                 graphqlComplexityInfo_,
-                ((bitField0_ & 0x00000004) != 0),
+                ((bitField0_ & 0x00000008) != 0),
                 getParentForChildren(),
                 isClean());
         graphqlComplexityInfo_ = null;
@@ -4274,9 +4492,9 @@ private static final long serialVersionUID = 0L;
     private java.util.List<org.wso2.apk.enforcer.discovery.api.SecurityInfo> endpointSecurity_ =
       java.util.Collections.emptyList();
     private void ensureEndpointSecurityIsMutable() {
-      if (!((bitField0_ & 0x00000008) != 0)) {
+      if (!((bitField0_ & 0x00000010) != 0)) {
         endpointSecurity_ = new java.util.ArrayList<org.wso2.apk.enforcer.discovery.api.SecurityInfo>(endpointSecurity_);
-        bitField0_ |= 0x00000008;
+        bitField0_ |= 0x00000010;
        }
     }
 
@@ -4426,7 +4644,7 @@ private static final long serialVersionUID = 0L;
     public Builder clearEndpointSecurity() {
       if (endpointSecurityBuilder_ == null) {
         endpointSecurity_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000008);
+        bitField0_ = (bitField0_ & ~0x00000010);
         onChanged();
       } else {
         endpointSecurityBuilder_.clear();
@@ -4503,7 +4721,7 @@ private static final long serialVersionUID = 0L;
         endpointSecurityBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
             org.wso2.apk.enforcer.discovery.api.SecurityInfo, org.wso2.apk.enforcer.discovery.api.SecurityInfo.Builder, org.wso2.apk.enforcer.discovery.api.SecurityInfoOrBuilder>(
                 endpointSecurity_,
-                ((bitField0_ & 0x00000008) != 0),
+                ((bitField0_ & 0x00000010) != 0),
                 getParentForChildren(),
                 isClean());
         endpointSecurity_ = null;

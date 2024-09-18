@@ -348,41 +348,45 @@ public class APIClient {
             map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) returns error? {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtensionType authTypes = {};
-        boolean isOAuthDisabled = false;
-        boolean isOAuthOptional = false;
-        boolean isMTLSMandatory = false;
-        boolean isMTLSDisabled = false;
         foreach AuthenticationRequest authentication in authentications {
             if authentication.authType == "OAuth2" {
                 OAuth2Authentication oauth2Authentication = check authentication.cloneWithType(OAuth2Authentication);
-                isOAuthDisabled = !oauth2Authentication.enabled;
-                isOAuthOptional = oauth2Authentication.required == "optional";
                 authTypes.oauth2 = {header: <string>oauth2Authentication.headerName, sendTokenToUpstream: <boolean>oauth2Authentication.sendTokenToUpstream, disabled: !oauth2Authentication.enabled, required: oauth2Authentication.required};
             } else if authentication.authType == "JWT" {
                 JWTAuthentication jwtAuthentication = check authentication.cloneWithType(JWTAuthentication);
                 authTypes.jwt = {header: <string>jwtAuthentication.headerName, sendTokenToUpstream: <boolean>jwtAuthentication.sendTokenToUpstream, disabled: !jwtAuthentication.enabled, audience: jwtAuthentication.audience};
-            } else if authentication.authType == "APIKey" && authentication is APIKeyAuthentication {
-                APIKeyAuthentication apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
+            } else if authentication.authType == "APIKey" {
+                APIKeyAuthentication apiKeyAuthentication;
+                if authentication is OAuth2Authentication {
+                    apiKeyAuthentication = {
+                        enabled: authentication.enabled,
+                        required: authentication.required,
+                        sendTokenToUpstream: authentication.sendTokenToUpstream,
+                        headerName: authentication.headerName,
+                        headerEnable: authentication.headerEnable
+                    };
+                } else {
+                    apiKeyAuthentication = check authentication.cloneWithType(APIKeyAuthentication);
+                }
                 model:APIKey[] apiKeys = [];
-
-                if apiKeyAuthentication.headerEnable {
-                    apiKeys.push({'in: "Header", name: <string>apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                if apiKeyAuthentication.enabled {
+                    if apiKeyAuthentication.headerEnable {
+                        apiKeys.push({'in: "Header", name: <string>apiKeyAuthentication.headerName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                    }
+                    if apiKeyAuthentication.queryParamEnable {
+                        apiKeys.push({'in: "Query", name: <string>apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
+                    }
+                    authTypes.apiKey = {
+                        required: <string>apiKeyAuthentication.required,
+                        keys: apiKeys
+                    };
                 }
-                if apiKeyAuthentication.queryParamEnable {
-                    apiKeys.push({'in: "Query", name: <string>apiKeyAuthentication.queryParamName, sendTokenToUpstream: apiKeyAuthentication.sendTokenToUpstream});
-                }
-                authTypes.apiKey = apiKeys;
             } else if authentication.authType == "mTLS" {
                 MTLSAuthentication mtlsAuthentication = check authentication.cloneWithType(MTLSAuthentication);
-                isMTLSMandatory = mtlsAuthentication.required == "mandatory";
-                isMTLSDisabled = !mtlsAuthentication.enabled;
-                if ((isOAuthDisabled && (!isMTLSMandatory || isMTLSDisabled)) || (isOAuthOptional && isMTLSDisabled)) {
-                    log:printError("Invalid authtypes provided: one of mTLS or OAuth2 has to be enabled and mandatory");
-                    return e909019();
-                }
                 authTypes.mtls = {disabled: !mtlsAuthentication.enabled, configMapRefs: mtlsAuthentication.certificates, required: mtlsAuthentication.required};
             }
         }
+
         log:printDebug("Auth Types:" + authTypes.toString());
         string[] keys = createdEndpointMap.keys();
         log:printDebug("createdEndpointMap.keys:" + createdEndpointMap.keys().toString());

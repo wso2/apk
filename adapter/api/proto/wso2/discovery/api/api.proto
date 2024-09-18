@@ -51,7 +51,7 @@ message Api {
 	// bool isMockedApi = 18;
 	repeated Certificate clientCertificates = 14;
 	string mutualSSL = 15;
-	bool applicationSecurity = 16;
+	map<string, bool> applicationSecurity = 16;
 	bool transportSecurity = 17;
 	/// string graphQLSchema = 22;
 	repeated GraphqlComplexity graphqlComplexityInfo = 23;

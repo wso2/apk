@@ -146,3 +146,9 @@ const (
 	Production = "Production"
 	Sandbox    = "Sandbox"
 )
+
+// Security scheme constants
+const (
+	OAuth2 string = "OAuth2"
+	APIKey string = "APIKey"
+)

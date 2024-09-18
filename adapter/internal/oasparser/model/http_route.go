@@ -235,12 +235,12 @@ func concatAuthSchemes(schemeUp *dpv1alpha2.Authentication, schemeDown *dpv1alph
 // tip: use concatScheme method
 func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 	authHeader := constants.AuthorizationHeader
-	if authScheme != nil && authScheme.Spec.Override != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.Oauth2.Header) > 0 {
-		authHeader = authScheme.Spec.Override.AuthTypes.Oauth2.Header
+	if authScheme != nil && authScheme.Spec.Override != nil && authScheme.Spec.Override.AuthTypes != nil && len(authScheme.Spec.Override.AuthTypes.OAuth2.Header) > 0 {
+		authHeader = authScheme.Spec.Override.AuthTypes.OAuth2.Header
 	}
 	sendTokenToUpstream := false
 	if authScheme != nil && authScheme.Spec.Override != nil && authScheme.Spec.Override.AuthTypes != nil {
-		sendTokenToUpstream = authScheme.Spec.Override.AuthTypes.Oauth2.SendTokenToUpstream
+		sendTokenToUpstream = authScheme.Spec.Override.AuthTypes.OAuth2.SendTokenToUpstream
 	}
 	auth := &Authentication{Disabled: false,
 		Oauth2: &Oauth2{Header: authHeader, SendTokenToUpstream: sendTokenToUpstream},
@@ -250,7 +250,7 @@ func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 			return &Authentication{Disabled: true}
 		}
 		authFound := false
-		if authScheme.Spec.Override.AuthTypes != nil && !authScheme.Spec.Override.AuthTypes.Oauth2.Disabled {
+		if authScheme.Spec.Override.AuthTypes != nil && !authScheme.Spec.Override.AuthTypes.OAuth2.Disabled {
 			authFound = true
 		} else {
 			auth = &Authentication{Disabled: false}
@@ -268,9 +268,9 @@ func getSecurity(authScheme *dpv1alpha2.Authentication) *Authentication {
 			authFound = true
 		}
 		if authScheme.Spec.Override.AuthTypes != nil && authScheme.Spec.Override.AuthTypes.APIKey != nil {
-			authFound = authFound || len(authScheme.Spec.Override.AuthTypes.APIKey) > 0
+			authFound = authFound || len(authScheme.Spec.Override.AuthTypes.APIKey.Keys) > 0
 			var apiKeys []APIKey
-			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey {
+			for _, apiKey := range authScheme.Spec.Override.AuthTypes.APIKey.Keys {
 				apiKeys = append(apiKeys, APIKey{
 					Name:                apiKey.Name,
 					In:                  apiKey.In,

@@ -72,7 +72,7 @@ public class RestAPI implements API {
         String apiType = api.getApiType();
         List<ResourceConfig> resources = new ArrayList<>();
         String mutualSSL = api.getMutualSSL();
-        boolean applicationSecurity = api.getApplicationSecurity();
+        Map<String, Boolean> applicationSecurity = api.getApplicationSecurityMap();
 
         for (Resource res : api.getResourcesList()) {
             for (Operation operation : res.getMethodsList()) {
