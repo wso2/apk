@@ -119,7 +119,7 @@ spec:
       totalTokenCount: 15000
     requestCount:
       requestsPerUnit: 6000
-      unit: Minute 
+      unit: Minute
   targetRef:
     kind: Backend
     name: llm-backend-header
@@ -152,7 +152,7 @@ spec:
     in: "Header"
     value: "model"
   rateLimitFields:
-    promptTokens: 
+    promptTokens:
       in: "Header"
       value: "prompt_tokens"
     completionToken:

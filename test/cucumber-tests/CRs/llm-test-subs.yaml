@@ -149,7 +149,7 @@ spec:
     in: "Body"
     value: "model"
   rateLimitFields:
-    promptTokens: 
+    promptTokens:
       in: "Body"
       value: "usage.prompt_tokens"
     completionToken:
