@@ -151,13 +151,13 @@ spec:
   rateLimitFields:
     promptTokens: 
       in: "Body"
-      value: "prompt_tokens"
+      value: "usage.prompt_tokens"
     completionToken:
       in: "Body"
-      value: "completion_tokens"
+      value: "usage.completion_tokens"
     totalToken:
       in: "Body"
-      value: "total_tokens"
+      value: "usage.total_tokens"
 ---
 apiVersion: cp.wso2.com/v1alpha2
 kind: Subscription
