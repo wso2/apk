@@ -566,13 +566,9 @@ func PopulateInternalMaps(adapterInternalAPI *model.AdapterInternalAPI, labels, 
 	for vhost := range vHosts {
 		if adapterInternalAPI.AIProvider.Enabled && adapterInternalAPI.GetSubscriptionValidation() {
 			vHostToSubscriptionBasedAIRLMap[vhost] = true
-		} else {
-			vHostToSubscriptionBasedAIRLMap[vhost] = false
 		}
 		if adapterInternalAPI.GetSubscriptionValidation() {
 			vHostToSubscriptionBasedRLMap[vhost] = true
-		} else {
-			vHostToSubscriptionBasedRLMap[vhost] = false
 		}
 	}
 	if err != nil {
