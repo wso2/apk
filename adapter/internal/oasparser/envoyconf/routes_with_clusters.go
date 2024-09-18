@@ -885,7 +885,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					Overrides: &extProcessorv3.ExtProcOverrides{
 						ProcessingMode: &extProcessorv3.ProcessingMode{
 							RequestHeaderMode: extProcessorv3.ProcessingMode_SKIP,
-							ResponseHeaderMode: extProcessorv3.ProcessingMode_SKIP,
+							ResponseHeaderMode: extProcessorv3.ProcessingMode_SEND,
 							ResponseBodyMode: extProcessorv3.ProcessingMode_NONE,
 						},
 					},

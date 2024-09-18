@@ -261,18 +261,39 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
     private static Usage extractUsageFromHeaders(HttpHeaders headers, String completionTokenPath, String promptTokenPath, String totalTokenPath) {
         try {
             Usage usage = new Usage();
+            boolean completionTokenExtracted = false;
+            boolean promptTokenExtracted = false;
+            boolean totalTokenExtracted = false;
             for (HeaderValue headerValue : headers.getHeaders().getHeadersList()) {
                 if (headerValue.getKey().equals(completionTokenPath)) {
-                    usage.completion_tokens = Integer.parseInt(headerValue.getValue());
+                    completionTokenExtracted = true;
+                    String value = headerValue.getValue();
+                    if (value.isEmpty()) {
+                        value = headerValue.getRawValue().toString(StandardCharsets.UTF_8);
+                    }
+                    usage.completion_tokens = Integer.parseInt(value);
                 }
                 if (headerValue.getKey().equals(promptTokenPath)) {
-                    usage.prompt_tokens = Integer.parseInt(headerValue.getValue());
+                    promptTokenExtracted = true;completionTokenExtracted = true;
+                    String value = headerValue.getValue();
+                    if (value.isEmpty()) {
+                        value = headerValue.getRawValue().toString(StandardCharsets.UTF_8);
+                    }
+                    usage.prompt_tokens = Integer.parseInt(value);
                 }
                 if (headerValue.getKey().equals(totalTokenPath)) {
-                    usage.total_tokens = Integer.parseInt(headerValue.getValue());
+                    totalTokenExtracted = true;completionTokenExtracted = true;
+                    String value = headerValue.getValue();
+                    if (value.isEmpty()) {
+                        value = headerValue.getRawValue().toString(StandardCharsets.UTF_8);
+                    }
+                    usage.total_tokens = Integer.parseInt(value);
                 }
             }
-            return usage;
+            if (completionTokenExtracted && promptTokenExtracted && totalTokenExtracted) {
+                return usage;
+            }
+            return null;
         } catch (Exception e) {
             logger.error("Error occured while getting yusage info from headers" + e);
             return null;
