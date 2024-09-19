@@ -27,7 +27,6 @@ import (
 	"reflect"
 
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/ir"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"golang.org/x/exp/slices"
 	v1 "k8s.io/api/core/v1"
@@ -57,7 +56,7 @@ type Resources struct {
 	ReferenceGrants     []*gwapiv1b1.ReferenceGrant   `json:"referenceGrants,omitempty" yaml:"referenceGrants,omitempty"`
 	Namespaces          []*v1.Namespace               `json:"namespaces,omitempty" yaml:"namespaces,omitempty"`
 	Services            []*v1.Service                 `json:"services,omitempty" yaml:"services,omitempty"`
-	Backends            []*dpv1alpha1.Backend         `json:"backends,omitempty" yaml:"backends,omitempty"`
+	Backends            []*dpv1alpha2.Backend         `json:"backends,omitempty" yaml:"backends,omitempty"`
 	EndpointSlices      []*discoveryv1.EndpointSlice  `json:"endpointSlices,omitempty" yaml:"endpointSlices,omitempty"`
 	Secrets             []*v1.Secret                  `json:"secrets,omitempty" yaml:"secrets,omitempty"`
 	ConfigMaps          []*v1.ConfigMap               `json:"configMaps,omitempty" yaml:"configMaps,omitempty"`
@@ -98,6 +97,16 @@ func (r *Resources) GetService(namespace, name string) *v1.Service {
 	for _, svc := range r.Services {
 		if svc.Namespace == namespace && svc.Name == name {
 			return svc
+		}
+	}
+
+	return nil
+}
+
+func (r *Resources) GetBackend(namespace, name string) *dpv1alpha2.Backend {
+	for _, backend := range r.Backends {
+		if backend.Namespace == namespace && backend.Name == name {
+			return backend
 		}
 	}
 

@@ -124,7 +124,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Backend{}), handler.EnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{}), handler.EnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3102, logging.BLOCKER, "Error watching Backend resources: %v", err))
 		return err
@@ -321,7 +321,7 @@ func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx conte
 // getGatewaysForBackend triggers the Gateway controller reconcile method based on the changes detected
 // in backend resources.
 func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	backend, ok := obj.(*dpv1alpha1.Backend)
+	backend, ok := obj.(*dpv1alpha2.Backend)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backend))
 		return []reconcile.Request{}
@@ -408,7 +408,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(ctx context.Con
 		return []reconcile.Request{}
 	}
 
-	backendList := &dpv1alpha1.BackendList{}
+	backendList := &dpv1alpha2.BackendList{}
 	if err := gatewayReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
@@ -433,7 +433,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(ctx context.
 		return []reconcile.Request{}
 	}
 
-	backendList := &dpv1alpha1.BackendList{}
+	backendList := &dpv1alpha2.BackendList{}
 	if err := gatewayReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	}); err != nil {

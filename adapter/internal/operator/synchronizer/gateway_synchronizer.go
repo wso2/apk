@@ -105,16 +105,17 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	if state == constants.Create {
 		xds.GenerateGlobalClusters(gateway.Name)
 	}
-
-	xds.GenerateInterceptorClusters(gateway.Name, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses)
-	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
-	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
-	loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)
-	loggers.LoggerAPKOperator.Debugf("routes: %v", routes)
-	loggers.LoggerAPKOperator.Debugf("endpoints: %v", endpoints)
-	loggers.LoggerAPKOperator.Debugf("apis: %v", apis)
-	xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
+	if !config.ReadConfigs().Adapter.EnableGatewayClassController {
+		xds.GenerateInterceptorClusters(gateway.Name, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses)
+		xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
+		loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
+		loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)
+		loggers.LoggerAPKOperator.Debugf("routes: %v", routes)
+		loggers.LoggerAPKOperator.Debugf("endpoints: %v", endpoints)
+		loggers.LoggerAPKOperator.Debugf("apis: %v", apis)
+		xds.UpdateXdsCacheWithLock(gateway.Name, endpoints, clusters, routes, listeners)
+	}
 	xds.UpdateEnforcerApis(gateway.Name, apis, "")
 	return "", nil
 }

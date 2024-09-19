@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/ir"
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/pkg/utils/regex"
@@ -199,6 +200,7 @@ func (t *Translator) processHTTPRouteRules(httpRoute *HTTPRouteContext, parentRe
 				// processing any destinations for this route.
 				if route.DirectResponse == nil && route.Redirect == nil {
 					if ds != nil && len(ds.Endpoints) > 0 {
+						loggers.LoggerAPI.Errorf("Destination is not given in %s:%s", httpRoute.Namespace, httpRoute.Name)
 						if route.Destination == nil {
 							route.Destination = &ir.RouteDestination{
 								Name: irRouteDestinationName(httpRoute, ruleIdx),
@@ -1095,14 +1097,16 @@ func (t *Translator) processDestination(backendRefContext BackendRefContext,
 	if backendRef.Weight != nil {
 		weight = uint32(*backendRef.Weight)
 	}
-
+	loggers.LoggerAPI.Error("amalii", backendRef)
 	backendNamespace := NamespaceDerefOr(backendRef.Namespace, route.GetNamespace())
 	if !t.validateBackendRef(backendRefContext, parentRef, route, resources, backendNamespace, routeType) {
+		loggers.LoggerAPI.Error("amalii")
 		return nil, weight
 	}
 
 	// Skip processing backends with 0 weight
 	if weight == 0 {
+		loggers.LoggerAPI.Error("amalii")
 		return nil, weight
 	}
 
@@ -1140,6 +1144,13 @@ func (t *Translator) processDestination(backendRefContext BackendRefContext,
 				uint32(*backendRef.Port))
 			endpoints = append(endpoints, ep)
 		}
+	case KindBackend:
+		loggers.LoggerAPI.Error("amalii")
+		backend := resources.GetBackend(backendNamespace, string(backendRef.Name))
+		ep := ir.NewDestEndpoint(
+			backend.Spec.Services[0].Host,
+			uint32(backend.Spec.Services[0].Port))
+		endpoints = append(endpoints, ep)
 	}
 
 	// TODO: support mixed endpointslice address type for the same backendRef
