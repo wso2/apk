@@ -26,6 +26,7 @@ import (
 	xdsv3 "github.com/envoyproxy/go-control-plane/pkg/server/v3"
 	enforcerCallbacks "github.com/wso2/apk/adapter/internal/discovery/xds/enforcercallbacks"
 	routercb "github.com/wso2/apk/adapter/internal/discovery/xds/routercallbacks"
+	"github.com/wso2/apk/adapter/internal/operator"
 	xdstranslatorrunner "github.com/wso2/apk/adapter/internal/operator/gateway-api/translator/runner"
 	xdsserverrunner "github.com/wso2/apk/adapter/internal/operator/gateway-api/xds/runner"
 	infrarunner "github.com/wso2/apk/adapter/internal/operator/infrastructure/runner"
@@ -39,7 +40,6 @@ import (
 	"github.com/wso2/apk/adapter/pkg/health"
 	healthservice "github.com/wso2/apk/adapter/pkg/health/api/wso2/health/service"
 	"github.com/wso2/apk/adapter/pkg/utils/tlsutils"
-	"github.com/wso2/apk/adapter/internal/operator"
 
 	"context"
 	"flag"
@@ -77,7 +77,7 @@ const (
 func init() {
 	flag.BoolVar(&debug, "debug", true, "Use debug logging")
 	flag.BoolVar(&onlyLogging, "onlyLogging", false, "Only demo AccessLogging Service")
-	flag.UintVar(&port, "port", 18001, "Management server port")
+	flag.UintVar(&port, "port", 18000, "Management server port")
 	flag.UintVar(&alsPort, "als", 18090, "Accesslog server port")
 	flag.StringVar(&mode, "ads", ads, "Management server type (ads, xds, rest)")
 }

@@ -48,7 +48,7 @@ spec:
               protocol: "TCP"
             - containerPort: 8765
               protocol: "TCP"
-            - containerPort: 18001
+            - containerPort: 18005
               protocol: TCP
             {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
             - containerPort: 18006
