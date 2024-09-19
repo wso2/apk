@@ -169,7 +169,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 					break
 				}
 			}
-			if len(cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) != len(apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) {
+			if len(cachedAPI.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) != len(apiState.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) {
 				updated = true
 			}
 		}
