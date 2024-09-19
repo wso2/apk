@@ -124,7 +124,7 @@ spec:
                       address:
                         socket_address:
                           address: envoy-gateway
-                          port_value: 18000
+                          port_value: 18005
               typed_extension_protocol_options:
                 envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
                   "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions"
