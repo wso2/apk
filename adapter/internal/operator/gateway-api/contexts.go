@@ -57,8 +57,6 @@ func (g *GatewayContext) ResetListeners() {
 	}
 }
 
-
-
 func (g *GatewayContext) attachEnvoyProxy(resources *Resources) {
 	// if g.Spec.Infrastructure != nil && g.Spec.Infrastructure.ParametersRef != nil && !IsMergeGatewaysEnabled(resources) {
 	// 	ref := g.Spec.Infrastructure.ParametersRef
@@ -74,7 +72,6 @@ func (g *GatewayContext) attachEnvoyProxy(resources *Resources) {
 
 	// g.envoyProxy = resources.EnvoyProxyForGatewayClass
 }
-
 
 // ListenerContext wraps a Listener and provides helper methods for
 // setting conditions and other status information on the associated

@@ -495,7 +495,7 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	// Watch Service CRUDs and process affected *Route objects and services belongs to gateways
 	backendPredicates := []predicate.Predicate{predicate.NewPredicateFuncs(r.validateBackendForReconcile)}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &dpv1alpha1.Backend{}),
+		source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{}),
 		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
 		backendPredicates...,
 	); err != nil {
@@ -669,7 +669,7 @@ func (r *gatewayReconcilerNew) processBackendRefs(ctx context.Context, gwcResour
 			endpointSliceLabelKey = discoveryv1.LabelServiceName
 
 		case gatewayapi.KindBackend:
-			backend := new(dpv1alpha1.Backend)
+			backend := new(dpv1alpha2.Backend)
 			err := r.client.Get(ctx, types.NamespacedName{Namespace: string(*backendRef.Namespace), Name: string(backendRef.Name)}, backend)
 			if err != nil {
 				loggers.LoggerAPKOperator.Errorf("Failed to get Backend namespace %s, name %s, Error: %v", string(*backendRef.Namespace),
