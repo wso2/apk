@@ -605,8 +605,8 @@ type ExtAuth struct {
 	// authorization server by default, no matter whether they are specified
 	// in HeadersToExtAuth or not.
 	// +optional
-	HeadersToExtAuth []string `json:"headersToExtAuth,omitempty"`
-	UseBootstrapCluster *bool  `json:"useBootstrapCluster,omitempty"`
+	HeadersToExtAuth    []string `json:"headersToExtAuth,omitempty"`
+	UseBootstrapCluster *bool    `json:"useBootstrapCluster,omitempty"`
 }
 
 // HTTPExtAuthService defines the HTTP External Authorization service

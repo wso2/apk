@@ -1561,7 +1561,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(ctx context.Context, obj
 		return []reconcile.Request{}
 	}
 
-	backendList := &dpv1alpha1.BackendList{}
+	backendList := &dpv1alpha2.BackendList{}
 	err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	})
