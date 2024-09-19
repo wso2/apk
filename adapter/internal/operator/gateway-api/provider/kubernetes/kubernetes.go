@@ -28,9 +28,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/loggers"
+	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/provider"
 	"github.com/wso2/apk/adapter/internal/operator/message"
 	"github.com/wso2/apk/adapter/internal/operator/status"
+	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
+	"github.com/wso2/apk/adapter/pkg/logging"
+	"github.com/wso2/apk/adapter/pkg/metrics"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -38,14 +44,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"github.com/wso2/apk/adapter/config"	
-	"github.com/wso2/apk/adapter/pkg/metrics"
-	"github.com/wso2/apk/adapter/internal/loggers"
-	"github.com/wso2/apk/adapter/pkg/logging"
-	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
-	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
-
-
 )
 
 // Provider is the scaffolding for the Kubernetes provider. It sets up dependencies
@@ -73,7 +71,6 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 		LeaderElectionID:       "operator-lease.apk.wso2.com",
 	}
 
-	
 	conf := config.ReadConfigs()
 	metricsConfig := conf.Adapter.Metrics
 	if metricsConfig.Enabled {
