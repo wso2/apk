@@ -1184,3 +1184,13 @@ spec:
       protocol: TCP
   selector:
     app: graphql-faker
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+  namespace: apk-integration-test
+type: Opaque
+data:
+  apiKey: c2FtcGF0aA==
+---
