@@ -254,10 +254,8 @@ func Run(conf *config.Config) {
 	xds.UpdateEnforcerConfig(conf)
 	if !conf.Adapter.EnableGatewayClassController {
 		go operator.InitOperator(conf.Adapter.Metrics)
-	}
-
-	if conf.Adapter.EnableGatewayClassController {
-		SetupRunners(conf)
+	} else {
+		go SetupRunners(conf)
 	}
 
 OUTER:
