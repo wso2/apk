@@ -381,7 +381,7 @@ func irRoutePrefix(route RouteContext) string {
 func GetNamespacedName(route RouteContext) string {
 	return types.NamespacedName{
 		Namespace: route.GetNamespace(),
-		Name: route.GetName(),
+		Name:      route.GetName(),
 	}.String()
 }
 
@@ -474,10 +474,10 @@ func listenersWithSameHTTPPort(xdsIR *ir.Xds, listener *ir.HTTPListener) []strin
 // contains checks if a specific string exists in the provided slice of strings.
 // It returns true if the string is found, and false otherwise.
 func Contains(slice []string, item string) bool {
-    for _, v := range slice {
-        if v == item {
-            return true
-        }
-    }
-    return false
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
 }

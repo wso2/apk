@@ -22,7 +22,6 @@
 package gatewayapi
 
 import (
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
@@ -141,11 +140,11 @@ func (in *Resources) DeepCopyInto(out *Resources) {
 	}
 	if in.Backends != nil {
 		in, out := &in.Backends, &out.Backends
-		*out = make([]*v1alpha1.Backend, len(*in))
+		*out = make([]*dpv1alpha2.Backend, len(*in))
 		for i := range *in {
 			if (*in)[i] != nil {
 				in, out := &(*in)[i], &(*out)[i]
-				*out = new(v1alpha1.Backend)
+				*out = new(dpv1alpha2.Backend)
 				(*in).DeepCopyInto(*out)
 			}
 		}

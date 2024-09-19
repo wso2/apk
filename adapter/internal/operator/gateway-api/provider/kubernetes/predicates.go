@@ -25,7 +25,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	gatewayapi "github.com/wso2/apk/adapter/internal/operator/gateway-api"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	corev1 "k8s.io/api/core/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
@@ -108,7 +108,7 @@ func (r *gatewayReconcilerNew) validateServiceForReconcile(obj client.Object) bo
 // if it exists, finds the Gateway's Deployment, and further updates the Gateway
 // status Ready condition. All Services are pushed for reconciliation.
 func (r *gatewayReconcilerNew) validateBackendForReconcile(obj client.Object) bool {
-	backend, ok := obj.(*dpv1alpha1.Backend)
+	backend, ok := obj.(*dpv1alpha2.Backend)
 	if !ok {
 		loggers.LoggerAPKOperator.Info("unexpected object type, bypassing reconciliation for object", obj)
 		return false
@@ -164,15 +164,12 @@ func (r *gatewayReconcilerNew) isRouteReferencingBackend(nsName *types.Namespace
 	httpRouteList := &gwapiv1.HTTPRouteList{}
 	if err := r.client.List(ctx, httpRouteList, &client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendHTTPRouteIndex, nsName.String()),
-	}); err != nil {
+	}); err != nil || len(httpRouteList.Items) == 0 {
 		loggers.LoggerAPKOperator.Error("unable to find associated HTTPRoutes for the service ", err)
 		return false
 	}
 
-	// Check how many Route objects refer this Backend
-	allAssociatedRoutes := len(httpRouteList.Items)
-
-	return allAssociatedRoutes != 0
+	return true
 }
 
 // envoyServiceForGateway returns the Envoy service, returning nil if the service doesn't exist.
