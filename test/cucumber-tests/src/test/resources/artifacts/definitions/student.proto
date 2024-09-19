@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.example";
+package dineth.grpc.api.v1.student;
+
+service StudentService {
+  rpc GetStudent(StudentRequest) returns (StudentResponse) {};
+  rpc GetStudentStream(StudentRequest) returns (stream StudentResponse) {};
+  rpc SendStudentStream(stream StudentRequest) returns (StudentResponse) {};
+  rpc SendAndGetStudentStream(stream StudentRequest) returns (stream StudentResponse) {}
+}
+
+message StudentRequest {
+  int32 id = 3;
+}
+
+message StudentResponse {
+  string name = 1;
+  int32 age = 2;
+}

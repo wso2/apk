@@ -106,8 +106,8 @@ public class GRPCAPI implements API {
                 .mutualSSL(mutualSSL)
                 .applicationSecurity(applicationSecurity).jwtConfigurationDto(jwtConfigurationDto)
                 .apiDefinition(apiDefinition).environment(api.getEnvironment())
-                .environment(api.getEnvironment())
-                .subscriptionValidation(api.getSubscriptionValidation()).build();
+                .subscriptionValidation(api.getSubscriptionValidation()).transportSecurity(api.getTransportSecurity())
+                .build();
         initFilters();
         logger.info("APIConfig: " + this.apiConfig);
         return basePath;

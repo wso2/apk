@@ -19,6 +19,7 @@ package org.wso2.apk.integration.api;
 
 import org.apache.http.HttpResponse;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -40,6 +41,7 @@ public class SharedContext {
     private String basicAuthToken;
     private String apiUUID;
     private String revisionUUID;
+    private StudentResponse studentResponse;
     private String applicationUUID;
     private String keyManagerUUID;
     private String oauthKeyUUID;
@@ -56,12 +58,32 @@ public class SharedContext {
     private static String policyID;
     private HashMap<String, Object> valueStore = new HashMap<>();
     private HashMap<String, String> headers = new HashMap<>();
+    private int grpcStatusCode;
+    private int grpcErrorCode;
 
     public SimpleHTTPClient getHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         if (httpClient == null) {
             httpClient = new SimpleHTTPClient();
         }
         return httpClient;
+    }
+
+    public int getGrpcStatusCode() {
+        return grpcStatusCode;
+    }
+
+    public void setGrpcStatusCode(int grpcStatusCode) {
+        this.grpcStatusCode = grpcStatusCode;
+    }
+
+    public StudentResponse getStudentResponse() {
+
+        return studentResponse;
+    }
+
+    public void setStudentResponse(StudentResponse studentResponse) {
+
+        this.studentResponse = studentResponse;
     }
 
     public String getAccessToken() {
@@ -208,16 +230,16 @@ public class SharedContext {
         this.oauthKeyUUID = oauthKeyUUID;
     }
 
-    public void setAPIInternalKey(String internalKey){
+    public void setAPIInternalKey(String internalKey) {
         this.internalKey = internalKey;
     }
 
-    public String getAPIInternalKey(){
+    public String getAPIInternalKey() {
         return internalKey;
     }
 
     public String getConsumerSecret(String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             return consumerSecret;
         else if ("sandbox".equals(keyType))
             return sandboxConsumerSecret;
@@ -225,14 +247,14 @@ public class SharedContext {
     }
 
     public void setConsumerSecret(String consumerSecret, String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             this.consumerSecret = consumerSecret;
         else if ("sandbox".equals(keyType))
             this.sandboxConsumerSecret = consumerSecret;
     }
 
     public String getConsumerKey(String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             return consumerKey;
         else if ("sandbox".equals(keyType))
             return sandboxConsumerKey;
@@ -240,25 +262,25 @@ public class SharedContext {
     }
 
     public void setConsumerKey(String consumerKey, String keyType) {
-        if ("production".equals(keyType)) 
+        if ("production".equals(keyType))
             this.consumerKey = consumerKey;
         else if ("sandbox".equals(keyType))
             this.sandboxConsumerKey = consumerKey;
     }
 
-    public void setKeyMappingID(String keyMappingID, String keyType){
-        if ("production".equals(keyType)) 
+    public void setKeyMappingID(String keyMappingID, String keyType) {
+        if ("production".equals(keyType))
             this.prodKeyMappingID = keyMappingID;
         else if ("sandbox".equals(keyType))
             this.sandboxKeyMappingID = keyMappingID;
     }
 
-    public String getKeyMappingID(String keyType){
-        if ("production".equals(keyType)) 
+    public String getKeyMappingID(String keyType) {
+        if ("production".equals(keyType))
             return prodKeyMappingID;
         else if ("sandbox".equals(keyType))
             return sandboxKeyMappingID;
-        return "";        
+        return "";
     }
 
     public String getApiAccessToken() {
@@ -271,11 +293,11 @@ public class SharedContext {
         this.apiAccessToken = apiAccessToken;
     }
 
-    public void setAPIDefinitionValidStatus(Boolean definitionValidStatus){
+    public void setAPIDefinitionValidStatus(Boolean definitionValidStatus) {
         this.definitionValidStatus = definitionValidStatus;
     }
 
-    public Boolean getDefinitionValidStatus(){
+    public Boolean getDefinitionValidStatus() {
         return definitionValidStatus;
     }
 

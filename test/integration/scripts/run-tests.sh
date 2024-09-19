@@ -27,15 +27,14 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo add jetstack https://charts.jetstack.io
 helm dependency build ../../helm-charts
 helm install apk-test-setup ../../helm-charts -n apk-integration-test \
---set wso2.apk.dp.adapter.deployment.image=adapter:test \
---set wso2.apk.dp.adapter.deployment.imagePullPolicy=IfNotPresent \
---set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=enforcer:test \
---set wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy=IfNotPresent \
---set wso2.apk.dp.configdeployer.deployment.replicas=0 \
---set wso2.apk.dp.ratelimiter.enabled=false \
---set wso2.apk.dp.redis.enabled=false \
---set wso2.apk.dp.gateway.httpListener.enabled=true
-
+    --set wso2.apk.dp.adapter.deployment.image=adapter:test \
+    --set wso2.apk.dp.adapter.deployment.imagePullPolicy=IfNotPresent \
+    --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=enforcer:test \
+    --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy=IfNotPresent \
+    --set wso2.apk.dp.configdeployer.deployment.replicas=0 \
+    --set wso2.apk.dp.ratelimiter.enabled=false \
+    --set wso2.apk.dp.redis.enabled=false \
+    --set wso2.apk.dp.gateway.httpListener.enabled=true
 
 # Wait gateway resources to be available.
 kubectl wait --timeout=5m -n gateway-system deployment/gateway-api-admission-server --for=condition=Available
@@ -80,6 +79,7 @@ sudo echo "$IP different-endpoint-with-same-route.test.gw.wso2.com" | sudo tee -
 sudo echo "$IP backend-api-key-security.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP custom-auth-header.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP gql.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP grpc.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP api-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP resource-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts

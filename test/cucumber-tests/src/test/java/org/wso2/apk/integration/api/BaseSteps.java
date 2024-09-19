@@ -50,11 +50,14 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.testng.Assert;
 import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
+import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
+import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.ContentType;
-
+import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
+import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -69,6 +72,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 
 /**
  * This class contains the common step definitions.
@@ -98,18 +103,22 @@ public class BaseSteps {
 
     @Then("the response body should contain {string}")
     public void theResponseBodyShouldContain(String expectedText) throws IOException {
-        Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
+        Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText),
+                "Actual response body: " + sharedContext.getResponseBody());
     }
+
     @Then("the response body should not contain {string}")
     public void theResponseBodyShouldNotContain(String expectedText) throws IOException {
-        Assert.assertFalse(sharedContext.getResponseBody().contains(expectedText), "Actual response body: " + sharedContext.getResponseBody());
+        Assert.assertFalse(sharedContext.getResponseBody().contains(expectedText),
+                "Actual response body: " + sharedContext.getResponseBody());
     }
 
     @Then("the response body should contain")
     public void theResponseBodyShouldContain(DataTable dataTable) throws IOException {
         List<String> responseBodyLines = dataTable.asList(String.class);
         for (String line : responseBodyLines) {
-            Assert.assertTrue(sharedContext.getResponseBody().contains(line), "Actual response body: " + sharedContext.getResponseBody());
+            Assert.assertTrue(sharedContext.getResponseBody().contains(line),
+                    "Actual response body: " + sharedContext.getResponseBody());
         }
     }
 
@@ -117,7 +126,7 @@ public class BaseSteps {
     public void theResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
 
         int actualStatusCode = sharedContext.getResponse().getStatusLine().getStatusCode();
-        ((CloseableHttpResponse)sharedContext.getResponse()).close();
+        ((CloseableHttpResponse) sharedContext.getResponse()).close();
         Assert.assertEquals(actualStatusCode, expectedStatusCode);
     }
 
@@ -146,7 +155,8 @@ public class BaseSteps {
 
     // It will send request using a new thread and forget about the response
     @Then("I send {string} async request to {string} with body {string}")
-    public void sendAsyncHttpRequest(String httpMethod, String url, String body) throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+    public void sendAsyncHttpRequest(String httpMethod, String url, String body)
+            throws IOException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         String finalBody = Utils.resolveVariables(body, sharedContext.getValueStore());
         if (sharedContext.getResponse() instanceof CloseableHttpResponse) {
             ((CloseableHttpResponse) sharedContext.getResponse()).close();
@@ -170,6 +180,55 @@ public class BaseSteps {
             }
         });
         thread.start();
+    }
+
+    @Then("the student response body should contain name: {string} age: {int}")
+    public void theStudentResponseBodyShouldContainNameAndAge(String arg0, int arg1) {
+        StudentResponse studentResponse = sharedContext.getStudentResponse();
+        if (studentResponse == null) {
+            Assert.fail("Student response is null.");
+        }
+        int age = studentResponse.getAge();
+        String name = studentResponse.getName();
+        Assert.assertEquals(name, arg0);
+        Assert.assertEquals(age, arg1);
+    }
+
+    @Then("the response body should contain endpoint definition for student.proto")
+    public void theResponseBodyShouldContainEndpointDefinition() throws IOException {
+        String expectedText = "{\"apiDefinition\":\"syntax = \\\"proto3\\\";\\n\\noption java_multiple_files = true;\\noption java_package = \\\"org.example\\\";\\npackage dineth.grpc.api.v1.student;\\n\\nservice StudentService {\\n  rpc GetStudent(StudentRequest) returns (StudentResponse) {};\\n  rpc GetStudentStream(StudentRequest) returns (stream StudentResponse) {};\\n  rpc SendStudentStream(stream StudentRequest) returns (StudentResponse) {};\\n  rpc SendAndGetStudentStream(stream StudentRequest) returns (stream StudentResponse) {}\\n}\\n\\nmessage StudentRequest {\\n  int32 id = 3;\\n}\\n\\nmessage StudentResponse {\\n  string name = 1;\\n  int32 age = 2;\\n}\\n\"}";
+        Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText),
+                "Actual response body: " + sharedContext.getResponseBody());
+    }
+
+    @Then("the gRPC response status code should be {int}")
+    public void theGrpcResponseStatusCodeShouldBe(int expectedStatusCode) throws IOException {
+        int actualStatusCode = sharedContext.getGrpcStatusCode();
+        Assert.assertEquals(actualStatusCode, expectedStatusCode);
+    }
+
+    @Then("I make grpc request GetStudent to {string} with port {int}")
+    public void GetStudent(String arg0, int arg1) throws StatusRuntimeException {
+        try {
+            SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
+            sharedContext.setStudentResponse(grpcStudentClient.GetStudent(sharedContext.getHeaders()));
+            sharedContext.setGrpcStatusCode(0);
+        } catch (StatusRuntimeException e) {
+            sharedContext.setGrpcStatusCode(e.getStatus().getCode().value());
+            logger.error(e.getMessage() + " Status code: " + e.getStatus().getCode().value());
+        }
+    }
+
+    @Then("I make grpc request GetStudent default version to {string} with port {int}")
+    public void GetStudentDefaultVersion(String arg0, int arg1) throws StatusRuntimeException {
+        try {
+            SimpleGRPCStudentClient grpcStudentClient = new SimpleGRPCStudentClient(arg0, arg1);
+            sharedContext.setStudentResponse(grpcStudentClient.GetStudentDefaultVersion(sharedContext.getHeaders()));
+            sharedContext.setGrpcStatusCode(0);
+        } catch (StatusRuntimeException e) {
+            sharedContext.setGrpcStatusCode(e.getStatus().getCode().value());
+            logger.error(e.getMessage() + " Status code: " + e.getStatus().getCode().value());
+        }
     }
 
     @Then("I set headers")
@@ -233,7 +292,7 @@ public class BaseSteps {
         if (secondsToWait > MAX_WAIT_FOR_NEXT_MINUTE_IN_SECONDS) {
             return;
         }
-        Thread.sleep((secondsToWait+1) * 1000);
+        Thread.sleep((secondsToWait + 1) * 1000);
         logger.info("Current time: " + LocalDateTime.now());
     }
 
@@ -242,7 +301,7 @@ public class BaseSteps {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime nextMinute = now.plusMinutes(1).withSecond(0).withNano(0);
         long secondsToWait = now.until(nextMinute, ChronoUnit.SECONDS);
-        Thread.sleep((secondsToWait+1) * 1000);
+        Thread.sleep((secondsToWait + 1) * 1000);
         logger.info("Current time: " + LocalDateTime.now());
     }
 
@@ -272,8 +331,9 @@ public class BaseSteps {
             return; // Any value is acceptable
         }
         String actualValue = header.getValue();
-        Assert.assertEquals(value, actualValue,"Header with key found but value mismatched.");
+        Assert.assertEquals(value, actualValue, "Header with key found but value mismatched.");
     }
+
     @Then("the response headers not contains key {string}")
     public void notContainsHeader(String key) {
         key = Utils.resolveVariables(key, sharedContext.getValueStore());
@@ -282,11 +342,12 @@ public class BaseSteps {
             Assert.fail("Response is null.");
         }
         Header header = response.getFirstHeader(key);
-        Assert.assertNull(header,"header contains in response headers");
+        Assert.assertNull(header, "header contains in response headers");
     }
 
     @Then("the {string} jwt should validate from JWKS {string} and contain")
-    public void decode_header_and_validate(String header,String jwksEndpoint, DataTable dataTable) throws MalformedURLException {
+    public void decode_header_and_validate(String header, String jwksEndpoint, DataTable dataTable)
+            throws MalformedURLException {
         List<Map<String, String>> claims = dataTable.asMaps(String.class, String.class);
         JsonObject jsonResponse = (JsonObject) JsonParser.parseString(sharedContext.getResponseBody());
         String headerValue = jsonResponse.get("headers").getAsJsonObject().get(header).getAsString();
@@ -321,7 +382,7 @@ public class BaseSteps {
                 Assert.assertEquals(claim.get("value"), claim1.toString(), "Actual " +
                         "decoded JWT body: " + claimsSet);
             }
-        } catch (BadJOSEException | JOSEException|ParseException e) {
+        } catch (BadJOSEException | JOSEException | ParseException e) {
             logger.error("JWT Signature verification fail", e);
             Assert.fail("JWT Signature verification fail");
         }
@@ -332,9 +393,11 @@ public class BaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==");
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==");
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=client_credentials&scope=" + Constants.API_CREATE_SCOPE,
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers,
+                "grant_type=client_credentials&scope=" + Constants.API_CREATE_SCOPE,
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("accessToken", sharedContext.getAccessToken());
@@ -346,9 +409,11 @@ public class BaseSteps {
 
         Map<String, String> headers = new HashMap<>();
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_IDP_HOST);
-        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==");
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION,
+                "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==");
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers, "grant_type=client_credentials",
+        HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers,
+                "grant_type=client_credentials",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("accessToken", sharedContext.getAccessToken());
@@ -367,8 +432,8 @@ public class BaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, Constants.SUBSCRIPTION_BASIC_AUTH_TOKEN);
 
         HttpResponse httpResponse = httpClient.doPost(Utils.getTokenEndpointURL(), headers,
-                                                      "grant_type=client_credentials&scope=" + scopes,
-                                                      Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
+                "grant_type=client_credentials&scope=" + scopes,
+                Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue(Constants.ACCESS_TOKEN, sharedContext.getAccessToken());
     }
@@ -386,17 +451,16 @@ public class BaseSteps {
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Basic YWRtaW46YWRtaW4=");
 
         HttpResponse httpResponse = httpClient.doPost(Utils.getDCREndpointURL(), headers, "{\n" +
-                        "  \"callbackUrl\":\"www.google.lk\",\n" +
-                        "  \"clientName\":\"rest_api_publisher\",\n" +
-                        "  \"owner\":\"admin\",\n" +
-                        "  \"grantType\":\"client_credentials password refresh_token\",\n" +
-                        "  \"saasApp\":true\n" +
-                        "  }",
+                "  \"callbackUrl\":\"www.google.lk\",\n" +
+                "  \"clientName\":\"rest_api_publisher\",\n" +
+                "  \"owner\":\"admin\",\n" +
+                "  \"grantType\":\"client_credentials password refresh_token\",\n" +
+                "  \"saasApp\":true\n" +
+                "  }",
                 Constants.CONTENT_TYPES.APPLICATION_JSON);
         sharedContext.setBasicAuthToken(Utils.extractBasicToken(httpResponse));
         sharedContext.addStoreValue("publisherBasicAuthToken", sharedContext.getBasicAuthToken());
     }
-
 
     @Given("I have a valid Publisher access token")
     public void iHaveValidPublisherAccessToken() throws Exception {
@@ -407,7 +471,8 @@ public class BaseSteps {
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_IDP_HOST);
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update",
+        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers,
+                "grant_type=password&username=admin&password=admin&scope=apim:api_view apim:api_create apim:api_publish apim:api_delete apim:api_manage apim:api_import_export apim:subscription_manage apim:client_certificates_add apim:client_certificates_update",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
 
         sharedContext.setPublisherAccessToken(Utils.extractToken(httpResponse));
@@ -423,7 +488,8 @@ public class BaseSteps {
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_IDP_HOST);
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:app_manage apim:sub_manage apim:subscribe",
+        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers,
+                "grant_type=password&username=admin&password=admin&scope=apim:app_manage apim:sub_manage apim:subscribe",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
 
         sharedContext.setDevportalAccessToken(Utils.extractToken(httpResponse));
@@ -440,7 +506,8 @@ public class BaseSteps {
         headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_IDP_HOST);
         headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, basicAuthHeader);
 
-        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers, "grant_type=password&username=admin&password=admin&scope=apim:app_manage apim:admin_tier_view apim:admin_tier_manage",
+        HttpResponse httpResponse = httpClient.doPost(Utils.getAPIMTokenEndpointURL(), headers,
+                "grant_type=password&username=admin&password=admin&scope=apim:app_manage apim:admin_tier_view apim:admin_tier_manage",
                 Constants.CONTENT_TYPES.APPLICATION_X_WWW_FORM_URLENCODED);
         sharedContext.setAdminAccessToken(Utils.extractToken(httpResponse));
         sharedContext.addStoreValue("adminportalAccessToken", sharedContext.getAdminAccessToken());
@@ -450,12 +517,12 @@ public class BaseSteps {
     @Then("the response should be given as valid")
     public void theResponseShouldBeGivenAs() throws IOException {
         Boolean status = sharedContext.getDefinitionValidStatus();
-        Assert.assertEquals(true, status,"Actual definition validation status: "+ status);
+        Assert.assertEquals(true, status, "Actual definition validation status: " + status);
     }
 
     @Then("I set {string} as the new access token")
     public void set_invalid_access_token(String newToken) throws Exception {
-            sharedContext.setApiAccessToken(newToken);
-            sharedContext.addStoreValue("accessToken",sharedContext.getApiAccessToken());
+        sharedContext.setApiAccessToken(newToken);
+        sharedContext.addStoreValue("accessToken", sharedContext.getApiAccessToken());
     }
 }
