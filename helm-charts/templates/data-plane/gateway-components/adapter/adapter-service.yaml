@@ -37,7 +37,7 @@ spec:
       targetPort: 9443
     - name: https-rate-limiter
       protocol: TCP
-      port: 18001
+      port: 18005
     - name: profile-port
       protocol: TCP
       port: 6060
