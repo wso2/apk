@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: disable-api-level-jwt
@@ -28,7 +28,7 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - disable-api-level-jwt-httproute
+        - disable-api-level-jwt-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -38,22 +38,22 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - disable-api-level-jwt.test.gw.wso2.com
+    - disable-api-level-jwt.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/echo-full
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
@@ -62,20 +62,20 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    disabled: false    
+    disabled: false
     authTypes:
       apiKey:
         - in: Header
           name: x-api-key
       oauth2:
-        disabled: true        
+        disabled: true
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
     namespace: gateway-integration-test-infra
     name: disable-api-level-jwt
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: disable-api-level-jwt1
@@ -89,7 +89,7 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - disable-api-level-jwt1-httproute
+        - disable-api-level-jwt1-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -99,22 +99,22 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - disable-api-level-jwt1.test.gw.wso2.com
+    - disable-api-level-jwt1.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/echo-full
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
@@ -123,13 +123,13 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    disabled: false    
+    disabled: false
     authTypes:
       apiKey:
         - in: Header
           name: x-api-key
       oauth2:
-        disabled: false        
+        disabled: false
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
@@ -143,10 +143,10 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   services:
-  - host: infra-backend-v1.gateway-integration-test-infra
-    port: 8080
+    - host: infra-backend-v1.gateway-integration-test-infra
+      port: 8080
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: disable-api-level-jwt2
@@ -160,7 +160,7 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - disable-api-level-jwt2-httproute
+        - disable-api-level-jwt2-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -170,22 +170,22 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - disable-api-level-jwt2.test.gw.wso2.com
+    - disable-api-level-jwt2.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/echo-full
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
@@ -194,10 +194,10 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    disabled: false    
+    disabled: false
     authTypes:
       oauth2:
-        disabled: true        
+        disabled: true
   targetRef:
     group: gateway.networking.k8s.io
     kind: API

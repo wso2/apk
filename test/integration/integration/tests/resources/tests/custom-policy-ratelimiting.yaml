@@ -39,7 +39,7 @@ metadata:
 spec:
   override:
     requestInterceptors:
-    - name: request-ratelimit-interceptor-api-level
+      - name: request-ratelimit-interceptor-api-level
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
@@ -58,7 +58,7 @@ spec:
     - request_headers
     - invocation_context
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: http-bin-api-basic
@@ -71,7 +71,7 @@ spec:
   #definitionFileRef: swagger-definition-http-bin-api
   production:
     - routeRefs:
-      - prod-http-route-http-bin-api-basic
+        - prod-http-route-http-bin-api-basic
   organization: a3b58ccf-6ecc-4557-b5bb-0a35cce38256
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -125,5 +125,5 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   services:
-  - host: infra-backend-v1.gateway-integration-test-infra
-    port: 8080
+    - host: infra-backend-v1.gateway-integration-test-infra
+      port: 8080

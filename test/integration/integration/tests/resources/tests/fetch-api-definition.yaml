@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: fetch-api-definition
@@ -28,7 +28,7 @@ spec:
   definitionFileRef: definition-file-swagger
   production:
     - routeRefs:
-      - fetch-api-defintion-httproute
+        - fetch-api-defintion-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -38,28 +38,28 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - fetch-api-definition.test.gw.wso2.com
+    - fetch-api-definition.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /fetch-api-definitions/v1.0.0
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /fetch-api-definition/v1.0.0/gw.wso2.com
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /fetch-api-definitions/v1.0.0
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /fetch-api-definition/v1.0.0/gw.wso2.com
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -76,5 +76,5 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   services:
-  - host: infra-backend-v1.gateway-integration-test-infra
-    port: 8080
+    - host: infra-backend-v1.gateway-integration-test-infra
+      port: 8080

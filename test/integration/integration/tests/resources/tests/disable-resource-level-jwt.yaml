@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: disable-resource-level-jwt
@@ -28,7 +28,7 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - disable-resource-level-jwt-httproute
+        - disable-resource-level-jwt-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -38,28 +38,28 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - disable-resource-level-jwt.test.gw.wso2.com
+    - disable-resource-level-jwt.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
-    filters:
-    - type: ExtensionRef
-      extensionRef:
-        group: dp.wso2.com
-        kind: Authentication
-        name: disable-resource-level-jwt-authentication
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/echo-full
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: Authentication
+            name: disable-resource-level-jwt-authentication
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
@@ -81,7 +81,7 @@ spec:
     group: gateway.networking.k8s.io
     namespace: gateway-integration-test-infra
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: disable-resource-level-jwt1
@@ -95,7 +95,7 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - disable-resource-level-jwt1-httproute
+        - disable-resource-level-jwt1-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -105,28 +105,28 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - disable-resource-level-jwt1.test.gw.wso2.com
+    - disable-resource-level-jwt1.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
-    filters:
-    - type: ExtensionRef
-      extensionRef:
-        group: dp.wso2.com
-        kind: Authentication
-        name: disable-resource-level-jwt1-authentication
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/echo-full
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: Authentication
+            name: disable-resource-level-jwt1-authentication
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
@@ -155,10 +155,10 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   services:
-  - host: infra-backend-v1.gateway-integration-test-infra
-    port: 8080
+    - host: infra-backend-v1.gateway-integration-test-infra
+      port: 8080
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: disable-resource-level-jwt2
@@ -172,7 +172,7 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - disable-resource-level-jwt2-httproute
+        - disable-resource-level-jwt2-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -182,28 +182,28 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - disable-resource-level-jwt2.test.gw.wso2.com
+    - disable-resource-level-jwt2.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
-    filters:
-    - type: ExtensionRef
-      extensionRef:
-        group: dp.wso2.com
-        kind: Authentication
-        name: disable-resource-level-jwt2-authentication
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/echo-full
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: Authentication
+            name: disable-resource-level-jwt2-authentication
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
