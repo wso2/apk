@@ -689,3 +689,8 @@ func ContainsString(list []string, target string) bool {
 	}
 	return false
 }
+
+// GetSubscriptionToAPIIndexID returns the id which can be used to list subscriptions related to a api.
+func GetSubscriptionToAPIIndexID(name string, version string) string {
+	return fmt.Sprintf("%s_%s", name, version)
+}

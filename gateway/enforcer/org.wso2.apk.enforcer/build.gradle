@@ -87,6 +87,7 @@ dependencies {
     implementation libs.gson
     implementation libs.ua.parser
     implementation libs.commons.lang3
+    implementation libs.commons.compress
     implementation libs.openfeign.feign.gson
     implementation libs.openfeign.feign.slf4j
 

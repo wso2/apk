@@ -70,6 +70,8 @@ spec:
               value: {{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
             - name: COMMON_CONTROLLER_HOST
               value: {{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
+            - name: RATELIMITER_HOST
+              value: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc
             - name: ENFORCER_PRIVATE_KEY_PATH
               value: /home/wso2/security/keystore/enforcer.key  
             - name: ENFORCER_PUBLIC_CERT_PATH
@@ -80,6 +82,8 @@ spec:
               value: "/home/wso2/security/truststore"
             - name: ADAPTER_XDS_PORT
               value : "18000"
+            - name: RATELIMITER_PORT
+              value : "8091"
             - name: COMMON_CONTROLLER_XDS_PORT
               value : "18002"
             - name: COMMON_CONTROLLER_REST_PORT
@@ -254,6 +258,22 @@ spec:
             - name: idp-tls-certificate-secret-volume
               mountPath: /home/wso2/security/truststore/idp-tls.pem
               subPath: {{ .Values.wso2.apk.idp.tls.fileName }}
+            {{ end }}
+            {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
+            - name: ratelimiter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/ratelimiter.crt
+            {{- if and .Values.wso2.apk.dp.ratelimiter.deployment.configs .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: ratelimiter-truststore-secret-volume
+              mountPath: /home/wso2/security/truststore/ratelimiter-ca.crt
+            {{- if and .Values.wso2.apk.dp.ratelimiter.deployment.configs .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls }}
+              subPath: {{ .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls.certCAFilename | default "ca.crt" }}
+            {{- else }}
+              subPath: ca.crt
+            {{- end }}
             {{ end }}
           readinessProbe:
             exec:

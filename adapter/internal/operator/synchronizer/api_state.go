@@ -55,6 +55,7 @@ type HTTPRouteState struct {
 	HTTPRoutePartitions map[string]*gwapiv1.HTTPRoute
 	BackendMapping      map[string]*v1alpha2.ResolvedBackend
 	Scopes              map[string]v1alpha1.Scope
+	RuleIdxToAiRatelimitPolicyMapping map[int]*v1alpha3.AIRateLimitPolicy
 }
 
 // GQLRouteState holds the state of the deployed gqlRoutes. This state is compared with

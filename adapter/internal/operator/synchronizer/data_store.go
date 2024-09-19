@@ -76,6 +76,20 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 	events := []string{}
 	cachedAPI := ods.apiStore[apiNamespacedName]
 
+	if cachedAPI.AIProvider == nil && apiState.AIProvider != nil {
+		cachedAPI.AIProvider = apiState.AIProvider
+		updated = true
+		events = append(events, "API provider")
+	} else if cachedAPI.AIProvider != nil && apiState.AIProvider == nil{
+		cachedAPI.AIProvider = nil
+		updated = true
+		events = append(events, "API provider")
+	} else if cachedAPI.AIProvider.Generation != apiState.AIProvider.Generation {
+		cachedAPI.AIProvider = apiState.AIProvider
+		updated = true
+		events = append(events, "API provider")
+	}
+
 	if apiState.APIDefinition.Generation > cachedAPI.APIDefinition.Generation {
 		cachedAPI.APIDefinition = apiState.APIDefinition
 		updated = true
@@ -90,7 +104,25 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 			"Production"); routesUpdated {
 			updated = true
 			events = append(events, routeEvents...)
+		} else {
+			// Check whether AIRatelimitPolicy is updated
+			for key, aiRl := range apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping {
+				if cachedAIRl, exists := cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping[key]; exists {
+					if utils.NamespacedName(cachedAIRl).String() != utils.NamespacedName(aiRl).String() || cachedAIRl.Generation != aiRl.Generation {
+						updated = true
+						break
+					} 
+				} else {
+					updated = true
+					break
+				}
+			}
+			if len(cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) != len(apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) {
+				updated = true
+			}
 		}
+		cachedAPI.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping = apiState.ProdHTTPRoute.RuleIdxToAiRatelimitPolicyMapping
+
 	} else {
 		if cachedAPI.ProdHTTPRoute != nil {
 			updated = true
@@ -98,6 +130,7 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		}
 		cachedAPI.ProdHTTPRoute = nil
 	}
+
 	if apiState.ProdGQLRoute != nil {
 		if cachedAPI.ProdGQLRoute == nil {
 			cachedAPI.ProdGQLRoute = apiState.ProdGQLRoute
@@ -123,7 +156,24 @@ func (ods *OperatorDataStore) processAPIState(apiNamespacedName types.Namespaced
 		} else if routeEvents, routesUpdated := updateHTTPRoute(apiState.SandHTTPRoute, cachedAPI.SandHTTPRoute, "Sandbox"); routesUpdated {
 			updated = true
 			events = append(events, routeEvents...)
+		} else {
+			// Check whether AIRatelimitPolicy is updated
+			for key, aiRl := range apiState.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping {
+				if cachedAIRl, exists := cachedAPI.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping[key]; exists {
+					if utils.NamespacedName(cachedAIRl).String() != utils.NamespacedName(aiRl).String() || cachedAIRl.Generation != aiRl.Generation {
+						updated = true
+						break
+					} 
+				} else {
+					updated = true
+					break
+				}
+			}
+			if len(cachedAPI.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) != len(apiState.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping) {
+				updated = true
+			}
 		}
+		cachedAPI.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping = apiState.SandHTTPRoute.RuleIdxToAiRatelimitPolicyMapping
 	} else {
 		if cachedAPI.SandHTTPRoute != nil {
 			updated = true

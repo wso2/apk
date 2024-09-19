@@ -308,6 +308,8 @@ public class ConfigHolder {
     private void loadTrustedCertsToTrustStore() throws IOException {
 
         String truststoreFilePath = getEnvVarConfig().getTrustedAdapterCertsPath();
+        String certificatePath = "/home/wso2/security/truststore/ratelimiter.crt";
+        TLSUtils.addCertsToTruststore(trustStore, certificatePath);
         TLSUtils.addCertsToTruststore(trustStore, truststoreFilePath);
     }
 

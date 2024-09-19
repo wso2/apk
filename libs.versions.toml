@@ -21,6 +21,7 @@ azure-monitor-opentelemetry = {module = "com.azure:azure-monitor-opentelemetry-e
 azure-okhttp = {module = "com.azure:azure-core-http-okhttp", version.ref = "azure-okhttp"}
 commons-codec = {module = "commons-codec:commons-codec", version.ref = "commons-codec"}
 commons-collection = {module = "org.apache.commons:commons-collections4", version.ref = "commons-collection"}
+commons-compress = {module = "org.apache.commons:commons-compress", version.ref = "commons-compress"}
 commons-io = {module = "commons-io:commons-io", version.ref = "commons-io"}
 commons-lang = {module = "commons-lang:commons-lang", version.ref = "commons-lang"}
 commons-lang3 = {module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3"}
@@ -124,6 +125,7 @@ azure-monitor-opentelemetry = "1.0.0-beta.9"
 azure-okhttp = "1.11.6"
 commons-codec = "1.14"
 commons-collection = "4.1"
+commons-compress = "1.27.1"
 commons-io = "2.11.0"
 commons-lang = "2.4"
 commons-lang3 = "3.10"
@@ -131,12 +133,12 @@ commons-logging = "1.1.1"
 commons-pool = "1.5.6.wso2v1"
 commons-validator = "1.7"
 cxf = "3.5.4"
-envoyproxy = "1.0.42"
+envoyproxy = "1.0.46"
 fasterxml-woodstox="6.4.0"
 everit = "1.5.0.wso2.v2"
 geronimo = "1.1.1.wso2v1"
 graphql = "21.1"
-grpc = "1.53.0"
+grpc = "1.62.2"
 gson = "2.10"
 guava = "32.1.2-jre"
 hibernate-validator = "5.4.3.Final"

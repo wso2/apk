@@ -70,7 +70,7 @@ public class JWTGeneratorSteps {
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject("alice")
                 .issuer("https://idp1.com")
-                .expirationTime(new Date(new Date().getTime() + 60 * 1000))
+                .expirationTime(new Date(new Date().getTime() + 60 * 60 * 24  * 1000))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("azp", consumerKey)
                 .claim("scope", Constants.API_CREATE_SCOPE)
@@ -81,6 +81,13 @@ public class JWTGeneratorSteps {
         signedJWT.sign(signer);
         String jwtToken = signedJWT.serialize();
         sharedContext.addStoreValue("idp-1-"+consumerKey+"-token", jwtToken);
+    }
+
+    public static void main(String[] args) throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException, JOSEException {
+        SharedContext sharedContext1 = new SharedContext();
+        String consumerKey = "45f1c5c8-a92e-11ed-afa1-0242ac120005";
+        new JWTGeneratorSteps(sharedContext1).generateTokenFromIdp1WithConsumerKey("123-456", consumerKey);
+        System.out.println(sharedContext1.getStoreValue("idp-1-"+consumerKey+"-token"));
     }
 
 

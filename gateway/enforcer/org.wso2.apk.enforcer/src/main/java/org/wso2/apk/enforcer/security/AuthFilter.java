@@ -137,6 +137,18 @@ public class AuthFilter implements Filter {
         boolean authenticated = false;
         // Any auth token has been provided for application-level security or not
         boolean canAuthenticated = false;
+        if (requestContext.getMatchedAPI() != null && requestContext.getMatchedAPI().getAiProvider() != null) {
+            if (requestContext.getMatchedAPI().getAiProvider().getPromptTokens() != null) {
+                requestContext.addMetadataToMap("aitoken:prompttokenid", requestContext.getMatchedAPI().getAiProvider().getPromptTokens().getValue());
+            }
+            if (requestContext.getMatchedAPI().getAiProvider().getCompletionToken() != null) {
+                requestContext.addMetadataToMap("aitoken:extracttokenfrom", requestContext.getMatchedAPI().getAiProvider().getCompletionToken().getIn());
+                requestContext.addMetadataToMap("aitoken:completiontokenid", requestContext.getMatchedAPI().getAiProvider().getCompletionToken().getValue());
+            }
+            if (requestContext.getMatchedAPI().getAiProvider().getTotalToken() != null) {
+                requestContext.addMetadataToMap("aitoken:totaltokenid", requestContext.getMatchedAPI().getAiProvider().getTotalToken().getValue());
+            }
+        }
         for (Authenticator authenticator : authenticators) {
             if (authenticator.canAuthenticate(requestContext)) {
                 // For transport level securities (mTLS), canAuthenticated will not be applied

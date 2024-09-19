@@ -78,7 +78,7 @@ func UpdateInternalMapsFromHTTPRoute(apiState APIState, httpRoute *HTTPRouteStat
 }
 
 // generateAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
-func generateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
+func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
@@ -98,16 +98,16 @@ func generateAdapterInternalAPI(apiState APIState, httpRoute *HTTPRouteState, en
 	resourceParams := model.ResourceParams{
 		AuthSchemes:               apiState.Authentications,
 		ResourceAuthSchemes:       apiState.ResourceAuthentications,
-		BackendMapping:            httpRoute.BackendMapping,
+		BackendMapping:            httpRouteState.BackendMapping,
 		APIPolicies:               apiState.APIPolicies,
 		ResourceAPIPolicies:       apiState.ResourceAPIPolicies,
-		ResourceScopes:            httpRoute.Scopes,
+		ResourceScopes:            httpRouteState.Scopes,
 		InterceptorServiceMapping: apiState.InterceptorServiceMapping,
 		BackendJWTMapping:         apiState.BackendJWTMapping,
 		RateLimitPolicies:         apiState.RateLimitPolicies,
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
-	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRoute.HTTPRouteCombined, resourceParams); err != nil {
+	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRouteState.HTTPRouteCombined, resourceParams, httpRouteState.RuleIdxToAiRatelimitPolicyMapping, apiState.AIProvider.Spec.RateLimitFields.PromptTokens.In); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting HttpRoute CR info to adapterInternalAPI. %v", err))
 		return nil, err
 	}

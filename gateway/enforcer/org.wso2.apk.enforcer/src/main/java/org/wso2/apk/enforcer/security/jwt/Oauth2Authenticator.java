@@ -68,6 +68,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Implements the authenticator interface to authenticate request using a JWT token.
@@ -262,12 +264,23 @@ public class Oauth2Authenticator implements Authenticator {
                         for (ApplicationMapping appMapping : appMappings) {
                             String subscriptionUUID = appMapping.getSubscriptionUUID();
                             Subscription subscription = datastore.getMatchingSubscription(subscriptionUUID);
-                            if (!"Unlimited".equals(subscription.getRatelimitTier())) {
-                                String subscriptionId = subscription.getSubscribedApi().getName() + ":" +
-                                        applicationId;
-                                requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
-                                requestContext.addMetadataToMap("ratelimit:usage-policy", subscription.getRatelimitTier());
-                                requestContext.addMetadataToMap("ratelimit:organization", subscription.getOrganization());
+                            if (requestContext.getMatchedAPI().getName().equals(subscription.getSubscribedApi().getName())) {
+                                // Validate API version
+                                Pattern pattern = subscription.getSubscribedApi().getVersionRegexPattern();
+                                String versionToMatch = requestContext.getMatchedAPI().getVersion();
+                                Matcher matcher = pattern.matcher(versionToMatch);
+                                if (matcher.matches()) {
+                                    if (!"Unlimited".equals(subscription.getRatelimitTier())) {
+                                        String subscriptionId = subscription.getSubscribedApi().getName() + ":" +
+                                                applicationId + subscription.getSubscriptionId();
+                                        requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
+                                        requestContext.addMetadataToMap("ratelimit:usage-policy", subscription.getRatelimitTier());
+                                        requestContext.addMetadataToMap("ratelimit:organization", subscription.getOrganization());
+                                        System.out.println("Value: " + String.format("%s-%s", subscription.getOrganization(), subscription.getRatelimitTier()));
+                                        requestContext.addMetadataToMap("ratelimit:organization-and-rlpolicy", String.format("%s-%s", subscription.getOrganization(), subscription.getRatelimitTier()));
+                                    }
+                                    break;
+                                }
                             }
                         }
                     }

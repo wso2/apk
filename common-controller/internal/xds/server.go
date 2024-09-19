@@ -35,6 +35,7 @@ import (
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	apimachiner_types "k8s.io/apimachinery/pkg/types"
 )
 
 // EnvoyInternalAPI struct use to hold envoy resources and adapter internal resources
@@ -161,6 +162,16 @@ func UpdateRateLimitXDSCacheForCustomPolicies(customRateLimitPolicies dpv1alpha1
 	if customRateLimitPolicies.Key != "" {
 		rlsPolicyCache.AddCustomRateLimitPolicies(customRateLimitPolicies)
 	}
+}
+
+// UpdateRateLimitXDSCacheForAIRatelimitPolicies updates the xDS cache of the RateLimiter for AI ratelimit policies.
+func UpdateRateLimitXDSCacheForAIRatelimitPolicies(aiRatelimitPolicySpecs map[apimachiner_types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
+	rlsPolicyCache.ProcessAIRatelimitPolicySpecsAndUpdateCache(aiRatelimitPolicySpecs)
+}
+
+// UpdateRateLimitXDSCacheForAubscriptionBasedAIRatelimitPolicies updates the xDS cache of the RateLimiter for AI ratelimit policies.
+func UpdateRateLimitXDSCacheForAubscriptionBasedAIRatelimitPolicies(subscriptionEnabledAIRatelimitPolicies map[apimachiner_types.NamespacedName]struct{}, aiRatelimitPolicySpecs map[apimachiner_types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
+	rlsPolicyCache.ProcessSubscriptionBasedAIRatelimitPolicySpecsAndUpdateCache(subscriptionEnabledAIRatelimitPolicies, aiRatelimitPolicySpecs)
 }
 
 // DeleteAPILevelRateLimitPolicies delete the ratelimit xds cache

@@ -63,6 +63,7 @@ func init() {
 	utilruntime.Must(gwapiv1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
+	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
@@ -164,6 +165,10 @@ func InitOperator(metricsConfig config.Metrics) {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
+	if err := dpcontrollers.NewAIRatelimitController(mgr, ratelimitStore); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
+			"Error creating JWT Issuer controller, error: %v", err))
+	}
 
 	config := config.ReadConfigs()
 	if !(config.CommonController.ControlPlane.Enabled && config.CommonController.ControlPlane.Persistence.Type == "DB") {
@@ -171,7 +176,7 @@ func InitOperator(metricsConfig config.Metrics) {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3115, logging.MAJOR,
 				"Error creating Application controller, error: %v", err))
 		}
-		if err := cpcontrollers.NewSubscriptionController(mgr, subscriptionStore); err != nil {
+		if err := cpcontrollers.NewSubscriptionController(mgr, subscriptionStore, ratelimitStore); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3116, logging.MAJOR,
 				"Error creating Subscription controller, error: %v", err))
 		}

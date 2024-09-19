@@ -3,6 +3,7 @@
 # It should be run by config/default
 resources:
 - bases/dp.wso2.com_ratelimitpolicies.yaml
+- bases/dp.wso2.com_airatelimitpolicies.yaml
 - bases/dp.wso2.com_apis.yaml
 - bases/cp.wso2.com_applications.yaml
 - bases/cp.wso2.com_subscriptions.yaml

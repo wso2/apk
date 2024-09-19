@@ -39,6 +39,8 @@ import (
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
+	extProcessorv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	ratelimitv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 	lua "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	upstreams "github.com/envoyproxy/go-control-plane/envoy/extensions/upstreams/http/v3"
@@ -859,12 +861,53 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	}
 
 	corsFilter, _ := anypb.New(corsPolicy)
-
 	perRouteFilterConfigs := map[string]*any.Any{
 		wellknown.HTTPExternalAuthorization: extAuthzFilter,
 		LuaLocal:                            luaFilter,
 		wellknown.CORS:                      corsFilter,
 	}
+	if !params.isAiAPI {
+		perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+			Override: &extProcessorv3.ExtProcPerRoute_Disabled{
+				Disabled: true,
+			},
+		}
+		dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+		filterExtProc := &any.Any{
+			TypeUrl: extProcPerRouteName,
+			Value:   dataExtProc,
+		}
+		perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
+	} else {
+		if strings.ToUpper(resource.GetExtractTokenFromValue()) == "HEADER" {
+			perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+				Override: &extProcessorv3.ExtProcPerRoute_Overrides{
+					Overrides: &extProcessorv3.ExtProcOverrides{
+						ProcessingMode: &extProcessorv3.ProcessingMode{
+							RequestHeaderMode: extProcessorv3.ProcessingMode_SKIP,
+							ResponseHeaderMode: extProcessorv3.ProcessingMode_SEND,
+							ResponseBodyMode: extProcessorv3.ProcessingMode_NONE,
+						},
+					},
+				},
+			}
+			dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+			filterExtProc := &any.Any{
+				TypeUrl: extProcPerRouteName,
+				Value:   dataExtProc,
+			}
+			perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
+		}
+	}
+	perFilterConfigRL := ratelimitv3.RateLimitPerRoute{
+		VhRateLimits: ratelimitv3.RateLimitPerRoute_INCLUDE,
+	}
+	ratelimitPerRoute, _ := proto.Marshal(&perFilterConfigRL)
+	filterrl := &any.Any{
+		TypeUrl: ratelimitPerRouteName,
+		Value:   ratelimitPerRoute,
+	}
+	perRouteFilterConfigs[RatelimitFilterName] = filterrl
 
 	logger.LoggerOasparser.Debugf("adding route : %s for API : %s", resourcePath, title)
 
@@ -916,6 +959,29 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 	routeConfig := resource.GetEndpoints().Config
+	metaData := &corev3.Metadata{}
+	if params.isAiAPI {
+		metaData = &corev3.Metadata{
+			FilterMetadata: map[string]*structpb.Struct{
+				"envoy.filters.http.ext_proc": &structpb.Struct{
+					Fields: map[string]*structpb.Value{
+						"EnableBackendBasedAIRatelimit": &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: fmt.Sprintf("%t", resource.GetEnableBackendBasedAIRatelimit()),
+							},
+						},
+						"BackendBasedAIRatelimitDescriptorValue": &structpb.Value{
+							Kind: &structpb.Value_StringValue{
+								StringValue: resource.GetBackendBasedAIRatelimitDescriptorValue(),
+							},
+						},
+					},
+				},
+			},
+		}
+	} else {
+		metaData = nil
+	}
 	if resource.HasPolicies() {
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
 		operations := resource.GetOperations()
@@ -1050,13 +1116,14 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				metadataValue := operation.GetMethod() + "_to_" + newMethod
 				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
 
-				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()])
-				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()])
+				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
+				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
 
+				requestHeadersToRemove := make([]string,0)
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
-				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, requestRedirectAction, nil, decorator, perRouteFilterConfigs,
-					nil, nil, nil, nil)
+				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
+					nil, requestHeadersToRemove, nil, nil)
 
 				// Create route2 for new method.
 				// Add all policies to route config. Do not send via enforcer.
@@ -1066,7 +1133,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
-				route2 := generateRouteConfig(xWso2Basepath, match2, action2, requestRedirectAction, nil, decorator, configToSkipEnforcer,
+				route2 := generateRouteConfig(xWso2Basepath, match2, action2, requestRedirectAction, metaData, decorator, configToSkipEnforcer,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
 
 				routes = append(routes, route1)
@@ -1074,7 +1141,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			} else {
 				var action *routev3.Route_Route
 				if requestRedirectAction == nil {
-					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()])
+					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNames[operation.GetID()], resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
 				}
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
@@ -1086,7 +1153,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				} else if requestRedirectAction == nil {
 					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
-				route := generateRouteConfig(xWso2Basepath, match, action, requestRedirectAction, nil, decorator, perRouteFilterConfigs,
+				route := generateRouteConfig(xWso2Basepath, match, action, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
 				routes = append(routes, route)
 			}
@@ -1100,12 +1167,12 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
-		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil)
+		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
-
-		route := generateRouteConfig(xWso2Basepath, match, action, nil, nil, decorator, perRouteFilterConfigs,
-			nil, nil, nil, nil) // general headers to add and remove are included in this methods
+		requestHeadersToRemove := make([]string,0)
+		route := generateRouteConfig(xWso2Basepath, match, action, nil, metaData, decorator, perRouteFilterConfigs,
+			nil, requestHeadersToRemove, nil, nil) // general headers to add and remove are included in this methods
 		routes = append(routes, route)
 	}
 	return routes, nil
@@ -1222,6 +1289,18 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 		},
 	}
 
+	perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+		Override: &extProcessorv3.ExtProcPerRoute_Disabled{
+			Disabled: true,
+		},
+	}
+
+	dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+	filterExtProc := &any.Any{
+		TypeUrl: extProcPerRouteName,
+		Value:   dataExtProc,
+	}
+
 	router = routev3.Route{
 		Name:      apiDefinitionQueryParam,
 		Match:     match,
@@ -1230,6 +1309,7 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 		Decorator: decorator,
 		TypedPerFilterConfig: map[string]*any.Any{
 			wellknown.HTTPExternalAuthorization: filter,
+			HTTPExternalProcessor:               filterExtProc,
 		},
 	}
 	return &router
@@ -1303,6 +1383,18 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 		},
 	}
 
+	perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+		Override: &extProcessorv3.ExtProcPerRoute_Disabled{
+			Disabled: true,
+		},
+	}
+
+	dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+	filterExtProc := &any.Any{
+		TypeUrl: extProcPerRouteName,
+		Value:   dataExtProc,
+	}
+
 	router = &routev3.Route{
 		Name:      endpoint, //Categorize routes with same base path
 		Match:     match,
@@ -1311,6 +1403,7 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 		Decorator: decorator,
 		TypedPerFilterConfig: map[string]*any.Any{
 			wellknown.HTTPExternalAuthorization: filter,
+			HTTPExternalProcessor:               filterExtProc,
 		},
 	}
 	return router
@@ -1347,6 +1440,17 @@ func CreateHealthEndpoint() *routev3.Route {
 		Value:   data,
 	}
 
+	perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+		Override: &extProcessorv3.ExtProcPerRoute_Disabled{
+			Disabled: true,
+		},
+	}
+
+	dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+	filterExtProc := &any.Any{
+		TypeUrl: extProcPerRouteName,
+		Value:   dataExtProc,
+	}
 	router = routev3.Route{
 		Name:  healthPath, //Categorize routes with same base path
 		Match: match,
@@ -1364,6 +1468,7 @@ func CreateHealthEndpoint() *routev3.Route {
 		Decorator: decorator,
 		TypedPerFilterConfig: map[string]*any.Any{
 			wellknown.HTTPExternalAuthorization: filter,
+			HTTPExternalProcessor:               filterExtProc,
 		},
 	}
 	return &router
@@ -1388,6 +1493,18 @@ func CreateReadyEndpoint() *routev3.Route {
 		Operation: readyPath,
 	}
 
+	perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+		Override: &extProcessorv3.ExtProcPerRoute_Disabled{
+			Disabled: true,
+		},
+	}
+
+	dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+	filterExtProc := &any.Any{
+		TypeUrl: extProcPerRouteName,
+		Value:   dataExtProc,
+	}
+
 	router = routev3.Route{
 		Name:  readyPath, //Categorize routes with same base path
 		Match: match,
@@ -1400,6 +1517,9 @@ func CreateReadyEndpoint() *routev3.Route {
 		},
 		Metadata:  nil,
 		Decorator: decorator,
+		TypedPerFilterConfig: map[string]*any.Any{
+			HTTPExternalProcessor: filterExtProc,
+		},
 	}
 	return &router
 }
@@ -1596,6 +1716,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 		environment:                  swagger.GetEnvironment(),
 		envType:                      swagger.EnvType,
 		mirrorClusterNames:           mirrorClusterNames,
+		isAiAPI:                      swagger.AIProvider.Enabled,
 	}
 	return params
 }

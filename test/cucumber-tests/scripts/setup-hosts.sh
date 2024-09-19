@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 
 kubectl apply -f ./CRs/artifacts.yaml
+
 kubectl wait deployment/httpbin -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/backend-retry-deployment -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/dynamic-backend -n apk-integration-test --for=condition=available --timeout=600s
+kubectl wait deployment/llm-deployment -n apk-integration-test --for=condition=available --timeout=600s
+kubectl wait deployment/llm-deployment-subs -n apk-integration-test --for=condition=available --timeout=600s
+kubectl wait deployment/llm-deployment-header -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/interceptor-service-deployment -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/graphql-faker -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available

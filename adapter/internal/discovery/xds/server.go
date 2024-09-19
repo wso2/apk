@@ -97,9 +97,10 @@ var (
 
 	// todo(amali) there can be multiple vhosts for one EnvoyInternalAPI so handle this apiuuid+sand/prod should be the key
 
-	orgAPIMap                map[string]map[string]*EnvoyInternalAPI                      // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
-	orgIDLatestAPIVersionMap map[string]map[string]map[string]semantic_version.SemVersion // organizationID -> Vhost:APIName -> VersionRange(vx/vx.x; x is int) -> Latest API Version
-
+	orgAPIMap                       map[string]map[string]*EnvoyInternalAPI                      // organizationID -> Vhost:API_UUID -> EnvoyInternalAPI struct map
+	orgIDLatestAPIVersionMap        map[string]map[string]map[string]semantic_version.SemVersion // organizationID -> Vhost:APIName -> VersionRange(vx/vx.x; x is int) -> Latest API Version
+	vHostToSubscriptionBasedAIRLMap map[string]bool
+	vHostToSubscriptionBasedRLMap   map[string]bool
 	// Envoy Label as map key
 	// TODO(amali) use this without generating all again.
 	gatewayLabelConfigMap map[string]*EnvoyGatewayConfig // GW-Label -> EnvoyGatewayConfig struct map
@@ -152,6 +153,8 @@ func init() {
 	gatewayLabelConfigMap = make(map[string]*EnvoyGatewayConfig)
 	orgAPIMap = make(map[string]map[string]*EnvoyInternalAPI)
 	orgIDLatestAPIVersionMap = make(map[string]map[string]map[string]semantic_version.SemVersion)
+	vHostToSubscriptionBasedAIRLMap = make(map[string]bool)
+	vHostToSubscriptionBasedRLMap = make(map[string]bool)
 
 	enforcerLabelMap = make(map[string]*EnforcerInternalAPI)
 	// currently subscriptions, configs, applications, applicationPolicies, subscriptionPolicies,
@@ -330,7 +333,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 			if found {
 				// Prepare the route config name based on the gateway listener section name.
 				routeConfigName := common.GetEnvoyRouteConfigName(listener.Name, string(listenerSection.Name))
-				routesConfig := oasParser.GetRouteConfigs(map[string][]*routev3.Route{vhost: routes}, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
+				routesConfig := oasParser.GetRouteConfigs(map[string][]*routev3.Route{vhost: routes}, routeConfigName, envoyGatewayConfig.customRateLimitPolicies, vHostToSubscriptionBasedAIRLMap, vHostToSubscriptionBasedRLMap)
 
 				routeConfigMatched, alreadyExistsInRouteConfigList := routeConfigs[routeConfigName]
 				if alreadyExistsInRouteConfigList {
@@ -353,7 +356,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 			var vhostToRouteArrayFilteredMapForSystemEndpoints = make(map[string][]*routev3.Route)
 			vhostToRouteArrayFilteredMapForSystemEndpoints[systemHost] = vhostToRouteArrayMap[systemHost]
 			routeConfigName := common.GetEnvoyRouteConfigName(common.GetEnvoyListenerName(string(listener.Protocol), uint32(listener.Port)), string(listener.Name))
-			systemRoutesConfig := oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMapForSystemEndpoints, routeConfigName, envoyGatewayConfig.customRateLimitPolicies)
+			systemRoutesConfig := oasParser.GetRouteConfigs(vhostToRouteArrayFilteredMapForSystemEndpoints, routeConfigName, envoyGatewayConfig.customRateLimitPolicies, vHostToSubscriptionBasedAIRLMap, vHostToSubscriptionBasedRLMap)
 			routeConfigs[routeConfigName] = systemRoutesConfig
 		}
 	}
@@ -560,6 +563,14 @@ func PopulateInternalMaps(adapterInternalAPI *model.AdapterInternalAPI, labels, 
 	}
 
 	err := UpdateOrgAPIMap(vHosts, labels, listenerName, sectionName, adapterInternalAPI)
+	for vhost := range vHosts {
+		if adapterInternalAPI.AIProvider.Enabled && adapterInternalAPI.GetSubscriptionValidation() {
+			vHostToSubscriptionBasedAIRLMap[vhost] = true
+		}
+		if adapterInternalAPI.GetSubscriptionValidation() {
+			vHostToSubscriptionBasedRLMap[vhost] = true
+		}
+	}
 	if err != nil {
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1415, logging.MAJOR,
 			"Error updating the API : %s:%s in vhosts: %s, API_UUID: %v. %v",

@@ -59,7 +59,6 @@ import (
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
@@ -82,20 +81,23 @@ const (
 	// apiAPIPolicyIndex Index for API level apipolicies
 	apiAPIPolicyIndex = "apiAPIPolicyIndex"
 	// apiAPIPolicyResourceIndex Index for resource level apipolicies
-	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndex"
-	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
-	httprouteScopeIndex              = "httprouteScopeIndex"
-	gqlRouteScopeIndex               = "gqlRouteScopeIndex"
-	configMapBackend                 = "configMapBackend"
-	configMapAPIDefinition           = "configMapAPIDefinition"
-	secretBackend                    = "secretBackend"
-	configMapAuthentication          = "configMapAuthentication"
-	secretAuthentication             = "secretAuthentication"
-	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
-	backendGQLRouteIndex             = "backendGQLRouteIndex"
-	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
-	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
-	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndex"
+	apiAPIPolicyResourceIndex            = "apiAPIPolicyResourceIndex"
+	serviceHTTPRouteIndex                = "serviceHTTPRouteIndex"
+	httprouteScopeIndex                  = "httprouteScopeIndex"
+	gqlRouteScopeIndex                   = "gqlRouteScopeIndex"
+	configMapBackend                     = "configMapBackend"
+	configMapAPIDefinition               = "configMapAPIDefinition"
+	secretBackend                        = "secretBackend"
+	configMapAuthentication              = "configMapAuthentication"
+	secretAuthentication                 = "secretAuthentication"
+	backendHTTPRouteIndex                = "backendHTTPRouteIndex"
+	backendGQLRouteIndex                 = "backendGQLRouteIndex"
+	interceptorServiceAPIPolicyIndex     = "interceptorServiceAPIPolicyIndex"
+	backendInterceptorServiceIndex       = "backendInterceptorServiceIndex"
+	backendJWTAPIPolicyIndex             = "backendJWTAPIPolicyIndex"
+	aiRatelimitPolicyToBackendIndex      = "aiRatelimitPolicyToBackendIndex"
+	subscriptionToAPIIndex               = "subscriptionToAPIIndex"
+	apiToSubscriptionIndex               = "apiToSubscriptionIndex"
 	aiProviderAPIPolicyIndex         = "aiProviderAPIPolicyIndex"
 )
 
@@ -223,6 +225,11 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching AIPolicy resources: %v", err))
 		return err
 	}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIRateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAIRatelimitPolicy),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching AIRatelimitPolicy resources: %v", err))
+		return err
+	}
 
 	loggers.LoggerAPKOperator.Info("API Controller successfully started. Watching API Objects....")
 	go apiReconciler.handleStatus()
@@ -251,6 +258,9 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=ratelimitpolicies/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=airatelimitpolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=airatelimitpolicies/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=airatelimitpolicies/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -855,11 +865,24 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 
 	// Resolve backends in HTTPRoute
 	httpRoute := httpRouteState.HTTPRouteCombined
-	for _, rule := range httpRoute.Spec.Rules {
+	ruleIdxToAiRatelimitPolicyMapping := make(map[int]*dpv1alpha3.AIRateLimitPolicy)
+	httpRouteState.RuleIdxToAiRatelimitPolicyMapping = ruleIdxToAiRatelimitPolicyMapping
+	for id, rule := range httpRoute.Spec.Rules {
 		for _, backend := range rule.BackendRefs {
 			backendNamespacedName := types.NamespacedName{
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
+			}
+			aiRLPolicyList := &dpv1alpha3.AIRateLimitPolicyList{}
+			if err := apiReconciler.client.List(ctx, aiRLPolicyList, &k8client.ListOptions{
+				FieldSelector: fields.OneTermEqualSelector(aiRatelimitPolicyToBackendIndex, backendNamespacedName.String()),
+			}); err != nil {
+				loggers.LoggerAPKOperator.Debugf("No associated AI ratelimit policy found for : %s", backendNamespacedName.String())
+			} else {
+				for _, aiRLPolicy := range aiRLPolicyList.Items {
+					loggers.LoggerAPKOperator.Debugf("Adding mapping for ruleid: %d to aiRLPolicy: %s", id, utils.NamespacedName(&aiRLPolicy))
+					ruleIdxToAiRatelimitPolicyMapping[id] = &aiRLPolicy
+				}
 			}
 			if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
 				resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
@@ -869,6 +892,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 					return nil, fmt.Errorf("unable to find backend %s", backendNamespacedName.String())
 				}
 			}
+
 		}
 
 		for _, filter := range rule.Filters {
@@ -942,6 +966,14 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForConfigMap(ctx
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForSecret(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForSecret(ctx, obj)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
+	return requests
+}
+
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIRatelimitPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIsForAIRatelimitPolicy(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
 	}
@@ -1383,6 +1415,31 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(ctx context.Context, obj k8
 		requests = append(requests, apiReconciler.getAPIsForBackend(ctx, &backend)...)
 	}
 	return requests
+}
+
+// getAPIsForAIRatelimitPolicy triggers the API controller reconcile method based on the changes detected
+// in AIRatelimitPolicy resources.
+func (apiReconciler *APIReconciler) getAPIsForAIRatelimitPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	aiRatelimitPolicy, ok := obj.(*dpv1alpha3.AIRateLimitPolicy)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", obj))
+		return []reconcile.Request{}
+	}
+
+	if aiRatelimitPolicy.Spec.TargetRef.Kind == constants.KindBackend {
+		backend := &dpv1alpha2.Backend{}
+		namespacedName := types.NamespacedName{
+			Name:      string(aiRatelimitPolicy.Spec.TargetRef.Name),
+			Namespace: utils.GetNamespace(aiRatelimitPolicy.Spec.TargetRef.Namespace, aiRatelimitPolicy.GetNamespace()),
+		}
+
+		if err := apiReconciler.client.Get(ctx, namespacedName, backend); err != nil {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2621, logging.MINOR, "Unable to find associated Backend for AIratelimitPolicy targetref: %s", namespacedName.String()))
+			return []reconcile.Request{}
+		}
+		return apiReconciler.getAPIsForBackend(ctx, backend)
+	}
+	return []reconcile.Request{}
 }
 
 // getAPIForAuthentication triggers the API controller reconcile method based on the changes detected
@@ -1937,6 +1994,33 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				}
 			}
 			return secrets
+		}); err != nil {
+		return err
+	}
+
+	// AIRatelimitPolicy to Backend indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.AIRateLimitPolicy{}, aiRatelimitPolicyToBackendIndex,
+		func(rawObj k8client.Object) []string {
+			aiRatelimitPolicy := rawObj.(*dpv1alpha3.AIRateLimitPolicy)
+			var backends []string
+			namespace := utils.GetNamespace(aiRatelimitPolicy.Spec.TargetRef.Namespace, aiRatelimitPolicy.GetNamespace())
+			backends = append(backends, types.NamespacedName{
+				Name:      string(aiRatelimitPolicy.Spec.TargetRef.Name),
+				Namespace: namespace,
+			}.String())
+			return backends
+		}); err != nil {
+		return err
+	}
+
+	// API to Subscription indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, apiToSubscriptionIndex,
+		func(rawObj k8client.Object) []string {
+			api := rawObj.(*dpv1alpha2.API)
+			var apis []string
+			subscriptionIdentifierForIndex := fmt.Sprintf("%s_%s", api.Spec.APIName, api.Spec.APIVersion)
+			apis = append(apis, subscriptionIdentifierForIndex)
+			return apis
 		}); err != nil {
 		return err
 	}
@@ -2769,7 +2853,7 @@ func geSandVhost(apiState *synchronizer.APIState) string {
 }
 
 func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, string, string) {
-	var pickedAuth *v1alpha2.Authentication
+	var pickedAuth *dpv1alpha2.Authentication
 	authHeader := "Authorization"
 	apiKeyHeader := "ApiKey"
 	for _, auth := range apiState.Authentications {
@@ -2777,7 +2861,7 @@ func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, stri
 		break
 	}
 	if pickedAuth != nil {
-		var authSpec *v1alpha2.AuthSpec
+		var authSpec *dpv1alpha2.AuthSpec
 		if pickedAuth.Spec.Override != nil {
 			authSpec = pickedAuth.Spec.Override
 		} else {

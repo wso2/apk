@@ -29,10 +29,12 @@ import (
 
 // RatelimitDataStore is a cache for rate limit policies.
 type RatelimitDataStore struct {
-	resolveRatelimitStore             map[types.NamespacedName][]dpv1alpha1.ResolveRateLimitAPIPolicy
-	resolveSubscriptionRatelimitStore map[types.NamespacedName]dpv1alpha3.ResolveSubscriptionRatelimitPolicy
-	customRatelimitStore              map[types.NamespacedName]*dpv1alpha1.CustomRateLimitPolicyDef
-	mu                                sync.Mutex
+	resolveRatelimitStore                  map[types.NamespacedName][]dpv1alpha1.ResolveRateLimitAPIPolicy
+	resolveSubscriptionRatelimitStore      map[types.NamespacedName]dpv1alpha3.ResolveSubscriptionRatelimitPolicy
+	customRatelimitStore                   map[types.NamespacedName]*dpv1alpha1.CustomRateLimitPolicyDef
+	mu                                     sync.Mutex
+	aiRatelimitPolicySpecs                 map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec
+	subscriptionEnabledAIRatelimitPolicies map[types.NamespacedName]struct{}
 }
 
 // CreateNewOperatorDataStore creates a new RatelimitDataStore.
@@ -89,6 +91,38 @@ func (ods *RatelimitDataStore) AddorUpdateCustomRatelimitToStore(rateLimit types
 	ods.customRatelimitStore[rateLimit] = &customRateLimitPolicy
 }
 
+// AddorUpdateAIRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
+func (ods *RatelimitDataStore) AddorUpdateAIRatelimitToStore(rateLimit types.NamespacedName,
+	aiRatelimitSpec dpv1alpha3.AIRateLimitPolicySpec) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	logger.Infof("Adding/Updating AI ratelimit spec to cache")
+	if ods.aiRatelimitPolicySpecs == nil {
+		ods.aiRatelimitPolicySpecs = make(map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec)
+	}
+	ods.aiRatelimitPolicySpecs[rateLimit] = &aiRatelimitSpec
+}
+
+// MarkAIRatelimitAsSubscriptionEnabled add an entry to specify an AI RatelimitPolicy is associated with a subscription
+func (ods *RatelimitDataStore) MarkAIRatelimitAsSubscriptionEnabled(nn types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	if ods.subscriptionEnabledAIRatelimitPolicies == nil {
+		ods.subscriptionEnabledAIRatelimitPolicies = make(map[types.NamespacedName]struct{})
+	}
+	ods.subscriptionEnabledAIRatelimitPolicies[nn] = struct{}{}
+}
+
+// MarkAIRatelimitAsSubscriptionDisabled  deletes the entry which was added to specify an AI RatelimitPolicy is associated with a subscription
+func (ods *RatelimitDataStore) MarkAIRatelimitAsSubscriptionDisabled(nn types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	if ods.subscriptionEnabledAIRatelimitPolicies == nil {
+		return
+	}
+	delete(ods.subscriptionEnabledAIRatelimitPolicies, nn)
+}
+
 // GetResolveRatelimitPolicy get cached ratelimit
 func (ods *RatelimitDataStore) GetResolveRatelimitPolicy(rateLimit types.NamespacedName) ([]dpv1alpha1.ResolveRateLimitAPIPolicy, bool) {
 	var rateLimitPolicy []dpv1alpha1.ResolveRateLimitAPIPolicy
@@ -109,6 +143,16 @@ func (ods *RatelimitDataStore) GetCachedCustomRatelimitPolicy(rateLimit types.Na
 	return rateLimitPolicy, false
 }
 
+// GetAIRatelimitPolicySpecs gets all the AIRatelimitPolicy stored in ods
+func (ods *RatelimitDataStore) GetAIRatelimitPolicySpecs() map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec {
+	return ods.aiRatelimitPolicySpecs
+}
+
+// GetSubscriptionEnabledAIRatelimitPolicies gets all the AIRatelimitPolicy stored in ods
+func (ods *RatelimitDataStore) GetSubscriptionEnabledAIRatelimitPolicies() map[types.NamespacedName]struct{} {
+	return ods.subscriptionEnabledAIRatelimitPolicies
+}
+
 // DeleteResolveRatelimitPolicy delete from ratelimit cache
 func (ods *RatelimitDataStore) DeleteResolveRatelimitPolicy(rateLimit types.NamespacedName) {
 	ods.mu.Lock()
@@ -123,6 +167,22 @@ func (ods *RatelimitDataStore) DeleteCachedCustomRatelimitPolicy(rateLimit types
 	defer ods.mu.Unlock()
 	logger.Debug("Deleting custom ratelimit from cache")
 	delete(ods.customRatelimitStore, rateLimit)
+}
+
+// DeleteAIRatelimitPolicySpec delete from ratelimit cache
+func (ods *RatelimitDataStore) DeleteAIRatelimitPolicySpec(rateLimit types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	logger.Debug("Deleting AI ratelimit from cache")
+	delete(ods.aiRatelimitPolicySpecs, rateLimit)
+}
+
+// DeleteSubscriptionBasedAIRatelimitPolicySpec delete from ratelimit cache
+func (ods *RatelimitDataStore) DeleteSubscriptionBasedAIRatelimitPolicySpec(subscription types.NamespacedName) {
+	ods.mu.Lock()
+	defer ods.mu.Unlock()
+	logger.Debug("Deleting AI ratelimit from cache")
+	delete(ods.aiRatelimitPolicySpecs, subscription)
 }
 
 // NamespacedName generates namespaced name for Kubernetes objects

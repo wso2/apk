@@ -45,6 +45,7 @@ type routeCreateParams struct {
 	environment                  string
 	envType                      string
 	mirrorClusterNames           map[string][]string
+	isAiAPI                      bool
 }
 
 // RatelimitCriteria criterias of rate limiting
