@@ -6,7 +6,7 @@ kubectl wait deployment/httpbin -n apk-integration-test --for=condition=availabl
 kubectl wait deployment/backend-retry-deployment -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/dynamic-backend -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/llm-deployment -n apk-integration-test --for=condition=available --timeout=600s
-kubectl wait deployment/llm-provider-subs -n apk-integration-test --for=condition=available --timeout=600s
+kubectl wait deployment/llm-deployment-subs -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/llm-deployment-header -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/interceptor-service-deployment -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/graphql-faker -n apk-integration-test --for=condition=available --timeout=600s

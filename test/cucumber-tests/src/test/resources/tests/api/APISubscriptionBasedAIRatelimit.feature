@@ -2,7 +2,7 @@ Feature: API subscription based AI ratelimit Feature
   Scenario: subscription based AI ratelimit token detail comes in the body.
     Given The system is ready
     And I have a valid subscription
-    Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120005"
+    Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120065"
     Then I set headers
       |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
     And I wait for next minute strictly
@@ -39,7 +39,7 @@ Feature: API subscription based AI ratelimit Feature
   Scenario: subs based AI ratelimit token detail comes in the header but a body configured api checked.
     Given The system is ready
     And I have a valid subscription
-    Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120005"
+    Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120065"
     Then I set headers
       |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
     And I wait for next minute strictly

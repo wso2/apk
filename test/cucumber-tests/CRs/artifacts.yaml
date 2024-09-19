@@ -1194,6 +1194,13 @@ type: Opaque
 data:
   apiKey: c2FtcGF0aA==
 ---
+
+
+
+
+
+
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1384,14 +1391,14 @@ metadata:
   name: llm-app
   namespace : apk-integration-test
 spec:
-  name: sample-app
+  name: sample-llm-app
   owner: admin
   organization: default
   securitySchemes:
     oauth2:
       environments:
         - envId: Default
-          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120005
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120065
           keyType: PRODUCTION
 ---
 ---
