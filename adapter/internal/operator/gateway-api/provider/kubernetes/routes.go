@@ -220,7 +220,7 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 								newMatches := make([]gwapiv1.HTTPRouteMatch, 0)
 								for _, match := range rule.Matches {
 									if match.Path.Value != nil {
-										newPath := api.Spec.BasePath  +  *match.Path.Value
+										newPath := api.Spec.BasePath + *match.Path.Value
 										match.Path.Value = &newPath
 									} else {
 										newPath := api.Spec.BasePath
@@ -241,7 +241,7 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 									for _, match := range rule.Matches {
 										matchCopied := match.DeepCopy()
 										if match.Path.Value != nil {
-											newPath := removeFirstSubstring(*match.Path.Value, fmt.Sprintf("/%s",api.Spec.APIVersion)) 
+											newPath := removeFirstSubstring(*match.Path.Value, fmt.Sprintf("/%s", api.Spec.APIVersion))
 											matchCopied.Path.Value = &newPath
 										} else {
 											newPath := removeSuffix(api.Spec.BasePath, api.Spec.APIVersion)
@@ -264,7 +264,6 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 	resourceTree.APIs = gatewayapi.RemoveDuplicates(resourceTree.APIs)
 	return nil
 }
-
 
 func removeSuffix(str, suffix string) string {
 	if strings.HasSuffix(str, suffix) {
