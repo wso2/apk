@@ -43,3 +43,10 @@ public type RateLimitPolicyList record {
     ListMeta metadata;
     RateLimitPolicy[] items;
 };
+
+public type AIRateLimitPolicyList record {
+    string apiVersion = "dp.wso2.com/v1alpha3";
+    string kind = "AIRateLimitPolicyList";
+    ListMeta metadata;
+    AIRateLimitPolicy[] items;
+};

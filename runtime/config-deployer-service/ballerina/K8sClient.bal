@@ -251,8 +251,18 @@ isolated function deployRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy,
     return k8sApiServerEp->post(endpoint, rateLimitPolicy, targetType = http:Response);
 }
 
+isolated function deployAIRateLimitPolicyCR(model:AIRateLimitPolicy rateLimitPolicy, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/airatelimitpolicies";
+    return k8sApiServerEp->post(endpoint, rateLimitPolicy, targetType = http:Response);
+}
+
 isolated function updateRateLimitPolicyCR(model:RateLimitPolicy rateLimitPolicy, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies/" + rateLimitPolicy.metadata.name;
+    return k8sApiServerEp->put(endpoint, rateLimitPolicy, targetType = http:Response);
+}
+
+isolated function updateAIRateLimitPolicyCR(model:AIRateLimitPolicy rateLimitPolicy, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/airatelimitpolicies/" + rateLimitPolicy.metadata.name;
     return k8sApiServerEp->put(endpoint, rateLimitPolicy, targetType = http:Response);
 }
 
@@ -261,14 +271,29 @@ isolated function getRateLimitPolicyCR(string name, string namespace) returns mo
     return k8sApiServerEp->get(endpoint, targetType = model:RateLimitPolicy);
 }
 
+isolated function getAIRateLimitPolicyCR(string name, string namespace) returns model:AIRateLimitPolicy|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/airatelimitpolicies/" + name;
+    return k8sApiServerEp->get(endpoint, targetType = model:AIRateLimitPolicy);
+}
+
 isolated function deleteRateLimitPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies/" + name;
+    return k8sApiServerEp->delete(endpoint, targetType = http:Response);
+}
+
+isolated function deleteAIRateLimitPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
+    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/airatelimitpolicies/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
 isolated function getRateLimitPolicyCRsForAPI(string apiName, string apiVersion, string namespace, string organization) returns model:RateLimitPolicyList|http:ClientError|error {
     string endpoint = "/apis/dp.wso2.com/v1alpha1/namespaces/" + namespace + "/ratelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:RateLimitPolicyList);
+}
+
+isolated function getAIRateLimitPolicyCRsForAPI(string apiName, string apiVersion, string namespace, string organization) returns model:AIRateLimitPolicyList|http:ClientError|error {
+    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/airatelimitpolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    return k8sApiServerEp->get(endpoint, targetType = model:AIRateLimitPolicyList);
 }
 
 isolated function deployAPIPolicyCR(model:APIPolicy apiPolicy, string namespace) returns http:Response|http:ClientError {

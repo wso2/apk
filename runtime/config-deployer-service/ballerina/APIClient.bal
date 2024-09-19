@@ -232,6 +232,11 @@ public class APIClient {
                     serviceEntry: false,
                     url: self.constructURlFromService(sandboxEndpointConfig.endpoint)
                 };
+                AIRatelimit? aiRatelimit = sandboxEndpointConfig.aiRatelimit;
+                if aiRatelimit is AIRatelimit && aiRatelimit.enabled {
+                    model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization);
+                    apiArtifact.aiRatelimitPolicies[airl.metadata.name] = airl;
+                }
             }
         }
         if (endpointType == () || endpointType == PRODUCTION_TYPE) {
@@ -246,6 +251,11 @@ public class APIClient {
                     serviceEntry: false,
                     url: self.constructURlFromService(productionEndpointConfig.endpoint)
                 };
+                AIRatelimit? aiRatelimit = productionEndpointConfig.aiRatelimit;
+                if aiRatelimit is AIRatelimit && aiRatelimit.enabled {
+                    model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization);
+                    apiArtifact.aiRatelimitPolicies[airl.metadata.name] = airl;
+                }
             }
         }
         return endpointIdMap;
@@ -1506,6 +1516,29 @@ public class APIClient {
         return rateLimitPolicyCR;
     }
 
+    public isolated function generateAIRateLimitPolicyCR(APKConf apkConf, TokenAIRL tokenAIRL, RequestAIRL requestAIRL, string targetRefName, commons:Organization organization) returns model:AIRateLimitPolicy {
+        string apiIdentifierHash = crypto:hashSha1((apkConf.name + apkConf.version).toBytes()).toBase16();
+        model:AIRateLimitPolicy aiRateLimitPolicyCR = {
+            metadata: {
+                name: self.retrieveAIRateLimitPolicyName(apiIdentifierHash, targetRefName),
+                labels: self.getLabels(apkConf, organization)
+            },
+            spec: {
+                default: {
+                    organization: organization.name,
+                    requestCount: {unit: requestAIRL.unit, requestsPerUnit: requestAIRL.requestLimit},
+                    tokenCount: {unit: tokenAIRL.unit, requestTokenCount: tokenAIRL.promptLimit, responseTokenCount: tokenAIRL.completionLimit, totalTokenCount: tokenAIRL.totalLimit}
+                },
+                targetRef: {
+                    group: "dp.wso2.com",
+                    kind: "Backend",
+                    name: targetRefName
+                }
+            }
+        };
+        return aiRateLimitPolicyCR;
+    }
+
     isolated function retrieveRateLimitData(RateLimit rateLimit, commons:Organization organization) returns model:RateLimitData {
         model:RateLimitData rateLimitData = {
             api: {
@@ -1931,6 +1964,10 @@ public class APIClient {
         } else {
             return "api-" + concatanatedString + "-" + targetRef;
         }
+    }
+
+    public isolated function retrieveAIRateLimitPolicyName(string apiID, string targetRef) returns string {
+        return "airl-" + apiID + "-" + targetRef;        
     }
 
     private isolated function validateAndRetrieveAPKConfiguration(json apkconfJson) returns APKConf|commons:APKError? {

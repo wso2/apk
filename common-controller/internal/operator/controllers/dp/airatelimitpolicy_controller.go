@@ -105,6 +105,9 @@ func (r *AIRateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 	} else {
 		loggers.LoggerAPKOperator.Infof("ratelimits found")
+		if ratelimitPolicy.Spec.Override == nil {
+			ratelimitPolicy.Spec.Override = ratelimitPolicy.Spec.Default
+		}
 		if ratelimitPolicy.Spec.TargetRef.Name != "" {
 			r.ods.AddorUpdateAIRatelimitToStore(ratelimitKey, ratelimitPolicy.Spec)
 			xds.UpdateRateLimitXDSCacheForAIRatelimitPolicies(r.ods.GetAIRatelimitPolicySpecs())
