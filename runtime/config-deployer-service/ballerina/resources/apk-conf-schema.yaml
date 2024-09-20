@@ -360,6 +360,8 @@ components:
           $ref: "#/components/schemas/Certificate"
         resiliency:
           $ref: "#/components/schemas/Resiliency"
+        aiRatelimit:
+          $ref: "#/components/schemas/AIRatelimit"
       additionalProperties: false
     Certificate:
       type: object
@@ -599,3 +601,57 @@ components:
           type: string
           default: string
       additionalProperties: false
+    AIRatelimit:
+      type: object
+      required:
+        - enabled
+        - token
+        - request
+      properties:
+        enabled:
+          type: boolean
+          default: true
+        token:
+          $ref: "#/components/schemas/TokenAIRL"
+        request:
+          $ref: "#/components/schemas/RequestAIRL"
+    TokenAIRL:
+      type: object
+      required:
+        - promptLimit
+        - completionLimit
+        - totalLimit
+        - unit
+      properties:
+        promptLimit:
+          type: integer
+          default: 0
+        completionLimit:
+          type: integer
+          default: 0
+        totalLimit:
+          type: integer
+          default": 0
+        unit:
+          type: string
+          default: Minute
+          enum:
+            - Minute
+            - Hour
+            - Day
+    RequestAIRL:
+      type: object
+      required:
+        - requestLimit
+        - unit
+      properties:
+        requestLimit:
+          type: integer
+          default: 0
+        unit:
+          type: string
+          default: Minute
+          enum:
+            - Minute
+            - Hour
+            - Day

@@ -15,6 +15,7 @@ public type APIArtifact record {|
     map<Authentication> authenticationMap = {};
     map<Scope> scopes = {};
     map<RateLimitPolicy> rateLimitPolicies = {};
+    map<AIRateLimitPolicy> aiRatelimitPolicies = {};
     map<APIPolicy> apiPolicies = {};
     map<InterceptorService> interceptorServices = {};
     boolean sandboxEndpointAvailable = false;

@@ -234,6 +234,10 @@ on fail var e {
             string yamlString = check self.convertJsonToYaml(rateLimitPolicy.toJsonString());
             _ = check self.storeFile(yamlString, rateLimitPolicy.metadata.name, zipDir);
         }
+        foreach model:AIRateLimitPolicy airateLimitPolicy in apiArtifact.aiRatelimitPolicies {
+            string yamlString = check self.convertJsonToYaml(airateLimitPolicy.toJsonString());
+            _ = check self.storeFile(yamlString, airateLimitPolicy.metadata.name, zipDir);
+        }
         foreach model:APIPolicy apiPolicy in apiArtifact.apiPolicies {
             string yamlString = check self.convertJsonToYaml(apiPolicy.toJsonString());
             _ = check self.storeFile(yamlString, apiPolicy.metadata.name, zipDir);

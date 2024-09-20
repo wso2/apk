@@ -102,6 +102,7 @@ public class DeployerClient {
                 _ = check self.deleteScopeCrsForAPI(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteBackends(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteRateLimitPolicyCRs(existingAPI, <string>apiArtifact?.organization);
+                check self.deleteAIRateLimitPolicyCRs(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteAPIPolicyCRs(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteInterceptorServiceCRs(existingAPI, <string>apiArtifact?.organization);
                 check self.deleteBackendJWTConfig(existingAPI, <string>apiArtifact?.organization);
@@ -121,6 +122,7 @@ public class DeployerClient {
                     check self.deployBackendServices(apiArtifact, ownerReference);
                     check self.deployAuthenticationCRs(apiArtifact, ownerReference);
                     check self.deployRateLimitPolicyCRs(apiArtifact, ownerReference);
+                    check self.deployAIRateLimitPolicyCRs(apiArtifact, ownerReference);
                     check self.deployInterceptorServiceCRs(apiArtifact, ownerReference);
                     check self.deployBackendJWTConfigs(apiArtifact, ownerReference);
                     check self.deployAPIPolicyCRs(apiArtifact, ownerReference);
@@ -660,6 +662,30 @@ public class DeployerClient {
         }
     }
 
+    private isolated function deployAIRateLimitPolicyCRs(model:APIArtifact apiArtifact, model:OwnerReference ownerReference) returns error? {
+        foreach model:AIRateLimitPolicy rateLimitPolicy in apiArtifact.aiRatelimitPolicies {
+            rateLimitPolicy.metadata.ownerReferences = [ownerReference];
+            http:Response deployRateLimitPolicyResult = check deployAIRateLimitPolicyCR(rateLimitPolicy, <string>apiArtifact?.namespace);
+            if deployRateLimitPolicyResult.statusCode == http:STATUS_CREATED {
+                log:printDebug("Deployed AIRateLimitPolicy Successfully" + rateLimitPolicy.toString());
+            } else if deployRateLimitPolicyResult.statusCode == http:STATUS_CONFLICT {
+                log:printDebug("AIRateLimitPolicy already exists" + rateLimitPolicy.toString());
+                model:AIRateLimitPolicy rateLimitPolicyFromK8s = check getAIRateLimitPolicyCR(rateLimitPolicy.metadata.name, <string>apiArtifact?.namespace);
+                rateLimitPolicy.metadata.resourceVersion = rateLimitPolicyFromK8s.metadata.resourceVersion;
+                http:Response rateLimitPolicyCR = check updateAIRateLimitPolicyCR(rateLimitPolicy, <string>apiArtifact?.namespace);
+                if rateLimitPolicyCR.statusCode != http:STATUS_OK {
+                    json responsePayLoad = check rateLimitPolicyCR.getJsonPayload();
+                    model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                    check self.handleK8sTimeout(statusResponse);
+                }
+            } else {
+                json responsePayLoad = check deployRateLimitPolicyResult.getJsonPayload();
+                model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                check self.handleK8sTimeout(statusResponse);
+            }
+        }
+    }
+
     private isolated function deleteRateLimitPolicyCRs(model:API api, string organization) returns commons:APKError? {
         do {
             model:RateLimitPolicyList|http:ClientError rateLimitPolicyCrListResponse = check getRateLimitPolicyCRsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
@@ -684,6 +710,29 @@ public class DeployerClient {
         }
     }
 
+    private isolated function deleteAIRateLimitPolicyCRs(model:API api, string organization) returns commons:APKError? {
+        do {
+            model:AIRateLimitPolicyList|http:ClientError aiRateLimitPolicyCrListResponse = check getAIRateLimitPolicyCRsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);
+            if aiRateLimitPolicyCrListResponse is model:AIRateLimitPolicyList {
+                foreach model:AIRateLimitPolicy item in aiRateLimitPolicyCrListResponse.items {
+                    http:Response|http:ClientError rateLimitPolicyCRDeletionResponse = deleteAIRateLimitPolicyCR(item.metadata.name, <string>item.metadata?.namespace);
+                    if rateLimitPolicyCRDeletionResponse is http:Response {
+                        if rateLimitPolicyCRDeletionResponse.statusCode != http:STATUS_OK {
+                            json responsePayLoad = check rateLimitPolicyCRDeletionResponse.getJsonPayload();
+                            model:Status statusResponse = check responsePayLoad.cloneWithType(model:Status);
+                            check self.handleK8sTimeout(statusResponse);
+                        }
+                    } else {
+                        log:printError("Error occured while deleting AI rate limit policy");
+                    }
+                }
+                return;
+            }
+        } on fail var e {
+            log:printError("Error occured deleting AI rate limit policy", e);
+            return e909022("Error occured deleting AI rate limit policy", e);
+        }
+    }
     private isolated function deleteAPIPolicyCRs(model:API api, string organization) returns commons:APKError? {
         do {
             model:APIPolicyList|http:ClientError apiPolicyCrListResponse = check getAPIPolicyCRsForAPI(api.spec.apiName, api.spec.apiVersion, <string>api.metadata?.namespace, organization);

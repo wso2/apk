@@ -234,6 +234,38 @@ public type Resiliency record {
     RetryPolicy retryPolicy?;
 };
 
+# Configuration of AIRatelimit settings.
+#
+# + token - Configuration for the CircuitBreaker.
+# + request - Configuration for the Timeout.
+public type AIRatelimit record {
+    boolean enabled;
+    TokenAIRL token;
+    RequestAIRL request;
+};
+
+# Configuration for Token AI rate limit settings.
+#
+# + promptLimit - Limit for prompts within the specified unit.
+# + completionLimit - Limit for completions within the specified unit.
+# + totalLimit - Total limit combining prompt and completion counts.
+# + unit - The time unit for the rate limits (Minute, Hour, Day).
+public type TokenAIRL record {
+    int promptLimit;
+    int completionLimit;
+    int totalLimit;
+    string unit;
+};
+
+# Configuration for Request AI rate limit settings.
+#
+# + requestLimit - Limit for requests within the specified unit.
+# + unit - The time unit for the request limits (Minute, Hour, Day).
+public type RequestAIRL record {
+    int requestLimit;
+    string unit;
+};
+
 # Configuration of CircuitBreaker settings.
 #
 # + maxConnectionPools - The maximum number of connection pools allowed.
@@ -267,11 +299,13 @@ public type EndpointConfigurations record {
 # + endpointSecurity - The security configuration for the endpoint.
 # + certificate - The certificate configuration for the endpoint.
 # + resiliency - The resiliency configuration for the endpoint.
+# + AIRatelimit - The AIRatelimit configuration for the AI ratelimit.
 public type EndpointConfiguration record {
     string|K8sService endpoint;
     EndpointSecurity endpointSecurity?;
     Certificate certificate?;
     Resiliency resiliency?;
+    AIRatelimit aiRatelimit?;
 };
 
 # Configuration of OAuth2 Authentication type.
