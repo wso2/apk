@@ -18,10 +18,12 @@ data:
         javaOpts = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}"
       {{- end }}
       {{- range .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.ports}}
+      {{- if and .name .value }}
       [[deployment.gateway.enforcerPorts]]
         name = "{{ .name }}"
         containerPort = {{ .value }} 
         expose = {{ .expose | default false }}    
+      {{- end }} 
       {{- end }} 
       {{- end }} 
 
