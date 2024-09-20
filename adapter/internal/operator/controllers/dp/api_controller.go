@@ -1611,7 +1611,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(ctx context.Context, obj k8
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2621, logging.MINOR, "Unable to find associated Backends for Secret: %s", utils.NamespacedName(secret).String()))
+		loggers.LoggerAPKOperator.Debugf("Unable to find associated Backends for Secret: %s", utils.NamespacedName(secret).String())
 		return []reconcile.Request{}
 	}
 
