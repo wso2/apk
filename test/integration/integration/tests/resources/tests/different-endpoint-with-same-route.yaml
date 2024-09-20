@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: different-endpoint-with-same-route
@@ -28,7 +28,7 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - different-endpoint-with-same-route-httproute
+        - different-endpoint-with-same-route-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -38,32 +38,32 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - different-endpoint-with-same-route.test.gw.wso2.com
+    - different-endpoint-with-same-route.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-      method: GET
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /v2/echo-full
-      method: POST
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v2
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/echo-full
+          method: GET
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v2/echo-full
+          method: POST
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v2
 ---
 apiVersion: dp.wso2.com/v1alpha2
 kind: Backend
@@ -72,8 +72,8 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   services:
-  - host: infra-backend-v1.gateway-integration-test-infra
-    port: 8080
+    - host: infra-backend-v1.gateway-integration-test-infra
+      port: 8080
 ---
 apiVersion: dp.wso2.com/v1alpha2
 kind: Backend
@@ -82,5 +82,5 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   services:
-  - host: infra-backend-v2.gateway-integration-test-infra
-    port: 8080
+    - host: infra-backend-v2.gateway-integration-test-infra
+      port: 8080

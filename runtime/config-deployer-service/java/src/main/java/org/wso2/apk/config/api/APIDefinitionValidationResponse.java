@@ -18,7 +18,6 @@
 
 package org.wso2.apk.config.api;
 
-
 import java.util.ArrayList;
 
 /**
@@ -28,6 +27,7 @@ public class APIDefinitionValidationResponse {
     private boolean isValid = false;
     private String content;
     private String jsonContent;
+    private byte[] protoContent;
     private String protocol;
     private Info info;
     private APIDefinition parser;
@@ -82,7 +82,6 @@ public class APIDefinitionValidationResponse {
         isInit = init;
     }
 
-
     public APIDefinition getParser() {
         return parser;
     }
@@ -99,5 +98,13 @@ public class APIDefinitionValidationResponse {
     public void setProtocol(String protocol) {
 
         this.protocol = protocol;
+    }
+
+    public byte[] getProtoContent() {
+        return protoContent;
+    }
+
+    public void setProtoContent(byte[] protoContent) {
+        this.protoContent = protoContent;
     }
 }

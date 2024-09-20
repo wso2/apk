@@ -32,6 +32,8 @@ import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Operation;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Target;
 import org.wso2.apk.enforcer.commons.analytics.publishers.impl.SuccessRequestDataPublisher;
 
+import java.util.Objects;
+
 /**
  * Success request data collector.
  */
@@ -81,6 +83,9 @@ public class SuccessRequestDataCollector extends CommonRequestDataCollector impl
         }
 
         event.setApi(api);
+        if (Objects.equals(api.getApiType(), "GRPC")) {
+            operation.setApiMethod("GRPC");
+        }
         event.setOperation(operation);
         event.setTarget(target);
         event.setApplication(application);
@@ -91,7 +96,6 @@ public class SuccessRequestDataCollector extends CommonRequestDataCollector impl
         event.setUserAgentHeader(userAgent);
         event.setUserName(userName);
         event.setUserIp(userIp);
-
         this.processor.publish(event);
     }
 

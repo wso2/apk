@@ -1,0 +1,24 @@
+---
+name: "6a254687f3229c35dd0189aac7f7fc4b6228e97a"
+basePath: "/dineth.grpc.api"
+version: "v1"
+type: "GRPC"
+defaultVersion: false
+subscriptionValidation: false
+operations:
+- target: "student.StudentService"
+  verb: "GetStudent"
+  secured: true
+  scopes: []
+- target: "student.StudentService"
+  verb: "GetStudentStream"
+  secured: true
+  scopes: []
+- target: "student.StudentService"
+  verb: "SendStudentStream"
+  secured: true
+  scopes: []
+- target: "student.StudentService"
+  verb: "SendAndGetStudentStream"
+  secured: true
+  scopes: []

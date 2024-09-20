@@ -1,16 +1,18 @@
-import wso2/apk_common_lib as commons;
-import ballerina/http;
+import config_deployer_service.java.util as utilapis;
+import config_deployer_service.model;
+import config_deployer_service.org.wso2.apk.config as runtimeUtil;
 import config_deployer_service.org.wso2.apk.config.api as runtimeapi;
 import config_deployer_service.org.wso2.apk.config.model as runtimeModels;
-import config_deployer_service.java.util as utilapis;
-import config_deployer_service.org.wso2.apk.config as runtimeUtil;
-import ballerina/mime;
-import ballerina/jballerina.java;
-import config_deployer_service.model;
-import ballerina/io;
+
 import ballerina/file;
+import ballerina/http;
+import ballerina/io;
+import ballerina/jballerina.java;
 import ballerina/log;
+import ballerina/mime;
 import ballerina/uuid;
+
+import wso2/apk_common_lib as commons;
 
 public class ConfigGeneratorClient {
 
@@ -41,7 +43,24 @@ public class ConfigGeneratorClient {
             }
             if validateAndRetrieveDefinitionResult is runtimeapi:APIDefinitionValidationResponse {
                 if validateAndRetrieveDefinitionResult.isValid() {
-                    runtimeModels:API apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent(), apiType);
+                    runtimeModels:API apiFromDefinition;
+                    if apiType == API_TYPE_GRPC {
+                        string fileName = "";
+                        if definitionBody.definition is record {|byte[] fileContent; string fileName; anydata...;|} {
+                            record {|byte[] fileContent; string fileName; anydata...;|} definition = <record {|byte[] fileContent; string fileName; anydata...;|}>definitionBody.definition;
+                            fileName = <string>definition.fileName;
+                        }
+                        do {
+                            apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(check validateAndRetrieveDefinitionResult.getProtoContent(), fileName);
+                        }
+                        on fail var e {
+                            if e is error {
+                                return e909022("Error occurred while validating the .proto definition", ());
+                            }
+                        }
+                    } else {
+                        apiFromDefinition = check runtimeUtil:RuntimeAPICommonUtil_getAPIFromDefinition(validateAndRetrieveDefinitionResult.getContent(), apiType);
+                    }
                     apiFromDefinition.setType(apiType);
                     APIClient apiclient = new ();
                     APKConf generatedAPKConf = check apiclient.fromAPIModelToAPKConf(apiFromDefinition);
@@ -60,17 +79,21 @@ public class ConfigGeneratorClient {
                     BadRequestError badRequest = {body: {code: 90091, message: "Invalid API Definition", 'error: errorItems}};
                     return badRequest;
                 }
-            } else if validateAndRetrieveDefinitionResult is runtimeapi:APIManagementException {
+            }
+            else if validateAndRetrieveDefinitionResult is runtimeapi:APIManagementException {
                 return e909022("Error occured while validating the definition", validateAndRetrieveDefinitionResult.cause());
             } else {
                 return e909022("Error occured while validating the definition", ());
             }
-        } on fail var e {
-            if e is commons:APKError {
+        }
+on fail var e {
+            if e
+    is commons:APKError {
                 return e;
             }
             return e909022("Internal error occured while creating APK conf", e);
         }
+
     }
     private isolated function prepareDefinitionBodyFromRequest(http:Request request) returns DefinitionBody|error {
         DefinitionBody definitionBody = {};
@@ -90,10 +113,11 @@ public class ConfigGeneratorClient {
         }
         return definitionBody;
     }
+
     private isolated function validateAndRetrieveDefinition(string 'type, string? url, byte[]? content, string? fileName) returns runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error|commons:APKError {
         runtimeapi:APIDefinitionValidationResponse|runtimeapi:APIManagementException|error validationResponse;
         boolean typeAvailable = 'type.length() > 0;
-        string[] ALLOWED_API_DEFINITION_TYPES = [API_TYPE_REST, API_TYPE_GRAPHQL, "ASYNC"];
+        string[] ALLOWED_API_DEFINITION_TYPES = [API_TYPE_REST, API_TYPE_GRAPHQL, API_TYPE_GRPC, API_TYPE_ASYNC];
         if !typeAvailable {
             return e909005("type");
         }
@@ -110,6 +134,7 @@ public class ConfigGeneratorClient {
         }
         return validationResponse;
     }
+
     private isolated function retrieveDefinitionFromUrl(string url) returns string|error {
         string domain = getDomain(url);
         string path = getPath(url);
@@ -119,11 +144,12 @@ public class ConfigGeneratorClient {
             if response.statusCode == 200 {
                 return response.getTextPayload();
             } else {
-                log:printError("Error occured while retrieving the definition from the url: " + url, statusCode = response.statusCode);
+                log:printError("Error occurred while retrieving the definition from the url: " + url, statusCode = response.statusCode);
             }
         }
         return e909044();
     }
+
     public isolated function getGeneratedK8sResources(http:Request request, commons:Organization organization) returns http:Response|BadRequestError|InternalServerErrorError|commons:APKError {
         GenerateK8sResourcesBody body = {};
         do {
@@ -155,6 +181,7 @@ public class ConfigGeneratorClient {
             return e909052(e);
         }
     }
+
     private isolated function zipAPIArtifact(string apiId, model:APIArtifact apiArtifact) returns [string, string]|error {
         string zipDir = check file:createTempDir(uuid:createType1AsString());
         model:API? k8sAPI = apiArtifact.api;
@@ -186,6 +213,14 @@ public class ConfigGeneratorClient {
         foreach model:GQLRoute gqlRoute in apiArtifact.sandboxGqlRoutes {
             string yamlString = check self.convertJsonToYaml(gqlRoute.toJsonString());
             _ = check self.storeFile(yamlString, gqlRoute.metadata.name, zipDir);
+        }
+        foreach model:GRPCRoute grpcRoute in apiArtifact.productionGrpcRoutes {
+            string yamlString = check self.convertJsonToYaml(grpcRoute.toJsonString());
+            _ = check self.storeFile(yamlString, grpcRoute.metadata.name, zipDir);
+        }
+        foreach model:GRPCRoute grpcRoute in apiArtifact.sandboxGrpcRoutes {
+            string yamlString = check self.convertJsonToYaml(grpcRoute.toJsonString());
+            _ = check self.storeFile(yamlString, grpcRoute.metadata.name, zipDir);
         }
         foreach model:Backend backend in apiArtifact.backendServices {
             string yamlString = check self.convertJsonToYaml(backend.toJsonString());
@@ -225,6 +260,7 @@ public class ConfigGeneratorClient {
         }
         return e909022("Error while converting json to yaml", convertedYaml);
     }
+
     private isolated function storeFile(string jsonString, string fileName, string? directroy = ()) returns error? {
         string fullPath = directroy ?: "";
         fullPath = fullPath + file:pathSeparator + fileName + ".yaml";

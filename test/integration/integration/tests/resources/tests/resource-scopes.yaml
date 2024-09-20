@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: resource-scopes
@@ -27,7 +27,7 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - resource-scopes-httproute
+        - resource-scopes-httproute
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -37,44 +37,44 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - resource-scopes.test.gw.wso2.com
+    - resource-scopes.test.gw.wso2.com
   rules:
-  - matches:
-    - path:
-        type: Exact
-        value: /pets/findByTags
-      method: GET
-    filters:
-    - type: ExtensionRef
-      extensionRef:
-        group: dp.wso2.com
-        kind: Scope
-        name: pet-scopes
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
-  - matches:
-    - path:
-        type: RegularExpression
-        value: /pet/(\d{1,3})
-      method: GET
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplaceFullPath
-          replaceFullPath: /pet/\1
-    backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: infra-backend-v1
+    - matches:
+        - path:
+            type: Exact
+            value: /pets/findByTags
+          method: GET
+      filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: Scope
+            name: pet-scopes
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
+    - matches:
+        - path:
+            type: RegularExpression
+            value: /pet/(\d{1,3})
+          method: GET
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /pet/\1
+      backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: infra-backend-v1
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Scope
@@ -93,5 +93,5 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   services:
-  - host: infra-backend-v1.gateway-integration-test-infra
-    port: 8080
+    - host: infra-backend-v1.gateway-integration-test-infra
+      port: 8080

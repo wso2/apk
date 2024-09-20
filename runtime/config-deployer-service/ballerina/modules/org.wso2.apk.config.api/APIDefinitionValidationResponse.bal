@@ -1,6 +1,8 @@
-import ballerina/jballerina.java;
 import config_deployer_service.java.lang as javalang;
 import config_deployer_service.java.util as javautil;
+
+import ballerina/jballerina.java;
+import ballerina/jballerina.java.arrays as jarrays;
 
 # Ballerina class mapping for the Java `org.wso2.apk.config.api.APIDefinitionValidationResponse` class.
 @java:Binding {'class: "org.wso2.apk.config.api.APIDefinitionValidationResponse"}
@@ -83,6 +85,14 @@ public distinct class APIDefinitionValidationResponse {
         return newObj;
     }
 
+    # The function that maps to the `getProtoContent` method of `org.wso2.apk.config.api.APIDefinitionValidationResponse`.
+    #
+    # + return - The `byte[]` value returning from the Java mapping.
+    public isolated function getProtoContent() returns byte[]|error {
+        handle externalObj = org_wso2_apk_config_api_APIDefinitionValidationResponse_getProtoContent(self.jObj);
+        return <byte[]>check jarrays:fromHandle(externalObj, "byte");
+    }
+
     # The function that maps to the `getProtocol` method of `org.wso2.apk.config.api.APIDefinitionValidationResponse`.
     #
     # + return - The `string` value returning from the Java mapping.
@@ -161,6 +171,14 @@ public distinct class APIDefinitionValidationResponse {
     # + arg0 - The `APIDefinition` value required to map with the Java method parameter.
     public function setParser(APIDefinition arg0) {
         org_wso2_apk_config_api_APIDefinitionValidationResponse_setParser(self.jObj, arg0.jObj);
+    }
+
+    # The function that maps to the `setProtoContent` method of `org.wso2.apk.config.api.APIDefinitionValidationResponse`.
+    #
+    # + arg0 - The `byte[]` value required to map with the Java method parameter.
+    # + return - The `error?` value returning from the Java mapping.
+    public function setProtoContent(byte[] arg0) returns error? {
+        org_wso2_apk_config_api_APIDefinitionValidationResponse_setProtoContent(self.jObj, check jarrays:toHandle(arg0, "byte"));
     }
 
     # The function that maps to the `setProtocol` method of `org.wso2.apk.config.api.APIDefinitionValidationResponse`.
@@ -266,6 +284,12 @@ isolated function org_wso2_apk_config_api_APIDefinitionValidationResponse_getPar
     paramTypes: []
 } external;
 
+isolated function org_wso2_apk_config_api_APIDefinitionValidationResponse_getProtoContent(handle receiver) returns handle = @java:Method {
+    name: "getProtoContent",
+    'class: "org.wso2.apk.config.api.APIDefinitionValidationResponse",
+    paramTypes: []
+} external;
+
 function org_wso2_apk_config_api_APIDefinitionValidationResponse_getProtocol(handle receiver) returns handle = @java:Method {
     name: "getProtocol",
     'class: "org.wso2.apk.config.api.APIDefinitionValidationResponse",
@@ -336,6 +360,12 @@ function org_wso2_apk_config_api_APIDefinitionValidationResponse_setParser(handl
     name: "setParser",
     'class: "org.wso2.apk.config.api.APIDefinitionValidationResponse",
     paramTypes: ["org.wso2.apk.config.api.APIDefinition"]
+} external;
+
+function org_wso2_apk_config_api_APIDefinitionValidationResponse_setProtoContent(handle receiver, handle arg0) = @java:Method {
+    name: "setProtoContent",
+    'class: "org.wso2.apk.config.api.APIDefinitionValidationResponse",
+    paramTypes: ["[B"]
 } external;
 
 function org_wso2_apk_config_api_APIDefinitionValidationResponse_setProtocol(handle receiver, handle arg0) = @java:Method {

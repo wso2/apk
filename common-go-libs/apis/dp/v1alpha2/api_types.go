@@ -172,7 +172,6 @@ type DeploymentStatus struct {
 // +genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
 //+kubebuilder:printcolumn:name="API Name",type="string",JSONPath=".spec.apiName"
 //+kubebuilder:printcolumn:name="Version",type="string",JSONPath=".spec.apiVersion"
 //+kubebuilder:printcolumn:name="BasePath",type="string",JSONPath=".spec.basePath"

@@ -29,6 +29,7 @@ import (
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	ext_authv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	ext_process "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	grpc_stats_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/grpc_stats/v3"
 	luav3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	ratelimit "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 	routerv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/router/v3"
@@ -48,9 +49,9 @@ import (
 	"github.com/golang/protobuf/ptypes/any"
 )
 
-
 // HTTPExternalProcessor HTTP filter
 const HTTPExternalProcessor = "envoy.filters.http.ext_proc"
+
 // RatelimitFilterName Ratelimit filter name
 const RatelimitFilterName = "envoy.filters.http.ratelimit"
 
@@ -114,6 +115,27 @@ func getRouterHTTPFilter() *hcmv3.HttpFilter {
 	return &filter
 }
 
+// getGRPCStatsHTTPFilter gets grpc_stats http filter.
+func getGRPCStatsHTTPFilter() *hcmv3.HttpFilter {
+
+	gprcStatsFilterConf := grpc_stats_filter_v3.FilterConfig{
+		EnableUpstreamStats: true,
+		EmitFilterState:     true,
+	}
+	gprcStatsFilterTypedConf, err := anypb.New(&gprcStatsFilterConf)
+
+	if err != nil {
+		logger.LoggerOasparser.Error("Error marshaling grpc stats filter configs. ", err)
+	}
+
+	filter := hcmv3.HttpFilter{
+		Name:       "grpc_stats",
+		ConfigType: &hcmv3.HttpFilter_TypedConfig{TypedConfig: gprcStatsFilterTypedConf},
+	}
+
+	return &filter
+}
+
 // getCorsHTTPFilter gets cors http filter.
 func getCorsHTTPFilter() *hcmv3.HttpFilter {
 
@@ -136,11 +158,13 @@ func getCorsHTTPFilter() *hcmv3.HttpFilter {
 func getUpgradeFilters() []*hcmv3.HttpFilter {
 
 	cors := getCorsHTTPFilter()
+	grpcStats := getGRPCStatsHTTPFilter()
 	extAauth := getExtAuthzHTTPFilter()
 	apkWebSocketWASM := getAPKWebSocketWASMFilter()
 	router := getRouterHTTPFilter()
 	upgradeFilters := []*hcmv3.HttpFilter{
 		cors,
+		grpcStats,
 		extAauth,
 		apkWebSocketWASM,
 		router,
@@ -215,8 +239,8 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 			},
 		},
 		ProcessingMode: &ext_process.ProcessingMode{
-			ResponseBodyMode: ext_process.ProcessingMode_BUFFERED,
-			RequestHeaderMode: ext_process.ProcessingMode_SKIP,
+			ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
+			RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
 			ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
 		},
 		MetadataOptions: &ext_process.MetadataOptions{
@@ -224,7 +248,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 				Untyped: []string{"envoy.filters.http.ext_authz", "envoy.filters.http.ext_proc"},
 			},
 		},
-		RequestAttributes: []string{"xds.route_metadata"},
+		RequestAttributes:  []string{"xds.route_metadata"},
 		ResponseAttributes: []string{"xds.route_metadata"},
 	}
 	ext, err2 := anypb.New(externalProcessor)

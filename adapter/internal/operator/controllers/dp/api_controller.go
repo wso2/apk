@@ -33,6 +33,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/controlplane"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
@@ -47,6 +48,8 @@ import (
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -54,9 +57,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-
-	ctrl "sigs.k8s.io/controller-runtime"
-	k8client "sigs.k8s.io/controller-runtime/pkg/client"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
@@ -68,6 +69,7 @@ import (
 const (
 	httpRouteAPIIndex = "httpRouteAPIIndex"
 	gqlRouteAPIIndex  = "gqlRouteAPIIndex"
+	grpcRouteAPIIndex = "grpcRouteAPIIndex"
 	// apiAuthenticationIndex Index for API level authentications
 	apiAuthenticationIndex = "apiAuthenticationIndex"
 	// apiAuthenticationResourceIndex Index for resource level authentications
@@ -78,26 +80,30 @@ const (
 	apiRateLimitResourceIndex = "apiRateLimitResourceIndex"
 	// gatewayHTTPRouteIndex Index for gateway httproutes
 	gatewayHTTPRouteIndex = "gatewayHTTPRouteIndex"
+	// gatewayGRPCRouteIndex Index for gateway grpcroutes
+	gatewayGRPCRouteIndex = "gatewayGRPCRouteIndex"
 	// apiAPIPolicyIndex Index for API level apipolicies
 	apiAPIPolicyIndex = "apiAPIPolicyIndex"
 	// apiAPIPolicyResourceIndex Index for resource level apipolicies
-	apiAPIPolicyResourceIndex            = "apiAPIPolicyResourceIndex"
-	serviceHTTPRouteIndex                = "serviceHTTPRouteIndex"
-	httprouteScopeIndex                  = "httprouteScopeIndex"
-	gqlRouteScopeIndex                   = "gqlRouteScopeIndex"
-	configMapBackend                     = "configMapBackend"
-	configMapAPIDefinition               = "configMapAPIDefinition"
-	secretBackend                        = "secretBackend"
-	configMapAuthentication              = "configMapAuthentication"
-	secretAuthentication                 = "secretAuthentication"
-	backendHTTPRouteIndex                = "backendHTTPRouteIndex"
-	backendGQLRouteIndex                 = "backendGQLRouteIndex"
-	interceptorServiceAPIPolicyIndex     = "interceptorServiceAPIPolicyIndex"
-	backendInterceptorServiceIndex       = "backendInterceptorServiceIndex"
-	backendJWTAPIPolicyIndex             = "backendJWTAPIPolicyIndex"
-	aiRatelimitPolicyToBackendIndex      = "aiRatelimitPolicyToBackendIndex"
-	subscriptionToAPIIndex               = "subscriptionToAPIIndex"
-	apiToSubscriptionIndex               = "apiToSubscriptionIndex"
+	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndex"
+	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
+	httprouteScopeIndex              = "httprouteScopeIndex"
+	grpcRouteScopeIndex              = "grpcRouteScopeIndex"
+	gqlRouteScopeIndex               = "gqlRouteScopeIndex"
+	configMapBackend                 = "configMapBackend"
+	configMapAPIDefinition           = "configMapAPIDefinition"
+	secretBackend                    = "secretBackend"
+	configMapAuthentication          = "configMapAuthentication"
+	secretAuthentication             = "secretAuthentication"
+	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
+	backendGQLRouteIndex             = "backendGQLRouteIndex"
+	backendGRPCRouteIndex            = "backendGRPCRouteIndex"
+	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
+	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
+	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndex"
+	aiRatelimitPolicyToBackendIndex  = "aiRatelimitPolicyToBackendIndex"
+	subscriptionToAPIIndex           = "subscriptionToAPIIndex"
+	apiToSubscriptionIndex           = "apiToSubscriptionIndex"
 	aiProviderAPIPolicyIndex         = "aiProviderAPIPolicyIndex"
 )
 
@@ -116,7 +122,7 @@ type APIReconciler struct {
 	apiPropagationEnabled bool
 }
 
-// NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha2.API and gwapiv1.HTTPRoute.
+// NewAPIController creates a new API controller instance. API Controllers watches for dpv1alpha3.API and gwapiv1.HTTPRoute.
 func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.OperatorDataStore, statusUpdater *status.UpdateHandler,
 	ch *chan *synchronizer.APIEvent, successChannel *chan synchronizer.SuccessEvent) error {
 	apiReconciler := &APIReconciler{
@@ -138,7 +144,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	apiReconciler.apiPropagationEnabled = conf.Adapter.ControlPlane.EnableAPIPropagation
 	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.API{}), &handler.EnqueueRequestForObject{},
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.API{}), &handler.EnqueueRequestForObject{},
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER, "Error watching API resources: %v", err))
 		return err
@@ -157,6 +163,12 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.GQLRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForGQLRoute),
 		predicates...); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2667, logging.BLOCKER, "Error watching GQLRoute resources: %v", err))
+		return err
+	}
+
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1a2.GRPCRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForGRPCRoute),
+		predicates...); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2668, logging.BLOCKER, "Error watching GRPCRoute resources: %v", err))
 		return err
 	}
 
@@ -249,6 +261,9 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=authentications/finalizers,verbs=update
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=grpcroutes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=grpcroutes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dp.wso2.com,resources=grpcroutes/finalizers,verbs=update
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=dp.wso2.com,resources=apipolicies/finalizers,verbs=update
@@ -271,7 +286,7 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	applyAllAPIsOnce.Do(apiReconciler.applyStartupAPIs)
 	loggers.LoggerAPKOperator.Infof("Reconciling for API %s", req.NamespacedName.String())
 	// Check whether the API CR exist, if not consider as a DELETE event.
-	var apiCR dpv1alpha2.API
+	var apiCR dpv1alpha3.API
 	if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err != nil {
 		apiState, found := apiReconciler.ods.GetCachedAPI(req.NamespacedName)
 		if found && k8error.IsNotFound(err) {
@@ -338,7 +353,7 @@ func (apiReconciler *APIReconciler) applyStartupAPIs() {
 
 // resolveAPIRefs validates following references related to the API
 // - HTTPRoutes
-func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1alpha2.API) (*synchronizer.APIEvent, error) {
+func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1alpha3.API) (*synchronizer.APIEvent, error) {
 	var prodRouteRefs, sandRouteRefs []string
 	if len(api.Spec.Production) > 0 {
 		prodRouteRefs = api.Spec.Production[0].RouteRefs
@@ -440,13 +455,45 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 			return nil, fmt.Errorf("error while resolving production gqlRouteref %s in namespace :%s has not found. %s",
 				prodRouteRefs, namespace, err.Error())
 		}
-
 	}
 	if len(sandRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == "GraphQL" {
 		if apiState.SandGQLRoute, err = apiReconciler.resolveGQLRouteRefs(ctx, sandRouteRefs, namespace,
 			api); err != nil {
 			return nil, fmt.Errorf("error while resolving sandbox gqlRouteref %s in namespace :%s has not found. %s",
 				sandRouteRefs, namespace, err.Error())
+		}
+	}
+
+	// handle gRPC APIs
+	if len(prodRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == constants.GRPC {
+		if apiState.ProdGRPCRoute, err = apiReconciler.resolveGRPCRouteRefs(ctx, prodRouteRefs,
+			namespace, api); err != nil {
+			return nil, fmt.Errorf("error while resolving production grpcRouteref %s in namespace :%s was not found. %s",
+				prodRouteRefs, namespace, err.Error())
+		}
+		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
+			Name: string(apiState.ProdGRPCRoute.GRPCRouteCombined.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.ProdGRPCRoute.GRPCRouteCombined.Spec.ParentRefs[0].Namespace,
+				apiState.ProdGRPCRoute.GRPCRouteCombined.Namespace),
+		}) {
+			return nil, fmt.Errorf("no gateway available for grpcpRouteref %s in namespace :%s was not found",
+				prodRouteRefs, namespace)
+		}
+	}
+
+	if len(sandRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == constants.GRPC {
+		if apiState.SandGRPCRoute, err = apiReconciler.resolveGRPCRouteRefs(ctx, sandRouteRefs,
+			namespace, api); err != nil {
+			return nil, fmt.Errorf("error while resolving sandbox grpcRouteref %s in namespace :%s was not found. %s",
+				sandRouteRefs, namespace, err.Error())
+		}
+		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
+			Name: string(apiState.SandGRPCRoute.GRPCRouteCombined.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.SandGRPCRoute.GRPCRouteCombined.Spec.ParentRefs[0].Namespace,
+				apiState.SandGRPCRoute.GRPCRouteCombined.Namespace),
+		}) {
+			return nil, fmt.Errorf("no gateway available for grpcRouteref %s in namespace :%s was not found",
+				sandRouteRefs, namespace)
 		}
 	}
 
@@ -509,6 +556,11 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 func isAPIPropagatable(apiState *synchronizer.APIState) bool {
 	validOrgs := []string{"carbon.super"}
+
+	if apiState.APIDefinition.Spec.APIType == constants.GRPC {
+		return false
+	}
+
 	// System APIs should not be propagated to CP
 	if apiState.APIDefinition.Spec.SystemAPI {
 		return false
@@ -521,7 +573,7 @@ func isAPIPropagatable(apiState *synchronizer.APIState) bool {
 }
 
 func (apiReconciler *APIReconciler) resolveGQLRouteRefs(ctx context.Context, gqlRouteRefs []string,
-	namespace string, api dpv1alpha2.API) (*synchronizer.GQLRouteState, error) {
+	namespace string, api dpv1alpha3.API) (*synchronizer.GQLRouteState, error) {
 	gqlRouteState, err := apiReconciler.concatGQLRoutes(ctx, gqlRouteRefs, namespace, api)
 	if err != nil {
 		return nil, err
@@ -534,7 +586,7 @@ func (apiReconciler *APIReconciler) resolveGQLRouteRefs(ctx context.Context, gql
 // - Authentications
 func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, httpRouteState *synchronizer.HTTPRouteState,
 	httpRouteRefs []string, namespace string, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha2.API) (*synchronizer.HTTPRouteState, error) {
+	api dpv1alpha3.API) (*synchronizer.HTTPRouteState, error) {
 	var err error
 	httpRouteState.HTTPRouteCombined, httpRouteState.HTTPRoutePartitions, err = apiReconciler.concatHTTPRoutes(ctx, httpRouteRefs, namespace, api)
 	if err != nil {
@@ -549,8 +601,53 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, ht
 	return httpRouteState, err
 }
 
+func (apiReconciler *APIReconciler) resolveGRPCRouteRefs(ctx context.Context, grpcRouteRefs []string,
+	namespace string, api dpv1alpha3.API) (*synchronizer.GRPCRouteState, error) {
+	grpcRouteState, err := apiReconciler.concatGRPCRoutes(ctx, grpcRouteRefs, namespace, api)
+	if err != nil {
+		return nil, err
+	}
+	grpcRouteState.Scopes, err = apiReconciler.getScopesForGRPCRoute(ctx, grpcRouteState.GRPCRouteCombined, api)
+	return &grpcRouteState, err
+}
+
+func (apiReconciler *APIReconciler) concatGRPCRoutes(ctx context.Context, grpcRouteRefs []string,
+	namespace string, api dpv1alpha3.API) (synchronizer.GRPCRouteState, error) {
+	grpcRouteState := synchronizer.GRPCRouteState{}
+	grpcRoutePartitions := make(map[string]*gwapiv1a2.GRPCRoute)
+	for _, grpcRouteRef := range grpcRouteRefs {
+		var grpcRoute gwapiv1a2.GRPCRoute
+		namespacedName := types.NamespacedName{Namespace: namespace, Name: grpcRouteRef}
+		if err := utils.ResolveRef(ctx, apiReconciler.client, &api, namespacedName, true, &grpcRoute); err != nil {
+			return grpcRouteState, fmt.Errorf("error while getting grpcroute %s in namespace :%s, %s", grpcRouteRef,
+				namespace, err.Error())
+		}
+		grpcRoutePartitions[namespacedName.String()] = &grpcRoute
+		if grpcRouteState.GRPCRouteCombined == nil {
+			grpcRouteState.GRPCRouteCombined = &grpcRoute
+		} else {
+			grpcRouteState.GRPCRouteCombined.Spec.Rules = append(grpcRouteState.GRPCRouteCombined.Spec.Rules,
+				grpcRoute.Spec.Rules...)
+		}
+	}
+	grpcRouteState.GRPCRoutePartitions = grpcRoutePartitions
+	backendNamespacedName := types.NamespacedName{
+		//TODO check if this is correct
+		Name:      string(grpcRouteState.GRPCRouteCombined.Spec.Rules[0].BackendRefs[0].BackendRef.Name),
+		Namespace: namespace,
+	}
+	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+	if resolvedBackend != nil {
+		grpcRouteState.BackendMapping = map[string]*dpv1alpha2.ResolvedBackend{
+			backendNamespacedName.String(): resolvedBackend,
+		}
+		return grpcRouteState, nil
+	}
+	return grpcRouteState, errors.New("error while resolving backend for grpcroute")
+}
+
 func (apiReconciler *APIReconciler) concatGQLRoutes(ctx context.Context, gqlRouteRefs []string,
-	namespace string, api dpv1alpha2.API) (synchronizer.GQLRouteState, error) {
+	namespace string, api dpv1alpha3.API) (synchronizer.GQLRouteState, error) {
 	gqlRouteState := synchronizer.GQLRouteState{}
 	gqlRoutePartitions := make(map[string]*dpv1alpha2.GQLRoute)
 	for _, gqlRouteRef := range gqlRouteRefs {
@@ -583,8 +680,28 @@ func (apiReconciler *APIReconciler) concatGQLRoutes(ctx context.Context, gqlRout
 	return gqlRouteState, errors.New("error while resolving backend for gqlroute")
 }
 
+func (apiReconciler *APIReconciler) getScopesForGRPCRoute(ctx context.Context,
+	grpcRoute *gwapiv1a2.GRPCRoute, api dpv1alpha3.API) (map[string]dpv1alpha1.Scope, error) {
+	scopes := make(map[string]dpv1alpha1.Scope)
+	for _, rule := range grpcRoute.Spec.Rules {
+		for _, filter := range rule.Filters {
+			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindScope {
+				scope := &dpv1alpha1.Scope{}
+				if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
+					types.NamespacedName{Namespace: grpcRoute.Namespace, Name: string(filter.ExtensionRef.Name)}, false,
+					scope); err != nil {
+					return nil, fmt.Errorf("error while getting scope %s in namespace :%s, %s", filter.ExtensionRef.Name,
+						grpcRoute.Namespace, err.Error())
+				}
+				scopes[utils.NamespacedName(scope).String()] = *scope
+			}
+		}
+	}
+	return scopes, nil
+}
+
 func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRouteRefs []string,
-	namespace string, api dpv1alpha2.API) (*gwapiv1.HTTPRoute, map[string]*gwapiv1.HTTPRoute, error) {
+	namespace string, api dpv1alpha3.API) (*gwapiv1.HTTPRoute, map[string]*gwapiv1.HTTPRoute, error) {
 	var combinedHTTPRoute *gwapiv1.HTTPRoute
 	httpRoutePartitions := make(map[string]*gwapiv1.HTTPRoute)
 	for _, httpRouteRef := range httpRouteRefs {
@@ -605,7 +722,7 @@ func (apiReconciler *APIReconciler) concatHTTPRoutes(ctx context.Context, httpRo
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha2.Authentication, error) {
+	api dpv1alpha3.API) (map[string]dpv1alpha2.Authentication, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
 	authentications := make(map[string]dpv1alpha2.Authentication)
 	authenticationList := &dpv1alpha2.AuthenticationList{}
@@ -622,7 +739,7 @@ func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context
 }
 
 func (apiReconciler *APIReconciler) getRatelimitPoliciesForAPI(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha3.RateLimitPolicy, error) {
+	api dpv1alpha3.API) (map[string]dpv1alpha3.RateLimitPolicy, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
 	ratelimitPolicies := make(map[string]dpv1alpha3.RateLimitPolicy)
 	ratelimitPolicyList := &dpv1alpha3.RateLimitPolicyList{}
@@ -639,7 +756,7 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForAPI(ctx context.Conte
 }
 
 func (apiReconciler *APIReconciler) getScopesForGQLRoute(ctx context.Context,
-	gqlRoute *dpv1alpha2.GQLRoute, api dpv1alpha2.API) (map[string]dpv1alpha1.Scope, error) {
+	gqlRoute *dpv1alpha2.GQLRoute, api dpv1alpha3.API) (map[string]dpv1alpha1.Scope, error) {
 	scopes := make(map[string]dpv1alpha1.Scope)
 	for _, rule := range gqlRoute.Spec.Rules {
 		for _, filter := range rule.Filters {
@@ -659,7 +776,7 @@ func (apiReconciler *APIReconciler) getScopesForGQLRoute(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getScopesForHTTPRoute(ctx context.Context,
-	httpRoute *gwapiv1.HTTPRoute, api dpv1alpha2.API) (map[string]dpv1alpha1.Scope, error) {
+	httpRoute *gwapiv1.HTTPRoute, api dpv1alpha3.API) (map[string]dpv1alpha1.Scope, error) {
 	scopes := make(map[string]dpv1alpha1.Scope)
 	for _, rule := range httpRoute.Spec.Rules {
 		for _, filter := range rule.Filters {
@@ -681,7 +798,7 @@ func (apiReconciler *APIReconciler) getScopesForHTTPRoute(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha2.Authentication, error) {
+	api dpv1alpha3.API) (map[string]dpv1alpha2.Authentication, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
 	authentications := make(map[string]dpv1alpha2.Authentication)
 	authenticationList := &dpv1alpha2.AuthenticationList{}
@@ -698,7 +815,7 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 }
 
 func (apiReconciler *APIReconciler) getRatelimitPoliciesForResources(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha3.RateLimitPolicy, error) {
+	api dpv1alpha3.API) (map[string]dpv1alpha3.RateLimitPolicy, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
 	ratelimitpolicies := make(map[string]dpv1alpha3.RateLimitPolicy)
 	ratelimitPolicyList := &dpv1alpha3.RateLimitPolicyList{}
@@ -714,7 +831,7 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForResources(ctx context
 	return ratelimitpolicies, nil
 }
 
-func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context, api dpv1alpha2.API) (map[string]dpv1alpha3.APIPolicy, error) {
+func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context, api dpv1alpha3.API) (map[string]dpv1alpha3.APIPolicy, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
 	apiPolicies := make(map[string]dpv1alpha3.APIPolicy)
 	apiPolicyList := &dpv1alpha3.APIPolicyList{}
@@ -732,7 +849,7 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context, ap
 }
 
 func (apiReconciler *APIReconciler) getAPIDefinitionForAPI(ctx context.Context,
-	apiDefinitionFile, namespace string, api dpv1alpha2.API) ([]byte, error) {
+	apiDefinitionFile, namespace string, api dpv1alpha3.API) ([]byte, error) {
 	configMap := &corev1.ConfigMap{}
 	if err := utils.ResolveRef(ctx, apiReconciler.client, &api,
 		types.NamespacedName{Namespace: namespace, Name: apiDefinitionFile}, true, configMap); err != nil {
@@ -749,7 +866,7 @@ func (apiReconciler *APIReconciler) getAPIDefinitionForAPI(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Context,
-	api dpv1alpha2.API) (map[string]dpv1alpha3.APIPolicy, error) {
+	api dpv1alpha3.API) (map[string]dpv1alpha3.APIPolicy, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
 	apiPolicies := make(map[string]dpv1alpha3.APIPolicy)
 	apiPolicyList := &dpv1alpha3.APIPolicyList{}
@@ -771,7 +888,7 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 // - subscription validation
 func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context,
 	apiPolicies, resourceAPIPolicies map[string]dpv1alpha3.APIPolicy,
-	api dpv1alpha2.API) (map[string]dpv1alpha1.InterceptorService, map[string]dpv1alpha1.BackendJWT, bool, *dpv1alpha3.AIProvider, error) {
+	api dpv1alpha3.API) (map[string]dpv1alpha1.InterceptorService, map[string]dpv1alpha1.BackendJWT, bool, *dpv1alpha3.AIProvider, error) {
 	allAPIPolicies := append(maps.Values(apiPolicies), maps.Values(resourceAPIPolicies)...)
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	backendJWTs := make(map[string]dpv1alpha1.BackendJWT)
@@ -860,7 +977,7 @@ func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha2.API) (map[string]*dpv1alpha2.ResolvedBackend, error) {
+	api dpv1alpha3.API) (map[string]*dpv1alpha2.ResolvedBackend, error) {
 	backendMapping := make(map[string]*dpv1alpha2.ResolvedBackend)
 
 	// Resolve backends in HTTPRoute
@@ -956,6 +1073,12 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForHTTPRoute(ctx
 	return requests
 }
 
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGRPCRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	requests := apiReconciler.getAPIForGRPCRoute(ctx, obj)
+	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	return requests
+}
+
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForConfigMap(ctx context.Context, obj k8client.Object) []reconcile.Request {
 	requests := apiReconciler.getAPIsForConfigMap(ctx, obj)
 	if len(requests) > 0 {
@@ -1048,80 +1171,107 @@ func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx
 	// travserse through all the children of this API and trigger update owner reference
 	if apiState.ProdHTTPRoute != nil {
 		for _, httpRoute := range apiState.ProdHTTPRoute.HTTPRoutePartitions {
-			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, httpRoute)
+			apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, httpRoute)
 		}
 	}
 	if apiState.SandHTTPRoute != nil {
 		for _, httpRoute := range apiState.SandHTTPRoute.HTTPRoutePartitions {
-			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, httpRoute)
+			apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, httpRoute)
 		}
 	}
 	if apiState.ProdGQLRoute != nil {
 		for _, gqlRoute := range apiState.ProdGQLRoute.GQLRoutePartitions {
-			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, gqlRoute)
+			apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, gqlRoute)
 		}
 	}
 	if apiState.SandGQLRoute != nil {
 		for _, gqlRoute := range apiState.SandGQLRoute.GQLRoutePartitions {
-			apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, gqlRoute)
+			apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, gqlRoute)
 		}
 	}
+
+	if apiState.ProdGRPCRoute != nil {
+		for _, grpcRoute := range apiState.ProdGRPCRoute.GRPCRoutePartitions {
+			apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, grpcRoute)
+		}
+	}
+	if apiState.SandGRPCRoute != nil {
+		for _, grpcRoute := range apiState.SandGRPCRoute.GRPCRoutePartitions {
+			apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, grpcRoute)
+		}
+	}
+
 	for _, auth := range apiState.Authentications {
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &auth)
+		apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &auth)
 	}
 	for _, auth := range apiState.ResourceAuthentications {
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &auth)
+		apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &auth)
 	}
 	for _, ratelimit := range apiState.RateLimitPolicies {
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &ratelimit)
+		apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &ratelimit)
 	}
 	for _, ratelimit := range apiState.ResourceRateLimitPolicies {
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &ratelimit)
+		apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &ratelimit)
 	}
 	for _, apiPolicy := range apiState.APIPolicies {
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &apiPolicy)
+		apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &apiPolicy)
 	}
 	for _, apiPolicy := range apiState.ResourceAPIPolicies {
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &apiPolicy)
+		apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &apiPolicy)
 	}
 	for _, interceptorService := range apiState.InterceptorServiceMapping {
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &interceptorService)
+		apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &interceptorService)
 	}
 	if apiState.ProdHTTPRoute != nil {
 		for _, backend := range apiState.ProdHTTPRoute.BackendMapping {
 			if backend != nil {
-				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
+				apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &backend.Backend)
 			}
 		}
 	}
 	if apiState.SandHTTPRoute != nil {
 		for _, backend := range apiState.SandHTTPRoute.BackendMapping {
 			if backend != nil {
-				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
+				apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &backend.Backend)
 			}
 		}
 	}
 	if apiState.ProdGQLRoute != nil {
 		for _, backend := range apiState.ProdGQLRoute.BackendMapping {
 			if backend != nil {
-				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
+				apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &backend.Backend)
 			}
 		}
 	}
 	if apiState.SandGQLRoute != nil {
 		for _, backend := range apiState.SandGQLRoute.BackendMapping {
 			if backend != nil {
-				apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backend.Backend)
+				apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &backend.Backend)
+			}
+		}
+	}
+
+	if apiState.ProdGRPCRoute != nil {
+		for _, backend := range apiState.ProdGRPCRoute.BackendMapping {
+			if &backend != nil {
+				apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &backend.Backend)
+			}
+		}
+	}
+	if apiState.SandGRPCRoute != nil {
+		for _, backend := range apiState.SandGRPCRoute.BackendMapping {
+			if &backend != nil {
+				apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &backend.Backend)
 			}
 		}
 	}
 	for _, backendJwt := range apiState.BackendJWTMapping {
-		apiReconciler.retriveParentAPIsAndUpdateOwnerReferene(ctx, &backendJwt)
+		apiReconciler.retrieveParentAPIsAndUpdateOwnerReference(ctx, &backendJwt)
 	}
 
 }
 
-func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx context.Context, obj k8client.Object) {
+func (apiReconciler *APIReconciler) retrieveParentAPIsAndUpdateOwnerReference(ctx context.Context, obj k8client.Object) {
 	var requests []reconcile.Request
 	switch obj.(type) {
 	case *dpv1alpha2.Backend:
@@ -1268,6 +1418,16 @@ func (apiReconciler *APIReconciler) retriveParentAPIsAndUpdateOwnerReferene(ctx 
 		}
 		requests = apiReconciler.getAPIsForAIProvider(ctx, &aiProvider)
 		apiReconciler.handleOwnerReference(ctx, &aiProvider, &requests)
+	case *gwapiv1a2.GRPCRoute:
+		var grpcRoute gwapiv1a2.GRPCRoute
+		namespaceName := types.NamespacedName{
+			Name:      string(obj.GetName()),
+			Namespace: string(obj.GetNamespace()),
+		}
+		if err := apiReconciler.client.Get(ctx, namespaceName, &grpcRoute); err != nil {
+			loggers.LoggerAPKOperator.Errorf("Unexpected error occured while loading the cr object from cluster %+v", err)
+			return
+		}
 	default:
 		loggers.LoggerAPKOperator.Errorf("Unexpected type found while processing owner reference %+v", obj)
 	}
@@ -1283,7 +1443,7 @@ func (apiReconciler *APIReconciler) getAPIForGQLRoute(ctx context.Context, obj k
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", gqlRoute))
 		return []reconcile.Request{}
 	}
-	apiList := &dpv1alpha2.APIList{}
+	apiList := &dpv1alpha3.APIList{}
 	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gqlRouteAPIIndex, utils.NamespacedName(gqlRoute).String()),
 	}); err != nil {
@@ -1318,7 +1478,7 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(ctx context.Context, obj 
 		return []reconcile.Request{}
 	}
 
-	apiList := &dpv1alpha2.APIList{}
+	apiList := &dpv1alpha3.APIList{}
 	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httpRouteAPIIndex, utils.NamespacedName(httpRoute).String()),
 	}); err != nil {
@@ -1341,6 +1501,47 @@ func (apiReconciler *APIReconciler) getAPIForHTTPRoute(ctx context.Context, obj 
 		requests = append(requests, req)
 		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v due to HTTPRoute change: %v",
 			api.Namespace, api.Name, string(api.ObjectMeta.UID), utils.NamespacedName(httpRoute).String())
+	}
+	return requests
+}
+
+// getAPIForGRPCRoute triggers the API controller reconcile method based on the changes detected
+// from GRPCRoute objects. If the changes are done for an API stored in the Operator Data store,
+// a new reconcile event will be created and added to the reconcile event queue.
+func (apiReconciler *APIReconciler) getAPIForGRPCRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
+	grpcRoute, ok := obj.(*gwapiv1a2.GRPCRoute)
+	if !ok {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
+			"Unexpected object type, bypassing reconciliation: %v", grpcRoute))
+		return []reconcile.Request{}
+	}
+
+	apiList := &dpv1alpha3.APIList{}
+	logrus.Info("=============GETTING API FOR GRPC ROUTE================")
+
+	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(grpcRouteAPIIndex, utils.NamespacedName(grpcRoute).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2623, logging.CRITICAL,
+			"Unable to find associated APIs: %s", utils.NamespacedName(grpcRoute).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(apiList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("APIs for GRPCRoute not found: %s", utils.NamespacedName(grpcRoute).String())
+		return []reconcile.Request{}
+	}
+
+	requests := []reconcile.Request{}
+	for _, api := range apiList.Items {
+		req := reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      api.Name,
+				Namespace: api.Namespace},
+		}
+		requests = append(requests, req)
+		loggers.LoggerAPKOperator.Infof("Adding reconcile request for API: %s/%s with API UUID: %v", api.Namespace, api.Name,
+			string(api.ObjectMeta.UID))
 	}
 	return requests
 }
@@ -1368,7 +1569,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(ctx context.Context, obj
 		return requests
 	}
 
-	apiList := &dpv1alpha2.APIList{}
+	apiList := &dpv1alpha3.APIList{}
 	err = apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapAPIDefinition, utils.NamespacedName(configMap).String()),
 	})
@@ -1642,6 +1843,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 	if len(httpRouteList.Items) == 0 {
 		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for scope not found: %s", utils.NamespacedName(scope).String())
 	}
+
 	requests := []reconcile.Request{}
 	for item := range httpRouteList.Items {
 		httpRoute := httpRouteList.Items[item]
@@ -1659,9 +1861,26 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 	if len(gqlRouteList.Items) == 0 {
 		loggers.LoggerAPKOperator.Debugf("GQLRoutes for scope not found: %s", utils.NamespacedName(scope).String())
 	}
+
 	for item := range gqlRouteList.Items {
 		httpRoute := gqlRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForGQLRoute(ctx, &httpRoute)...)
+	}
+
+	grpcRouteList := &gwapiv1a2.GRPCRouteList{}
+	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(grpcRouteScopeIndex, utils.NamespacedName(scope).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(scope).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(grpcRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("GRPCRoutes for scope not found: %s", utils.NamespacedName(scope).String())
+	}
+	for item := range grpcRouteList.Items {
+		grpcRoute := grpcRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGRPCRoute(ctx, &grpcRoute)...)
 	}
 
 	return requests
@@ -1710,6 +1929,23 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 		requests = append(requests, apiReconciler.getAPIForGQLRoute(ctx, &gqlRoute)...)
 	}
 
+	grpcRouteList := &gwapiv1a2.GRPCRouteList{}
+	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(backendGRPCRouteIndex, utils.NamespacedName(backend).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(backend).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(grpcRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("GRPCRoutes for Backend not found: %s", utils.NamespacedName(backend).String())
+	}
+
+	for item := range grpcRouteList.Items {
+		grpcRoute := grpcRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGRPCRoute(ctx, &grpcRoute)...)
+	}
+
 	// Create API reconcile events when Backend reffered from InterceptorService
 	interceptorServiceList := &dpv1alpha1.InterceptorServiceList{}
 	if err := apiReconciler.client.List(ctx, interceptorServiceList, &k8client.ListOptions{
@@ -1753,10 +1989,27 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k
 		return []reconcile.Request{}
 	}
 
+	grpcRouteList := &gwapiv1a2.GRPCRouteList{}
+	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(gatewayGRPCRouteIndex, utils.NamespacedName(gateway).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(gateway).String()))
+		return []reconcile.Request{}
+	}
+
+	if len(grpcRouteList.Items) == 0 {
+		loggers.LoggerAPKOperator.Debugf("GRPCRoutes for Gateway not found: %s", utils.NamespacedName(gateway).String())
+		return []reconcile.Request{}
+	}
+
 	requests := []reconcile.Request{}
 	for item := range httpRouteList.Items {
 		httpRoute := httpRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
+	}
+	for item := range grpcRouteList.Items {
+		grpcRoute := grpcRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGRPCRoute(ctx, &grpcRoute)...)
 	}
 	return requests
 }
@@ -1772,9 +2025,9 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k
 //     apiPolicy schemes related to httproutes
 //     This helps to find apiPolicy schemes binded to HTTPRoute.
 func addIndexes(ctx context.Context, mgr manager.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, httpRouteAPIIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.API{}, httpRouteAPIIndex,
 		func(rawObj k8client.Object) []string {
-			api := rawObj.(*dpv1alpha2.API)
+			api := rawObj.(*dpv1alpha3.API)
 			var httpRoutes []string
 			if len(api.Spec.Production) > 0 {
 				for _, ref := range api.Spec.Production[0].RouteRefs {
@@ -1803,9 +2056,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, gqlRouteAPIIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.API{}, gqlRouteAPIIndex,
 		func(rawObj k8client.Object) []string {
-			api := rawObj.(*dpv1alpha2.API)
+			api := rawObj.(*dpv1alpha3.API)
 			var gqlRoutes []string
 			if len(api.Spec.Production) > 0 {
 				for _, ref := range api.Spec.Production[0].RouteRefs {
@@ -1834,9 +2087,43 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.API{}, configMapAPIDefinition,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.API{}, grpcRouteAPIIndex,
 		func(rawObj k8client.Object) []string {
-			api := rawObj.(*dpv1alpha2.API)
+			api := rawObj.(*dpv1alpha3.API)
+			if api.Spec.APIType != constants.GRPC {
+				return nil
+			}
+			var grpcRoutes []string
+			if len(api.Spec.Production) > 0 {
+				for _, ref := range api.Spec.Production[0].RouteRefs {
+					if ref != "" {
+						grpcRoutes = append(grpcRoutes,
+							types.NamespacedName{
+								Namespace: api.Namespace,
+								Name:      ref,
+							}.String())
+					}
+				}
+			}
+			if len(api.Spec.Sandbox) > 0 {
+				for _, ref := range api.Spec.Sandbox[0].RouteRefs {
+					if ref != "" {
+						grpcRoutes = append(grpcRoutes,
+							types.NamespacedName{
+								Namespace: api.Namespace,
+								Name:      ref,
+							}.String())
+					}
+				}
+			}
+			return grpcRoutes
+		}); err != nil {
+		return err
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.API{}, configMapAPIDefinition,
+		func(rawObj k8client.Object) []string {
+			api := rawObj.(*dpv1alpha3.API)
 			var configMaps []string
 			if api.Spec.DefinitionFileRef != "" {
 				configMaps = append(configMaps,
@@ -1931,6 +2218,27 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 		return err
 	}
 
+	// Backend to GRPCRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a2.GRPCRoute{}, backendGRPCRouteIndex,
+		func(rawObj k8client.Object) []string {
+			grpcRoute := rawObj.(*gwapiv1a2.GRPCRoute)
+			var backends []string
+			for _, rule := range grpcRoute.Spec.Rules {
+				for _, backendRef := range rule.BackendRefs {
+					if backendRef.Kind != nil && *backendRef.Kind == constants.KindBackend {
+						backends = append(backends, types.NamespacedName{
+							Namespace: utils.GetNamespace(backendRef.Namespace,
+								grpcRoute.ObjectMeta.Namespace),
+							Name: string(backendRef.Name),
+						}.String())
+					}
+				}
+			}
+			return backends
+		}); err != nil {
+		return err
+	}
+
 	// Gateway to HTTPRoute indexer
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1.HTTPRoute{}, gatewayHTTPRouteIndex,
 		func(rawObj k8client.Object) []string {
@@ -1940,6 +2248,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				gateways = append(gateways, types.NamespacedName{
 					Namespace: utils.GetNamespace(parentRef.Namespace,
 						httpRoute.Namespace),
+					Name: string(parentRef.Name),
+				}.String())
+			}
+			return gateways
+		}); err != nil {
+		return err
+	}
+
+	//Gateway to GRPCRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a2.GRPCRoute{}, gatewayGRPCRouteIndex,
+		func(rawObj k8client.Object) []string {
+			grpcRoute := rawObj.(*gwapiv1a2.GRPCRoute)
+			var gateways []string
+			for _, parentRef := range grpcRoute.Spec.ParentRefs {
+				gateways = append(gateways, types.NamespacedName{
+					Namespace: utils.GetNamespace(parentRef.Namespace,
+						grpcRoute.Namespace),
 					Name: string(parentRef.Name),
 				}.String())
 			}
@@ -2379,9 +2704,9 @@ func (apiReconciler *APIReconciler) handleStatus() {
 		for _, apiName := range successEvent.APINamespacedName { // handle startup multiple apis
 			apiReconciler.statusUpdater.Send(status.Update{
 				NamespacedName: apiName,
-				Resource:       new(dpv1alpha2.API),
+				Resource:       new(dpv1alpha3.API),
 				UpdateStatus: func(obj k8client.Object) k8client.Object {
-					h, ok := obj.(*dpv1alpha2.API)
+					h, ok := obj.(*dpv1alpha3.API)
 					if !ok {
 						loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2626, logging.BLOCKER, "Unsupported object type %T", obj))
 					}
@@ -2418,7 +2743,7 @@ func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 			})
 		}
 		payloadBytes, _ := json.Marshal(patchOps)
-		apiCR := dpv1alpha2.API{
+		apiCR := dpv1alpha3.API{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: labelUpdate.Namespace,
 				Name:      labelUpdate.Name,
@@ -2429,7 +2754,7 @@ func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 		if err != nil {
 			loggers.LoggerAPKOperator.Errorf("Failed to patch api %s/%s with patch: %+v, error: %+v", labelUpdate.Name, labelUpdate.Namespace, patchOps, err)
 			// Patch did not work it could be due to labels field does not exists. Lets try to update the CR with labels field.
-			var apiCR dpv1alpha2.API
+			var apiCR dpv1alpha3.API
 			if err := apiReconciler.client.Get(ctx, types.NamespacedName{Namespace: labelUpdate.Namespace, Name: labelUpdate.Name}, &apiCR); err == nil {
 				if apiCR.ObjectMeta.Labels == nil {
 					apiCR.ObjectMeta.Labels = map[string]string{}
@@ -2449,9 +2774,9 @@ func (apiReconciler *APIReconciler) handleLabels(ctx context.Context) {
 }
 
 func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, obj k8client.Object, apiRequests *[]reconcile.Request) {
-	apis := []dpv1alpha2.API{}
+	apis := []dpv1alpha3.API{}
 	for _, req := range *apiRequests {
-		var apiCR dpv1alpha2.API
+		var apiCR dpv1alpha3.API
 		if err := apiReconciler.client.Get(ctx, req.NamespacedName, &apiCR); err == nil {
 			apis = append(apis, apiCR)
 		} else {
@@ -2481,7 +2806,7 @@ func (apiReconciler *APIReconciler) handleOwnerReference(ctx context.Context, ob
 	}
 }
 
-func prepareOwnerReference(apiItems []dpv1alpha2.API) []metav1.OwnerReference {
+func prepareOwnerReference(apiItems []dpv1alpha3.API) []metav1.OwnerReference {
 	ownerReferences := []metav1.OwnerReference{}
 	uidMap := make(map[string]bool)
 	for _, ref := range apiItems {

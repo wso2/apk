@@ -68,3 +68,10 @@ const (
 	GlobalRequestInterceptorClusterName  = "request_interceptor_global_cluster"
 	GlobalResponseInterceptorClusterName = "response_interceptor_global_cluster"
 )
+
+// API Types
+const (
+	GRAPHQL = "GraphQL"
+	REST    = "REST"
+	GRPC    = "GRPC"
+)

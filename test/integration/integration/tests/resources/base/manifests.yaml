@@ -50,20 +50,20 @@ spec:
         app: infra-backend-v1
     spec:
       containers:
-      - name: infra-backend-v1
-        image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        resources:
-          requests:
-            cpu: 10m
+        - name: infra-backend-v1
+          image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: 10m
 ---
 apiVersion: v1
 kind: Service
@@ -96,20 +96,67 @@ spec:
         app: gql-backend-v1
     spec:
       containers:
-      - name: gql-backend-v1
-        image: tharsanan/gq:1.0.0
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        resources:
-          requests:
-            cpu: 10m
+        - name: gql-backend-v1
+          image: tharsanan/gq:1.0.0
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: 10m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  selector:
+    app: grpc-backend-v1
+  ports:
+    - protocol: TCP
+      port: 6565
+      targetPort: 6565
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-backend-v1
+  namespace: gateway-integration-test-infra
+  labels:
+    app: grpc-backend-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpc-backend-v1
+  template:
+    metadata:
+      labels:
+        app: grpc-backend-v1
+    spec:
+      containers:
+        - name: grpc-backend-v1
+          image: ddh13/dineth-grpc-demo-server:1.0.0
+          imagePullPolicy: Always
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: 10m
 ---
 apiVersion: v1
 kind: Service
@@ -142,20 +189,20 @@ spec:
         app: infra-backend-v2
     spec:
       containers:
-      - name: infra-backend-v2
-        image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        resources:
-          requests:
-            cpu: "10m"
+        - name: infra-backend-v2
+          image: gcr.io/k8s-staging-ingressconformance/echoserver:v20221109-7ee2f3e
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: "10m"
 # TODO (Amila): Uncomment once AKS test runner is enabled
 # ---
 # apiVersion: v1
@@ -409,11 +456,11 @@ spec:
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: wso2-apk-default   
+    name: wso2-apk-default
 ---
-# This is a API with wrong organization(jwt issuer not set). 
+# This is a API with wrong organization(jwt issuer not set).
 # When test cases apply the correct API it should overrite the wrong value to correct value
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: all-http-methods-for-wildcard
@@ -427,5 +474,5 @@ spec:
   #definitionFileRef: definition-file
   production:
     - routeRefs:
-      - all-http-methods-for-wildcard-httproute
+        - all-http-methods-for-wildcard-httproute
   organization: wso2-org1111

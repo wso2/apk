@@ -18,6 +18,8 @@ import org.wso2.apk.enforcer.constants.HttpConstants;
 import org.wso2.apk.enforcer.models.ResponsePayload;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject> {
 
@@ -43,17 +45,33 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
 
         boolean isSwagger = false;
 
-        String [] params = request.uri().split("/");
-        final String basePath = "/" + params[1] + "/" + params[2];
-        final String vHost = params[3].split("\\?")[0];
-        final String queryParam = params[3].split("\\?")[1];
+        //check if it's GRPC request using the header
+        String header = request.headers().get("ApiType");
+        String[] params = request.uri().split("/");
+        final String basePath;
+        final String vHost;
+        final String queryParam;
+        final String version;
+        //if len params is 3, then it's a GRPC request else other
+        final String type = params.length == 3 ? "GRPC" : "REST";
+        if (type.equals("GRPC")) {
+            basePath = "/" + params[1];
+            vHost = params[2].split("\\?")[0];
+            queryParam = params[2].split("\\?")[1];
+            version = extractVersionFromGrpcBasePath(params[1]);
+        } else {
+            basePath = "/" + params[1] + "/" + params[2];
+            vHost = params[3].split("\\?")[0];
+            queryParam = params[3].split("\\?")[1];
+            version = params[2];
+        }
 
         if (APIDefinitionConstants.SWAGGER_DEFINITION.equalsIgnoreCase(queryParam)) {
             isSwagger = true;
         }
         if(isSwagger){
             // load the corresponding swagger definition from the API name
-            byte[] apiDefinition = apiFactory.getAPIDefinition(basePath, params[2], vHost);
+            byte[] apiDefinition = apiFactory.getAPIDefinition(basePath, version, vHost);
             if (apiDefinition == null || apiDefinition.length == 0) {
                 String error = AdminConstants.ErrorMessages.NOT_FOUND;
                 responsePayload = new ResponsePayload();
@@ -90,5 +108,16 @@ public class SwaggerServerHandler extends SimpleChannelInboundHandler<HttpObject
         httpResponse.headers().set(HTTP.CONTENT_TYPE, HttpConstants.APPLICATION_JSON);
         httpResponse.headers().set(HTTP.CONTENT_LEN, httpResponse.content().readableBytes());
         ctx.writeAndFlush(httpResponse);
+    }
+
+    private static String extractVersionFromGrpcBasePath(String input) {
+        // Pattern to match '.v' followed by digits and optional periods followed by more digits
+        Pattern pattern = Pattern.compile("\\.v\\d+(\\.\\d+)*");
+        Matcher matcher = pattern.matcher(input);
+
+        if (matcher.find()) {
+            return matcher.group().substring(1); // Returns the matched version
+        }
+        return "";
     }
 }

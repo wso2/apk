@@ -1,0 +1,28 @@
+---
+name: "demo-grpc-api"
+basePath: "/dineth.grpc.api"
+version: "v1"
+type: "GRPC"
+id: "grpc-basic-api"
+endpointConfigurations:
+  production:
+    endpoint: "http://grpc-backend:6565"
+defaultVersion: false
+subscriptionValidation: false
+operations:
+  - target: "student.StudentService"
+    verb: "GetStudent"
+    secured: true
+    scopes: []
+  - target: "student.StudentService"
+    verb: "GetStudentStream"
+    secured: true
+    scopes: []
+  - target: "student.StudentService"
+    verb: "SendStudentStream"
+    secured: true
+    scopes: []
+  - target: "student.StudentService"
+    verb: "SendAndGetStudentStream"
+    secured: true
+    scopes: []

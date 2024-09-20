@@ -81,16 +81,17 @@ public final class APIConstants {
     public static final String SQS_TRANSPORT_PROTOCOL_NAME = "sqs";
     public static final String STOMP_TRANSPORT_PROTOCOL_NAME = "stomp";
     public static final String REDIS_TRANSPORT_PROTOCOL_NAME = "redis";
-    
+
     // GraphQL related constants
     public static final Set<String> GRAPHQL_SUPPORTED_METHOD_LIST = Collections.unmodifiableSet(new HashSet<String>(
             Arrays.asList(new String[] { "QUERY", "MUTATION", "SUBSCRIPTION", "head", "options" })));
     public static final String GRAPHQL_MUTATION = "MUTATION";
     public static final String GRAPHQL_SUBSCRIPTION = "SUBSCRIPTION";
     public static final String GRAPHQL_QUERY = "QUERY";
+    public static final String GRPC_API = "GRPC";
 
     public enum ParserType {
-        REST, ASYNC, GRAPHQL
+        REST, ASYNC, GRAPHQL, GRPC
     }
 
     public static class OperationParameter {

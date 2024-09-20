@@ -18,7 +18,7 @@
 
 public type API record {
     string kind = "API";
-    string apiVersion = "dp.wso2.com/v1alpha2";
+    string apiVersion = "dp.wso2.com/v1alpha3";
     Metadata metadata;
     APISpec spec;
     APIStatus? status = ();
@@ -62,7 +62,7 @@ public type EnvConfig record {
 };
 
 public type APIList record {
-    string apiVersion = "dp.wso2.com/v1alpha2";
+    string apiVersion = "dp.wso2.com/v1alpha3";
     string kind = "APIList";
     API[] items;
     ListMeta metadata;

@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: gql-api
@@ -28,7 +28,7 @@ spec:
   definitionFileRef: gql-sdl
   production:
     - routeRefs:
-      - gql-api-gqlroute
+        - gql-api-gqlroute
   organization: wso2-org
 ---
 apiVersion: dp.wso2.com/v1alpha2
@@ -38,47 +38,47 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   hostnames:
-  - gql.test.gw.wso2.com
+    - gql.test.gw.wso2.com
   backendRefs:
     - group: dp.wso2.com
       kind: Backend
       name: gql-backend-v1
   rules:
-  - matches:
-    - path: hero
-      type: QUERY
-    - path: droid
-      type: QUERY
-    - path: reviews
-      type: QUERY
-    - path: search
-      type: QUERY
-    - path: character
-      type: QUERY
-    - path: allHumans
-      type: QUERY
-    - path: allDroids
-      type: QUERY
-    - path: allCharacters
-      type: QUERY
-    - path: starship
-      type: QUERY
-    - path: createReview
-      type: MUTATION
-  - matches:
-    - path: human
-      type: QUERY
-    filters:
-    - extensionRef:
-        group: dp.wso2.com
-        kind: Authentication
-        name: disable-gql-api-security
+    - matches:
+        - path: hero
+          type: QUERY
+        - path: droid
+          type: QUERY
+        - path: reviews
+          type: QUERY
+        - path: search
+          type: QUERY
+        - path: character
+          type: QUERY
+        - path: allHumans
+          type: QUERY
+        - path: allDroids
+          type: QUERY
+        - path: allCharacters
+          type: QUERY
+        - path: starship
+          type: QUERY
+        - path: createReview
+          type: MUTATION
+    - matches:
+        - path: human
+          type: QUERY
+      filters:
+        - extensionRef:
+            group: dp.wso2.com
+            kind: Authentication
+            name: disable-gql-api-security
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: Authentication
@@ -87,7 +87,7 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    disabled: true            
+    disabled: true
   targetRef:
     group: gateway.networking.k8s.io
     kind: Resource
@@ -102,8 +102,8 @@ metadata:
 spec:
   basePath: /graphql
   services:
-  - host: gql-backend-v1.gateway-integration-test-infra
-    port: 8080
+    - host: gql-backend-v1.gateway-integration-test-infra
+      port: 8080
 ---
 apiVersion: v1
 kind: ConfigMap

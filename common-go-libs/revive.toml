@@ -1,14 +1,14 @@
-ignoreGeneratedHeader = false
-severity = "warning"
 confidence = 0.8
 errorCode = 0
+ignoreGeneratedHeader = false
+severity = "warning"
 warningCode = 0
 
 [rule.blank-imports]
 [rule.context-as-argument]
 [rule.context-keys-type]
 [rule.dot-imports]
-exclude = ["apis/dp/v1alpha1/webhook_suite_test.go", "apis/dp/v1alpha2/webhook_suite_test.go"]
+exclude = ["apis/dp/v1alpha1/webhook_suite_test.go", "apis/dp/v1alpha2/webhook_suite_test.go", "apis/dp/v1alpha3/webhook_suite_test.go"]
 [rule.error-return]
 [rule.error-strings]
 [rule.error-naming]

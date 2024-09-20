@@ -18,15 +18,15 @@
 package v1alpha1
 
 import (
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 )
 
-// ConvertTo converts this API CR to the Hub version (v1alpha2).
-// src is v1alpha1.API and dst is v1alpha2.API.
+// ConvertTo converts this API CR to the Hub version (v1alpha3).
+// src is v1alpha1.API and dst is v1alpha3.API.
 func (src *API) ConvertTo(dstRaw conversion.Hub) error {
 
-	dst := dstRaw.(*v1alpha2.API)
+	dst := dstRaw.(*v1alpha3.API)
 	dst.ObjectMeta = src.ObjectMeta
 
 	// Spec
@@ -41,40 +41,40 @@ func (src *API) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.SystemAPI = src.Spec.SystemAPI
 
 	if src.Spec.Production != nil {
-		dst.Spec.Production = []v1alpha2.EnvConfig{}
+		dst.Spec.Production = []v1alpha3.EnvConfig{}
 		for _, productionRef := range src.Spec.Production {
-			dst.Spec.Production = append(dst.Spec.Production, v1alpha2.EnvConfig{
+			dst.Spec.Production = append(dst.Spec.Production, v1alpha3.EnvConfig{
 				RouteRefs: productionRef.HTTPRouteRefs,
 			})
 		}
 	}
 	if src.Spec.Sandbox != nil {
-		dst.Spec.Sandbox = []v1alpha2.EnvConfig{}
+		dst.Spec.Sandbox = []v1alpha3.EnvConfig{}
 		for _, sandboxRef := range src.Spec.Sandbox {
-			dst.Spec.Sandbox = append(dst.Spec.Sandbox, v1alpha2.EnvConfig{
+			dst.Spec.Sandbox = append(dst.Spec.Sandbox, v1alpha3.EnvConfig{
 				RouteRefs: sandboxRef.HTTPRouteRefs,
 			})
 		}
 	}
 
 	// Convert []Property to []v1alpha2.Property
-	var properties []v1alpha2.Property
+	var properties []v1alpha3.Property
 	for _, p := range src.Spec.APIProperties {
-		properties = append(properties, v1alpha2.Property(p))
+		properties = append(properties, v1alpha3.Property(p))
 	}
 	dst.Spec.APIProperties = properties
 
 	// Status
-	dst.Status.DeploymentStatus = v1alpha2.DeploymentStatus(src.Status.DeploymentStatus)
+	dst.Status.DeploymentStatus = v1alpha3.DeploymentStatus(src.Status.DeploymentStatus)
 
 	return nil
 }
 
-// ConvertFrom converts from the Hub version (v1alpha2) to this version.
-// src is v1alpha1.API and dst is v1alpha2.API.
+// ConvertFrom converts from the Hub version (v1alpha3) to this version.
+// src is v1alpha1.API and dst is v1alpha3.API.
 func (src *API) ConvertFrom(srcRaw conversion.Hub) error {
 
-	dst := srcRaw.(*v1alpha2.API)
+	dst := srcRaw.(*v1alpha3.API)
 	src.ObjectMeta = dst.ObjectMeta
 
 	// Spec

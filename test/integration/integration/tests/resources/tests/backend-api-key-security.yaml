@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: test-api-with-api-key-backend-security
@@ -85,5 +85,5 @@ spec:
       in: Header
       name: api-key
       valueFrom:
-          name: mysecret
-          valueKey: apiKey
+        name: mysecret
+        valueKey: apiKey

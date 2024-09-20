@@ -18,12 +18,16 @@
 package v1alpha2
 
 import (
+	"archive/zip"
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"regexp"
 	"strings"
 
 	gqlparser "github.com/vektah/gqlparser"
@@ -103,6 +107,8 @@ func (r *API) validateAPI() error {
 
 	if r.Spec.BasePath == "" {
 		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("basePath"), "API basePath is required"))
+	} else if errMsg := validateAPIBasePathRegex(r.Spec.BasePath, r.Spec.APIType); errMsg != "" {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("basePath"), r.Spec.BasePath, errMsg))
 	} else if errMsg := validateAPIBasePathFormat(r.Spec.BasePath, r.Spec.APIVersion); errMsg != "" {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("spec").Child("basePath"), r.Spec.BasePath, errMsg))
 	} else if err := r.validateAPIBasePathExistsAndDefaultVersion(); err != nil {
@@ -157,6 +163,23 @@ func (r *API) validateAPI() error {
 	}
 
 	return nil
+}
+
+func validateAPIBasePathRegex(basePath, apiType string) string {
+	var pattern string
+	if apiType == "GRPC" {
+		pattern = `^[/][a-zA-Z][a-zA-Z0-9_.]*$`
+	} else {
+		pattern = `^[/][a-zA-Z0-9~/_.-]*$`
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return "Failed to compile basePath regex pattern"
+	}
+	if !re.MatchString(basePath) {
+		return "API basePath is not in a valid format for the specified API type"
+	}
+	return ""
 }
 
 func isEmptyStringsInArray(strings []string) bool {
@@ -269,9 +292,29 @@ func validateGzip(name, namespace string) (string, string) {
 			// config map data key is "swagger.yaml"
 			apiDef = []byte(val)
 		}
+
+		isBase64 := isBase64Encoded(apiDef)
+
+		if isBase64 {
+			apiDef, err = base64.StdEncoding.DecodeString(string(apiDef))
+			if err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "Error decoding base64 content: %v", err))
+				return "", "invalid base64 content"
+			}
+		}
+
+		if isZip(apiDef) {
+			schemaString, err := unzipZip(apiDef)
+			if err != nil {
+				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "Error while unzipping zip file: %v", err))
+				return "", "invalid zip content"
+			}
+			return schemaString, ""
+		}
+
 		// unzip gzip bytes
 		var schemaString string
-		if schemaString, err = unzip(apiDef); err != nil {
+		if schemaString, err = unzipGzip(apiDef); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2600, logging.MINOR, "Error while unzipping gzip bytes: %v", err))
 			return "", "invalid gzipped content"
 		}
@@ -283,8 +326,41 @@ func validateGzip(name, namespace string) (string, string) {
 	return "", ""
 }
 
-// unzip gzip bytes
-func unzip(compressedData []byte) (string, error) {
+func isBase64Encoded(data []byte) bool {
+	_, err := base64.StdEncoding.DecodeString(string(data))
+	return err == nil
+}
+
+func isZip(data []byte) bool {
+	reader := bytes.NewReader(data)
+	_, err := zip.NewReader(reader, int64(len(data)))
+	return err == nil
+}
+
+func unzipZip(data []byte) (string, error) {
+	reader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		return "", fmt.Errorf("failed to open zip archive: %v", err)
+	}
+
+	var result string
+	for _, file := range reader.File {
+		rc, err := file.Open()
+		if err != nil {
+			return "", fmt.Errorf("failed to open file in zip: %v", err)
+		}
+		defer rc.Close()
+
+		content, err := ioutil.ReadAll(rc)
+		if err != nil {
+			return "", fmt.Errorf("failed to read file content in zip: %v", err)
+		}
+		result += string(content)
+	}
+	return result, nil
+}
+
+func unzipGzip(compressedData []byte) (string, error) {
 	reader, err := gzip.NewReader(bytes.NewBuffer(compressedData))
 	if err != nil {
 		return "", fmt.Errorf("error creating gzip reader: %v", err)

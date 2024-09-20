@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: resource-interceptor-test-api
@@ -27,7 +27,7 @@ spec:
   #definitionFileRef: swagger-definition-webhook
   production:
     - routeRefs:
-      - resource-interceptor-route
+        - resource-interceptor-route
   organization: wso2-org
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
@@ -37,49 +37,49 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   hostnames:
-  - interceptor-resource.test.gw.wso2.com
+    - interceptor-resource.test.gw.wso2.com
   parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
-    namespace: apk-integration-test
-    sectionName: httpslistener
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: wso2-apk-default
+      namespace: apk-integration-test
+      sectionName: httpslistener
   rules:
-  - backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: legacy-xml-backend-v1
-    matches:
-    - path:
-        type: RegularExpression
-        value: /interceptor/1.0.0/books/with-interceptors
-      method: POST
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplaceFullPath
-          replaceFullPath: /books
-    - type: ExtensionRef
-      extensionRef:
-        group: dp.wso2.com
-        kind: APIPolicy
-        name: interceptor-api-policy-resource-level
-  - backendRefs:
-    - group: dp.wso2.com
-      kind: Backend
-      name: legacy-xml-backend-v1
-    matches:
-    - path:
-        type: RegularExpression
-        value: /interceptor/1.0.0/books/without-interceptors
-      method: POST
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplaceFullPath
-          replaceFullPath: /books
+    - backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: legacy-xml-backend-v1
+      matches:
+        - path:
+            type: RegularExpression
+            value: /interceptor/1.0.0/books/with-interceptors
+          method: POST
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /books
+        - type: ExtensionRef
+          extensionRef:
+            group: dp.wso2.com
+            kind: APIPolicy
+            name: interceptor-api-policy-resource-level
+    - backendRefs:
+        - group: dp.wso2.com
+          kind: Backend
+          name: legacy-xml-backend-v1
+      matches:
+        - path:
+            type: RegularExpression
+            value: /interceptor/1.0.0/books/without-interceptors
+          method: POST
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /books
 ---
 apiVersion: dp.wso2.com/v1alpha3
 kind: APIPolicy
@@ -89,9 +89,9 @@ metadata:
 spec:
   override:
     requestInterceptors:
-    - name: request-interceptor-api-level
+      - name: request-interceptor-api-level
     responseInterceptors:
-    - name: response-interceptor-api-level
+      - name: response-interceptor-api-level
   targetRef:
     group: gateway.networking.k8s.io
     kind: Resource
@@ -106,8 +106,8 @@ spec:
   backendRef:
     name: interceptor-backend-v1
   includes:
-  - request_body
-  - request_headers
+    - request_body
+    - request_headers
 ---
 apiVersion: dp.wso2.com/v1alpha1
 kind: InterceptorService
