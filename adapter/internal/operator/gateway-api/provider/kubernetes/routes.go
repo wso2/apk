@@ -229,6 +229,17 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 									newMatches = append(newMatches, match)
 								}
 								rule.Matches = newMatches
+								rule.Filters = append(rule.Filters,
+									gwapiv1.HTTPRouteFilter{
+										Type: gwapiv1.HTTPRouteFilterURLRewrite,
+										URLRewrite: &gwapiv1.HTTPURLRewriteFilter{
+											Path: &gwapiv1.HTTPPathModifier{
+												Type:               gwapiv1.PrefixMatchHTTPPathModifier,
+												ReplacePrefixMatch: &api.Spec.BasePath,
+											},
+										},
+									},
+								)
 								newRules = append(newRules, rule)
 							}
 							hr.Spec.Rules = newRules
