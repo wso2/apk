@@ -1097,16 +1097,14 @@ func (t *Translator) processDestination(backendRefContext BackendRefContext,
 	if backendRef.Weight != nil {
 		weight = uint32(*backendRef.Weight)
 	}
-	loggers.LoggerAPI.Error("amalii", backendRef)
+
 	backendNamespace := NamespaceDerefOr(backendRef.Namespace, route.GetNamespace())
 	if !t.validateBackendRef(backendRefContext, parentRef, route, resources, backendNamespace, routeType) {
-		loggers.LoggerAPI.Error("amalii")
 		return nil, weight
 	}
 
 	// Skip processing backends with 0 weight
 	if weight == 0 {
-		loggers.LoggerAPI.Error("amalii")
 		return nil, weight
 	}
 

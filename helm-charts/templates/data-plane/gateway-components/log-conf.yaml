@@ -14,6 +14,8 @@ data:
       commonControllerHost = "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
       enforcerServerName = "{{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc"
       {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs }}
+      enforcerImage = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image | default "apk-enforcer:1.2.0-SNAPSHOT" }}"
+      enforcerImagePullPolicy = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy | default "Always" }}"
       {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
         javaOpts = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}"
       {{- end }}
