@@ -1,0 +1,41 @@
+---
+name: "BackendBasedAIRL"
+basePath: "/backend-based-airl"
+id: "backend-based-airl"
+version: "1.0.0"
+type: "REST"
+defaultVersion: false
+subscriptionValidation: false
+aiProvider:
+  name: llm-provider-1
+  apiVersion: “2024.06.01”
+endpointConfigurations:
+  production:
+    endpoint: "http://llm-service:80"
+    aiRatelimit: 
+      enabled: true
+      token:
+        promptLimit: 5000
+        completionLimit: 10000
+        totalLimit: 15000
+        unit: Minute
+      request:
+        requestLimit: 6000
+        unit: Minute
+operations:
+- target: "/employee"
+  verb: "GET"
+  secured: true
+  scopes: []
+- target: "/employee"
+  verb: "POST"
+  secured: true
+  scopes: []
+- target: "/employee/{employeeId}"
+  verb: "PUT"
+  secured: true
+  scopes: []
+- target: "/employee/{employeeId}"
+  verb: "DELETE"
+  secured: true
+  scopes: []
