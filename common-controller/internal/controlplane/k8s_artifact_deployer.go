@@ -105,8 +105,9 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateKeyMappings(keyMapping serv
 
 // DeploySubscription deploys a subscription
 func (k8sArtifactDeployer K8sArtifactDeployer) DeploySubscription(subscription server.Subscription) error {
+	loggers.LoggerAPK.Info("Deploying subscription", subscription.RatelimitTier)
 	crSubscription := cpv1alpha3.Subscription{ObjectMeta: v1.ObjectMeta{Name: subscription.UUID, Namespace: utils.GetOperatorPodNamespace()},
-		Spec: cpv1alpha3.SubscriptionSpec{Organization: subscription.Organization, API: cpv1alpha3.API{Name: subscription.SubscribedAPI.Name, Version: subscription.SubscribedAPI.Version}, SubscriptionStatus: subscription.SubStatus}}
+		Spec: cpv1alpha3.SubscriptionSpec{Organization: subscription.Organization, API: cpv1alpha3.API{Name: subscription.SubscribedAPI.Name, Version: subscription.SubscribedAPI.Version}, SubscriptionStatus: subscription.SubStatus, RatelimitRef: cpv1alpha3.RatelimitRef{Name: subscription.RatelimitTier, Level: "app"}}}
 	err := k8sArtifactDeployer.client.Create(context.Background(), &crSubscription)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1101, logging.CRITICAL, "Failed to create subscription in k8s %v", err.Error()))
@@ -130,6 +131,8 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateSubscription(subscription s
 		crSubscription.Spec.API.Name = subscription.SubscribedAPI.Name
 		crSubscription.Spec.API.Version = subscription.SubscribedAPI.Version
 		crSubscription.Spec.SubscriptionStatus = subscription.SubStatus
+		crSubscription.Spec.RatelimitRef.Name = subscription.RatelimitTier
+		crSubscription.Spec.RatelimitRef.Level = "app"
 		err := k8sArtifactDeployer.client.Update(context.Background(), &crSubscription)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1100, logging.CRITICAL, "Failed to update subscription in k8s %v", err.Error()))
