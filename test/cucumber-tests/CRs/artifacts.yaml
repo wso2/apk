@@ -773,7 +773,7 @@ spec:
 
 
 ---
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha3"
 kind: "RateLimitPolicy"
 metadata:
   name: "api-subscription-ratelimit"
