@@ -926,10 +926,10 @@ spec:
       stopOnQuotaReach: true
       organization: "default"
       requestCount:
-        requestsPerUnit: 4
+        requestsPerUnit: 50
         unit: "Minute" 
       burstControl:
-        requestsPerUnit: 4
+        requestsPerUnit: 50
         unit: "Minute"
   targetRef:
     kind: Subscription
