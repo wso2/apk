@@ -99,7 +99,7 @@ func CreateListenerByGateway(gateway *gwapiv1.Gateway, resolvedListenerCerts map
 			var filterChains []*listenerv3.FilterChain
 
 			for _, listenerObj := range listeners {
-				if listenerObj.Name == "gatewaylistener" {
+				if listenerObj.Name == "httpslistener" || listenerObj.Name == "httplistener" {
 					httpFilters = getHTTPFilters(gwLuaScript)
 				} else {
 					httpFilters = getHTTPFilters(`
