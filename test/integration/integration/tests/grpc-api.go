@@ -42,7 +42,7 @@ var GRPCAPI = suite.IntegrationTest{
 			{
 				ExpectedResponse: grpcutils.ExpectedResponse{
 					Out: &student.StudentResponse{
-						Name: "Dineth",
+						Name: "Student",
 						Age:  10,
 					},
 					Err: nil,
@@ -55,7 +55,7 @@ var GRPCAPI = suite.IntegrationTest{
 			{
 				ExpectedResponse: grpcutils.ExpectedResponse{
 					Out: &student_default_version.StudentResponse{
-						Name: "Dineth",
+						Name: "Student",
 						Age:  10,
 					},
 					Err: nil,
