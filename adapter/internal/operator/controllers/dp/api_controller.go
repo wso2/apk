@@ -896,6 +896,14 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 	subscriptionValidation := false
 	for _, apiPolicy := range allAPIPolicies {
 		if apiPolicy.Spec.Default != nil {
+			subscriptionValidation = subscriptionValidation || apiPolicy.Spec.Default.SubscriptionValidation
+		}
+		if apiPolicy.Spec.Override != nil {
+			subscriptionValidation = subscriptionValidation || apiPolicy.Spec.Override.SubscriptionValidation
+		}
+	}
+	for _, apiPolicy := range allAPIPolicies {
+		if apiPolicy.Spec.Default != nil {
 			if len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
 				interceptorPtr := utils.GetInterceptorService(ctx, apiReconciler.client, apiPolicy.Namespace,
 					&apiPolicy.Spec.Default.RequestInterceptors[0], &api)
@@ -925,7 +933,6 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					aiProvider = aiProviderPtr
 				}
 			}
-			subscriptionValidation = apiPolicy.Spec.Default.SubscriptionValidation
 		}
 		if apiPolicy.Spec.Override != nil {
 			if len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
@@ -957,7 +964,6 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					aiProvider = aiProviderPtr
 				}
 			}
-			subscriptionValidation = apiPolicy.Spec.Override.SubscriptionValidation
 		}
 	}
 	return interceptorServices, backendJWTs, subscriptionValidation, aiProvider, nil

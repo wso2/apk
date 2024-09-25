@@ -299,7 +299,7 @@ public type EndpointConfigurations record {
 # + endpointSecurity - The security configuration for the endpoint.
 # + certificate - The certificate configuration for the endpoint.
 # + resiliency - The resiliency configuration for the endpoint.
-# + AIRatelimit - The AIRatelimit configuration for the AI ratelimit.
+# + aiRatelimit - The AIRatelimit configuration for the AI ratelimit.
 public type EndpointConfiguration record {
     string|K8sService endpoint;
     EndpointSecurity endpointSecurity?;
