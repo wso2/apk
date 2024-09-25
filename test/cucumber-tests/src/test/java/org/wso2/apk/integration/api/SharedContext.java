@@ -19,7 +19,7 @@ package org.wso2.apk.integration.api;
 
 import org.apache.http.HttpResponse;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
-import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
+import org.wso2.apk.integration.utils.clients.student_service.StudentResponse;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;

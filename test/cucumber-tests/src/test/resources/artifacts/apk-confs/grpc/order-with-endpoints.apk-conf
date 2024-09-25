@@ -1,0 +1,28 @@
+---
+name: "32398767b3b64a7ba1c6aabcd042df4fbd42502a"
+id: "grpc-order-api"
+basePath: "/grpcapi"
+version: "v1"
+type: "GRPC"
+defaultVersion: false
+subscriptionValidation: false
+endpointConfigurations:
+  production:
+    endpoint: "http://order-backend-service:6566"
+operations:
+  - target: "order.OrderService"
+    verb: "CreateOrder"
+    secured: true
+    scopes: []
+  - target: "order.OrderService"
+    verb: "ServeOrder"
+    secured: true
+    scopes: []
+  - target: "payment.PaymentService"
+    verb: "ProcessPayment"
+    secured: true
+    scopes: []
+  - target: "user.UserService"
+    verb: "GetUser"
+    secured: true
+    scopes: []

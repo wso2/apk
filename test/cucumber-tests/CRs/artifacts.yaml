@@ -1740,7 +1740,7 @@ spec:
   ports:
     - protocol: TCP
       port: 6565
-      targetPort: 6565
+      targetPort: 9090
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1761,20 +1761,10 @@ spec:
     spec:
       containers:
         - name: grpc-backend
-          image: ddh13/dineth-grpc-demo-server:1.0.0
+          image: sega1234/student-service:1.0.0
           imagePullPolicy: Always
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-          resources:
-            requests:
-              cpu: 10m
+          ports:
+            - containerPort: 9090
 ---
 
 apiVersion: dp.wso2.com/v1alpha3

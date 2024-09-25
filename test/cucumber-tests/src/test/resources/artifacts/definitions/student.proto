@@ -1,8 +1,9 @@
 syntax = "proto3";
 
+package org.apk.v1.student_service;
+
 option java_multiple_files = true;
-option java_package = "org.example";
-package dineth.grpc.api.v1.student;
+option java_package = "org.apk.v1.student_service";
 
 service StudentService {
   rpc GetStudent(StudentRequest) returns (StudentResponse) {};

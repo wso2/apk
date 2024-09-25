@@ -1262,7 +1262,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				temp := removeFirstOccurrence(basePath, "."+version)
 				newRoutePath = "/" + strings.TrimPrefix(resourcePath, temp+".")
 			}
-			action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
+			// action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
 		}
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, metaData, decorator, perRouteFilterConfigs,
 			nil, requestHeadersToRemove, nil, nil) // general headers to add and remove are included in this methods

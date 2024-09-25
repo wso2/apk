@@ -10,7 +10,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
         And I have a valid token with a client certificate "invalid-cert.txt"
         Then I set headers
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate} |
@@ -65,17 +65,17 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
             | Authorization | Bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
         Then I set headers
             | Authorization | Bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
         Then I set headers
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
         And I have a valid token with a client certificate "invalid-cert.txt"
         Then I set headers
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate} |

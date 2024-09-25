@@ -7,12 +7,13 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import io.grpc.ManagedChannel;
 import org.wso2.apk.integration.utils.GenericClientInterceptor;
-import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentRequest;
-import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
-import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentServiceDefaultVersionGrpc;
-import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentServiceGrpc;
+import org.wso2.apk.integration.utils.clients.student_service.StudentRequest;
+import org.wso2.apk.integration.utils.clients.student_service.StudentResponse;
+import org.wso2.apk.integration.utils.clients.student_service.StudentServiceDefaultVersionGrpc;
+import org.wso2.apk.integration.utils.clients.student_service.StudentServiceGrpc;
 
 import javax.net.ssl.SSLException;
 import java.util.Map;
