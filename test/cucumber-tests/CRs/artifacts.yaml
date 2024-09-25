@@ -773,7 +773,7 @@ spec:
 
 
 ---
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha3"
 kind: "RateLimitPolicy"
 metadata:
   name: "api-subscription-ratelimit"
@@ -912,9 +912,29 @@ spec:
     name: "Semantic Versioning API"
     version: "v\\d+(\\.\\d+)?"
   ratelimitRef:
-    name: api-subscription-ratelimit
+    name: api--sem-subscription-ratelimit
     level: application
 
+---
+apiVersion: "dp.wso2.com/v1alpha3"
+kind: "RateLimitPolicy"
+metadata:
+  name: "api--sem-subscription-ratelimit"
+spec:
+  override:
+    subscription:
+      stopOnQuotaReach: true
+      organization: "default"
+      requestCount:
+        requestsPerUnit: 50
+        unit: "Minute" 
+      burstControl:
+        requestsPerUnit: 50
+        unit: "Minute"
+  targetRef:
+    kind: Subscription
+    name: "7416c241a121b844392d447f00ff6709cb9c932b"
+    group: gateway.networking.k8s.io
 ---
 apiVersion: cp.wso2.com/v1alpha2
 kind: ApplicationMapping

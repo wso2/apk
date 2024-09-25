@@ -210,6 +210,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-dp-wso2-com-v1alpha3-ratelimitpolicy
+  failurePolicy: Fail
+  name: mratelimitpolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha3
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - ratelimitpolicies
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-dp-wso2-com-v1alpha1-ratelimitpolicy
   failurePolicy: Fail
   name: mratelimitpolicy.kb.io
@@ -429,6 +449,26 @@ webhooks:
     - UPDATE
     resources:
     - interceptorservices
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-dp-wso2-com-v1alpha3-ratelimitpolicy
+  failurePolicy: Fail
+  name: vratelimitpolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha3
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - ratelimitpolicies
   sideEffects: None
 - admissionReviewVersions:
   - v1
