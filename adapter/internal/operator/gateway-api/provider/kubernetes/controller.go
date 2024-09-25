@@ -41,6 +41,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -411,7 +412,7 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	// Watch API CRUDs and process affected Gateways.
 	apiPredicates := []predicate.Predicate{predicate.GenerationChangedPredicate{}}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &dpv1alpha2.API{}),
+		source.Kind(mgr.GetCache(), &dpv1alpha3.API{}),
 		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
 		apiPredicates...,
 	); err != nil {

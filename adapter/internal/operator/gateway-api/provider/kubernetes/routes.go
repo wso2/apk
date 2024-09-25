@@ -248,6 +248,7 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 							if api.Spec.IsDefaultVersion {
 								newRulesForDefaultVersion := make([]gwapiv1.HTTPRouteRule, 0)
 								for _, rule := range rules {
+									basepathwoversion := removeSuffix(api.Spec.BasePath, fmt.Sprintf("/%s", api.Spec.APIVersion))
 									newMatches := make([]gwapiv1.HTTPRouteMatch, 0)
 									for _, match := range rule.Matches {
 										matchCopied := match.DeepCopy()
@@ -255,13 +256,23 @@ func (r *gatewayReconcilerNew) processHTTPRoutes(ctx context.Context, gatewayNam
 											newPath := removeFirstSubstring(*match.Path.Value, fmt.Sprintf("/%s", api.Spec.APIVersion))
 											matchCopied.Path.Value = &newPath
 										} else {
-											newPath := removeSuffix(api.Spec.BasePath, api.Spec.APIVersion)
-											matchCopied.Path.Value = &newPath
+											matchCopied.Path.Value = &basepathwoversion
 										}
 										newMatches = append(newMatches, *matchCopied)
 									}
 									ruleCopied := rule.DeepCopy()
 									ruleCopied.Matches = newMatches
+									ruleCopied.Filters = append(rule.Filters,
+										gwapiv1.HTTPRouteFilter{
+											Type: gwapiv1.HTTPRouteFilterURLRewrite,
+											URLRewrite: &gwapiv1.HTTPURLRewriteFilter{
+												Path: &gwapiv1.HTTPPathModifier{
+													Type:               gwapiv1.PrefixMatchHTTPPathModifier,
+													ReplacePrefixMatch: &basepathwoversion,
+												},
+											},
+										},
+									)
 									newRulesForDefaultVersion = append(newRulesForDefaultVersion, *ruleCopied)
 								}
 								hr.Spec.Rules = append(hr.Spec.Rules, newRulesForDefaultVersion...)
