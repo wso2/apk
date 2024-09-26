@@ -2883,7 +2883,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	var prodAIRLToAgent controlplane.AIRL
 	if prodAIRL != nil {
 		var promptTC, completionTC, totalTC, requestC *uint32
-		var timeUnit string = ""
+		var timeUnit string
 		if prodAIRL.Spec.Override.TokenCount != nil {
 			promptTC = &prodAIRL.Spec.Override.TokenCount.RequestTokenCount
 			completionTC = &prodAIRL.Spec.Override.TokenCount.ResponseTokenCount
@@ -2904,7 +2904,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	}
 	if sandAIRL != nil {
 		var promptTC, completionTC, totalTC, requestC *uint32
-		var timeUnit string = ""
+		var timeUnit string
 		if sandAIRL.Spec.Override.TokenCount != nil {
 			promptTC = &sandAIRL.Spec.Override.TokenCount.RequestTokenCount
 			completionTC = &sandAIRL.Spec.Override.TokenCount.ResponseTokenCount
