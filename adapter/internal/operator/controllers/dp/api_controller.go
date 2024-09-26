@@ -2923,11 +2923,24 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 			RequestCount:         requestC,
 		}
 	}
+	subType := "DEFAULT"
+	aiConfiguration := controlplane.AIConfiguration{}
+	if apiState.AIProvider != nil {
+		loggers.LoggerAPKOperator.Debugf("AIProvider is found")
+		subType = "AIAPI"
+		aiConfiguration = controlplane.AIConfiguration{
+			LLMProviderName:       apiState.AIProvider.Spec.ProviderName,
+			LLMProviderAPIVersion: apiState.AIProvider.Spec.ProviderAPIVersion,
+		}
+	}
+	loggers.LoggerAPKOperator.Debugf("Resolved aiConfiguration: %+v", aiConfiguration)
+
 	api := controlplane.API{
 		APIName:          spec.APIName,
 		APIVersion:       spec.APIVersion,
 		IsDefaultVersion: spec.IsDefaultVersion,
 		APIType:          spec.APIType,
+		APISubType:       subType,
 		BasePath:         spec.BasePath,
 		Organization:     spec.Organization,
 		Environment:      spec.Environment,
@@ -2949,6 +2962,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		APIKeyHeader:     apiKeyHeader,
 		SandAIRL:         &sandAIRLToAgent,
 		ProdAIRL:         &prodAIRLToAgent,
+		AIConfiguration:  aiConfiguration,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
