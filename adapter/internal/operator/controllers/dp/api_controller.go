@@ -71,19 +71,20 @@ const (
 	gqlRouteAPIIndex  = "gqlRouteAPIIndex"
 	grpcRouteAPIIndex = "grpcRouteAPIIndex"
 	// apiAuthenticationIndex Index for API level authentications
-	apiAuthenticationIndex = "apiAuthenticationIndexApiController"
+	apiAuthenticationIndex = "apiAuthenticationIndex"
 	// apiAuthenticationResourceIndex Index for resource level authentications
-	apiAuthenticationResourceIndex = "apiAuthenticationResourceIndexApiController"
+	apiAuthenticationResourceIndex = "apiAuthenticationResourceIndex"
+
 	// apiRateLimitIndex Index for API level ratelimits
-	apiRateLimitIndex = "apiRateLimitIndexApiController"
+	apiRateLimitIndex = "apiRateLimitIndex"
 	// apiRateLimitResourceIndex Index for resource level ratelimits
-	apiRateLimitResourceIndex = "apiRateLimitResourceIndexApiController"
+	apiRateLimitResourceIndex = "apiRateLimitResourceIndex"
 	// gatewayHTTPRouteIndex Index for gateway httproutes
 	gatewayHTTPRouteIndex = "gatewayHTTPRouteIndex"
 	// gatewayGRPCRouteIndex Index for gateway grpcroutes
 	gatewayGRPCRouteIndex = "gatewayGRPCRouteIndex"
 	// apiAPIPolicyIndex Index for API level apipolicies
-	apiAPIPolicyIndex = "apiAPIPolicyIndexApiController"
+	apiAPIPolicyIndex = "apiAPIPolicyIndex"
 	// apiAPIPolicyResourceIndex Index for resource level apipolicies
 	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndex"
 	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
