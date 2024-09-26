@@ -14,6 +14,7 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 {{- if .Values.wso2.apk.dp.enabled }}
+{{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs (not .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController) }}
 {{- if and .Values.wso2.apk.dp.gateway.autoscaling .Values.wso2.apk.dp.gateway.autoscaling.enabled -}}
 
 apiVersion: autoscaling/v2
@@ -46,4 +47,5 @@ spec:
           averageUtilization: {{ .Values.wso2.apk.dp.gateway.autoscaling.targetCPU }}
     {{- end }}
 {{- end }}
+{{- end}}
 {{- end}}
