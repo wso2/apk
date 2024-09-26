@@ -67,44 +67,44 @@ import (
 )
 
 const (
-	httpRouteAPIIndex = "httpRouteAPIIndex"
-	gqlRouteAPIIndex  = "gqlRouteAPIIndex"
-	grpcRouteAPIIndex = "grpcRouteAPIIndex"
+	httpRouteAPIIndex = "httpRouteToAPIIndex"
+	gqlRouteAPIIndex  = "gqlRouteToAPIIndex"
+	grpcRouteAPIIndex = "grpcRouteToAPIIndex"
 	// apiAuthenticationIndex Index for API level authentications
-	apiAuthenticationIndex = "apiAuthenticationIndex"
+	apiAuthenticationIndex = "apiToAuthenticationIndex"
 	// apiAuthenticationResourceIndex Index for resource level authentications
-	apiAuthenticationResourceIndex = "apiAuthenticationResourceIndex"
+	apiAuthenticationResourceIndex = "apiToAuthenticationResourceIndex"
 	// apiRateLimitIndex Index for API level ratelimits
-	apiRateLimitIndex = "apiRateLimitIndex"
+	apiRateLimitIndex = "apiToRateLimitIndex"
 	// apiRateLimitResourceIndex Index for resource level ratelimits
-	apiRateLimitResourceIndex = "apiRateLimitResourceIndex"
+	apiRateLimitResourceIndex = "apiToRateLimitResourceIndex"
 	// gatewayHTTPRouteIndex Index for gateway httproutes
-	gatewayHTTPRouteIndex = "gatewayHTTPRouteIndex"
+	gatewayHTTPRouteIndex = "gatewayToHTTPRouteIndex"
 	// gatewayGRPCRouteIndex Index for gateway grpcroutes
-	gatewayGRPCRouteIndex = "gatewayGRPCRouteIndex"
+	gatewayGRPCRouteIndex = "gatewayToGRPCRouteIndex"
 	// apiAPIPolicyIndex Index for API level apipolicies
-	apiAPIPolicyIndex = "apiAPIPolicyIndex"
+	apiAPIPolicyIndex = "apiToAPIPolicyIndex"
 	// apiAPIPolicyResourceIndex Index for resource level apipolicies
-	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndex"
-	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
-	httprouteScopeIndex              = "httprouteScopeIndex"
-	grpcRouteScopeIndex              = "grpcRouteScopeIndex"
-	gqlRouteScopeIndex               = "gqlRouteScopeIndex"
-	configMapBackend                 = "configMapBackend"
-	configMapAPIDefinition           = "configMapAPIDefinition"
-	secretBackend                    = "secretBackend"
-	configMapAuthentication          = "configMapAuthentication"
-	secretAuthentication             = "secretAuthentication"
-	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
-	backendGQLRouteIndex             = "backendGQLRouteIndex"
-	backendGRPCRouteIndex            = "backendGRPCRouteIndex"
-	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
-	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
-	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndex"
-	aiRatelimitPolicyToBackendIndex  = "aiRatelimitPolicyToBackendIndex"
+	apiAPIPolicyResourceIndex        = "apiToAPIPolicyResourceIndex"
+	serviceHTTPRouteIndex            = "serviceToHTTPRouteIndex"
+	httprouteScopeIndex              = "httprouteToScopeIndex"
+	grpcRouteScopeIndex              = "grpcRouteToScopeIndex"
+	gqlRouteScopeIndex               = "gqlRouteToScopeIndex"
+	configMapBackend                 = "configMapToBackend"
+	configMapAPIDefinition           = "configMapToAPIDefinition"
+	secretBackend                    = "secretToBackend"
+	configMapAuthentication          = "configMapToAuthentication"
+	secretAuthentication             = "secretToAuthentication"
+	backendHTTPRouteIndex            = "backendToHTTPRouteIndex"
+	backendGQLRouteIndex             = "backendToGQLRouteIndex"
+	backendGRPCRouteIndex            = "backendToGRPCRouteIndex"
+	interceptorServiceAPIPolicyIndex = "interceptorServiceToAPIPolicyIndex"
+	backendInterceptorServiceIndex   = "backendToInterceptorServiceIndex"
+	backendJWTAPIPolicyIndex         = "backendJWTToAPIPolicyIndex"
+	aiRatelimitPolicyToBackendIndex  = "aiRatelimitToPolicyToBackendIndex"
 	subscriptionToAPIIndex           = "subscriptionToAPIIndex"
 	apiToSubscriptionIndex           = "apiToSubscriptionIndex"
-	aiProviderAPIPolicyIndex         = "aiProviderAPIPolicyIndex"
+	aiProviderAPIPolicyIndex         = "aiProviderToAPIPolicyIndex"
 )
 
 var (
