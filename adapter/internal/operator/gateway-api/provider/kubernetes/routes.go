@@ -23,11 +23,11 @@ import (
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	gatewayapi "github.com/wso2/apk/adapter/internal/operator/gateway-api"
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 )
 
 // processHTTPRoutes finds HTTPRoutes corresponding to a gatewayNamespaceName, further checks for

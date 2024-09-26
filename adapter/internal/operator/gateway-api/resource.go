@@ -176,10 +176,10 @@ func RemoveDuplicates(apis []*dpv1alpha2.API) []*dpv1alpha2.API {
 	result := []*dpv1alpha2.API{}
 
 	for _, api := range apis {
-			if _, exists := uniqueAPIs[api]; !exists {
-					uniqueAPIs[api] = struct{}{}
-					result = append(result, api)
-			}
+		if _, exists := uniqueAPIs[api]; !exists {
+			uniqueAPIs[api] = struct{}{}
+			result = append(result, api)
+		}
 	}
 	return result
 }

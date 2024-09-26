@@ -387,7 +387,7 @@ func buildXdsClusterLoadAssignment(clusterName string, destSettings []*ir.Destin
 						},
 					},
 				},
-			}	
+			}
 		}
 
 		for _, irEp := range ds.Endpoints {

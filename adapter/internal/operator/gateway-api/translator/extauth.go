@@ -108,7 +108,6 @@ func buildHCMExtAuthFilter(extAuth *ir.ExtAuth) (*hcmv3.HttpFilter, error) {
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: extAuthAny,
 		},
-
 	}, nil
 }
 
@@ -118,9 +117,9 @@ func extAuthFilterName(extAuth *ir.ExtAuth) string {
 
 func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
 	config := &extauthv3.ExtAuthz{
-		TransportApiVersion: corev3.ApiVersion_V3,
-		FailureModeAllow:    false,
-		ClearRouteCache: true,
+		TransportApiVersion:    corev3.ApiVersion_V3,
+		FailureModeAllow:       false,
+		ClearRouteCache:        true,
 		IncludePeerCertificate: true,
 		WithRequestBody: &extauthv3.BufferSettings{
 			MaxRequestBytes: 102400,
@@ -154,10 +153,10 @@ func extAuthConfig(extAuth *ir.ExtAuth) *extauthv3.ExtAuthz {
 				},
 				Timeout: &duration.Duration{
 					Seconds: defaultExtServiceRequestTimeout,
-				},	
+				},
 				InitialMetadata: []*corev3.HeaderValue{
 					&corev3.HeaderValue{
-						Key: "x-request-id",
+						Key:   "x-request-id",
 						Value: "%REQ(x-request-id)%",
 					},
 				},
@@ -248,7 +247,7 @@ func (*extAuth) patchResources(tCtx *types.ResourceVersionTable,
 
 	var errs error
 	for _, route := range routes {
-		if !routeContainsExtAuth(route)  {
+		if !routeContainsExtAuth(route) {
 			continue
 		}
 		if route.ExtAuth.UseBootstrapCluster != nil && *route.ExtAuth.UseBootstrapCluster {
