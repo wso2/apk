@@ -74,7 +74,6 @@ const (
 	apiAuthenticationIndex = "apiAuthenticationIndex"
 	// apiAuthenticationResourceIndex Index for resource level authentications
 	apiAuthenticationResourceIndex = "apiAuthenticationResourceIndex"
-
 	// apiRateLimitIndex Index for API level ratelimits
 	apiRateLimitIndex = "apiRateLimitIndex"
 	// apiRateLimitResourceIndex Index for resource level ratelimits
