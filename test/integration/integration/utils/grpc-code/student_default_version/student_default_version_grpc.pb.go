@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.28.0
-// source: student.proto
+// source: student_default_version.proto
 
 package student_default_version
 
@@ -19,43 +19,43 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	StudentService_GetStudent_FullMethodName              = "/org.apk.student_service.StudentService/GetStudent"
-	StudentService_GetStudentStream_FullMethodName        = "/org.apk.student_service.StudentService/GetStudentStream"
-	StudentService_SendStudentStream_FullMethodName       = "/org.apk.student_service.StudentService/SendStudentStream"
-	StudentService_SendAndGetStudentStream_FullMethodName = "/org.apk.student_service.StudentService/SendAndGetStudentStream"
+	StudentServiceDefaultVersion_GetStudent_FullMethodName              = "/org.apk.student_service_default_version.StudentServiceDefaultVersion/GetStudent"
+	StudentServiceDefaultVersion_GetStudentStream_FullMethodName        = "/org.apk.student_service_default_version.StudentServiceDefaultVersion/GetStudentStream"
+	StudentServiceDefaultVersion_SendStudentStream_FullMethodName       = "/org.apk.student_service_default_version.StudentServiceDefaultVersion/SendStudentStream"
+	StudentServiceDefaultVersion_SendAndGetStudentStream_FullMethodName = "/org.apk.student_service_default_version.StudentServiceDefaultVersion/SendAndGetStudentStream"
 )
 
-// StudentServiceClient is the client API for StudentService service.
+// StudentServiceDefaultVersionClient is the client API for StudentServiceDefaultVersion service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type StudentServiceClient interface {
+type StudentServiceDefaultVersionClient interface {
 	GetStudent(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (*StudentResponse, error)
 	GetStudentStream(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StudentResponse], error)
 	SendStudentStream(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[StudentRequest, StudentResponse], error)
 	SendAndGetStudentStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StudentRequest, StudentResponse], error)
 }
 
-type studentServiceClient struct {
+type studentServiceDefaultVersionClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewStudentServiceClient(cc grpc.ClientConnInterface) StudentServiceClient {
-	return &studentServiceClient{cc}
+func NewStudentServiceDefaultVersionClient(cc grpc.ClientConnInterface) StudentServiceDefaultVersionClient {
+	return &studentServiceDefaultVersionClient{cc}
 }
 
-func (c *studentServiceClient) GetStudent(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (*StudentResponse, error) {
+func (c *studentServiceDefaultVersionClient) GetStudent(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (*StudentResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(StudentResponse)
-	err := c.cc.Invoke(ctx, StudentService_GetStudent_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, StudentServiceDefaultVersion_GetStudent_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *studentServiceClient) GetStudentStream(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StudentResponse], error) {
+func (c *studentServiceDefaultVersionClient) GetStudentStream(ctx context.Context, in *StudentRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StudentResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &StudentService_ServiceDesc.Streams[0], StudentService_GetStudentStream_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &StudentServiceDefaultVersion_ServiceDesc.Streams[0], StudentServiceDefaultVersion_GetStudentStream_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -70,11 +70,11 @@ func (c *studentServiceClient) GetStudentStream(ctx context.Context, in *Student
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type StudentService_GetStudentStreamClient = grpc.ServerStreamingClient[StudentResponse]
+type StudentServiceDefaultVersion_GetStudentStreamClient = grpc.ServerStreamingClient[StudentResponse]
 
-func (c *studentServiceClient) SendStudentStream(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[StudentRequest, StudentResponse], error) {
+func (c *studentServiceDefaultVersionClient) SendStudentStream(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[StudentRequest, StudentResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &StudentService_ServiceDesc.Streams[1], StudentService_SendStudentStream_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &StudentServiceDefaultVersion_ServiceDesc.Streams[1], StudentServiceDefaultVersion_SendStudentStream_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,11 +83,11 @@ func (c *studentServiceClient) SendStudentStream(ctx context.Context, opts ...gr
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type StudentService_SendStudentStreamClient = grpc.ClientStreamingClient[StudentRequest, StudentResponse]
+type StudentServiceDefaultVersion_SendStudentStreamClient = grpc.ClientStreamingClient[StudentRequest, StudentResponse]
 
-func (c *studentServiceClient) SendAndGetStudentStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StudentRequest, StudentResponse], error) {
+func (c *studentServiceDefaultVersionClient) SendAndGetStudentStream(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[StudentRequest, StudentResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &StudentService_ServiceDesc.Streams[2], StudentService_SendAndGetStudentStream_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &StudentServiceDefaultVersion_ServiceDesc.Streams[2], StudentServiceDefaultVersion_SendAndGetStudentStream_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,131 +96,132 @@ func (c *studentServiceClient) SendAndGetStudentStream(ctx context.Context, opts
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type StudentService_SendAndGetStudentStreamClient = grpc.BidiStreamingClient[StudentRequest, StudentResponse]
+type StudentServiceDefaultVersion_SendAndGetStudentStreamClient = grpc.BidiStreamingClient[StudentRequest, StudentResponse]
 
-// StudentServiceServer is the server API for StudentService service.
-// All implementations must embed UnimplementedStudentServiceServer
+// StudentServiceDefaultVersionServer is the server API for StudentServiceDefaultVersion service.
+// All implementations must embed UnimplementedStudentServiceDefaultVersionServer
 // for forward compatibility.
-type StudentServiceServer interface {
+type StudentServiceDefaultVersionServer interface {
 	GetStudent(context.Context, *StudentRequest) (*StudentResponse, error)
 	GetStudentStream(*StudentRequest, grpc.ServerStreamingServer[StudentResponse]) error
 	SendStudentStream(grpc.ClientStreamingServer[StudentRequest, StudentResponse]) error
 	SendAndGetStudentStream(grpc.BidiStreamingServer[StudentRequest, StudentResponse]) error
-	mustEmbedUnimplementedStudentServiceServer()
+	mustEmbedUnimplementedStudentServiceDefaultVersionServer()
 }
 
-// UnimplementedStudentServiceServer must be embedded to have
+// UnimplementedStudentServiceDefaultVersionServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedStudentServiceServer struct{}
+type UnimplementedStudentServiceDefaultVersionServer struct{}
 
-func (UnimplementedStudentServiceServer) GetStudent(context.Context, *StudentRequest) (*StudentResponse, error) {
+func (UnimplementedStudentServiceDefaultVersionServer) GetStudent(context.Context, *StudentRequest) (*StudentResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStudent not implemented")
 }
-func (UnimplementedStudentServiceServer) GetStudentStream(*StudentRequest, grpc.ServerStreamingServer[StudentResponse]) error {
+func (UnimplementedStudentServiceDefaultVersionServer) GetStudentStream(*StudentRequest, grpc.ServerStreamingServer[StudentResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method GetStudentStream not implemented")
 }
-func (UnimplementedStudentServiceServer) SendStudentStream(grpc.ClientStreamingServer[StudentRequest, StudentResponse]) error {
+func (UnimplementedStudentServiceDefaultVersionServer) SendStudentStream(grpc.ClientStreamingServer[StudentRequest, StudentResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method SendStudentStream not implemented")
 }
-func (UnimplementedStudentServiceServer) SendAndGetStudentStream(grpc.BidiStreamingServer[StudentRequest, StudentResponse]) error {
+func (UnimplementedStudentServiceDefaultVersionServer) SendAndGetStudentStream(grpc.BidiStreamingServer[StudentRequest, StudentResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method SendAndGetStudentStream not implemented")
 }
-func (UnimplementedStudentServiceServer) mustEmbedUnimplementedStudentServiceServer() {}
-func (UnimplementedStudentServiceServer) testEmbeddedByValue()                        {}
+func (UnimplementedStudentServiceDefaultVersionServer) mustEmbedUnimplementedStudentServiceDefaultVersionServer() {
+}
+func (UnimplementedStudentServiceDefaultVersionServer) testEmbeddedByValue() {}
 
-// UnsafeStudentServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to StudentServiceServer will
+// UnsafeStudentServiceDefaultVersionServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to StudentServiceDefaultVersionServer will
 // result in compilation errors.
-type UnsafeStudentServiceServer interface {
-	mustEmbedUnimplementedStudentServiceServer()
+type UnsafeStudentServiceDefaultVersionServer interface {
+	mustEmbedUnimplementedStudentServiceDefaultVersionServer()
 }
 
-func RegisterStudentServiceServer(s grpc.ServiceRegistrar, srv StudentServiceServer) {
-	// If the following call pancis, it indicates UnimplementedStudentServiceServer was
+func RegisterStudentServiceDefaultVersionServer(s grpc.ServiceRegistrar, srv StudentServiceDefaultVersionServer) {
+	// If the following call pancis, it indicates UnimplementedStudentServiceDefaultVersionServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&StudentService_ServiceDesc, srv)
+	s.RegisterService(&StudentServiceDefaultVersion_ServiceDesc, srv)
 }
 
-func _StudentService_GetStudent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StudentServiceDefaultVersion_GetStudent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StudentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StudentServiceServer).GetStudent(ctx, in)
+		return srv.(StudentServiceDefaultVersionServer).GetStudent(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: StudentService_GetStudent_FullMethodName,
+		FullMethod: StudentServiceDefaultVersion_GetStudent_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StudentServiceServer).GetStudent(ctx, req.(*StudentRequest))
+		return srv.(StudentServiceDefaultVersionServer).GetStudent(ctx, req.(*StudentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _StudentService_GetStudentStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _StudentServiceDefaultVersion_GetStudentStream_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(StudentRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(StudentServiceServer).GetStudentStream(m, &grpc.GenericServerStream[StudentRequest, StudentResponse]{ServerStream: stream})
+	return srv.(StudentServiceDefaultVersionServer).GetStudentStream(m, &grpc.GenericServerStream[StudentRequest, StudentResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type StudentService_GetStudentStreamServer = grpc.ServerStreamingServer[StudentResponse]
+type StudentServiceDefaultVersion_GetStudentStreamServer = grpc.ServerStreamingServer[StudentResponse]
 
-func _StudentService_SendStudentStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(StudentServiceServer).SendStudentStream(&grpc.GenericServerStream[StudentRequest, StudentResponse]{ServerStream: stream})
+func _StudentServiceDefaultVersion_SendStudentStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(StudentServiceDefaultVersionServer).SendStudentStream(&grpc.GenericServerStream[StudentRequest, StudentResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type StudentService_SendStudentStreamServer = grpc.ClientStreamingServer[StudentRequest, StudentResponse]
+type StudentServiceDefaultVersion_SendStudentStreamServer = grpc.ClientStreamingServer[StudentRequest, StudentResponse]
 
-func _StudentService_SendAndGetStudentStream_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(StudentServiceServer).SendAndGetStudentStream(&grpc.GenericServerStream[StudentRequest, StudentResponse]{ServerStream: stream})
+func _StudentServiceDefaultVersion_SendAndGetStudentStream_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(StudentServiceDefaultVersionServer).SendAndGetStudentStream(&grpc.GenericServerStream[StudentRequest, StudentResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type StudentService_SendAndGetStudentStreamServer = grpc.BidiStreamingServer[StudentRequest, StudentResponse]
+type StudentServiceDefaultVersion_SendAndGetStudentStreamServer = grpc.BidiStreamingServer[StudentRequest, StudentResponse]
 
-// StudentService_ServiceDesc is the grpc.ServiceDesc for StudentService service.
+// StudentServiceDefaultVersion_ServiceDesc is the grpc.ServiceDesc for StudentServiceDefaultVersion service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var StudentService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "org.apk.student_service.StudentService",
-	HandlerType: (*StudentServiceServer)(nil),
+var StudentServiceDefaultVersion_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "org.apk.student_service_default_version.StudentServiceDefaultVersion",
+	HandlerType: (*StudentServiceDefaultVersionServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetStudent",
-			Handler:    _StudentService_GetStudent_Handler,
+			Handler:    _StudentServiceDefaultVersion_GetStudent_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "GetStudentStream",
-			Handler:       _StudentService_GetStudentStream_Handler,
+			Handler:       _StudentServiceDefaultVersion_GetStudentStream_Handler,
 			ServerStreams: true,
 		},
 		{
 			StreamName:    "SendStudentStream",
-			Handler:       _StudentService_SendStudentStream_Handler,
+			Handler:       _StudentServiceDefaultVersion_SendStudentStream_Handler,
 			ClientStreams: true,
 		},
 		{
 			StreamName:    "SendAndGetStudentStream",
-			Handler:       _StudentService_SendAndGetStudentStream_Handler,
+			Handler:       _StudentServiceDefaultVersion_SendAndGetStudentStream_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
 		},
 	},
-	Metadata: "student.proto",
+	Metadata: "student_default_version.proto",
 }

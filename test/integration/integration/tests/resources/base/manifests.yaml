@@ -142,11 +142,23 @@ spec:
         app: grpc-backend-v1
     spec:
       containers:
-        - name: grpc-backend
+        - name: grpc-backend-v1
           image: sega1234/student-service:1.0.0
           imagePullPolicy: Always
           ports:
             - containerPort: 9090
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: 10m
 ---
 apiVersion: v1
 kind: Service
