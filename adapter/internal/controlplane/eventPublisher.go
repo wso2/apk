@@ -99,6 +99,17 @@ type API struct {
 	APIKeyHeader     string            `json:"apiKeyHeader"`
 	Operations       []Operation       `json:"operations"`
 	APIHash          string            `json:"-"`
+	SandAIRL         *AIRL              `json:"sandAIRL"`
+	ProdAIRL         *AIRL              `json:"prodAIRL"`
+}
+
+// AIRL holds AI ratelimit related data
+type AIRL struct {
+	PromptTokenCount     *uint32   `json:"promptTokenCount"`
+	CompletionTokenCount *uint32   `json:"CompletionTokenCount"`
+	TotalTokenCount      *uint32   `json:"totalTokenCount"`
+	TimeUnit             string `json:"timeUnit"`
+	RequestCount         *uint32   `json:"requestCount"`
 }
 
 // Headers contains the request and response header modifier information
