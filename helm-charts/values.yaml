@@ -20,9 +20,9 @@ wso2:
 
   apk:
     webhooks:
-      validatingwebhookconfigurations: true
-      mutatingwebhookconfigurations: true
-      conversionwebhookconfigurations: true
+      validatingwebhookconfigurations: false
+      mutatingwebhookconfigurations: false
+      conversionwebhookconfigurations: false
     auth:
       enabled: true
       enableServiceAccountCreation: true
