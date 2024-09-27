@@ -430,6 +430,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				prodRouteRefs, namespace)
 		}
 	}
+	apiState.ProdAIRL = prodAirl
 	var sandAirl *dpv1alpha3.AIRateLimitPolicy
 	if len(sandRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == "REST" {
 		apiState.SandHTTPRoute = &synchronizer.HTTPRouteState{}
@@ -447,7 +448,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 				sandRouteRefs, namespace)
 		}
 	}
-
+	apiState.SandAIRL = sandAirl
 	// handle gql apis
 	if len(prodRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == "GraphQL" {
 		if apiState.ProdGQLRoute, err = apiReconciler.resolveGQLRouteRefs(ctx, prodRouteRefs, namespace,
@@ -2879,8 +2880,8 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	sandVhost := geSandVhost(&apiState)
 	securityScheme, authHeader, apiKeyHeader := prepareSecuritySchemeForCP(&apiState)
 	operations := prepareOperations(&apiState)
-	var sandAIRLToAgent controlplane.AIRL
-	var prodAIRLToAgent controlplane.AIRL
+	var sandAIRLToAgent *controlplane.AIRL
+	var prodAIRLToAgent *controlplane.AIRL
 	if prodAIRL != nil {
 		var promptTC, completionTC, totalTC, requestC *uint32
 		var timeUnit string
@@ -2894,7 +2895,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 			timeUnit = prodAIRL.Spec.Override.RequestCount.Unit
 			requestC = &prodAIRL.Spec.Override.RequestCount.RequestsPerUnit
 		}
-		prodAIRLToAgent = controlplane.AIRL{
+		prodAIRLToAgent = &controlplane.AIRL{
 			PromptTokenCount:     promptTC,
 			CompletionTokenCount: completionTC,
 			TotalTokenCount:      totalTC,
@@ -2915,7 +2916,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 			timeUnit = sandAIRL.Spec.Override.RequestCount.Unit
 			requestC = &sandAIRL.Spec.Override.RequestCount.RequestsPerUnit
 		}
-		sandAIRLToAgent = controlplane.AIRL{
+		sandAIRLToAgent = &controlplane.AIRL{
 			PromptTokenCount:     promptTC,
 			CompletionTokenCount: completionTC,
 			TotalTokenCount:      totalTC,
@@ -2960,8 +2961,8 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		Operations:       operations,
 		APIHash:          apiHash,
 		APIKeyHeader:     apiKeyHeader,
-		SandAIRL:         &sandAIRLToAgent,
-		ProdAIRL:         &prodAIRLToAgent,
+		SandAIRL:         sandAIRLToAgent,
+		ProdAIRL:         prodAIRLToAgent,
 		AIConfiguration:  aiConfiguration,
 	}
 	apiCPEvent.API = api
@@ -3043,6 +3044,9 @@ func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) 
 				loggers.LoggerAPK.Infof("Error occured while extracting values using reflection. Error: %+v", r)
 			}
 		}()
+		if obj == nil {
+			return "nil"
+		}
 		var sb strings.Builder
 		objValue := reflect.ValueOf(obj)
 		if objValue.Kind() == reflect.Ptr {
@@ -3069,6 +3073,8 @@ func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) 
 
 	uniqueIDs := make([]string, 0)
 	uniqueIDs = append(uniqueIDs, getUniqueID(apiState.APIDefinition, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	uniqueIDs = append(uniqueIDs, getUniqueID(apiState.SandAIRL, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
+	uniqueIDs = append(uniqueIDs, getUniqueID(apiState.ProdAIRL, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	for _, auth := range apiState.Authentications {
 		uniqueIDs = append(uniqueIDs, getUniqueID(auth, "ObjectMeta.Name", "ObjectMeta.Namespace", "ObjectMeta.Generation"))
 	}
