@@ -239,7 +239,7 @@ func UpdateXdsCacheOnAPIChange(labels map[string]struct{}) bool {
 				continue
 			}
 		}
-		
+
 	}
 	return revisionStatus
 }
@@ -308,7 +308,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 		return nil, nil, nil, nil, nil
 	}
 	listeners := envoyGatewayConfig.listeners
-	if len(listeners) < 1 {
+	if !config.ReadConfigs().Adapter.EnableGatewayClassController && len(listeners) < 1 {
 		return nil, nil, nil, nil, nil
 	}
 
@@ -316,7 +316,6 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	for _, route := range envoyGatewayConfig.routeConfigs {
 		route.VirtualHosts = []*routev3.VirtualHost{}
 	}
-	// TODO(amali) Revisit the following
 	// Find the matching listener for each vhost and then only add the routes to the routeConfigs
 	for _, listener := range listeners {
 		for vhost, routes := range vhostToRouteArrayMap {
