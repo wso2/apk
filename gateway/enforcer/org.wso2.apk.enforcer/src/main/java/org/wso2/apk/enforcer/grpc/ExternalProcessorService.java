@@ -330,6 +330,9 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
 
             // Extract completion token count
             String[] keysForCompletionTokens = completionTokenPath.split("\\.");
+            if (keysForCompletionTokens.length > 0 && "$".equals(keysForCompletionTokens[0])) {
+                keysForCompletionTokens = Arrays.copyOfRange(keysForCompletionTokens, 1, keysForCompletionTokens.length);
+            }
             JsonNode currentNodeForCompletionToken = null;
             if (rootNode.has(keysForCompletionTokens[0])) {
                 currentNodeForCompletionToken = rootNode.get(keysForCompletionTokens[0]);
@@ -347,6 +350,9 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
 
             // Extract total token count
             String[] keysForTotalTokens = totalTokenPath.split("\\.");
+            if (keysForTotalTokens.length > 0 && "$".equals(keysForTotalTokens[0])) {
+                keysForTotalTokens = Arrays.copyOfRange(keysForTotalTokens, 1, keysForTotalTokens.length);
+            }
             JsonNode currentNodeForTotalToken = null;
             if (rootNode.has(keysForTotalTokens[0])) {
                 currentNodeForTotalToken = rootNode.get(keysForTotalTokens[0]);
