@@ -48,16 +48,18 @@ type APIState struct {
 	APIDefinitionFile         []byte
 	SubscriptionValidation    bool
 	MutualSSL                 *v1alpha2.MutualSSL
+	ProdAIRL                  *v1alpha3.AIRateLimitPolicy
+	SandAIRL                  *v1alpha3.AIRateLimitPolicy
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type HTTPRouteState struct {
-	HTTPRouteCombined   *gwapiv1.HTTPRoute
-	HTTPRoutePartitions map[string]*gwapiv1.HTTPRoute
-	BackendMapping      map[string]*v1alpha2.ResolvedBackend
-	Scopes              map[string]v1alpha1.Scope
+	HTTPRouteCombined                 *gwapiv1.HTTPRoute
+	HTTPRoutePartitions               map[string]*gwapiv1.HTTPRoute
+	BackendMapping                    map[string]*v1alpha2.ResolvedBackend
+	Scopes                            map[string]v1alpha1.Scope
 	RuleIdxToAiRatelimitPolicyMapping map[int]*v1alpha3.AIRateLimitPolicy
 }
 
