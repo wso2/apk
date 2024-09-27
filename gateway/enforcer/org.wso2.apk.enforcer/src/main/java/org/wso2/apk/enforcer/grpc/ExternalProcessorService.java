@@ -44,6 +44,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -309,6 +310,9 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
             JsonNode rootNode = mapper.readTree(body);
             // Extract prompt token count
             String[] keysForPromtTokens = promptTokenPath.split("\\.");
+            if (keysForPromtTokens.length > 0 && "$".equals(keysForPromtTokens[0])) {
+                keysForPromtTokens = Arrays.copyOfRange(keysForPromtTokens, 1, keysForPromtTokens.length);
+            }
             JsonNode currentNodeForPromtToken = null;
             if (rootNode.has(keysForPromtTokens[0])) {
                 currentNodeForPromtToken = rootNode.get(keysForPromtTokens[0]);

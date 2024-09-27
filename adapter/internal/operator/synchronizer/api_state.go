@@ -48,6 +48,8 @@ type APIState struct {
 	APIDefinitionFile         []byte
 	SubscriptionValidation    bool
 	MutualSSL                 *v1alpha2.MutualSSL
+	ProdAIRL                  *v1alpha3.AIRateLimitPolicy
+	SandAIRL                  *v1alpha3.AIRateLimitPolicy
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with

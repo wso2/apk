@@ -1144,6 +1144,9 @@ func (t *Translator) processDestination(backendRefContext BackendRefContext,
 		}
 	case KindBackend:
 		backend := resources.GetBackend(backendNamespace, string(backendRef.Name))
+		if backend == nil {
+			return nil, weight
+		}
 		ep := ir.NewDestEndpoint(
 			backend.Spec.Services[0].Host,
 			uint32(backend.Spec.Services[0].Port))
