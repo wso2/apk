@@ -191,8 +191,11 @@ public class ExtAuthService extends AuthorizationGrpc.AuthorizationImplBase {
 
             Struct.Builder structBuilder = Struct.newBuilder();
             if (responseObject.getMetaDataMap() != null) {
-                responseObject.getMetaDataMap().forEach((key, value) ->
-                        addMetadata(structBuilder, key, value));
+                responseObject.getMetaDataMap().forEach((key, value) -> {
+                        if (value != null) {
+                            addMetadata(structBuilder, key, value);
+                        }
+                });
             }
 
             //Adds original request path header without params as a metadata for access logging.
