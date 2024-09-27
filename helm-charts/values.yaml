@@ -93,8 +93,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/apk-config-deployer-service:1.2.0-m1
+          imagePullPolicy: Always
+          image: wso2/apk-config-deployer-service:latest
         # debug: true
           # configs:
           #   tls:
@@ -120,8 +120,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/apk-adapter:1.2.0-m1
+          imagePullPolicy: Always
+          image: wso2/apk-adapter:latest
           security:
             sslHostname: "adapter"
         #     logging:
@@ -153,8 +153,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/apk-common-controller:1.2.0-m1
+          imagePullPolicy: Always
+          image: wso2/apk-common-controller:latest
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -180,8 +180,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: wso2/apk-ratelimiter:1.2.0-m1
+          imagePullPolicy: Always
+          image: wso2/apk-ratelimiter:latest
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -210,8 +210,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: IfNotPresent
-            image: wso2/apk-router:1.2.0-m1
+            imagePullPolicy: Always
+            image: wso2/apk-router:latest
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -241,8 +241,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: IfNotPresent
-            image: wso2/apk-enforcer:1.2.0-m1
+            imagePullPolicy: Always
+            image: wso2/apk-enforcer:latest
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -313,8 +313,8 @@ idp:
         failureThreshold: 5
       strategy: RollingUpdate
       replicas: 1
-      imagePullPolicy: IfNotPresent
-      image: wso2/apk-idp-domain-service:1.2.0-m1
+      imagePullPolicy: Always
+      image: wso2/apk-idp-domain-service:latest
   idpui:
     deployment:
       resources:
@@ -334,8 +334,8 @@ idp:
         failureThreshold: 5
       strategy: RollingUpdate
       replicas: 1
-      imagePullPolicy: IfNotPresent
-      image: wso2/apk-idp-ui:1.2.0-m1
+      imagePullPolicy: Always
+      image: wso2/apk-idp-ui:latest
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
