@@ -234,7 +234,7 @@ public class APIClient {
                 };
                 AIRatelimit? aiRatelimit = sandboxEndpointConfig.aiRatelimit;
                 if aiRatelimit is AIRatelimit && aiRatelimit.enabled {
-                    model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization);
+                    model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization, SANDBOX_TYPE);
                     apiArtifact.aiRatelimitPolicies[airl.metadata.name] = airl;
                 }
             }
@@ -253,7 +253,7 @@ public class APIClient {
                 };
                 AIRatelimit? aiRatelimit = productionEndpointConfig.aiRatelimit;
                 if aiRatelimit is AIRatelimit && aiRatelimit.enabled {
-                    model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization);
+                    model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization, PRODUCTION_TYPE);
                     apiArtifact.aiRatelimitPolicies[airl.metadata.name] = airl;
                 }
             }
@@ -1516,11 +1516,11 @@ public class APIClient {
         return rateLimitPolicyCR;
     }
 
-    public isolated function generateAIRateLimitPolicyCR(APKConf apkConf, TokenAIRL tokenAIRL, RequestAIRL requestAIRL, string targetRefName, commons:Organization organization) returns model:AIRateLimitPolicy {
-        string apiIdentifierHash = crypto:hashSha1((apkConf.name + apkConf.version).toBytes()).toBase16();
+    public isolated function generateAIRateLimitPolicyCR(APKConf apkConf, TokenAIRL tokenAIRL, RequestAIRL requestAIRL, string targetRefName, commons:Organization organization, string env) returns model:AIRateLimitPolicy {
+        string apiIdentifierHash = crypto:hashSha1((apkConf.name + apkConf.version + env).toBytes()).toBase16();
         model:AIRateLimitPolicy aiRateLimitPolicyCR = {
             metadata: {
-                name: self.retrieveAIRateLimitPolicyName(apiIdentifierHash, targetRefName),
+                name: apiIdentifierHash,
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
