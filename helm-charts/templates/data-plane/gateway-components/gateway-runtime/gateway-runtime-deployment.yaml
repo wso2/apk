@@ -18,7 +18,6 @@
 {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
 
 {{- else}}
-{{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs (not .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController) }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
