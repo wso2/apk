@@ -13,16 +13,16 @@ type StudentResponseSatisfier struct{}
 
 // IsSatisfactory checks if the given response is satisfactory based on the expected response.
 func (srs StudentResponseSatisfier) IsSatisfactory(response any, expectedResponse grpcutils.ExpectedResponse) bool {
-	// Type assert the response to *student.StudentResponse
+	// Type assert the response to *student_service.StudentResponse
 	resp, respOk := response.(*StudentResponse)
 	if !respOk {
-		log.Println("Failed to assert response as *student.StudentResponse")
+		log.Println("Failed to assert response as *student_service.StudentResponse")
 		return false
 	}
-	// Type assert the expected output to *student.StudentResponse
+	// Type assert the expected output to *student_service.StudentResponse
 	expectedResp, expOk := expectedResponse.Out.(*StudentResponse)
 	if !expOk {
-		log.Println("Failed to assert expectedResponse.Out as *student.StudentResponse")
+		log.Println("Failed to assert expectedResponse.Out as *student_service.StudentResponse")
 		return false
 	}
 

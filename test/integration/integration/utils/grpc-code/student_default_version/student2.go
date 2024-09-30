@@ -35,7 +35,7 @@ func (srs StudentResponseSatisfier) IsSatisfactory(response any, expectedRespons
 	}
 }
 func GetStudent(conn *grpc.ClientConn) (any, error) {
-	c := NewStudentServiceClient(conn)
+	c := NewStudentServiceDefaultVersionClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	r := &StudentRequest{Id: 1234}

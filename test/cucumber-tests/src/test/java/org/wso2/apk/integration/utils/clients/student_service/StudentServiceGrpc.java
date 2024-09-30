@@ -1,16 +1,17 @@
-package org.wso2.apk.integration.utils.clients.studentGrpcClient;
+package org.wso2.apk.integration.utils.clients.student_service;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 
 /**
  */
-@javax.annotation.Generated(value = "by gRPC proto compiler (version 1.39.0)", comments = "Source: student.proto")
+@javax.annotation.Generated(value = "by gRPC proto compiler (version 1.58.0)", comments = "Source: student.proto")
+@io.grpc.stub.annotations.GrpcGenerated
 public final class StudentServiceGrpc {
 
     private StudentServiceGrpc() {
     }
 
-    public static final String SERVICE_NAME = "dineth.grpc.api.v1.student.StudentService";
+    public static final java.lang.String SERVICE_NAME = "org.apk.v1.student_service.StudentService";
 
     // Static method descriptors that strictly reflect the proto.
     private static volatile io.grpc.MethodDescriptor<StudentRequest, StudentResponse> getGetStudentMethod;
@@ -122,7 +123,7 @@ public final class StudentServiceGrpc {
      */
     public static StudentServiceStub newStub(io.grpc.Channel channel) {
         io.grpc.stub.AbstractStub.StubFactory<StudentServiceStub> factory = new io.grpc.stub.AbstractStub.StubFactory<StudentServiceStub>() {
-            @Override
+            @java.lang.Override
             public StudentServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
                 return new StudentServiceStub(channel, callOptions);
             }
@@ -137,7 +138,7 @@ public final class StudentServiceGrpc {
     public static StudentServiceBlockingStub newBlockingStub(
             io.grpc.Channel channel) {
         io.grpc.stub.AbstractStub.StubFactory<StudentServiceBlockingStub> factory = new io.grpc.stub.AbstractStub.StubFactory<StudentServiceBlockingStub>() {
-            @Override
+            @java.lang.Override
             public StudentServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
                 return new StudentServiceBlockingStub(channel, callOptions);
             }
@@ -152,7 +153,7 @@ public final class StudentServiceGrpc {
     public static StudentServiceFutureStub newFutureStub(
             io.grpc.Channel channel) {
         io.grpc.stub.AbstractStub.StubFactory<StudentServiceFutureStub> factory = new io.grpc.stub.AbstractStub.StubFactory<StudentServiceFutureStub>() {
-            @Override
+            @java.lang.Override
             public StudentServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
                 return new StudentServiceFutureStub(channel, callOptions);
             }
@@ -162,25 +163,25 @@ public final class StudentServiceGrpc {
 
     /**
      */
-    public static abstract class StudentServiceImplBase implements io.grpc.BindableService {
+    public interface AsyncService {
 
         /**
          */
-        public void getStudent(StudentRequest request,
+        default void getStudent(StudentRequest request,
                 io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
             io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetStudentMethod(), responseObserver);
         }
 
         /**
          */
-        public void getStudentStream(StudentRequest request,
+        default void getStudentStream(StudentRequest request,
                 io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
             io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetStudentStreamMethod(), responseObserver);
         }
 
         /**
          */
-        public io.grpc.stub.StreamObserver<StudentRequest> sendStudentStream(
+        default io.grpc.stub.StreamObserver<StudentRequest> sendStudentStream(
                 io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
             return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getSendStudentStreamMethod(),
                     responseObserver);
@@ -188,48 +189,37 @@ public final class StudentServiceGrpc {
 
         /**
          */
-        public io.grpc.stub.StreamObserver<StudentRequest> sendAndGetStudentStream(
+        default io.grpc.stub.StreamObserver<StudentRequest> sendAndGetStudentStream(
                 io.grpc.stub.StreamObserver<StudentResponse> responseObserver) {
             return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getSendAndGetStudentStreamMethod(),
                     responseObserver);
         }
+    }
 
-        @Override
+    /**
+     * Base class for the server implementation of the service StudentService.
+     */
+    public static abstract class StudentServiceImplBase
+            implements io.grpc.BindableService, AsyncService {
+
+        @java.lang.Override
         public final io.grpc.ServerServiceDefinition bindService() {
-            return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
-                    .addMethod(
-                            getGetStudentMethod(),
-                            io.grpc.stub.ServerCalls.asyncUnaryCall(
-                                    new MethodHandlers<StudentRequest, StudentResponse>(
-                                            this, METHODID_GET_STUDENT)))
-                    .addMethod(
-                            getGetStudentStreamMethod(),
-                            io.grpc.stub.ServerCalls.asyncServerStreamingCall(
-                                    new MethodHandlers<StudentRequest, StudentResponse>(
-                                            this, METHODID_GET_STUDENT_STREAM)))
-                    .addMethod(
-                            getSendStudentStreamMethod(),
-                            io.grpc.stub.ServerCalls.asyncClientStreamingCall(
-                                    new MethodHandlers<StudentRequest, StudentResponse>(
-                                            this, METHODID_SEND_STUDENT_STREAM)))
-                    .addMethod(
-                            getSendAndGetStudentStreamMethod(),
-                            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
-                                    new MethodHandlers<StudentRequest, StudentResponse>(
-                                            this, METHODID_SEND_AND_GET_STUDENT_STREAM)))
-                    .build();
+            return StudentServiceGrpc.bindService(this);
         }
     }
 
     /**
+     * A stub to allow clients to do asynchronous rpc calls to service
+     * StudentService.
      */
-    public static final class StudentServiceStub extends io.grpc.stub.AbstractAsyncStub<StudentServiceStub> {
+    public static final class StudentServiceStub
+            extends io.grpc.stub.AbstractAsyncStub<StudentServiceStub> {
         private StudentServiceStub(
                 io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
             super(channel, callOptions);
         }
 
-        @Override
+        @java.lang.Override
         protected StudentServiceStub build(
                 io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
             return new StudentServiceStub(channel, callOptions);
@@ -269,6 +259,8 @@ public final class StudentServiceGrpc {
     }
 
     /**
+     * A stub to allow clients to do synchronous rpc calls to service
+     * StudentService.
      */
     public static final class StudentServiceBlockingStub
             extends io.grpc.stub.AbstractBlockingStub<StudentServiceBlockingStub> {
@@ -277,7 +269,7 @@ public final class StudentServiceGrpc {
             super(channel, callOptions);
         }
 
-        @Override
+        @java.lang.Override
         protected StudentServiceBlockingStub build(
                 io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
             return new StudentServiceBlockingStub(channel, callOptions);
@@ -300,6 +292,8 @@ public final class StudentServiceGrpc {
     }
 
     /**
+     * A stub to allow clients to do ListenableFuture-style rpc calls to service
+     * StudentService.
      */
     public static final class StudentServiceFutureStub
             extends io.grpc.stub.AbstractFutureStub<StudentServiceFutureStub> {
@@ -308,7 +302,7 @@ public final class StudentServiceGrpc {
             super(channel, callOptions);
         }
 
-        @Override
+        @java.lang.Override
         protected StudentServiceFutureStub build(
                 io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
             return new StudentServiceFutureStub(channel, callOptions);
@@ -333,16 +327,16 @@ public final class StudentServiceGrpc {
             io.grpc.stub.ServerCalls.ServerStreamingMethod<Req, Resp>,
             io.grpc.stub.ServerCalls.ClientStreamingMethod<Req, Resp>,
             io.grpc.stub.ServerCalls.BidiStreamingMethod<Req, Resp> {
-        private final StudentServiceImplBase serviceImpl;
+        private final AsyncService serviceImpl;
         private final int methodId;
 
-        MethodHandlers(StudentServiceImplBase serviceImpl, int methodId) {
+        MethodHandlers(AsyncService serviceImpl, int methodId) {
             this.serviceImpl = serviceImpl;
             this.methodId = methodId;
         }
 
-        @Override
-        @SuppressWarnings("unchecked")
+        @java.lang.Override
+        @java.lang.SuppressWarnings("unchecked")
         public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
             switch (methodId) {
                 case METHODID_GET_STUDENT:
@@ -358,8 +352,8 @@ public final class StudentServiceGrpc {
             }
         }
 
-        @Override
-        @SuppressWarnings("unchecked")
+        @java.lang.Override
+        @java.lang.SuppressWarnings("unchecked")
         public io.grpc.stub.StreamObserver<Req> invoke(
                 io.grpc.stub.StreamObserver<Resp> responseObserver) {
             switch (methodId) {
@@ -375,17 +369,42 @@ public final class StudentServiceGrpc {
         }
     }
 
+    public static final io.grpc.ServerServiceDefinition bindService(AsyncService service) {
+        return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
+                .addMethod(
+                        getGetStudentMethod(),
+                        io.grpc.stub.ServerCalls.asyncUnaryCall(
+                                new MethodHandlers<StudentRequest, StudentResponse>(
+                                        service, METHODID_GET_STUDENT)))
+                .addMethod(
+                        getGetStudentStreamMethod(),
+                        io.grpc.stub.ServerCalls.asyncServerStreamingCall(
+                                new MethodHandlers<StudentRequest, StudentResponse>(
+                                        service, METHODID_GET_STUDENT_STREAM)))
+                .addMethod(
+                        getSendStudentStreamMethod(),
+                        io.grpc.stub.ServerCalls.asyncClientStreamingCall(
+                                new MethodHandlers<StudentRequest, StudentResponse>(
+                                        service, METHODID_SEND_STUDENT_STREAM)))
+                .addMethod(
+                        getSendAndGetStudentStreamMethod(),
+                        io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
+                                new MethodHandlers<StudentRequest, StudentResponse>(
+                                        service, METHODID_SEND_AND_GET_STUDENT_STREAM)))
+                .build();
+    }
+
     private static abstract class StudentServiceBaseDescriptorSupplier
             implements io.grpc.protobuf.ProtoFileDescriptorSupplier, io.grpc.protobuf.ProtoServiceDescriptorSupplier {
         StudentServiceBaseDescriptorSupplier() {
         }
 
-        @Override
+        @java.lang.Override
         public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
             return Student.getDescriptor();
         }
 
-        @Override
+        @java.lang.Override
         public com.google.protobuf.Descriptors.ServiceDescriptor getServiceDescriptor() {
             return getFileDescriptor().findServiceByName("StudentService");
         }
@@ -400,13 +419,13 @@ public final class StudentServiceGrpc {
     private static final class StudentServiceMethodDescriptorSupplier
             extends StudentServiceBaseDescriptorSupplier
             implements io.grpc.protobuf.ProtoMethodDescriptorSupplier {
-        private final String methodName;
+        private final java.lang.String methodName;
 
-        StudentServiceMethodDescriptorSupplier(String methodName) {
+        StudentServiceMethodDescriptorSupplier(java.lang.String methodName) {
             this.methodName = methodName;
         }
 
-        @Override
+        @java.lang.Override
         public com.google.protobuf.Descriptors.MethodDescriptor getMethodDescriptor() {
             return getServiceDescriptor().findMethodByName(methodName);
         }

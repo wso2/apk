@@ -23,7 +23,7 @@ spec:
   apiName: GRPC API
   apiType: GRPC
   apiVersion: v1
-  basePath: /dineth.grpc.api.v1
+  basePath: /org.apk.v1
   isDefaultVersion: true
   production:
     - routeRefs:
@@ -47,7 +47,7 @@ spec:
   rules:
     - matches:
         - method:
-            service: student.StudentService
+            service: student_service.StudentService
             method: GetStudent
       backendRefs:
         - name: grpc-backend-v1
@@ -55,7 +55,7 @@ spec:
           port: 6565
     - matches:
         - method:
-            service: student.StudentService
+            service: student_service.StudentService
             method: SendStudentStream
       backendRefs:
         - name: grpc-backend-v1
@@ -63,7 +63,7 @@ spec:
           port: 6565
     - matches:
         - method:
-            service: student.StudentService
+            service: student_service.StudentService
             method: GetStudentStream
       backendRefs:
         - name: grpc-backend-v1
@@ -71,7 +71,7 @@ spec:
           port: 6565
     - matches:
         - method:
-            service: student.StudentService
+            service: student_service.StudentService
             method: SendAndGetStudentStream
       backendRefs:
         - name: grpc-backend-v1

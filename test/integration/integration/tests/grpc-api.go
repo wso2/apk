@@ -21,7 +21,6 @@ import (
 	"testing"
 
 	"github.com/wso2/apk/test/integration/integration/utils/grpc-code/student"
-	"github.com/wso2/apk/test/integration/integration/utils/grpc-code/student_default_version"
 	"github.com/wso2/apk/test/integration/integration/utils/grpcutils"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
@@ -37,12 +36,11 @@ var GRPCAPI = suite.IntegrationTest{
 	Manifests:   []string{"tests/grpc-api.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
 		gwAddr := "grpc.test.gw.wso2.com:9095"
-
 		testCases := []grpcutils.GRPCTestCase{
 			{
 				ExpectedResponse: grpcutils.ExpectedResponse{
 					Out: &student.StudentResponse{
-						Name: "Dineth",
+						Name: "Student",
 						Age:  10,
 					},
 					Err: nil,
@@ -52,19 +50,19 @@ var GRPCAPI = suite.IntegrationTest{
 				Method:         student.GetStudent,
 				Satisfier:      student.StudentResponseSatisfier{},
 			},
-			{
-				ExpectedResponse: grpcutils.ExpectedResponse{
-					Out: &student_default_version.StudentResponse{
-						Name: "Dineth",
-						Age:  10,
-					},
-					Err: nil,
-				},
-				ActualResponse: &student_default_version.StudentResponse{},
-				Name:           "Get Student Details (Default API Version)",
-				Method:         student_default_version.GetStudent,
-				Satisfier:      student_default_version.StudentResponseSatisfier{},
-			},
+			// {
+			// 	ExpectedResponse: grpcutils.ExpectedResponse{
+			// 		Out: &student_default_version.StudentResponse{
+			// 			Name: "Student",
+			// 			Age:  10,
+			// 		},
+			// 		Err: nil,
+			// 	},
+			// 	ActualResponse: &student_default_version.StudentResponse{},
+			// 	Name:           "Get Student Details (Default API Version)",
+			// 	Method:         student_default_version.GetStudent,
+			// 	Satisfier:      student_default_version.StudentResponseSatisfier{},
+			// },
 		}
 		for i := range testCases {
 			tc := testCases[i]

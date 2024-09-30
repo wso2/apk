@@ -122,7 +122,7 @@ spec:
   ports:
     - protocol: TCP
       port: 6565
-      targetPort: 6565
+      targetPort: 9090
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -143,8 +143,10 @@ spec:
     spec:
       containers:
         - name: grpc-backend-v1
-          image: ddh13/dineth-grpc-demo-server:1.0.0
+          image: sega1234/student-service:1.0.0
           imagePullPolicy: Always
+          ports:
+            - containerPort: 9090
           env:
             - name: POD_NAME
               valueFrom:

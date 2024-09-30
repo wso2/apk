@@ -24,7 +24,7 @@ Feature: Generating APK conf for gRPC API
             | Authorization | bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
 
     Scenario: Undeploy API
         Given The system is ready
@@ -42,7 +42,7 @@ Feature: Generating APK conf for gRPC API
         Then I set headers
             | Authorization | bearer ${accessToken} |
             | Host          | default.gw.wso2.com   |
-        And I send "GET" request to "https://default.gw.wso2.com:9095/dineth.grpc.api.v1/api-definition/" with body ""
+        And I send "GET" request to "https://default.gw.wso2.com:9095/org.apk.v1/api-definition/" with body ""
         And I eventually receive 200 response code, not accepting
             | 429 |
             | 500 |
@@ -64,7 +64,7 @@ Feature: Generating APK conf for gRPC API
         Then the response status code should be 200
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
 
     Scenario: Undeploy API
         Given The system is ready
@@ -89,7 +89,7 @@ Feature: Generating APK conf for gRPC API
             | Authorization | bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
 
     Scenario: Undeploy API
         Given The system is ready
@@ -108,13 +108,13 @@ Feature: Generating APK conf for gRPC API
             | Authorization | bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
         Given I have a valid subscription
         Then I set headers
             | Authorization | bearer ${accessToken} |
         And I make grpc request GetStudent default version to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
-        And the student response body should contain name: "Dineth" age: 10
+        And the student response body should contain name: "Student" age: 10
 
     Scenario: Undeploy API
         Given The system is ready

@@ -33,7 +33,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/controlplane"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
@@ -1529,7 +1528,6 @@ func (apiReconciler *APIReconciler) getAPIForGRPCRoute(ctx context.Context, obj 
 	}
 
 	apiList := &dpv1alpha3.APIList{}
-	logrus.Info("=============GETTING API FOR GRPC ROUTE================")
 
 	if err := apiReconciler.client.List(ctx, apiList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(grpcRouteAPIIndex, utils.NamespacedName(grpcRoute).String()),

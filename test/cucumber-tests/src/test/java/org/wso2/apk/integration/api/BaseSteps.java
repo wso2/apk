@@ -52,11 +52,10 @@ import org.wso2.apk.integration.utils.Constants;
 import org.wso2.apk.integration.utils.Utils;
 import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import org.wso2.apk.integration.utils.clients.SimpleHTTPClient;
-import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
+import org.wso2.apk.integration.utils.clients.student_service.StudentResponse;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.ContentType;
-import org.wso2.apk.integration.utils.clients.studentGrpcClient.StudentResponse;
 import org.wso2.apk.integration.utils.clients.SimpleGRPCStudentClient;
 import java.io.IOException;
 import java.io.InputStream;
@@ -196,7 +195,29 @@ public class BaseSteps {
 
     @Then("the response body should contain endpoint definition for student.proto")
     public void theResponseBodyShouldContainEndpointDefinition() throws IOException {
-        String expectedText = "{\"apiDefinition\":\"syntax = \\\"proto3\\\";\\n\\noption java_multiple_files = true;\\noption java_package = \\\"org.example\\\";\\npackage dineth.grpc.api.v1.student;\\n\\nservice StudentService {\\n  rpc GetStudent(StudentRequest) returns (StudentResponse) {};\\n  rpc GetStudentStream(StudentRequest) returns (stream StudentResponse) {};\\n  rpc SendStudentStream(stream StudentRequest) returns (StudentResponse) {};\\n  rpc SendAndGetStudentStream(stream StudentRequest) returns (stream StudentResponse) {}\\n}\\n\\nmessage StudentRequest {\\n  int32 id = 3;\\n}\\n\\nmessage StudentResponse {\\n  string name = 1;\\n  int32 age = 2;\\n}\\n\"}";
+        String expectedText = "{\"apiDefinition\":\"syntax = \\\"proto3\\\";\\n" + //
+                "\\n" + //
+                "package org.apk.v1.student_service;\\n" + //
+                "\\n" + //
+                "option java_multiple_files = true;\\n" + //
+                "option java_package = \\\"org.apk.v1.student_service\\\";\\n" + //
+                "\\n" + //
+                "service StudentService {\\n" + //
+                "  rpc GetStudent(StudentRequest) returns (StudentResponse) {};\\n" + //
+                "  rpc GetStudentStream(StudentRequest) returns (stream StudentResponse) {};\\n" + //
+                "  rpc SendStudentStream(stream StudentRequest) returns (StudentResponse) {};\\n" + //
+                "  rpc SendAndGetStudentStream(stream StudentRequest) returns (stream StudentResponse) {}\\n" + //
+                "}\\n" + //
+                "\\n" + //
+                "message StudentRequest {\\n" + //
+                "  int32 id = 3;\\n" + //
+                "}\\n" + //
+                "\\n" + //
+                "message StudentResponse {\\n" + //
+                "  string name = 1;\\n" + //
+                "  int32 age = 2;\\n" + //
+                "}\\n" + //
+                "\"}";
         Assert.assertTrue(sharedContext.getResponseBody().contains(expectedText),
                 "Actual response body: " + sharedContext.getResponseBody());
     }
