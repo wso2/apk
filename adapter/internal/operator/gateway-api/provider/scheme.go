@@ -33,17 +33,10 @@ import (
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
-var (
-	// scheme contains all the API types necessary for the provider's dynamic
-	// clients to work. Any new non-core types must be added here.
-	//
-	// NOTE: The discovery mechanism used by the client doesn't automatically
-	// refresh, so only add types here that are guaranteed to exist before the
-	// provider starts.
-	scheme = runtime.NewScheme()
-)
-
-func init() {
+// GetScheme returns a scheme with types supported by the Kubernetes provider.
+func GetScheme() *runtime.Scheme {
+	// todo(amali) move this to init method once we remove the old operator
+	scheme := runtime.NewScheme()
 	if err := clientgoscheme.AddToScheme(scheme); err != nil {
 		panic(err)
 	}
@@ -66,9 +59,6 @@ func init() {
 	if err := dpv1alpha3.AddToScheme(scheme); err != nil {
 		panic(err)
 	}
-}
 
-// GetScheme returns a scheme with types supported by the Kubernetes provider.
-func GetScheme() *runtime.Scheme {
 	return scheme
 }
