@@ -105,9 +105,10 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 	if state == constants.Create {
 		xds.GenerateGlobalClusters(gateway.Name)
 	}
-
 	xds.GenerateInterceptorClusters(gateway.Name, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses)
-	xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
+	if !config.ReadConfigs().Adapter.EnableGatewayClassController {
+		xds.UpdateGatewayCache(gateway, resolvedListenerCerts, gwLuaScript, customRateLimitPolicies)
+	}
 	listeners, clusters, routes, endpoints, apis := xds.GenerateEnvoyResoucesForGateway(gateway.Name)
 	loggers.LoggerAPKOperator.Debugf("listeners: %v", listeners)
 	loggers.LoggerAPKOperator.Debugf("clusters: %v", clusters)

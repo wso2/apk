@@ -6,14 +6,51 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
   config.toml: | 
+    [deployment.gateway]
+      namespace = "{{ .Release.Namespace }}"
+      adapterHostName = "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
+      adapterHost = "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
+      commonControllerHostName = "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
+      commonControllerHost = "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
+      enforcerServerName = "{{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc"
+      {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs }}
+      enforcerImage = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image | default "apk-enforcer:1.2.0-SNAPSHOT" }}"
+      enforcerImagePullPolicy = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy | default "Always" }}"
+      {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
+        javaOpts = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}"
+      {{- end }}
+      {{- range .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.ports}}
+      {{- if and .name .value }}
+      [[deployment.gateway.enforcerPorts]]
+        name = "{{ .name }}"
+        containerPort = {{ .value }} 
+        expose = {{ .expose | default false }}    
+      {{- end }} 
+      {{- end }} 
+      {{- end }} 
+
+    [deployment.gateway.volumes]
+      ratelimiterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert"
+      enforcerKeystoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert"
+      routerKeystoreSecretVolume = "envoy-cert"
+      adapterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-adapter-server-cert"
+      enforcerJwtSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret"
+      enforcerTrustedCerts = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      enforcerApikeyCert = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      iDPCertificateSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      LogConfVolume = "{{ template "apk-helm.resource.prefix" . }}-log-conf"
+
     [adapter]
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
-    {{ if and .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}
+    {{ if .Values.wso2.apk.dp.adapter.deployment.configs }}
+      enableGatewayClassController = {{ .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController | default false }}
+    {{ if .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}
     [adapter.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces}}]
-    {{ end}}    
+    {{ end}} 
+    {{ end}} 
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
     [adapter.metrics]
       enabled = {{.Values.wso2.apk.metrics.enabled}}
@@ -32,6 +69,7 @@ data:
 
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.router .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs }}
     [router]
+      namespace = "{{ .Release.Namespace }}"
       {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost }}
       systemHost = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost }}"
       {{ end }}

@@ -66,44 +66,44 @@ import (
 )
 
 const (
-	httpRouteAPIIndex = "httpRouteAPIIndex"
-	gqlRouteAPIIndex  = "gqlRouteAPIIndex"
-	grpcRouteAPIIndex = "grpcRouteAPIIndex"
+	httpRouteAPIIndex = "httpRouteToAPIIndex"
+	gqlRouteAPIIndex  = "gqlRouteToAPIIndex"
+	grpcRouteAPIIndex = "grpcRouteToAPIIndex"
 	// apiAuthenticationIndex Index for API level authentications
-	apiAuthenticationIndex = "apiAuthenticationIndex"
+	apiAuthenticationIndex = "apiToAuthenticationIndex"
 	// apiAuthenticationResourceIndex Index for resource level authentications
-	apiAuthenticationResourceIndex = "apiAuthenticationResourceIndex"
+	apiAuthenticationResourceIndex = "apiToAuthenticationResourceIndex"
 	// apiRateLimitIndex Index for API level ratelimits
-	apiRateLimitIndex = "apiRateLimitIndex"
+	apiRateLimitIndex = "apiToRateLimitIndex"
 	// apiRateLimitResourceIndex Index for resource level ratelimits
-	apiRateLimitResourceIndex = "apiRateLimitResourceIndex"
+	apiRateLimitResourceIndex = "apiToRateLimitResourceIndex"
 	// gatewayHTTPRouteIndex Index for gateway httproutes
-	gatewayHTTPRouteIndex = "gatewayHTTPRouteIndex"
+	gatewayHTTPRouteIndex = "gatewayToHTTPRouteIndex"
 	// gatewayGRPCRouteIndex Index for gateway grpcroutes
-	gatewayGRPCRouteIndex = "gatewayGRPCRouteIndex"
+	gatewayGRPCRouteIndex = "gatewayToGRPCRouteIndex"
 	// apiAPIPolicyIndex Index for API level apipolicies
-	apiAPIPolicyIndex = "apiAPIPolicyIndex"
+	apiAPIPolicyIndex = "apiToAPIPolicyIndex"
 	// apiAPIPolicyResourceIndex Index for resource level apipolicies
-	apiAPIPolicyResourceIndex        = "apiAPIPolicyResourceIndex"
-	serviceHTTPRouteIndex            = "serviceHTTPRouteIndex"
-	httprouteScopeIndex              = "httprouteScopeIndex"
-	grpcRouteScopeIndex              = "grpcRouteScopeIndex"
-	gqlRouteScopeIndex               = "gqlRouteScopeIndex"
-	configMapBackend                 = "configMapBackend"
-	configMapAPIDefinition           = "configMapAPIDefinition"
-	secretBackend                    = "secretBackend"
-	configMapAuthentication          = "configMapAuthentication"
-	secretAuthentication             = "secretAuthentication"
-	backendHTTPRouteIndex            = "backendHTTPRouteIndex"
-	backendGQLRouteIndex             = "backendGQLRouteIndex"
-	backendGRPCRouteIndex            = "backendGRPCRouteIndex"
-	interceptorServiceAPIPolicyIndex = "interceptorServiceAPIPolicyIndex"
-	backendInterceptorServiceIndex   = "backendInterceptorServiceIndex"
-	backendJWTAPIPolicyIndex         = "backendJWTAPIPolicyIndex"
-	aiRatelimitPolicyToBackendIndex  = "aiRatelimitPolicyToBackendIndex"
+	apiAPIPolicyResourceIndex        = "apiToAPIPolicyResourceIndex"
+	serviceHTTPRouteIndex            = "serviceToHTTPRouteIndex"
+	httprouteScopeIndex              = "httprouteToScopeIndex"
+	grpcRouteScopeIndex              = "grpcRouteToScopeIndex"
+	gqlRouteScopeIndex               = "gqlRouteToScopeIndex"
+	configMapBackend                 = "configMapToBackend"
+	configMapAPIDefinition           = "configMapToAPIDefinition"
+	secretBackend                    = "secretToBackend"
+	configMapAuthentication          = "configMapToAuthentication"
+	secretAuthentication             = "secretToAuthentication"
+	backendHTTPRouteIndex            = "backendToHTTPRouteIndex"
+	backendGQLRouteIndex             = "backendToGQLRouteIndex"
+	backendGRPCRouteIndex            = "backendToGRPCRouteIndex"
+	interceptorServiceAPIPolicyIndex = "interceptorServiceToAPIPolicyIndex"
+	backendInterceptorServiceIndex   = "backendToInterceptorServiceIndex"
+	backendJWTAPIPolicyIndex         = "backendJWTToAPIPolicyIndex"
+	aiRatelimitPolicyToBackendIndex  = "aiRatelimitToPolicyToBackendIndex"
 	subscriptionToAPIIndex           = "subscriptionToAPIIndex"
 	apiToSubscriptionIndex           = "apiToSubscriptionIndex"
-	aiProviderAPIPolicyIndex         = "aiProviderAPIPolicyIndex"
+	aiProviderAPIPolicyIndex         = "aiProviderToAPIPolicyIndex"
 )
 
 var (
@@ -1566,7 +1566,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(ctx context.Context, obj
 		return []reconcile.Request{}
 	}
 
-	backendList := &dpv1alpha1.BackendList{}
+	backendList := &dpv1alpha2.BackendList{}
 	err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	})
@@ -1616,7 +1616,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(ctx context.Context, obj k8
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2621, logging.MINOR, "Unable to find associated Backends for Secret: %s", utils.NamespacedName(secret).String()))
+		loggers.LoggerAPKOperator.Debugf("Unable to find associated Backends for Secret: %s", utils.NamespacedName(secret).String())
 		return []reconcile.Request{}
 	}
 

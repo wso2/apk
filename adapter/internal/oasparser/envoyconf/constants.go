@@ -22,7 +22,6 @@ const (
 	accessLoggerClusterName string = "access-logger"
 	grpcAccessLogLogName    string = "apk_access_logs"
 	tracingClusterName      string = "wso2_apk_trace"
-	extAuthzHTTPCluster     string = "ext_authz_http_cluster"
 	rateLimitClusterName    string = "ratelimit"
 )
 

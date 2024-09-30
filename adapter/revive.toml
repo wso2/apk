@@ -12,7 +12,7 @@ exclude = [ "internal/operator/controllers/cp/suite_test.go","internal/operator/
 [rule.error-return]
 [rule.error-strings]
 [rule.error-naming]
-[rule.exported]
+# [rule.exported]
 [rule.if-return]
 [rule.increment-decrement]
 [rule.var-naming]

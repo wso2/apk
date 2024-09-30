@@ -79,6 +79,7 @@ type Config struct {
 	PartitionServer  partitionServer  `toml:"partitionServer"`
 	Analytics        analytics        `toml:"analytics"`
 	Tracing          tracing
+	Deployment       deployment
 }
 
 // Adapter related Configurations
@@ -96,12 +97,12 @@ type adapter struct {
 	// Metric represents configurations to expose/export go metrics
 	Metrics Metrics
 	// ControlPlane represents the connection configuration of ControlPlane
-	ControlPlane controlplane
+	ControlPlane                 controlplane
+	EnableGatewayClassController bool
 }
 
 // Envoy Listener Component related configurations.
 type envoy struct {
-
 	// ListenerCodecType Default to AUTO where both http1 and http2 connections are handled
 	// It can be specifically set to either HTTP1 or HTTP2
 	ListenerCodecType string
@@ -313,6 +314,53 @@ type tracing struct {
 	Enabled          bool
 	Type             string
 	ConfigProperties map[string]string
+}
+
+type deployment struct {
+	Gateway gateway
+}
+
+type gateway struct {
+	Namespace                string
+	AdapterHostName          string
+	AdapterHost              string
+	CommonControllerHostName string
+	CommonControllerHost     string
+	EnforcerPrivateKeyPath   string
+	EnforcerPublicCertPath   string
+	EnforcerServerName       string
+	AdapterTrustedCAPath     string
+	AdapterEnvoyXDSPort      string
+	AdapterEnforcerXDSPort   string
+	CommonControllerXDSPort  string
+	CommonControllerRestPort string
+	EnforcerLabel            string
+	EnforcerRegion           string
+	EnforcerImage            string
+	EnforcerImagePullPolicy  string
+	EnforcerXDSMaxMsgSize    string
+	EnforcerXDSMaxRetries    string
+	JavaOpts                 string
+	Volumes                  volumes
+	EnforcerPorts            []enforcerPorts
+}
+
+type enforcerPorts struct {
+	Name          string
+	ContainerPort int32
+	Expose        bool
+}
+
+type volumes struct {
+	RatelimiterTruststoreSecretVolume string
+	EnforcerKeystoreSecretVolume      string
+	RouterKeystoreSecretVolume        string
+	AdapterTruststoreSecretVolume     string
+	EnforcerJwtSecretVolume           string
+	EnforcerTrustedCerts              string
+	EnforcerApikeyCert                string
+	IDPCertificateSecretVolume        string
+	LogConfVolume                     string
 }
 
 // Metrics defines the configuration for metrics collection.

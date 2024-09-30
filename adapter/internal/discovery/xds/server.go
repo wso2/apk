@@ -229,14 +229,17 @@ func UpdateXdsCacheOnAPIChange(labels map[string]struct{}) bool {
 	for newLabel := range labels {
 		listeners, clusters, routes, endpoints, apis := GenerateEnvoyResoucesForGateway(newLabel)
 		UpdateEnforcerApis(newLabel, apis, "")
-		success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
-		logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
-		if success {
-			// if even one label was updated with latest revision, we take the revision as deployed.
-			// (other labels also will get updated successfully)
-			revisionStatus = success
-			continue
+		if !config.ReadConfigs().Adapter.EnableGatewayClassController {
+			success := UpdateXdsCacheWithLock(newLabel, endpoints, clusters, routes, listeners)
+			logger.LoggerXds.Debugf("Xds Cache is updated for the label : %v", newLabel)
+			if success {
+				// if even one label was updated with latest revision, we take the revision as deployed.
+				// (other labels also will get updated successfully)
+				revisionStatus = success
+				continue
+			}
 		}
+
 	}
 	return revisionStatus
 }
@@ -305,7 +308,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 		return nil, nil, nil, nil, nil
 	}
 	listeners := envoyGatewayConfig.listeners
-	if len(listeners) < 1 {
+	if !config.ReadConfigs().Adapter.EnableGatewayClassController && len(listeners) < 1 {
 		return nil, nil, nil, nil, nil
 	}
 
@@ -313,7 +316,6 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	for _, route := range envoyGatewayConfig.routeConfigs {
 		route.VirtualHosts = []*routev3.VirtualHost{}
 	}
-	// TODO(amali) Revisit the following
 	// Find the matching listener for each vhost and then only add the routes to the routeConfigs
 	for _, listener := range listeners {
 		for vhost, routes := range vhostToRouteArrayMap {
@@ -352,7 +354,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	// Find gateway listeners that has $systemHost as its hostname and add the system routeConfig referencing those listeners
 	gatewayListeners := dataholder.GetAllGatewayListenerSections()
 	for _, listener := range gatewayListeners {
-		if systemHost == string(*listener.Hostname) {
+		if listener.Hostname != nil && systemHost == string(*listener.Hostname) {
 			var vhostToRouteArrayFilteredMapForSystemEndpoints = make(map[string][]*routev3.Route)
 			vhostToRouteArrayFilteredMapForSystemEndpoints[systemHost] = vhostToRouteArrayMap[systemHost]
 			routeConfigName := common.GetEnvoyRouteConfigName(common.GetEnvoyListenerName(string(listener.Protocol), uint32(listener.Port)), string(listener.Name))

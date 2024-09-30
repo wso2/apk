@@ -48,7 +48,7 @@ spec:
               protocol: "TCP"
             - containerPort: 8765
               protocol: "TCP"
-            - containerPort: 18001
+            - containerPort: 18005
               protocol: TCP
             {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
             - containerPort: 18006
@@ -160,10 +160,13 @@ spec:
         #     defaultMode: 420
         - name: router-truststore-secret-volume
           secret: 
-            {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
+          {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
+            secretName: envoy-cert
+          {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
             secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls.secretName | default (printf "%s-gateway-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
+          {{- end }}
           {{- end }}
         - name: enforcer-truststore-secret-volume
           secret: 

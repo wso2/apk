@@ -27,6 +27,7 @@ import java.util.Map;
 public class ResourceConfig {
 
     private String path;
+    private String matchID;
     private HttpMethods method;
     private String tier = "Unlimited";
     private EndpointCluster endpoints;
@@ -49,6 +50,19 @@ public class ResourceConfig {
         private HttpMethods(String value) {
             this.value = value;
         }
+    }
+
+    /**
+     * Get the matching path Template for the request.
+     *
+     * @return path Template
+     */
+    public String getMatchID() {
+        return matchID;
+    }
+
+    public void setMatchID(String matchID) {
+        this.matchID = matchID;
     }
 
     /**
@@ -91,6 +105,7 @@ public class ResourceConfig {
     }
 
     //todo(amali) this don't need to be a map
+
     /**
      * Get the resource level endpoint cluster map for the corresponding Resource
      * where the map-key is either "PRODUCTION" or "SANDBOX".
@@ -133,6 +148,7 @@ public class ResourceConfig {
     public void setScopes(String[] scopes) {
         this.scopes = scopes;
     }
+
     public PolicyConfig getPolicyConfig() {
         return policyConfig;
     }

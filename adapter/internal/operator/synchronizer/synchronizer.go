@@ -150,7 +150,11 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 						string(apiState.APIDefinition.Spec.APIName), apiState.APIDefinition.Spec.Organization,
 						getGatewayNameForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined), err))
 					// removing failed updates from the events list because this will be sent to partition server
-					event.Events = append(event.Events[:i], event.Events[i+1:]...)
+					if len(event.Events) > i {
+						event.Events = []APIState{}
+					} else {
+						event.Events = append(event.Events[:i], event.Events[i+1:]...)
+					}
 					continue
 				}
 				for label := range updatedLabels {
@@ -166,7 +170,11 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 						string(apiState.APIDefinition.Spec.APIName), apiState.APIDefinition.Spec.Organization,
 						getGatewayNameForAPI(apiState.ProdHTTPRoute.HTTPRouteCombined), err))
 					// removing failed updates from the events list because this will be sent to partition server
-					event.Events = append(event.Events[:i], event.Events[i+1:]...)
+					if len(event.Events) > i {
+						event.Events = []APIState{}
+					} else {
+						event.Events = append(event.Events[:i], event.Events[i+1:]...)
+					}
 					continue
 				}
 				for label := range updatedLabels {

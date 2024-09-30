@@ -58,8 +58,10 @@ type Server struct {
 
 // Check responds the health check client with health status of the Adapter
 func (s Server) Check(ctx context.Context, request *healthservice.HealthCheckRequest) (*healthservice.HealthCheckResponse, error) {
-	logger.LoggerHealth.Debugf("Querying health state for Adapter service \"%s\"", request.Service)
-	logger.LoggerHealth.Debugf("Internal health state map: %v", serviceHealthStatus)
+	// Debug logs were disabled because they were creating so many unuseful logs currently.
+	// If this is wanted in future, then add them back.
+	// logger.LoggerHealth.Debugf("Querying health state for Adapter service \"%s\"", request.Service)
+	// logger.LoggerHealth.Debugf("Internal health state map: %v", serviceHealthStatus)
 
 	if request.Service == "" {
 		// overall health of the server
@@ -69,24 +71,24 @@ func (s Server) Check(ctx context.Context, request *healthservice.HealthCheckReq
 		}
 
 		if isHealthy {
-			logger.LoggerHealth.Debug("Responding health state of Adapter as HEALTHY")
+			// logger.LoggerHealth.Debug("Responding health state of Adapter as HEALTHY")
 			return &healthservice.HealthCheckResponse{Status: healthservice.HealthCheckResponse_SERVING}, nil
 		}
-		logger.LoggerHealth.Debug("Responding health state of Adapter as NOT_HEALTHY")
+		// logger.LoggerHealth.Debug("Responding health state of Adapter as NOT_HEALTHY")
 		return &healthservice.HealthCheckResponse{Status: healthservice.HealthCheckResponse_NOT_SERVING}, nil
 	}
 
 	// health of the component of a server
 	if isHealthy, ok := serviceHealthStatus[request.Service]; ok {
 		if isHealthy {
-			logger.LoggerHealth.Debugf("Responding health state of Adapter service \"%s\" as HEALTHY", request.Service)
+			// logger.LoggerHealth.Debugf("Responding health state of Adapter service \"%s\" as HEALTHY", request.Service)
 			return &healthservice.HealthCheckResponse{Status: healthservice.HealthCheckResponse_SERVING}, nil
 		}
-		logger.LoggerHealth.Debugf("Responding health state of Adapter service \"%s\" as NOT_HEALTHY", request.Service)
+		// logger.LoggerHealth.Debugf("Responding health state of Adapter service \"%s\" as NOT_HEALTHY", request.Service)
 		return &healthservice.HealthCheckResponse{Status: healthservice.HealthCheckResponse_NOT_SERVING}, nil
 	}
 
 	// no component found
-	logger.LoggerHealth.Debugf("Responding health state of Adapter service \"%s\" as UNKNOWN", request.Service)
+	// logger.LoggerHealth.Debugf("Responding health state of Adapter service \"%s\" as UNKNOWN", request.Service)
 	return &healthservice.HealthCheckResponse{Status: healthservice.HealthCheckResponse_UNKNOWN}, nil
 }

@@ -15,6 +15,9 @@
 # under the License.
 
 {{- if .Values.wso2.apk.dp.enabled }}
+{{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
+
+{{- else}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -494,3 +497,4 @@ spec:
         - name: tmp
           emptyDir: {}
           {{end}}
+{{ end }}
