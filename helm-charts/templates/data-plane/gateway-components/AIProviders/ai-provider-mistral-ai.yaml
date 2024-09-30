@@ -1,0 +1,23 @@
+apiVersion: dp.wso2.com/v1alpha3
+kind: AIProvider
+metadata:
+  name: ai-provider-mistral-ai
+  namespace: {{ .Release.Namespace }}
+spec:
+  providerName : "MistralAI"
+  providerAPIVersion : "v1"
+  organization : "default"
+  model:
+    in: "Body"
+    value: "model"
+  rateLimitFields:
+    promptTokens: 
+      in: "Body"
+      value: "$usage.promptTokens"
+    completionToken:
+      in: "Body"
+      value: "$usage.completionTokens"
+    totalToken:
+      in: "Body"
+      value: "$usage.totalTokens"
+  
