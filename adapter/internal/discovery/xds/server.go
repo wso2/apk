@@ -354,7 +354,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	// Find gateway listeners that has $systemHost as its hostname and add the system routeConfig referencing those listeners
 	gatewayListeners := dataholder.GetAllGatewayListenerSections()
 	for _, listener := range gatewayListeners {
-		if systemHost == string(*listener.Hostname) {
+		if listener.Hostname != nil && systemHost == string(*listener.Hostname) {
 			var vhostToRouteArrayFilteredMapForSystemEndpoints = make(map[string][]*routev3.Route)
 			vhostToRouteArrayFilteredMapForSystemEndpoints[systemHost] = vhostToRouteArrayMap[systemHost]
 			routeConfigName := common.GetEnvoyRouteConfigName(common.GetEnvoyListenerName(string(listener.Protocol), uint32(listener.Port)), string(listener.Name))
