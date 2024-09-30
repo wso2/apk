@@ -21,6 +21,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     managed-by: "apk"
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
 spec:
   hostnames:
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
