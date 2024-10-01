@@ -1428,7 +1428,6 @@ func (apiReconciler *APIReconciler) retrieveParentAPIsAndUpdateOwnerReference(ct
 			return
 		}
 		requests = apiReconciler.getAPIsForAIProvider(ctx, &aiProvider)
-		apiReconciler.handleOwnerReference(ctx, &aiProvider, &requests)
 	case *gwapiv1a2.GRPCRoute:
 		var grpcRoute gwapiv1a2.GRPCRoute
 		namespaceName := types.NamespacedName{
