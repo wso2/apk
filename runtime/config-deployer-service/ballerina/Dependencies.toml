@@ -70,7 +70,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.10.15"
+version = "2.10.16"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -102,7 +102,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.6.2"
+version = "1.6.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -335,7 +335,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "time"
-version = "2.4.1"
+version = "2.4.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -343,7 +343,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "url"
-version = "2.4.1"
+version = "2.4.0"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
