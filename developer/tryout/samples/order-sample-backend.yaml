@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-backend
+  labels:
+    app: order-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-backend
+  template:
+    metadata:
+      labels:
+        app: order-backend
+    spec:
+      containers:
+        - name: order-backend
+          image: sega1234/order-backend:1.0.0
+          ports:
+            - containerPort: 6566
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-backend
+spec:
+  selector:
+    app: order-backend
+  ports:
+    - protocol: TCP
+      port: 6566
+      targetPort: 6566
+  type: ClusterIP
