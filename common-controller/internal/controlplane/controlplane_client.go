@@ -223,6 +223,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 				Organization:  event.Subscription.Organization,
 				SubStatus:     event.Subscription.SubStatus,
 				SubscribedAPI: &server.SubscribedAPI{Name: event.Subscription.SubscribedApi.Name, Version: event.Subscription.SubscribedApi.Version},
+				RatelimitTier: event.Subscription.RatelimitTier,
 			}
 			loggers.LoggerAPKOperator.Infof("Received Subscription %s", subscription.UUID)
 			controlPlaneGrpcClient.artifactDeployer.UpdateSubscription(subscription)
