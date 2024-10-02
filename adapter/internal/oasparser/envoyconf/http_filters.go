@@ -247,6 +247,9 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 			ForwardingNamespaces: &ext_process.MetadataOptions_MetadataNamespaces{
 				Untyped: []string{"envoy.filters.http.ext_authz", "envoy.filters.http.ext_proc"},
 			},
+			ReceivingNamespaces: &ext_process.MetadataOptions_MetadataNamespaces{
+				Untyped: []string{"envoy.filters.http.ext_proc"},
+			},
 		},
 		RequestAttributes:  []string{"xds.route_metadata"},
 		ResponseAttributes: []string{"xds.route_metadata"},

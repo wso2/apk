@@ -18,13 +18,17 @@
 
 package org.wso2.apk.enforcer.analytics;
 
+import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.envoyproxy.envoy.data.accesslog.v3.AccessLogCommon;
 import io.envoyproxy.envoy.data.accesslog.v3.HTTPAccessLogEntry;
+import io.envoyproxy.envoy.service.ext_proc.v3.ProcessingResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsCustomDataProvider;
 import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsDataProvider;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.AIMetadata;
+import org.wso2.apk.enforcer.commons.analytics.publishers.dto.AITokenUsage;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.API;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Application;
 import org.wso2.apk.enforcer.commons.analytics.publishers.dto.Error;
@@ -252,6 +256,32 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
         Map<String,Object> map = new HashMap();
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         String gwURL = getValueAsString(fieldsMap, MetadataConstants.GATEWAY_URL);
+        Double totalTokenCount = getValueAsDouble(fieldsMap, MetadataConstants.TOTAL_TOKEN_COUNT);
+        Double completionTokenCount = getValueAsDouble(fieldsMap, MetadataConstants.COMPLETION_TOKEN_COUNT);
+        Double promptTokenCount = getValueAsDouble(fieldsMap, MetadataConstants.PROMPT_TOKEN_COUNT);
+        String model = getValueAsString(fieldsMap, MetadataConstants.MODEL);
+        String providerName = getValueAsString(fieldsMap, MetadataConstants.AI_PROVIDER_NAME);
+        String providerAPIVersion = getValueAsString(fieldsMap, MetadataConstants.AI_PROVIDER_API_VERSION);
+
+        // AI Token Usage
+        AITokenUsage aiTokenUsage = new AITokenUsage();
+        if (totalTokenCount != null) aiTokenUsage.setTotalTokens(totalTokenCount);
+        if (promptTokenCount != null) aiTokenUsage.setPromptTokens(promptTokenCount);
+        if (completionTokenCount != null) aiTokenUsage.setCompletionTokens(completionTokenCount);
+
+        if (aiTokenUsage.getTotalTokens() != null || aiTokenUsage.getPromptTokens() != null || aiTokenUsage.getCompletionTokens() != null) {
+            map.put("aiTokenUsage", aiTokenUsage);
+        }
+
+        // AI Metadata
+        AIMetadata aiMetadata = new AIMetadata();
+        if (model != null) aiMetadata.setModel(model);
+        if (providerName != null) aiMetadata.setVendorName(providerName);
+        if (providerAPIVersion != null) aiMetadata.setVendorVersion(providerAPIVersion);
+
+        if (aiMetadata.getModel() != null || aiMetadata.getVendorName() != null || aiMetadata.getVendorVersion() != null) {
+            map.put("aiMetadata", aiMetadata);
+        }
         map.put(AnalyticsConstants.GATEWAY_URL, gwURL);
         if (customDataProvider != null && customDataProvider.getCustomProperties(customProperties) != null) {
             Map<String, Object> customPropertiesFromProvider = customDataProvider.getCustomProperties(customProperties);
@@ -272,6 +302,14 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
         return fieldsMap.get(key).getStringValue();
     }
 
+    private Double getValueAsDouble(Map<String, Value> fieldsMap, String key) {
+
+        if (fieldsMap == null || !fieldsMap.containsKey(key)) {
+            return null;
+        }
+        return fieldsMap.get(key).getNumberValue();
+    }
+
     private Map<String, Value> getFieldsMapFromLogEntry() {
 
         if (logEntry.getCommonProperties() == null
@@ -281,8 +319,21 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
                 .containsKey(MetadataConstants.EXT_AUTH_METADATA_CONTEXT_KEY)) {
             return new HashMap<>(0);
         }
-        return logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
+        Map<String, Value> metadataFromExtProc = logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
+                .get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY).getFieldsMap();
+        Map<String, Value> metadataFromExtAuthz = logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
                 .get(MetadataConstants.EXT_AUTH_METADATA_CONTEXT_KEY).getFieldsMap();
+        Map<String, Value> mergedMetadata = new HashMap<>(metadataFromExtProc);
+        mergedMetadata.putAll(metadataFromExtAuthz);
+        return mergedMetadata;
+    }
+
+    private void addMetadata(Struct.Builder structBuilder, String key, String value) {
+        structBuilder.putFields(key, Value.newBuilder().setStringValue(value).build());
+    }
+
+    private void addMetadata(Struct.Builder structBuilder, String key, double value) {
+        structBuilder.putFields(key, Value.newBuilder().setNumberValue(value).build());
     }
 
     private void setCustomPropertiesMap(HTTPAccessLogEntry logEntry, Map<String, Object> customProperties) {

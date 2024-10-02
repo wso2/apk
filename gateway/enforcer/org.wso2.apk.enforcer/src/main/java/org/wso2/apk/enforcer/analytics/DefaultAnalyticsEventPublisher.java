@@ -67,6 +67,10 @@ public class DefaultAnalyticsEventPublisher implements AnalyticsEventPublisher {
 
         for (int i = 0; i < message.getHttpLogs().getLogEntryCount(); i++) {
             HTTPAccessLogEntry logEntry = message.getHttpLogs().getLogEntry(i);
+            for ( String key : logEntry.getCommonProperties().getMetadata().getFilterMetadataMap().keySet()) {
+                logger.info("Key**** "+ key);
+                logger.info("value:**** " + logEntry.getCommonProperties().getMetadata().getFilterMetadataMap().get(key));
+            }
             logger.trace("Received logEntry from Router " + message.getIdentifier().getNode() +
                     " : " + message.toString());
             if (doNotPublishEvent(logEntry)) {

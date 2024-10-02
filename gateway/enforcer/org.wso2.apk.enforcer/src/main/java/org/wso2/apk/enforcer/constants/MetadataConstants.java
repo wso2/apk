@@ -23,7 +23,7 @@ package org.wso2.apk.enforcer.constants;
  */
 public class MetadataConstants {
     public static final String EXT_AUTH_METADATA_CONTEXT_KEY = "envoy.filters.http.ext_authz";
-
+    public static final String EXT_PROC_METADATA_CONTEXT_KEY = "envoy.filters.http.ext_proc";
     public static final String WSO2_METADATA_PREFIX = "x-wso2-";
     public static final String API_ID_KEY = WSO2_METADATA_PREFIX + "api-id";
     public static final String API_CREATOR_KEY = WSO2_METADATA_PREFIX + "api-creator";
@@ -57,5 +57,18 @@ public class MetadataConstants {
     public static final String RATELIMIT_WSO2_ORG_PREFIX = "customorg";
     public static final String GATEWAY_URL = WSO2_METADATA_PREFIX + "x-original-gw-url";
     public static final String API_ENVIRONMENT = WSO2_METADATA_PREFIX + "api-environment";
+    public static final String ORGANIZATION_AND_AIRL_POLICY = "ratelimit:organization-and-rlpolicy";
+    public static final String SUBSCRIPTION = "ratelimit:subscription";
+    public static final String EXTRACT_TOKEN_FROM = "aitoken:extracttokenfrom";
+    public static final String PROMPT_TOKEN_ID = "aitoken:prompttokenid";
+    public static final String COMPLETION_TOKEN_ID = "aitoken:completiontokenid";
+    public static final String TOTAL_TOKEN_ID = "aitoken:totaltokenid";
+    public static final String PROMPT_TOKEN_COUNT = "aitoken:prompttokencount";
+    public static final String COMPLETION_TOKEN_COUNT = "aitoken:completiontokencount";
+    public static final String TOTAL_TOKEN_COUNT = "aitoken:totaltokencount";
+    public static final String MODEL_ID = "aitoken:modelid";
+    public static final String MODEL = "aitoken:model";
+    public static final String AI_PROVIDER_NAME = "ai:providername";
+    public static final String AI_PROVIDER_API_VERSION = "ai:providerversion";
 
 }
