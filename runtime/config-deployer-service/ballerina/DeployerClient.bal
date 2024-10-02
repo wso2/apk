@@ -6,6 +6,7 @@ import ballerina/log;
 import ballerina/mime;
 
 import wso2/apk_common_lib as commons;
+import ballerina/io;
 
 public class DeployerClient {
     public isolated function handleAPIDeployment(http:Request request, commons:Organization organization) returns commons:APKError|http:Response {
@@ -59,7 +60,8 @@ public class DeployerClient {
     private isolated function getAPKConf(record {|byte[] fileContent; string fileName; anydata...;|} apkConfiguration) returns APKConf|commons:APKError {
         do {
             string apkConfContent = check string:fromBytes(apkConfiguration.fileContent);
-            string convertedJson = check commons:newYamlUtil1().fromYamlStringToJson(apkConfContent) ?: "";
+            string convertedJson = check commons:newYamlUtil1().fromYamlStringToJson(apkConfContent);
+            io:println(convertedJson);
             APKConf apkConf = check value:fromJsonStringWithType(convertedJson, APKConf);
             return apkConf;
         } on fail var e {
@@ -145,11 +147,7 @@ public class DeployerClient {
                 return e909028();
             }
         } on fail var e {
-            if e is commons:APKError {
                 return e;
-            }
-            log:printError("Internal Error occured while deploying API", e);
-            return e909028();
         }
     }
 

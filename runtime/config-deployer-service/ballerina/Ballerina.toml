@@ -2,7 +2,7 @@
 org = "wso2"
 name = "config_deployer_service"
 version = "1.2.0-SNAPSHOT"
-distribution = "2201.8.5"
+distribution = "2201.10.1"
 
 [build-options]
 observabilityIncluded = true
@@ -301,18 +301,6 @@ groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-core"
 version = "2.14.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
-[[platform.java11.dependency]]
-groupId = "com.graphql-java"
-artifactId = "graphql-java"
-version = "21.1"
-
-# transitive dependency of com.graphql-java:graphql-java:21.1
-[[platform.java11.dependency]]
-groupId = "com.graphql-java"
-artifactId = "java-dataloader"
-version = "3.2.0"
-
 # transitive dependency of com.graphql-java:graphql-java:21.1
 [[platform.java11.dependency]]
 groupId = "org.reactivestreams"
@@ -384,3 +372,21 @@ version = "20231013"
 groupId = "commons-lang"
 artifactId = "commons-lang"
 version = "2.4"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "com.graphql-java"
+artifactId = "graphql-java"
+version = "22.3"
+
+# transitive dependency of com.graphql-java:graphql-java:22.3
+[[platform.java11.dependency]]
+groupId = "com.graphql-java"
+artifactId = "java-dataloader"
+version = "3.3.0"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "com.google.protobuf"
+artifactId = "protobuf-java"
+version = "3.25.5"

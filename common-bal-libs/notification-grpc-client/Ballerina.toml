@@ -2,4 +2,4 @@
 org = "wso2"
 name = "notification_grpc_client"
 version = "0.0.1-SNAPSHOT"
-distribution = "2201.8.5"
+distribution = "2201.10.1"

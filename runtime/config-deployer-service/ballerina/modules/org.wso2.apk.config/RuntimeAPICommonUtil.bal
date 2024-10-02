@@ -29,6 +29,7 @@ public distinct class RuntimeAPICommonUtil {
     public function toString() returns string {
         return java:toString(self.jObj) ?: "";
     }
+
     # The function that maps to the `equals` method of `org.wso2.apk.config.RuntimeAPICommonUtil`.
     #
     # + arg0 - The `javalang:Object` value required to map with the Java method parameter.
@@ -105,13 +106,13 @@ public distinct class RuntimeAPICommonUtil {
 #
 # + arg0 - The `orgwso2apkconfigmodel:API` value required to map with the Java method parameter.
 # + return - The `string` or the `orgwso2apkconfigapi:APIManagementException` value returning from the Java mapping.
-public isolated function RuntimeAPICommonUtil_generateDefinition(orgwso2apkconfigmodel:API arg0) returns orgwso2apkconfigapi:APIManagementException|string? {
+public isolated function RuntimeAPICommonUtil_generateDefinition(orgwso2apkconfigmodel:API arg0) returns string|orgwso2apkconfigapi:APIManagementException {
     handle|error externalObj = org_wso2_apk_config_RuntimeAPICommonUtil_generateDefinition(arg0.jObj);
     if (externalObj is error) {
         orgwso2apkconfigapi:APIManagementException e = error orgwso2apkconfigapi:APIManagementException(orgwso2apkconfigapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
         return e;
     } else {
-        return java:toString(externalObj);
+        return java:toString(externalObj) ?: "";
     }
 }
 
@@ -120,13 +121,13 @@ public isolated function RuntimeAPICommonUtil_generateDefinition(orgwso2apkconfi
 # + arg0 - The `orgwso2apkconfigmodel:API` value required to map with the Java method parameter.
 # + arg1 - The `string` value required to map with the Java method parameter.
 # + return - The `string` or the `orgwso2apkconfigapi:APIManagementException` value returning from the Java mapping.
-public isolated function RuntimeAPICommonUtil_generateDefinition2(orgwso2apkconfigmodel:API arg0, string arg1) returns orgwso2apkconfigapi:APIManagementException|string? {
+public isolated function RuntimeAPICommonUtil_generateDefinition2(orgwso2apkconfigmodel:API arg0, string arg1) returns string|orgwso2apkconfigapi:APIManagementException {
     handle|error externalObj = org_wso2_apk_config_RuntimeAPICommonUtil_generateDefinition2(arg0.jObj, java:fromString(arg1));
     if (externalObj is error) {
         orgwso2apkconfigapi:APIManagementException e = error orgwso2apkconfigapi:APIManagementException(orgwso2apkconfigapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
         return e;
     } else {
-        return java:toString(externalObj);
+        return java:toString(externalObj) ?: "";
     }
 }
 
@@ -166,7 +167,7 @@ public isolated function RuntimeAPICommonUtil_getAPIFromDefinition(string arg0, 
 #
 # + arg0 - The `byte[]` value required to map with the Java method parameter.
 # + arg1 - The `string` value required to map with the Java method parameter.
-# + return - The `orgwso2apkconfigmodel:API` value returning from the Java mapping.
+# + return - The `orgwso2apkconfigmodel:API` or the `orgwso2apkconfigapi:APIManagementException` value returning from the Java mapping.
 public isolated function RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(byte[] arg0, string arg1) returns orgwso2apkconfigmodel:API|orgwso2apkconfigapi:APIManagementException|error {
     handle|error externalObj = org_wso2_apk_config_RuntimeAPICommonUtil_getGRPCAPIFromProtoDefinition(check jarrays:toHandle(arg0, "byte"), java:fromString(arg1));
     if (externalObj is error) {
