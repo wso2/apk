@@ -36,6 +36,7 @@ import io.grpc.stub.StreamObserver;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.wso2.apk.enforcer.constants.MetadataConstants;
 import org.wso2.apk.enforcer.grpc.client.RatelimitClient;
 
 import java.io.BufferedReader;
@@ -64,12 +65,6 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
     private static final String DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_RESPONSE_TOKEN_COUNT = "airesponsetokencountsubs";
     private static final String DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_TOTAL_TOKEN_COUNT    = "aitotaltokencountsubs";
     private static final String DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION = "subscription";
-    private static final String DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY = "ratelimit:organization-and-rlpolicy";
-    private static final String DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION = "ratelimit:subscription";
-    private static final String DYNAMIC_METADATA_KEY_FOR_EXTRACT_TOKEN_FROM = "aitoken:extracttokenfrom";
-    private static final String DYNAMIC_METADATA_KEY_FOR_PROMPT_TOKEN_ID = "aitoken:prompttokenid";
-    private static final String DYNAMIC_METADATA_KEY_FOR_COMPLETION_TOKEN_ID = "aitoken:completiontokenid";
-    private static final String DYNAMIC_METADATA_KEY_FOR_TOTAL_TOKEN_ID = "aitoken:totaltokenid";
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);;
     RatelimitClient ratelimitClient = new RatelimitClient();
     @Override
@@ -83,21 +78,25 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                 ProcessingRequest.RequestCase r = request.getRequestCase();
                 switch (r) {
                     case RESPONSE_HEADERS:
-                        if (!request.getAttributesMap().isEmpty() && request.getAttributesMap().get("envoy.filters.http.ext_proc") != null && request.getAttributesMap().get("envoy.filters.http.ext_proc").getFieldsMap().get("xds.route_metadata") != null){
-                            Value value = request.getAttributesMap().get("envoy.filters.http.ext_proc").getFieldsMap().get("xds.route_metadata");
+                        if (!request.getAttributesMap().isEmpty() && request.getAttributesMap().get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY) != null && request.getAttributesMap().get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY).getFieldsMap().get("xds.route_metadata") != null){
+                            Value value = request.getAttributesMap().get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY).getFieldsMap().get("xds.route_metadata");
                             FilterMetadata metadata = convertStringToFilterMetadata(value.getStringValue());
                             filterMetadata.backendBasedAIRatelimitDescriptorValue = metadata.backendBasedAIRatelimitDescriptorValue;
                             filterMetadata.enableBackendBasedAIRatelimit = metadata.enableBackendBasedAIRatelimit;
                         }
-                        executorService.submit(() -> {
-                            Struct filterMetadataFromAuthZ = request.getMetadataContext().getFilterMetadataOrDefault("envoy.filters.http.ext_authz", null);
-                            if (filterMetadataFromAuthZ != null) {
-                                String extractTokenFrom = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_EXTRACT_TOKEN_FROM).getStringValue();
-                                String promptTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_PROMPT_TOKEN_ID).getStringValue();
-                                String completionTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_COMPLETION_TOKEN_ID).getStringValue();
-                                String totalTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_TOTAL_TOKEN_ID).getStringValue();
+                        Struct filterMetadataFromAuthZForHeader = request.getMetadataContext().getFilterMetadataOrDefault("envoy.filters.http.ext_authz", null);
+                        if (filterMetadataFromAuthZForHeader != null) {
+                            String extractTokenFrom = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.EXTRACT_TOKEN_FROM).getStringValue();
+                            String promptTokenID = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.PROMPT_TOKEN_ID).getStringValue();
+                            String completionTokenID = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.COMPLETION_TOKEN_ID).getStringValue();
+                            String totalTokenID = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.TOTAL_TOKEN_ID).getStringValue();
+                            String modelID = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.MODEL_ID).getStringValue();
+                            String providerName = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.AI_PROVIDER_NAME).getStringValue();
+                            String providerAPIVersion = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.AI_PROVIDER_API_VERSION).getStringValue();
 
-                                Usage usage = extractUsageFromHeaders(request.getResponseHeaders(), completionTokenID, promptTokenID, totalTokenID);
+                            Usage usage = extractUsageFromHeaders(request.getResponseHeaders(), completionTokenID, promptTokenID, totalTokenID, modelID);
+
+                            executorService.submit(() -> {
                                 if (usage == null) {
                                     logger.error("Usage details not found..");
                                     responseObserver.onCompleted();
@@ -110,10 +109,10 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                                     configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_TOTAL_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getTotal_tokens() - 1));
                                 }
                                 if (request.hasMetadataContext()) {
-                                    if (filterMetadataFromAuthZ != null) {
-                                        if (filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY) != null && filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION) != null) {
-                                            String orgAndAIRLPolicyValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY).getStringValue();
-                                            String aiRLSubsValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION).getStringValue();
+                                    if (filterMetadataFromAuthZForHeader != null) {
+                                        if (filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.ORGANIZATION_AND_AIRL_POLICY) != null && filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.SUBSCRIPTION) != null) {
+                                            String orgAndAIRLPolicyValue = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.ORGANIZATION_AND_AIRL_POLICY).getStringValue();
+                                            String aiRLSubsValue = filterMetadataFromAuthZForHeader.getFieldsMap().get(MetadataConstants.SUBSCRIPTION).getStringValue();
                                             configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_REQUEST_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getPrompt_tokens() - 1)));
                                             configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_RESPONSE_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getCompletion_tokens() - 1)));
                                             configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_TOTAL_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getTotal_tokens() - 1)));
@@ -121,34 +120,42 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                                     }
                                 }
                                 ratelimitClient.shouldRatelimit(configs);
+                            });
+                            if (usage != null) {
+
                             }
-                        });
+                        }
                         responseObserver.onCompleted();
                     case RESPONSE_BODY:
-                        if (!request.getAttributesMap().isEmpty() && request.getAttributesMap().get("envoy.filters.http.ext_proc") != null && request.getAttributesMap().get("envoy.filters.http.ext_proc").getFieldsMap().get("xds.route_metadata") != null){
-                            Value value = request.getAttributesMap().get("envoy.filters.http.ext_proc").getFieldsMap().get("xds.route_metadata");
+
+                        if (!request.getAttributesMap().isEmpty() && request.getAttributesMap().get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY) != null && request.getAttributesMap().get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY).getFieldsMap().get("xds.route_metadata") != null){
+                            Value value = request.getAttributesMap().get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY).getFieldsMap().get("xds.route_metadata");
                             FilterMetadata metadata = convertStringToFilterMetadata(value.getStringValue());
                             filterMetadata.backendBasedAIRatelimitDescriptorValue = metadata.backendBasedAIRatelimitDescriptorValue;
                             filterMetadata.enableBackendBasedAIRatelimit = metadata.enableBackendBasedAIRatelimit;
                         }
                         if (request.hasResponseBody()) {
                             final byte[] bodyFromResponse = request.getResponseBody().getBody().toByteArray();
-                            executorService.submit(() -> {
-                                String body;
-                                try {
-                                    body = decompress(bodyFromResponse);
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
+                            String body;
+                            try {
+                                body = decompress(bodyFromResponse);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
 
-                                Struct filterMetadataFromAuthZ = request.getMetadataContext().getFilterMetadataOrDefault("envoy.filters.http.ext_authz", null);
-                                if (filterMetadataFromAuthZ != null) {
-                                    String extractTokenFrom = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_EXTRACT_TOKEN_FROM).getStringValue();
-                                    String promptTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_PROMPT_TOKEN_ID).getStringValue();
-                                    String completionTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_COMPLETION_TOKEN_ID).getStringValue();
-                                    String totalTokenID = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_TOTAL_TOKEN_ID).getStringValue();
+                            Struct filterMetadataFromAuthZForBody = request.getMetadataContext().getFilterMetadataOrDefault("envoy.filters.http.ext_authz", null);
+                            if (filterMetadataFromAuthZForBody != null) {
+                                String extractTokenFrom = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.EXTRACT_TOKEN_FROM).getStringValue();
+                                String promptTokenID = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.PROMPT_TOKEN_ID).getStringValue();
+                                String completionTokenID = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.COMPLETION_TOKEN_ID).getStringValue();
+                                String totalTokenID = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.TOTAL_TOKEN_ID).getStringValue();
+                                String modelID = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.MODEL_ID).getStringValue();
+                                String providerName = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.AI_PROVIDER_NAME).getStringValue();
+                                String providerAPIVersion = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.AI_PROVIDER_API_VERSION).getStringValue();
 
-                                    Usage usage = extractUsageFromBody(body, completionTokenID, promptTokenID, totalTokenID);
+                                Usage usage = extractUsageFromBody(body, completionTokenID, promptTokenID, totalTokenID, modelID);
+
+                                executorService.submit(() -> {
                                     if (usage == null) {
                                         logger.error("Usage details not found..");
                                         responseObserver.onCompleted();
@@ -161,10 +168,10 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                                         configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_TOTAL_TOKEN_COUNT, filterMetadata.backendBasedAIRatelimitDescriptorValue, usage.getTotal_tokens() - 1));
                                     }
                                     if (request.hasMetadataContext()) {
-                                        if (filterMetadataFromAuthZ != null) {
-                                            if (filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY) != null && filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION) != null) {
-                                                String orgAndAIRLPolicyValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_ORGANIZATION_AND_AIRL_POLICY).getStringValue();
-                                                String aiRLSubsValue = filterMetadataFromAuthZ.getFieldsMap().get(DYNAMIC_METADATA_KEY_FOR_SUBSCRIPTION).getStringValue();
+                                        if (filterMetadataFromAuthZForBody != null) {
+                                            if (filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.ORGANIZATION_AND_AIRL_POLICY) != null && filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.SUBSCRIPTION) != null) {
+                                                String orgAndAIRLPolicyValue = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.ORGANIZATION_AND_AIRL_POLICY).getStringValue();
+                                                String aiRLSubsValue = filterMetadataFromAuthZForBody.getFieldsMap().get(MetadataConstants.SUBSCRIPTION).getStringValue();
                                                 configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_REQUEST_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getPrompt_tokens() - 1)));
                                                 configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_RESPONSE_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getCompletion_tokens() - 1)));
                                                 configs.add(new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_SUBSCRIPTION_BASED_AI_TOTAL_TOKEN_COUNT, orgAndAIRLPolicyValue, new RatelimitClient.KeyValueHitsAddend(DESCRIPTOR_KEY_FOR_AI_SUBSCRIPTION, aiRLSubsValue, usage.getTotal_tokens() - 1)));
@@ -172,8 +179,20 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                                         }
                                     }
                                     ratelimitClient.shouldRatelimit(configs);
+                                });
+                                if (usage != null) {
+                                    Struct.Builder structBuilder = Struct.newBuilder();
+                                    addMetadata(structBuilder, MetadataConstants.AI_PROVIDER_API_VERSION, providerAPIVersion);
+                                    addMetadata(structBuilder, MetadataConstants.AI_PROVIDER_NAME, providerName);
+                                    addMetadata(structBuilder, MetadataConstants.MODEL, usage.model);
+                                    addMetadata(structBuilder, MetadataConstants.COMPLETION_TOKEN_COUNT, usage.completion_tokens);
+                                    addMetadata(structBuilder, MetadataConstants.TOTAL_TOKEN_COUNT, usage.total_tokens);
+                                    addMetadata(structBuilder, MetadataConstants.PROMPT_TOKEN_COUNT, usage.prompt_tokens);
+                                    Struct.Builder rootStructBuilder = Struct.newBuilder();
+                                    rootStructBuilder.putFields(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY, Value.newBuilder().setStructValue(structBuilder.build()).build());
+                                    responseObserver.onNext(ProcessingResponse.newBuilder().setDynamicMetadata(rootStructBuilder.build()).setResponseBody(prepareBodyResponse()).build());
                                 }
-                            });
+                            }
                             responseObserver.onCompleted();
                         } else {
                             responseObserver.onCompleted();
@@ -199,8 +218,10 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                 .setResponse(
                         CommonResponse.newBuilder()
                                 .setStatus(CommonResponse.ResponseStatus.CONTINUE)
-                                .setBodyMutation(BodyMutation.newBuilder().build())
+//                                .setBodyMutation(BodyMutation.newBuilder().build())
+
                                 .build())
+
                 .build();
     }
 
@@ -244,6 +265,21 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
         return metadata;
     }
 
+    /**
+     * Adds a given key and value as a metadata
+     *
+     * @param structBuilder
+     * @param key
+     * @param value
+     */
+    private void addMetadata(Struct.Builder structBuilder, String key, String value) {
+        structBuilder.putFields(key, Value.newBuilder().setStringValue(value).build());
+    }
+
+    private void addMetadata(Struct.Builder structBuilder, String key, int value) {
+        structBuilder.putFields(key, Value.newBuilder().setNumberValue(value).build());
+    }
+
     // Helper method to extract value based on a regex pattern
     private static String extractValue(String input, String pattern) {
         Pattern p = Pattern.compile(pattern);
@@ -259,12 +295,13 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
         return input.replaceAll("[\\t\\n\\r]+", " ").trim();
     }
 
-    private static Usage extractUsageFromHeaders(HttpHeaders headers, String completionTokenPath, String promptTokenPath, String totalTokenPath) {
+    private static Usage extractUsageFromHeaders(HttpHeaders headers, String completionTokenPath, String promptTokenPath, String totalTokenPath, String modelPath) {
         try {
             Usage usage = new Usage();
             boolean completionTokenExtracted = false;
             boolean promptTokenExtracted = false;
             boolean totalTokenExtracted = false;
+            boolean modelExtracted = false;
             for (HeaderValue headerValue : headers.getHeaders().getHeadersList()) {
                 if (headerValue.getKey().equals(completionTokenPath)) {
                     completionTokenExtracted = true;
@@ -275,7 +312,7 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                     usage.completion_tokens = Integer.parseInt(value);
                 }
                 if (headerValue.getKey().equals(promptTokenPath)) {
-                    promptTokenExtracted = true;completionTokenExtracted = true;
+                    promptTokenExtracted = true;
                     String value = headerValue.getValue();
                     if (value.isEmpty()) {
                         value = headerValue.getRawValue().toString(StandardCharsets.UTF_8);
@@ -283,12 +320,20 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                     usage.prompt_tokens = Integer.parseInt(value);
                 }
                 if (headerValue.getKey().equals(totalTokenPath)) {
-                    totalTokenExtracted = true;completionTokenExtracted = true;
+                    totalTokenExtracted = true;
                     String value = headerValue.getValue();
                     if (value.isEmpty()) {
                         value = headerValue.getRawValue().toString(StandardCharsets.UTF_8);
                     }
                     usage.total_tokens = Integer.parseInt(value);
+                }
+                if (headerValue.getKey().equals(modelPath)) {
+                    modelExtracted = true;
+                    String value = headerValue.getValue();
+                    if (value.isEmpty()) {
+                        value = headerValue.getRawValue().toString(StandardCharsets.UTF_8);
+                    }
+                    usage.model = value;
                 }
             }
             if (completionTokenExtracted && promptTokenExtracted && totalTokenExtracted) {
@@ -301,7 +346,7 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
         }
     }
 
-    private static Usage extractUsageFromBody(String body, String completionTokenPath, String promptTokenPath, String totalTokenPath) {
+    private static Usage extractUsageFromBody(String body, String completionTokenPath, String promptTokenPath, String totalTokenPath, String modelPath) {
         body = sanitize(body);
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -367,6 +412,27 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                 }
             }
             usage.setTotal_tokens(currentNodeForTotalToken.asInt());
+
+
+            // Extract model
+            String[] keysForModel = modelPath.split("\\.");
+            if (keysForModel.length > 0 && "$".equals(keysForModel[0])) {
+                keysForModel = Arrays.copyOfRange(keysForModel, 1, keysForModel.length);
+            }
+            JsonNode currentNodeForModel = null;
+            if (rootNode.has(keysForModel[0])) {
+                currentNodeForModel = rootNode.get(keysForModel[0]);
+            } else {
+                return null;
+            }
+            for (int i = 1; i < keysForModel.length; i++) {
+                if (currentNodeForModel.has(keysForModel[i])) {
+                    currentNodeForModel = currentNodeForModel.get(keysForModel[i]);
+                } else {
+                    return null;
+                }
+            }
+            usage.setModel(currentNodeForModel.asText());
             return usage;
 
         } catch (Exception e) {
@@ -379,6 +445,7 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
         private int completion_tokens;
         private int prompt_tokens;
         private int total_tokens;
+        private String model = "";
 
         // Getters and Setters
         public int getCompletion_tokens() {
@@ -403,6 +470,14 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
 
         public void setTotal_tokens(int total_tokens) {
             this.total_tokens = total_tokens;
+        }
+
+        public String getModel() {
+            return model;
+        }
+
+        public void setModel(String model) {
+            this.model = model;
         }
 
         @Override

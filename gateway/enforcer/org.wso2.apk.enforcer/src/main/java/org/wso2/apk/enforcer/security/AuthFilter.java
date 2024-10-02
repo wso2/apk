@@ -37,6 +37,8 @@ import org.wso2.apk.enforcer.config.EnforcerConfig;
 import org.wso2.apk.enforcer.config.dto.MutualSSLDto;
 import org.wso2.apk.enforcer.constants.APIConstants;
 import org.wso2.apk.enforcer.constants.InterceptorConstants;
+import org.wso2.apk.enforcer.constants.MetadataConstants;
+import org.wso2.apk.enforcer.grpc.ExternalProcessorService;
 import org.wso2.apk.enforcer.security.jwt.APIKeyAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.JWTAuthenticator;
 import org.wso2.apk.enforcer.security.jwt.Oauth2Authenticator;
@@ -139,14 +141,23 @@ public class AuthFilter implements Filter {
         boolean canAuthenticated = false;
         if (requestContext.getMatchedAPI() != null && requestContext.getMatchedAPI().getAiProvider() != null) {
             if (requestContext.getMatchedAPI().getAiProvider().getPromptTokens() != null) {
-                requestContext.addMetadataToMap("aitoken:prompttokenid", requestContext.getMatchedAPI().getAiProvider().getPromptTokens().getValue());
+                requestContext.addMetadataToMap(MetadataConstants.PROMPT_TOKEN_ID, requestContext.getMatchedAPI().getAiProvider().getPromptTokens().getValue());
             }
             if (requestContext.getMatchedAPI().getAiProvider().getCompletionToken() != null) {
-                requestContext.addMetadataToMap("aitoken:extracttokenfrom", requestContext.getMatchedAPI().getAiProvider().getCompletionToken().getIn());
-                requestContext.addMetadataToMap("aitoken:completiontokenid", requestContext.getMatchedAPI().getAiProvider().getCompletionToken().getValue());
+                requestContext.addMetadataToMap(MetadataConstants.EXTRACT_TOKEN_FROM, requestContext.getMatchedAPI().getAiProvider().getCompletionToken().getIn());
+                requestContext.addMetadataToMap(MetadataConstants.COMPLETION_TOKEN_ID, requestContext.getMatchedAPI().getAiProvider().getCompletionToken().getValue());
             }
             if (requestContext.getMatchedAPI().getAiProvider().getTotalToken() != null) {
-                requestContext.addMetadataToMap("aitoken:totaltokenid", requestContext.getMatchedAPI().getAiProvider().getTotalToken().getValue());
+                requestContext.addMetadataToMap(MetadataConstants.TOTAL_TOKEN_ID, requestContext.getMatchedAPI().getAiProvider().getTotalToken().getValue());
+            }
+            if (requestContext.getMatchedAPI().getAiProvider().getModel() != null) {
+                requestContext.addMetadataToMap(MetadataConstants.MODEL_ID, requestContext.getMatchedAPI().getAiProvider().getModel().getValue());
+            }
+            if (requestContext.getMatchedAPI().getAiProvider().getProviderName() != null) {
+                requestContext.addMetadataToMap(MetadataConstants.AI_PROVIDER_NAME, requestContext.getMatchedAPI().getAiProvider().getProviderName());
+            }
+            if (requestContext.getMatchedAPI().getAiProvider().getProviderAPIVersion() != null) {
+                requestContext.addMetadataToMap(MetadataConstants.AI_PROVIDER_API_VERSION, requestContext.getMatchedAPI().getAiProvider().getProviderAPIVersion());
             }
         }
         for (Authenticator authenticator : authenticators) {
