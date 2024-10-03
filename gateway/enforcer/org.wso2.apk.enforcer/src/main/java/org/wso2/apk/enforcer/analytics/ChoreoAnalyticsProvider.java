@@ -23,7 +23,6 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import io.envoyproxy.envoy.data.accesslog.v3.AccessLogCommon;
 import io.envoyproxy.envoy.data.accesslog.v3.HTTPAccessLogEntry;
-import io.envoyproxy.envoy.service.ext_proc.v3.ProcessingResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.wso2.apk.enforcer.commons.analytics.collectors.AnalyticsCustomDataProvider;
@@ -260,9 +259,9 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
         Map<String,Object> map = new HashMap();
         Map<String, Value> fieldsMap = getFieldsMapFromLogEntry();
         String gwURL = getValueAsString(fieldsMap, MetadataConstants.GATEWAY_URL);
-        Double totalTokenCount = getValueAsDouble(fieldsMap, MetadataConstants.TOTAL_TOKEN_COUNT);
-        Double completionTokenCount = getValueAsDouble(fieldsMap, MetadataConstants.COMPLETION_TOKEN_COUNT);
-        Double promptTokenCount = getValueAsDouble(fieldsMap, MetadataConstants.PROMPT_TOKEN_COUNT);
+        Integer totalTokenCount = getValueAsInteger(fieldsMap, MetadataConstants.TOTAL_TOKEN_COUNT);
+        Integer completionTokenCount = getValueAsInteger(fieldsMap, MetadataConstants.COMPLETION_TOKEN_COUNT);
+        Integer promptTokenCount = getValueAsInteger(fieldsMap, MetadataConstants.PROMPT_TOKEN_COUNT);
         String model = getValueAsString(fieldsMap, MetadataConstants.MODEL);
         String providerName = getValueAsString(fieldsMap, MetadataConstants.AI_PROVIDER_NAME);
         String providerAPIVersion = getValueAsString(fieldsMap, MetadataConstants.AI_PROVIDER_API_VERSION);
@@ -308,12 +307,13 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
         return fieldsMap.get(key).getStringValue();
     }
 
-    private Double getValueAsDouble(Map<String, Value> fieldsMap, String key) {
+    private Integer getValueAsInteger(Map<String, Value> fieldsMap, String key) {
 
         if (fieldsMap == null || !fieldsMap.containsKey(key)) {
             return null;
         }
-        return fieldsMap.get(key).getNumberValue();
+        Double d = fieldsMap.get(key).getNumberValue();
+        return d.intValue();
     }
 
     private Map<String, Value> getFieldsMapFromLogEntry() {
@@ -325,10 +325,18 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
                 .containsKey(MetadataConstants.EXT_AUTH_METADATA_CONTEXT_KEY)) {
             return new HashMap<>(0);
         }
-        Map<String, Value> metadataFromExtProc = logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
-                .get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY).getFieldsMap();
-        Map<String, Value> metadataFromExtAuthz = logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
-                .get(MetadataConstants.EXT_AUTH_METADATA_CONTEXT_KEY).getFieldsMap();
+        Map<String, Value> metadataFromExtProc = new HashMap<>();
+        if (logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
+                .get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY) != null) {
+            metadataFromExtProc = logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
+                    .get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY).getFieldsMap();
+        }
+        Map<String, Value> metadataFromExtAuthz = new HashMap<>();
+        if (logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
+                .get(MetadataConstants.EXT_AUTH_METADATA_CONTEXT_KEY) != null) {
+            metadataFromExtAuthz = logEntry.getCommonProperties().getMetadata().getFilterMetadataMap()
+                    .get(MetadataConstants.EXT_AUTH_METADATA_CONTEXT_KEY).getFieldsMap();
+        }
         Map<String, Value> mergedMetadata = new HashMap<>(metadataFromExtProc);
         mergedMetadata.putAll(metadataFromExtAuthz);
         return mergedMetadata;

@@ -24,18 +24,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class AITokenUsage {
     @JsonProperty("totalTokens")
-    private Double totalTokens;
+    private Integer totalTokens;
 
     @JsonProperty("promptTokens")
-    private Double promptTokens;
+    private Integer promptTokens;
 
     @JsonProperty("completionTokens")
-    private Double completionTokens;
+    private Integer completionTokens;
 
     @JsonProperty("hour")
     private Integer hour;
 
-    public Double getTotalTokens() {
+    public Integer getTotalTokens() {
 
         return totalTokens;
     }
@@ -50,27 +50,27 @@ public class AITokenUsage {
         this.hour = hour;
     }
 
-    public void setTotalTokens(Double totalTokens) {
+    public void setTotalTokens(Integer totalTokens) {
 
         this.totalTokens = totalTokens;
     }
 
-    public Double getPromptTokens() {
+    public Integer getPromptTokens() {
 
         return promptTokens;
     }
 
-    public void setPromptTokens(Double promptTokens) {
+    public void setPromptTokens(Integer promptTokens) {
 
         this.promptTokens = promptTokens;
     }
 
-    public Double getCompletionTokens() {
+    public Integer getCompletionTokens() {
 
         return completionTokens;
     }
 
-    public void setCompletionTokens(Double completionTokens) {
+    public void setCompletionTokens(Integer completionTokens) {
 
         this.completionTokens = completionTokens;
     }
