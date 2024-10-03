@@ -55,16 +55,16 @@ jobs:
         id: cache
         with:
           path: "ballerina-dist/*.deb"
-          key: "ballerina-2201.10.1"
+          key: "ballerina-2201.8.5"
       - name: Download Ballerina distribution.
         shell: sh
         run: |
           mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.10.1/ballerina-2201.10.1-swan-lake-linux-x64.deb' -P ballerina-dist
+          wget 'https://dist.ballerina.io/downloads/2201.8.5/ballerina-2201.8.5-swan-lake-linux-x64.deb' -P ballerina-dist
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Install Ballerina distribution.
         shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.10.1-swan-lake-linux-x64.deb"
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.8.5-swan-lake-linux-x64.deb"
       - name: Verify Ballerina Version
         shell: sh
         run: "bal -v"
