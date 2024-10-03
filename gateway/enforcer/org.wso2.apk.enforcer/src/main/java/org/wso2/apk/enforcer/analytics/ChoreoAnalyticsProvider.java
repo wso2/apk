@@ -19,6 +19,7 @@
 package org.wso2.apk.enforcer.analytics;
 
 import com.google.protobuf.Struct;
+import com.google.protobuf.Timestamp;
 import com.google.protobuf.Value;
 import io.envoyproxy.envoy.data.accesslog.v3.AccessLogCommon;
 import io.envoyproxy.envoy.data.accesslog.v3.HTTPAccessLogEntry;
@@ -43,6 +44,9 @@ import org.wso2.apk.enforcer.commons.analytics.publishers.dto.enums.FaultSubCate
 import org.wso2.apk.enforcer.constants.AnalyticsConstants;
 import org.wso2.apk.enforcer.constants.MetadataConstants;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -268,7 +272,9 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
         if (totalTokenCount != null) aiTokenUsage.setTotalTokens(totalTokenCount);
         if (promptTokenCount != null) aiTokenUsage.setPromptTokens(promptTokenCount);
         if (completionTokenCount != null) aiTokenUsage.setCompletionTokens(completionTokenCount);
-
+        if (logEntry != null && logEntry.getCommonProperties() != null && logEntry.getCommonProperties().getStartTime() != null) {
+            aiTokenUsage.setHour(getUtcHour(logEntry.getCommonProperties().getStartTime()));
+        }
         if (aiTokenUsage.getTotalTokens() != null || aiTokenUsage.getPromptTokens() != null || aiTokenUsage.getCompletionTokens() != null) {
             map.put("aiTokenUsage", aiTokenUsage);
         }
@@ -334,6 +340,12 @@ public class ChoreoAnalyticsProvider implements AnalyticsDataProvider {
 
     private void addMetadata(Struct.Builder structBuilder, String key, double value) {
         structBuilder.putFields(key, Value.newBuilder().setNumberValue(value).build());
+    }
+
+    public static int getUtcHour(Timestamp timestamp) {
+        Instant instant = Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
+        ZonedDateTime utcDateTime = instant.atZone(ZoneOffset.UTC);
+        return utcDateTime.getHour();
     }
 
     private void setCustomPropertiesMap(HTTPAccessLogEntry logEntry, Map<String, Object> customProperties) {
