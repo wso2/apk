@@ -6,6 +6,7 @@ Feature: API backend based AI ratelimit Feature
     Then I set headers
       | Authorization | bearer ${accessToken} |
     And I wait for next minute strictly
+    And I wait for 3600 seconds
     And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api/v1.0.0/3.14/employee?send=body" with body ""
     Then the response status code should be 200
     And the response headers should contain
