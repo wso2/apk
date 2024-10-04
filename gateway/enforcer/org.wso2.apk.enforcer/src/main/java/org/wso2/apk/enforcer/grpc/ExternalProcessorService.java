@@ -76,6 +76,7 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
             @Override
             public void onNext(ProcessingRequest request) {
                 ProcessingRequest.RequestCase r = request.getRequestCase();
+                logger.info("Starting to serve external processing request");
                 switch (r) {
                     case RESPONSE_HEADERS:
                         if (!request.getAttributesMap().isEmpty() && request.getAttributesMap().get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY) != null && request.getAttributesMap().get(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY).getFieldsMap().get("xds.route_metadata") != null){
@@ -122,7 +123,16 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                                 ratelimitClient.shouldRatelimit(configs);
                             });
                             if (usage != null) {
-
+                                Struct.Builder structBuilder = Struct.newBuilder();
+                                addMetadata(structBuilder, MetadataConstants.AI_PROVIDER_API_VERSION, providerAPIVersion);
+                                addMetadata(structBuilder, MetadataConstants.AI_PROVIDER_NAME, providerName);
+                                addMetadata(structBuilder, MetadataConstants.MODEL, usage.model);
+                                addMetadata(structBuilder, MetadataConstants.COMPLETION_TOKEN_COUNT, usage.completion_tokens);
+                                addMetadata(structBuilder, MetadataConstants.TOTAL_TOKEN_COUNT, usage.total_tokens);
+                                addMetadata(structBuilder, MetadataConstants.PROMPT_TOKEN_COUNT, usage.prompt_tokens);
+                                Struct.Builder rootStructBuilder = Struct.newBuilder();
+                                rootStructBuilder.putFields(MetadataConstants.EXT_PROC_METADATA_CONTEXT_KEY, Value.newBuilder().setStructValue(structBuilder.build()).build());
+                                responseObserver.onNext(ProcessingResponse.newBuilder().setDynamicMetadata(rootStructBuilder.build()).setResponseHeaders(prepareHeadersResponse()).build());
                             }
                         }
                         responseObserver.onCompleted();
@@ -195,6 +205,7 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                             }
                             responseObserver.onCompleted();
                         } else {
+                            logger.error("Response body not found");
                             responseObserver.onCompleted();
                         }
 
@@ -230,10 +241,10 @@ public class ExternalProcessorService extends ExternalProcessorGrpc.ExternalProc
                 .setResponse(
                         CommonResponse.newBuilder()
                                 .setStatus(CommonResponse.ResponseStatus.CONTINUE)
-                                .setHeaderMutation(
-                                        HeaderMutation.newBuilder()
-                                                .build())
-                                .setBodyMutation(BodyMutation.newBuilder().build())
+//                                .setHeaderMutation(
+//                                        HeaderMutation.newBuilder()
+//                                                .build())
+//                                .setBodyMutation(BodyMutation.newBuilder().build())
                                 .build())
                 .build();
     }

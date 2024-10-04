@@ -229,7 +229,7 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 
 // getExtProcessHTTPFilter gets ExtAauthz http filter.
 func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
-	// conf := config.ReadConfigs()
+	conf := config.ReadConfigs()
 	externalProcessor := &ext_process.ExternalProcessor{
 		GrpcService: &corev3.GrpcService{
 			TargetSpecifier: &corev3.GrpcService_EnvoyGrpc_{
@@ -237,6 +237,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 					ClusterName: extAuthzClusterName,
 				},
 			},
+			Timeout: durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
 		},
 		ProcessingMode: &ext_process.ProcessingMode{
 			ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
