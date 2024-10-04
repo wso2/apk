@@ -58,7 +58,7 @@ jobs:
       run: |
         helm repo add wso2apim https://github.com/wso2/helm-apim/releases/download/cp-4.3.0
         helm repo update
-        helm install apim wso2apim/wso2am-cp --version 4.3.0 -f https://raw.githubusercontent.com/wso2/apk/main/helm-charts/samples/apim/cp/values.yaml -n apk --debug --wait --timeout 5m0s
+        helm install apim wso2apim/wso2am-cp --version 4.3.0 -f https://raw.githubusercontent.com/wso2/apk/main/helm-charts/samples/apim/cp/4.4.0-values.yaml -n apk --debug --wait --timeout 5m0s
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.0/deploy/static/provider/cloud/deploy.yaml
         kubectl get pods -n apk
         kubectl get svc -n apk
