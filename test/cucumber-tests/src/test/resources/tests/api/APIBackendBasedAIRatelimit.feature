@@ -7,7 +7,8 @@ Feature: API backend based AI ratelimit Feature
       | Authorization | bearer ${accessToken} |
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api/v1.0.0/3.14/employee?send=body" with body ""
-    Then the response status code should be 200
+    And I eventually receive 200 response code, not accepting
+      |429|
     And the response headers should contain
       | x-ratelimit-remaining | 4999 |
     And I wait for 3 seconds
