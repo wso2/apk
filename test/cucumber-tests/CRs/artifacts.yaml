@@ -756,7 +756,7 @@ spec:
           appId: 45f1c5c8-a92e-11ed-afa1-0242ac120009
           keyType: SANDBOX
 ---
-apiVersion: cp.wso2.com/v1alpha2
+apiVersion: cp.wso2.com/v1alpha3
 kind: Subscription
 metadata:
   name: 583e4146-7ef6-11ee-b962-0242ac120003
@@ -1276,7 +1276,7 @@ spec:
 
 ---
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: llm-api-subs
@@ -1477,7 +1477,7 @@ spec:
 
 ---
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: llm-api-header
@@ -1641,7 +1641,7 @@ spec:
 
 ---
 
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha3
 kind: API
 metadata:
   name: llm-api

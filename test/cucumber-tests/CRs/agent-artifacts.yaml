@@ -756,7 +756,7 @@ spec:
           appId: 45f1c5c8-a92e-11ed-afa1-0242ac120009
           keyType: SANDBOX
 ---
-apiVersion: cp.wso2.com/v1alpha2
+apiVersion: cp.wso2.com/v1alpha3
 kind: Subscription
 metadata:
   name: 583e4146-7ef6-11ee-b962-0242ac120003
@@ -767,6 +767,30 @@ spec:
   api:
     name: "subscription-api"
     version: "1.0.0"
+  ratelimitRef:
+    name: api-subscription-ratelimit1
+    level: application
+
+---
+apiVersion: "dp.wso2.com/v1alpha3"
+kind: "RateLimitPolicy"
+metadata:
+  name: "api-subscription-ratelimit1"
+spec:
+  override:
+    subscription:
+      stopOnQuotaReach: true
+      organization: "default"
+      requestCount:
+        requestsPerUnit: 1000
+        unit: "Minute"
+      burstControl:
+        requestsPerUnit: 1000
+        unit: "Minute"
+  targetRef:
+    kind: Subscription
+    name: "583e4146-7ef6-11ee-b962-0242ac120003"
+    group: gateway.networking.k8s.io
 
 ---
 apiVersion: cp.wso2.com/v1alpha2
@@ -874,7 +898,7 @@ data:
     u0/ITEw=
     -----END CERTIFICATE-----
 ---
-apiVersion: cp.wso2.com/v1alpha2
+apiVersion: cp.wso2.com/v1alpha3
 kind: Subscription
 metadata:
   name: semantic-versioning-subscription
@@ -885,6 +909,30 @@ spec:
   api:
     name: "Semantic Versioning API"
     version: "v\\d+(\\.\\d+)?"
+  ratelimitRef:
+    name: api-subscription-ratelimit
+    level: application
+
+---
+apiVersion: "dp.wso2.com/v1alpha3"
+kind: "RateLimitPolicy"
+metadata:
+  name: "api-subscription-ratelimit"
+spec:
+  override:
+    subscription:
+      stopOnQuotaReach: true
+      organization: "default"
+      requestCount:
+        requestsPerUnit: 1000
+        unit: "Minute"
+      burstControl:
+        requestsPerUnit: 1000
+        unit: "Minute"
+  targetRef:
+    kind: Subscription
+    name: "semantic-versioning-subscription"
+    group: gateway.networking.k8s.io
 ---
 apiVersion: cp.wso2.com/v1alpha2
 kind: ApplicationMapping
