@@ -239,6 +239,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 			},
 			Timeout: durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
 		},
+		FailureModeAllow: true,
 		ProcessingMode: &ext_process.ProcessingMode{
 			ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
 			RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
