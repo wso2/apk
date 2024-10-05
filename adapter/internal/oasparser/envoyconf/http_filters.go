@@ -239,6 +239,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 			},
 			Timeout: durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
 		},
+		FailureModeAllow: true,
 		ProcessingMode: &ext_process.ProcessingMode{
 			ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
 			RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
@@ -254,6 +255,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 		},
 		RequestAttributes:  []string{"xds.route_metadata"},
 		ResponseAttributes: []string{"xds.route_metadata"},
+		MessageTimeout: durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
 	}
 	ext, err2 := anypb.New(externalProcessor)
 	if err2 != nil {
