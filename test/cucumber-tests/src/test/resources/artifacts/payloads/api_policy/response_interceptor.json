@@ -25,7 +25,7 @@
     "request": [],
     "response": [
       {
-        "policyName": "ccCallInterceptorService",
+        "policyName": "apkCallInterceptorService",
         "policyVersion": "v1",
         "parameters": {
           "interceptorServiceURL": "http://interceptor-service.apk.svc.cluster.local:8443",
