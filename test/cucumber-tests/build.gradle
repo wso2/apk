@@ -51,6 +51,7 @@ dependencies {
     implementation 'io.grpc:grpc-stub:1.57.0'
     implementation 'io.grpc:grpc-stub:1.57.0'
     implementation 'com.google.protobuf:protobuf-java:4.28.2'
+    implementation group: 'io.kubernetes', name: 'client-java', version: '21.0.1'
 }
 
 test {

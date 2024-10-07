@@ -39,6 +39,12 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.Configuration;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.util.Config;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -71,6 +77,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 
@@ -302,6 +310,31 @@ public class BaseSteps {
                     nonAcceptableCodes);
             sharedContext.setResponse(httpResponse);
             Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), statusCode);
+        }
+    }
+
+    @Then("I see following strings in the enforcer logs")
+    public void checkEnforcerLogs(DataTable dataTable) throws IOException, InterruptedException, ApiException {
+        List<String> stringsToCheck = dataTable.asList(String.class);
+        ApiClient client = Config.defaultClient();
+        Configuration.setDefaultApiClient(client);
+        CoreV1Api api = new CoreV1Api();
+        String namespace = "apk-integration-test";
+        String podName = "your-pod-name";
+        String labelSelector = "app.kubernetes.io/app=gateway";
+
+        List<V1Pod> podList = api.listNamespacedPod(namespace).labelSelector(labelSelector).execute().getItems();
+        if (!podList.isEmpty()) {
+            podName = Objects.requireNonNull(podList.get(0).getMetadata()).getName();
+        }
+        try {
+            String logs = api.readNamespacedPodLog(podName, namespace).container("enforcer").sinceSeconds(60).execute();
+            Assert.assertNotNull(logs, String.format("Could not find any logs in the last 60 seconds. PodName: %s, namespace: %s", podName, namespace));
+            for(String word : stringsToCheck) {
+                Assert.assertTrue(logs.contains(word), "Expected word '" + word + "' not found in logs");
+            }
+        } catch (ApiException e) {
+            System.out.println(e);
         }
     }
 
