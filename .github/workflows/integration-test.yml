@@ -305,7 +305,10 @@ jobs:
         --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-idp-ui:${{ github.sha }} \
         --set wso2.apk.dp.ratelimiter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-ratelimiter:${{ github.sha }} \
         --set wso2.apk.dp.ratelimiter.requestTimeoutInMillis=800 \
-        --set wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting=true
+        --set wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting=true \
+        --set wso2.apk.dp.gatewayRuntime.analytics.enabled=true \
+        --set wso2.apk.dp.gatewayRuntime.analytics.publishers[0].enabled=true \
+        --set wso2.apk.dp.gatewayRuntime.analytics.publishers[0].type="elk"
         kubectl get pods -n apk-integration-test
         kubectl get svc -n apk-integration-test
     - name: Archieve Logs
