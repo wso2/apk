@@ -210,11 +210,15 @@ public class AnalyticsFilter {
     public String resolveEndpoint(RequestContext requestContext) {
 
         // For MockAPIs there is no backend, Hence "MockImplementation" is added as the destination.
-        if (requestContext.getMatchedAPI().isMockedApi()) {
+        if (requestContext.getMatchedAPI() != null && requestContext.getMatchedAPI().isMockedApi()) {
             return "MockImplementation";
         }
         // This does not cause problems at the moment Since the current microgateway supports only one URL
-        return requestContext.getMatchedResourcePaths().get(0).getEndpoints().getUrls().get(0);
+        try {
+            return requestContext.getMatchedResourcePaths().get(0).getEndpoints().getUrls().get(0);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public void handleFailureRequest(RequestContext requestContext) {
