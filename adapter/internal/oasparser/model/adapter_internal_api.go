@@ -753,17 +753,32 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 					})
 				}
 			case gwapiv1.HTTPRouteFilterRequestRedirect:
+				var requestRedirectEndpoint Endpoint
 				hasRequestRedirectPolicy = true
 				policyParameters := make(map[string]interface{})
+				scheme := *filter.RequestRedirect.Scheme
+				host := string(*filter.RequestRedirect.Hostname)
+				port := filter.RequestRedirect.Port
+				code := filter.RequestRedirect.StatusCode
 
-				policyParameters[constants.RedirectScheme] = *filter.RequestRedirect.Scheme
-				policyParameters[constants.RedirectHostname] = string(*filter.RequestRedirect.Hostname)
-				if filter.RequestRedirect.Port != nil {
-					policyParameters[constants.RedirectPort] = strconv.Itoa(int(*filter.RequestRedirect.Port))
+				policyParameters[constants.RedirectScheme] = scheme
+				requestRedirectEndpoint.URLType = scheme
+				policyParameters[constants.RedirectHostname] = host
+				requestRedirectEndpoint.Host = host
+
+				if port != nil {
+					policyParameters[constants.RedirectPort] = strconv.Itoa(int(*port))
+					requestRedirectEndpoint.Port = uint32(*port)
+				} else {
+					if requestRedirectEndpoint.URLType == "http" {
+						requestRedirectEndpoint.Port = 80
+					} else if requestRedirectEndpoint.URLType == "https" {
+						requestRedirectEndpoint.Port = 443
+					}
 				}
 
-				if filter.RequestRedirect.StatusCode != nil {
-					policyParameters[constants.RedirectStatusCode] = *filter.RequestRedirect.StatusCode
+				if code != nil {
+					policyParameters[constants.RedirectStatusCode] = *code
 				}
 
 				switch filter.RequestRedirect.Path.Type {
@@ -772,12 +787,14 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				case gwapiv1.PrefixMatchHTTPPathModifier:
 					policyParameters[constants.RedirectPath] = backendBasePath + *filter.RequestRedirect.Path.ReplacePrefixMatch
 				}
+				requestRedirectEndpoint.Basepath = policyParameters[constants.RedirectPath].(string)
 
 				policies.Request = append(policies.Request, Policy{
 					PolicyName: string(gwapiv1.HTTPRouteFilterRequestRedirect),
 					Action:     constants.ActionRedirectRequest,
 					Parameters: policyParameters,
 				})
+				endPoints = append(endPoints, requestRedirectEndpoint)
 
 			case gwapiv1.HTTPRouteFilterRequestMirror:
 				var mirrorTimeoutInMillis uint32
@@ -917,17 +934,17 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 			matchID := getMatchID(httpRoute.Namespace, httpRoute.Name, ruleID, matchID)
 			operations := getAllowedOperations(matchID, match.Method, policies, apiAuth,
 				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
-			
+
 			resource := &Resource{
-				path: resourcePath,
-				methods:                  operations,
-				pathMatchType:            *match.Path.Type,
-				hasPolicies:              true,
-				iD:                       uuid.New().String(),
-				hasRequestRedirectFilter: hasRequestRedirectPolicy,
-				enableBackendBasedAIRatelimit: enableBackendBasedAIRatelimit,
+				path:                                   resourcePath,
+				methods:                                operations,
+				pathMatchType:                          *match.Path.Type,
+				hasPolicies:                            true,
+				iD:                                     uuid.New().String(),
+				hasRequestRedirectFilter:               hasRequestRedirectPolicy,
+				enableBackendBasedAIRatelimit:          enableBackendBasedAIRatelimit,
 				backendBasedAIRatelimitDescriptorValue: descriptorValue,
-				extractTokenFrom: extractTokenFrom,
+				extractTokenFrom:                       extractTokenFrom,
 			}
 
 			resource.endpoints = &EndpointCluster{
