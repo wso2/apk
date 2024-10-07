@@ -4,9 +4,9 @@ dependencies:
   version: 15.5.24
 - name: redis
   repository: https://charts.bitnami.com/bitnami
-  version: 17.8.0
+  version: 20.1.7
 - name: cert-manager
   repository: https://charts.jetstack.io
-  version: v1.10.1
-digest: sha256:93196eab275694d9fd00865dcf2e1c57c1bdd8f1c5f63b91c6bfdb91a673fde2
-generated: "2024-08-25T08:46:59.765985+05:30"
+  version: v1.16.0
+digest: sha256:e263c939665bf3b500aa5e47df33ca6171374b86d538d604869d316be2d4a2d8
+generated: "2024-10-07T13:03:37.424377+05:30"
