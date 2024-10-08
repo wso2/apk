@@ -1993,21 +1993,11 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k
 		return []reconcile.Request{}
 	}
 
-	if len(httpRouteList.Items) == 0 {
-		loggers.LoggerAPKOperator.Debugf("HTTPRoutes for Gateway not found: %s", utils.NamespacedName(gateway).String())
-		return []reconcile.Request{}
-	}
-
 	grpcRouteList := &gwapiv1a2.GRPCRouteList{}
 	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayGRPCRouteIndex, utils.NamespacedName(gateway).String()),
 	}); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(gateway).String()))
-		return []reconcile.Request{}
-	}
-
-	if len(grpcRouteList.Items) == 0 {
-		loggers.LoggerAPKOperator.Debugf("GRPCRoutes for Gateway not found: %s", utils.NamespacedName(gateway).String())
 		return []reconcile.Request{}
 	}
 
