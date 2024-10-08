@@ -2809,6 +2809,9 @@ func prepareOwnerReference(apiItems []dpv1alpha3.API) []metav1.OwnerReference {
 	ownerReferences := []metav1.OwnerReference{}
 	uidMap := make(map[string]bool)
 	for _, ref := range apiItems {
+		if ref.Spec.SystemAPI {
+			continue
+		}
 		if _, exists := uidMap[string(ref.UID)]; !exists {
 			ownerReferences = append(ownerReferences, metav1.OwnerReference{
 				APIVersion: ref.APIVersion,
