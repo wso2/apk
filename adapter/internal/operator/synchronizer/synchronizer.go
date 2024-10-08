@@ -153,7 +153,9 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 					if len(event.Events) > i {
 						event.Events = []APIState{}
 					} else {
-						event.Events = append(event.Events[:i], event.Events[i+1:]...)
+						if i >= 0 && i < len(event.Events) {
+							event.Events = append(event.Events[:i], event.Events[i+1:]...)
+						}
 					}
 					continue
 				}
