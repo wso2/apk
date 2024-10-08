@@ -2713,7 +2713,14 @@ func (apiReconciler *APIReconciler) handleStatus() {
 					hCopy.Status.DeploymentStatus.Status = successEvent.State
 					hCopy.Status.DeploymentStatus.Accepted = accept
 					hCopy.Status.DeploymentStatus.Message = message
-					hCopy.Status.DeploymentStatus.Events = append(hCopy.Status.DeploymentStatus.Events, event)
+					events := hCopy.Status.DeploymentStatus.Events
+					// Keep the first 2 and last 3 events, remove the rest
+					if len(events) > 6 {
+						// Truncate the events and add the special event
+						events = append(events[:2], events[len(events)-3:]...)
+					}
+
+					hCopy.Status.DeploymentStatus.Events = append(events, event)
 					hCopy.Status.DeploymentStatus.TransitionTime = &timeNow
 					return hCopy
 				},
