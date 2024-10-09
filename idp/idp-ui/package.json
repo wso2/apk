@@ -7,16 +7,16 @@
     "startDev": "nodemon ./bin/www"
   },
   "dependencies": {
-    "cookie-parser": "~1.4.6",
-    "ejs": "^3.1.9",
-    "express": "^4.19.2",
-    "express-session": "^1.18.0",
+    "cookie-parser": "~1.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.1",
+    "express-session": "^1.18.1",
     "http-errors": "~2.0.0",
     "morgan": "~1.10.0",
     "pbkdf2-password": "^1.2.1",
     "toml-nodejs": "^0.3.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.7"
   }
 }
