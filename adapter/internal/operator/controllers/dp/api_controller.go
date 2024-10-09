@@ -1611,7 +1611,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(ctx context.Context, obj k8
 		return []reconcile.Request{}
 	}
 
-	backendList := &dpv1alpha1.BackendList{}
+	backendList := &dpv1alpha2.BackendList{}
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
