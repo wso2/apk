@@ -8,7 +8,7 @@ The following should be installed in your dev machine.
 
 - [Gradle](https://gradle.org/install/) >= 7.5.1 version
 - [Docker](https://docs.docker.com/engine/install/ubuntu/) >= 17.03 version
-- [Golang](https://go.dev/doc/install) >= 1.19.0 version
+- [Golang](https://go.dev/doc/install) >= 1.23 version
 - [Revive](https://github.com/mgechev/revive#installation) latest version
 - [Kubebuilder](https://book.kubebuilder.io/quick-start.html#installation)
 

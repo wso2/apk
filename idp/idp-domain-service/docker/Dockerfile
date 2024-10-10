@@ -18,7 +18,7 @@
 #
 #---------------------------------------------------------------
 
-FROM ubuntu:22.04
+FROM ubuntu:24.10
 
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
