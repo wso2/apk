@@ -1,0 +1,44 @@
+name: "6a254687f3229c35dd0189aac7f7fc4b6228e97a"
+basePath: "/org.apk"
+version: "v1"
+type: "GRPC"
+id: "grpc-interceptor-api"
+endpointConfigurations:
+  production:
+    endpoint: "http://grpc-backend:6565"
+defaultVersion: false
+subscriptionValidation: false
+operations:
+  - target: "student_service.StudentService"
+    verb: "GetStudent"
+    secured: true
+    scopes: []
+  - target: "student_service.StudentService"
+    verb: "GetStudentStream"
+    secured: true
+    scopes: []
+  - target: "student_service.StudentService"
+    verb: "SendStudentStream"
+    secured: true
+    scopes: []
+  - target: "student_service.StudentService"
+    verb: "SendAndGetStudentStream"
+    secured: true
+    scopes: []
+apiPolicies:
+  request:
+    - policyName: "Interceptor"
+      policyVersion: v1
+      parameters:
+        backendUrl: "http://interceptor-service.apk-integration-test.svc.cluster.local:8443"
+        contextEnabled: true
+        headersEnabled: true
+        bodyEnabled: true
+  response:
+    - policyName: "Interceptor"
+      policyVersion: v1
+      parameters:
+        backendUrl: "http://interceptor-service.apk-integration-test.svc.cluster.local:8443"
+        contextEnabled: true
+        headersEnabled: true
+        bodyEnabled: true

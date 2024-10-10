@@ -78,6 +78,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import io.cucumber.java.en.And;
 
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -248,6 +249,18 @@ public class BaseSteps {
         }
     }
 
+    @And("the GRPC response should contain header {string}")
+    public void GetGRPCMetadata(String arg0) throws StatusRuntimeException {
+        try {
+            String header = SimpleGRPCStudentClient.getResponseHeader(arg0);
+            Assert.assertNotNull(header);
+            Assert.assertEquals(header, "Interceptor-Response-header-value");
+        } catch (StatusRuntimeException e) {
+            sharedContext.setGrpcStatusCode(e.getStatus().getCode().value());
+            logger.error(e.getMessage() + " Status code: " + e.getStatus().getCode().value());
+        }
+    }
+
     @Then("I make grpc request GetStudent default version to {string} with port {int}")
     public void GetStudentDefaultVersion(String arg0, int arg1) throws StatusRuntimeException {
         try {
@@ -329,8 +342,9 @@ public class BaseSteps {
         }
         try {
             String logs = api.readNamespacedPodLog(podName, namespace).container("enforcer").sinceSeconds(60).execute();
-            Assert.assertNotNull(logs, String.format("Could not find any logs in the last 60 seconds. PodName: %s, namespace: %s", podName, namespace));
-            for(String word : stringsToCheck) {
+            Assert.assertNotNull(logs, String.format(
+                    "Could not find any logs in the last 60 seconds. PodName: %s, namespace: %s", podName, namespace));
+            for (String word : stringsToCheck) {
                 Assert.assertTrue(logs.contains(word), "Expected word '" + word + "' not found in logs");
             }
         } catch (ApiException e) {

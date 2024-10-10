@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/sirupsen/logrus"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	"github.com/wso2/apk/adapter/internal/loggers"
@@ -1297,15 +1296,6 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 						Name:      string(filter.ExtensionRef.Name),
 						Namespace: grpcRoute.Namespace,
 					}.String()]; found {
-						logrus.Info("filter.ExtensionRef.Kind == constants.KindAPIPolicy")
-						logrus.Info(apiPolicy.Name)
-						logrus.Info(apiPolicy.Name)
-						if apiPolicy.Spec.Default != nil {
-							logrus.Info(apiPolicy.Spec.Default.RequestInterceptors)
-						}
-						if apiPolicy.Spec.Default != nil {
-							logrus.Info(apiPolicy.Spec.Default.ResponseInterceptors)
-						}
 						resourceAPIPolicy = concatAPIPolicies(apiPolicy, &ref)
 					} else {
 						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
