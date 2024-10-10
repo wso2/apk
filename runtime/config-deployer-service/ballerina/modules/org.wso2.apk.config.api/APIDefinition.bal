@@ -1,8 +1,9 @@
-import ballerina/jballerina.java;
-import ballerina/jballerina.java.arrays as jarrays;
 import config_deployer_service.java.lang as javalang;
 import config_deployer_service.java.util as javautil;
 import config_deployer_service.org.wso2.apk.config.model as orgwso2apkconfigmodel;
+
+import ballerina/jballerina.java;
+import ballerina/jballerina.java.arrays as jarrays;
 
 # Ballerina class mapping for the Java `org.wso2.apk.config.api.APIDefinition` class.
 @java:Binding {'class: "org.wso2.apk.config.api.APIDefinition"}
@@ -27,6 +28,7 @@ public distinct class APIDefinition {
     public function toString() returns string {
         return java:toString(self.jObj) ?: "";
     }
+
     # The function that maps to the `canHandleDefinition` method of `org.wso2.apk.config.api.APIDefinition`.
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
@@ -47,13 +49,13 @@ public distinct class APIDefinition {
     #
     # + arg0 - The `orgwso2apkconfigmodel:API` value required to map with the Java method parameter.
     # + return - The `string` or the `APIManagementException` value returning from the Java mapping.
-    public function generateAPIDefinition(orgwso2apkconfigmodel:API arg0) returns APIManagementException|string? {
+    public function generateAPIDefinition(orgwso2apkconfigmodel:API arg0) returns string|APIManagementException {
         handle|error externalObj = org_wso2_apk_config_api_APIDefinition_generateAPIDefinition(self.jObj, arg0.jObj);
         if (externalObj is error) {
             APIManagementException e = error APIManagementException(APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
             return e;
         } else {
-            return java:toString(externalObj);
+            return java:toString(externalObj) ?: "";
         }
     }
 
@@ -62,13 +64,13 @@ public distinct class APIDefinition {
     # + arg0 - The `orgwso2apkconfigmodel:API` value required to map with the Java method parameter.
     # + arg1 - The `string` value required to map with the Java method parameter.
     # + return - The `string` or the `APIManagementException` value returning from the Java mapping.
-    public function generateAPIDefinition2(orgwso2apkconfigmodel:API arg0, string arg1) returns APIManagementException|string? {
+    public function generateAPIDefinition2(orgwso2apkconfigmodel:API arg0, string arg1) returns string|APIManagementException {
         handle|error externalObj = org_wso2_apk_config_api_APIDefinition_generateAPIDefinition2(self.jObj, arg0.jObj, java:fromString(arg1));
         if (externalObj is error) {
             APIManagementException e = error APIManagementException(APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
             return e;
         } else {
-            return java:toString(externalObj);
+            return java:toString(externalObj) ?: "";
         }
     }
 
@@ -176,13 +178,13 @@ public distinct class APIDefinition {
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
     # + return - The `string` or the `APIManagementException` value returning from the Java mapping.
-    public function processOtherSchemeScopes(string arg0) returns APIManagementException|string? {
+    public function processOtherSchemeScopes(string arg0) returns string|APIManagementException {
         handle|error externalObj = org_wso2_apk_config_api_APIDefinition_processOtherSchemeScopes(self.jObj, java:fromString(arg0));
         if (externalObj is error) {
             APIManagementException e = error APIManagementException(APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
             return e;
         } else {
-            return java:toString(externalObj);
+            return java:toString(externalObj) ?: "";
         }
     }
 
@@ -238,15 +240,6 @@ public distinct class APIDefinition {
         }
     }
 
-}
-
-# The constructor function to generate an object of `org.wso2.apk.config.api.APIDefinition`.
-#
-# + return - The new `APIDefinition` class generated.
-public function newAPIDefinition1() returns APIDefinition {
-    handle externalObj = org_wso2_apk_config_api_APIDefinition_newAPIDefinition1();
-    APIDefinition newObj = new (externalObj);
-    return newObj;
 }
 
 function org_wso2_apk_config_api_APIDefinition_canHandleDefinition(handle receiver, handle arg0) returns boolean = @java:Method {
@@ -362,9 +355,3 @@ function org_wso2_apk_config_api_APIDefinition_wait3(handle receiver, int arg0, 
     'class: "org.wso2.apk.config.api.APIDefinition",
     paramTypes: ["long", "int"]
 } external;
-
-function org_wso2_apk_config_api_APIDefinition_newAPIDefinition1() returns handle = @java:Constructor {
-    'class: "org.wso2.apk.config.api.APIDefinition",
-    paramTypes: []
-} external;
-

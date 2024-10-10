@@ -7,8 +7,8 @@ type: "REST"
 defaultVersion: false
 subscriptionValidation: false
 aiProvider:
-  name: llm-provider-1
-  apiVersion: “2024.06.01”
+  name: "llm-provider-1"
+  apiVersion: "2024.06.01"
 endpointConfigurations:
   production:
     endpoint: "http://llm-service:80"

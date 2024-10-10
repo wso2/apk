@@ -22,6 +22,7 @@ public distinct class Object {
     public function toString() returns string {
         return java:toString(self.jObj) ?: "";
     }
+
     # The function that maps to the `equals` method of `java.lang.Object`.
     #
     # + arg0 - The `Object` value required to map with the Java method parameter.

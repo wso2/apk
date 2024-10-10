@@ -1,6 +1,7 @@
-import ballerina/jballerina.java;
 import config_deployer_service.java.lang as javalang;
 import config_deployer_service.org.wso2.apk.config.api as orgwso2apkconfigapi;
+
+import ballerina/jballerina.java;
 
 # Ballerina class mapping for the Java `org.wso2.apk.config.APKConfValidator` class.
 @java:Binding {'class: "org.wso2.apk.config.APKConfValidator"}
@@ -25,6 +26,7 @@ public isolated distinct class APKConfValidator {
     public function toString() returns string {
         return java:toString(self.jObj) ?: "";
     }
+
     # The function that maps to the `equals` method of `org.wso2.apk.config.APKConfValidator`.
     #
     # + arg0 - The `javalang:Object` value required to map with the Java method parameter.

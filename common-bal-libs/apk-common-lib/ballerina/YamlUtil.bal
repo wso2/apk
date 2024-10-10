@@ -1,5 +1,6 @@
-import ballerina/jballerina.java;
 import apk_common_lib.java.lang as javalang;
+
+import ballerina/jballerina.java;
 
 # Ballerina class mapping for the Java `org.wso2.apk.common.YamlUtil` class.
 @java:Binding {'class: "org.wso2.apk.common.YamlUtil"}
@@ -24,6 +25,7 @@ public distinct class YamlUtil {
     public function toString() returns string {
         return java:toString(self.jObj) ?: "";
     }
+
     # The function that maps to the `equals` method of `org.wso2.apk.common.YamlUtil`.
     #
     # + arg0 - The `javalang:Object` value required to map with the Java method parameter.
@@ -36,13 +38,13 @@ public distinct class YamlUtil {
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
     # + return - The `string` or the `javalang:Exception` value returning from the Java mapping.
-    public isolated function fromJsonStringToYaml(string arg0) returns string?|javalang:Exception {
+    public isolated function fromJsonStringToYaml(string arg0) returns string|javalang:Exception {
         handle|error externalObj = org_wso2_apk_common_YamlUtil_fromJsonStringToYaml(self.jObj, java:fromString(arg0));
         if (externalObj is error) {
             javalang:Exception e = error javalang:Exception(javalang:EXCEPTION, externalObj, message = externalObj.message());
             return e;
         } else {
-            return java:toString(externalObj);
+            return java:toString(externalObj) ?: "";
         }
     }
 
@@ -50,13 +52,13 @@ public distinct class YamlUtil {
     #
     # + arg0 - The `string` value required to map with the Java method parameter.
     # + return - The `string` or the `javalang:Exception` value returning from the Java mapping.
-    public isolated function fromYamlStringToJson(string arg0) returns string?|javalang:Exception {
+    public isolated function fromYamlStringToJson(string arg0) returns string|javalang:Exception {
         handle|error externalObj = org_wso2_apk_common_YamlUtil_fromYamlStringToJson(self.jObj, java:fromString(arg0));
         if (externalObj is error) {
             javalang:Exception e = error javalang:Exception(javalang:EXCEPTION, externalObj, message = externalObj.message());
             return e;
         } else {
-            return java:toString(externalObj);
+            return java:toString(externalObj) ?: "";
         }
     }
 

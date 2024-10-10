@@ -1,6 +1,7 @@
-import ballerina/jballerina.java;
-import apk_common_lib.java.lang as javalang;
 import apk_common_lib.java.io as javaio;
+import apk_common_lib.java.lang as javalang;
+
+import ballerina/jballerina.java;
 
 # Ballerina class mapping for the Java `org.wso2.apk.common.ZIPUtils` class.
 @java:Binding {'class: "org.wso2.apk.common.ZIPUtils"}
@@ -25,6 +26,7 @@ public distinct class ZIPUtils {
     public function toString() returns string {
         return java:toString(self.jObj) ?: "";
     }
+
     # The function that maps to the `equals` method of `org.wso2.apk.common.ZIPUtils`.
     #
     # + arg0 - The `javalang:Object` value required to map with the Java method parameter.
