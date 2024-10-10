@@ -361,7 +361,61 @@ func (r *gatewayReconcilerNew) findReferenceGrant(ctx context.Context, from, to 
 	return nil, nil
 }
 
-func (r *gatewayReconcilerNew) enqueueClass(_ context.Context, _ client.Object) []reconcile.Request {
+func (r *gatewayReconcilerNew) enqueueGatewayClass(_ context.Context, _ *gwapiv1.GatewayClass) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueGateway(_ context.Context, _ *gwapiv1.Gateway) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueHTTPRoute(_ context.Context, _ *gwapiv1.HTTPRoute) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueAPI(_ context.Context, _ *dpv1alpha2.API) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueService(_ context.Context, _ *corev1.Service) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueBackend(_ context.Context, _ *dpv1alpha2.Backend) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueNode(_ context.Context, _ *corev1.Node) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueSecret(_ context.Context, _ *corev1.Secret) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueReferenceGrant(_ context.Context, _ *gwapiv1b1.ReferenceGrant) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{
+		Name: string(gatewayClassControllerName),
+	}}}
+}
+
+func (r *gatewayReconcilerNew) enqueueDeployment(_ context.Context, _ *appsv1.Deployment) []reconcile.Request {
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{
 		Name: string(gatewayClassControllerName),
 	}}}
@@ -370,25 +424,25 @@ func (r *gatewayReconcilerNew) enqueueClass(_ context.Context, _ client.Object) 
 // watchResources watches gateway api resources.
 func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.Manager, c controller.Controller) error {
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &gwapiv1.GatewayClass{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		predicate.GenerationChangedPredicate{},
-		predicate.NewPredicateFuncs(r.hasMatchingController),
+		source.Kind(mgr.GetCache(), &gwapiv1.GatewayClass{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueGatewayClass),
+			predicate.TypedGenerationChangedPredicate[*gwapiv1.GatewayClass]{},
+			predicate.NewTypedPredicateFuncs(r.hasMatchingController)),
 	); err != nil {
 		return err
 	}
 
 	// Watch Gateway CRUDs and reconcile affected GatewayClass.
-	gPredicates := []predicate.Predicate{
-		predicate.GenerationChangedPredicate{},
-		predicate.NewPredicateFuncs(r.validateGatewayForReconcile),
+	gPredicates := []predicate.TypedPredicate[*gwapiv1.Gateway]{
+		predicate.TypedGenerationChangedPredicate[*gwapiv1.Gateway]{},
+		predicate.NewTypedPredicateFuncs(r.validateGatewayForReconcile),
 	}
 
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &gwapiv1.Gateway{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		gPredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &gwapiv1.Gateway{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueGateway),
+			gPredicates...,
+		)); err != nil {
 		return err
 	}
 	if err := addGatewayIndexers(ctx, mgr); err != nil {
@@ -396,12 +450,12 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	}
 
 	// Watch HTTPRoute CRUDs and process affected Gateways.
-	httprPredicates := []predicate.Predicate{predicate.GenerationChangedPredicate{}}
+	httprPredicates := []predicate.TypedPredicate[*gwapiv1.HTTPRoute]{predicate.TypedGenerationChangedPredicate[*gwapiv1.HTTPRoute]{}}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		httprPredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueHTTPRoute),
+			httprPredicates...,
+		)); err != nil {
 		return err
 	}
 	if err := addHTTPRouteIndexers(ctx, mgr); err != nil {
@@ -409,12 +463,12 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	}
 
 	// Watch API CRUDs and process affected Gateways.
-	apiPredicates := []predicate.Predicate{predicate.GenerationChangedPredicate{}}
+	apiPredicates := []predicate.TypedPredicate[*dpv1alpha2.API]{predicate.TypedGenerationChangedPredicate[*dpv1alpha2.API]{}}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &dpv1alpha2.API{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		apiPredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &dpv1alpha2.API{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueAPI),
+			apiPredicates...,
+		)); err != nil {
 		return err
 	}
 	if err := addAPIIndexers(ctx, mgr); err != nil {
@@ -483,22 +537,22 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	// }
 
 	// Watch Service CRUDs and process affected *Route objects and services belongs to gateways
-	servicePredicates := []predicate.Predicate{predicate.NewPredicateFuncs(r.validateServiceForReconcile)}
+	servicePredicates := []predicate.TypedPredicate[*corev1.Service]{predicate.NewTypedPredicateFuncs(r.validateServiceForReconcile)}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &corev1.Service{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		servicePredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &corev1.Service{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueService),
+			servicePredicates...,
+		)); err != nil {
 		return err
 	}
 
 	// Watch Service CRUDs and process affected *Route objects and services belongs to gateways
-	backendPredicates := []predicate.Predicate{predicate.NewPredicateFuncs(r.validateBackendForReconcile)}
+	backendPredicates := []predicate.TypedPredicate[*dpv1alpha2.Backend]{predicate.NewTypedPredicateFuncs(r.validateBackendForReconcile)}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		backendPredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueBackend),
+			backendPredicates...,
+		)); err != nil {
 		return err
 	}
 
@@ -537,29 +591,29 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 
 	// Watch Node CRUDs to update Gateway Address exposed by Service of type NodePort.
 	// Node creation/deletion and ExternalIP updates would require update in the Gateway
-	nPredicates := []predicate.Predicate{
-		predicate.GenerationChangedPredicate{},
-		predicate.NewPredicateFuncs(r.handleNode),
+	nPredicates := []predicate.TypedPredicate[*corev1.Node]{
+		predicate.TypedGenerationChangedPredicate[*corev1.Node]{},
+		predicate.NewTypedPredicateFuncs(r.handleNode),
 	}
 	// resource address.
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &corev1.Node{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		nPredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &corev1.Node{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueNode),
+			nPredicates...,
+		)); err != nil {
 		return err
 	}
 
 	// Watch Secret CRUDs and process affected EG CRs (Gateway, SecurityPolicy, more in the future).
-	secretPredicates := []predicate.Predicate{
-		predicate.GenerationChangedPredicate{},
-		predicate.NewPredicateFuncs(r.validateSecretForReconcile),
+	secretPredicates := []predicate.TypedPredicate[*corev1.Secret]{
+		predicate.TypedGenerationChangedPredicate[*corev1.Secret]{},
+		predicate.NewTypedPredicateFuncs(r.validateSecretForReconcile),
 	}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &corev1.Secret{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		secretPredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &corev1.Secret{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueSecret),
+			secretPredicates...,
+		)); err != nil {
 		return err
 	}
 
@@ -580,12 +634,12 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	// }
 
 	// Watch ReferenceGrant CRUDs and process affected Gateways.
-	rgPredicates := []predicate.Predicate{predicate.GenerationChangedPredicate{}}
+	rgPredicates := []predicate.TypedPredicate[*gwapiv1b1.ReferenceGrant]{predicate.TypedGenerationChangedPredicate[*gwapiv1b1.ReferenceGrant]{}}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &gwapiv1b1.ReferenceGrant{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		rgPredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &gwapiv1b1.ReferenceGrant{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueReferenceGrant),
+			rgPredicates...,
+		)); err != nil {
 		return err
 	}
 	if err := addReferenceGrantIndexers(ctx, mgr); err != nil {
@@ -593,12 +647,12 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	}
 
 	// Watch Deployment CRUDs and process affected Gateways.
-	dPredicates := []predicate.Predicate{predicate.NewPredicateFuncs(r.validateDeploymentForReconcile)}
+	dPredicates := []predicate.TypedPredicate[*appsv1.Deployment]{predicate.NewTypedPredicateFuncs(r.validateDeploymentForReconcile)}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &appsv1.Deployment{}),
-		handler.EnqueueRequestsFromMapFunc(r.enqueueClass),
-		dPredicates...,
-	); err != nil {
+		source.Kind(mgr.GetCache(), &appsv1.Deployment{},
+			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueDeployment),
+			dPredicates...,
+		)); err != nil {
 		return err
 	}
 

@@ -43,6 +43,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // NamespacedName generates namespaced name for Kubernetes objects
@@ -58,6 +59,210 @@ func NamespacedName(obj k8client.Object) types.NamespacedName {
 // and returns false otherwise
 func FilterByNamespaces(namespaces []string) func(object k8client.Object) bool {
 	return func(object k8client.Object) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterAPIByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterAPIByNamespaces(namespaces []string) func(object *dpv1alpha3.API) bool {
+	return func(object *dpv1alpha3.API) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterHTTPRouteBByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterHTTPRouteByNamespaces(namespaces []string) func(object *gwapiv1.HTTPRoute) bool {
+	return func(object *gwapiv1.HTTPRoute) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterGQLRouteByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterGQLRouteByNamespaces(namespaces []string) func(object *dpv1alpha2.GQLRoute) bool {
+	return func(object *dpv1alpha2.GQLRoute) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterGRPCRouteByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterGRPCRouteByNamespaces(namespaces []string) func(object *gwapiv1a2.GRPCRoute) bool {
+	return func(object *gwapiv1a2.GRPCRoute) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterGatewayByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterGatewayByNamespaces(namespaces []string) func(object *gwapiv1.Gateway) bool {
+	return func(object *gwapiv1.Gateway) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterBackendByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterBackendByNamespaces(namespaces []string) func(object *dpv1alpha2.Backend) bool {
+	return func(object *dpv1alpha2.Backend) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterAuthenticationByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterAuthenticationByNamespaces(namespaces []string) func(object *dpv1alpha2.Authentication) bool {
+	return func(object *dpv1alpha2.Authentication) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterInterceptorServiceByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterInterceptorServiceByNamespaces(namespaces []string) func(object *dpv1alpha1.InterceptorService) bool {
+	return func(object *dpv1alpha1.InterceptorService) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterBackendJWTByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterBackendJWTByNamespaces(namespaces []string) func(object *dpv1alpha1.BackendJWT) bool {
+	return func(object *dpv1alpha1.BackendJWT) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterAPIPolicyByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterAPIPolicyByNamespaces(namespaces []string) func(object *dpv1alpha3.APIPolicy) bool {
+	return func(object *dpv1alpha3.APIPolicy) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterRateLimitPolicyByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterRateLimitPolicyByNamespaces(namespaces []string) func(object *dpv1alpha3.RateLimitPolicy) bool {
+	return func(object *dpv1alpha3.RateLimitPolicy) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterScopeByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterScopeByNamespaces(namespaces []string) func(object *dpv1alpha1.Scope) bool {
+	return func(object *dpv1alpha1.Scope) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterConfigMapByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterConfigMapByNamespaces(namespaces []string) func(object *corev1.ConfigMap) bool {
+	return func(object *corev1.ConfigMap) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterSecretByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterSecretByNamespaces(namespaces []string) func(object *corev1.Secret) bool {
+	return func(object *corev1.Secret) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterAIProviderByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterAIProviderByNamespaces(namespaces []string) func(object *dpv1alpha3.AIProvider) bool {
+	return func(object *dpv1alpha3.AIProvider) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterAIRatelimitPolicyByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterAIRatelimitPolicyByNamespaces(namespaces []string) func(object *dpv1alpha3.AIRateLimitPolicy) bool {
+	return func(object *dpv1alpha3.AIRateLimitPolicy) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterTokenIssuerByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterTokenIssuerByNamespaces(namespaces []string) func(object *dpv1alpha1.TokenIssuer) bool {
+	return func(object *dpv1alpha1.TokenIssuer) bool {
 		if namespaces == nil {
 			return true
 		}

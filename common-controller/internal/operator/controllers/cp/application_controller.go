@@ -58,8 +58,8 @@ func NewApplicationController(mgr manager.Manager, subscriptionStore *cache.Subs
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.Application{}), &handler.EnqueueRequestForObject{},
-		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.Application{}, &handler.TypedEnqueueRequestForObject[*cpv1alpha2.Application]{},
+		predicate.NewTypedPredicateFuncs(utils.FilterAppByNamespaces([]string{utils.GetOperatorPodNamespace()})))); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2607, logging.BLOCKER, "Error watching Application resources: %v", err.Error()))
 		return err
 	}

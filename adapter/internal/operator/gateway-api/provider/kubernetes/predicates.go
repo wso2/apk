@@ -37,12 +37,8 @@ import (
 // hasMatchingController returns true if the provided object is a GatewayClass
 // with a Spec.Controller string matching this Envoy Gateway's controller string,
 // or false otherwise.
-func (r *gatewayReconcilerNew) hasMatchingController(obj client.Object) bool {
-	gc, ok := obj.(*gwapiv1.GatewayClass)
-	if !ok {
-		loggers.LoggerAPKOperator.Info("bypassing reconciliation due to unexpected object type ", obj)
-		return false
-	}
+func (r *gatewayReconcilerNew) hasMatchingController(obj *gwapiv1.GatewayClass) bool {
+	gc := obj
 
 	if gc.Spec.ControllerName == gatewayClassControllerName {
 		loggers.LoggerAPKOperator.Infof("gatewayclass has matching controller name %s, hence processing",
@@ -57,12 +53,8 @@ func (r *gatewayReconcilerNew) hasMatchingController(obj client.Object) bool {
 
 // validateGatewayForReconcile returns true if the provided object is a Gateway
 // using a GatewayClass matching the configured gatewayclass controller name.
-func (r *gatewayReconcilerNew) validateGatewayForReconcile(obj client.Object) bool {
-	gw, ok := obj.(*gwapiv1.Gateway)
-	if !ok {
-		loggers.LoggerAPKOperator.Info("unexpected object type, bypassing reconciliation object", obj)
-		return false
-	}
+func (r *gatewayReconcilerNew) validateGatewayForReconcile(obj *gwapiv1.Gateway) bool {
+	gw := obj
 
 	gatewayClass := &gwapiv1.GatewayClass{}
 	key := types.NamespacedName{Name: string(gw.Spec.GatewayClassName)}
@@ -83,13 +75,9 @@ func (r *gatewayReconcilerNew) validateGatewayForReconcile(obj client.Object) bo
 // validateServiceForReconcile tries finding the owning Gateway of the Service
 // if it exists, finds the Gateway's Deployment, and further updates the Gateway
 // status Ready condition. All Services are pushed for reconciliation.
-func (r *gatewayReconcilerNew) validateServiceForReconcile(obj client.Object) bool {
+func (r *gatewayReconcilerNew) validateServiceForReconcile(obj *corev1.Service) bool {
 	ctx := context.Background()
-	svc, ok := obj.(*corev1.Service)
-	if !ok {
-		loggers.LoggerAPKOperator.Info("unexpected object type, bypassing reconciliation for object", obj)
-		return false
-	}
+	svc := obj
 	labels := svc.GetLabels()
 
 	// Check if the Service belongs to a Gateway, if so, update the Gateway status.
@@ -107,12 +95,8 @@ func (r *gatewayReconcilerNew) validateServiceForReconcile(obj client.Object) bo
 // validateBackendForReconcile tries finding the owning Gateway of the Service
 // if it exists, finds the Gateway's Deployment, and further updates the Gateway
 // status Ready condition. All Services are pushed for reconciliation.
-func (r *gatewayReconcilerNew) validateBackendForReconcile(obj client.Object) bool {
-	backend, ok := obj.(*dpv1alpha2.Backend)
-	if !ok {
-		loggers.LoggerAPKOperator.Info("unexpected object type, bypassing reconciliation for object", obj)
-		return false
-	}
+func (r *gatewayReconcilerNew) validateBackendForReconcile(obj *dpv1alpha2.Backend) bool {
+	backend := obj
 	nsName := utils.NamespacedName(backend)
 	return r.isRouteReferencingBackend(&nsName)
 
@@ -201,13 +185,9 @@ func (r *gatewayReconcilerNew) envoyDeploymentForGateway(ctx context.Context, ga
 	return deployment, nil
 }
 
-func (r *gatewayReconcilerNew) handleNode(obj client.Object) bool {
+func (r *gatewayReconcilerNew) handleNode(obj *corev1.Node) bool {
 	ctx := context.Background()
-	node, ok := obj.(*corev1.Node)
-	if !ok {
-		loggers.LoggerAPKOperator.Info("unexpected object type, bypassing reconciliation", obj)
-		return false
-	}
+	node := obj
 
 	key := types.NamespacedName{Name: node.Name}
 	if err := r.client.Get(ctx, key, node); err != nil {
@@ -224,12 +204,8 @@ func (r *gatewayReconcilerNew) handleNode(obj client.Object) bool {
 }
 
 // validateSecretForReconcile checks whether the Secret belongs to a valid Gateway.
-func (r *gatewayReconcilerNew) validateSecretForReconcile(obj client.Object) bool {
-	secret, ok := obj.(*corev1.Secret)
-	if !ok {
-		loggers.LoggerAPKOperator.Info("unexpected object type, bypassing reconciliation", obj)
-		return false
-	}
+func (r *gatewayReconcilerNew) validateSecretForReconcile(obj *corev1.Secret) bool {
+	secret := obj
 
 	nsName := utils.NamespacedName(secret)
 
@@ -265,13 +241,9 @@ func (r *gatewayReconcilerNew) isGatewayReferencingSecret(nsName *types.Namespac
 // validateDeploymentForReconcile tries finding the owning Gateway of the Deployment
 // if it exists, finds the Gateway's Service, and further updates the Gateway
 // status Ready condition. No Deployments are pushed for reconciliation.
-func (r *gatewayReconcilerNew) validateDeploymentForReconcile(obj client.Object) bool {
+func (r *gatewayReconcilerNew) validateDeploymentForReconcile(obj *appsv1.Deployment) bool {
 	ctx := context.Background()
-	deployment, ok := obj.(*appsv1.Deployment)
-	if !ok {
-		loggers.LoggerAPKOperator.Info("unexpected object type, bypassing reconciliation", obj)
-		return false
-	}
+	deployment := obj
 	labels := deployment.GetLabels()
 
 	// Only deployments in the configured namespace should be reconciled.

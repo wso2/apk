@@ -66,7 +66,7 @@ func NewApplicationMappingController(mgr manager.Manager, subscriptionStore *cac
 	}
 	ctx := context.Background()
 	conf := config.ReadConfigs()
-	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
+
 	if err := addApplicationMappingControllerIndexes(ctx, mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2658, logging.CRITICAL, "Error adding indexes: %v", err))
 		return err
@@ -77,20 +77,22 @@ func NewApplicationMappingController(mgr manager.Manager, subscriptionStore *cac
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.ApplicationMapping{}), &handler.EnqueueRequestForObject{},
-		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.ApplicationMapping{}, &handler.TypedEnqueueRequestForObject[*cpv1alpha2.ApplicationMapping]{},
+		predicate.NewTypedPredicateFuncs(utils.FilterAppMappingByNamespaces([]string{utils.GetOperatorPodNamespace()})))); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER, "Error watching ApplicationMapping resources: %v", err.Error()))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.Application{}), handler.EnqueueRequestsFromMapFunc(r.getApplicationMappingsForApplication),
-		predicates...); err != nil {
+	predicateApp := []predicate.TypedPredicate[*cpv1alpha2.Application]{predicate.NewTypedPredicateFuncs(utils.FilterAppByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha2.Application{}, handler.TypedEnqueueRequestsFromMapFunc(r.getApplicationMappingsForApplication),
+		predicateApp...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching Application resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha3.Subscription{}), handler.EnqueueRequestsFromMapFunc(r.getApplicationMappingsForSubscription),
-		predicates...); err != nil {
+	predicateSubs := []predicate.TypedPredicate[*cpv1alpha3.Subscription]{predicate.NewTypedPredicateFuncs(utils.FilterSubsByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha3.Subscription{}, handler.TypedEnqueueRequestsFromMapFunc(r.getApplicationMappingsForSubscription),
+		predicateSubs...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching Subscription resources: %v", err))
 		return err
 	}
@@ -198,13 +200,8 @@ func addApplicationMappingControllerIndexes(ctx context.Context, mgr manager.Man
 // getApplicationMappingsForApplication triggers the ApplicationMapping controller reconcile method based on the changes detected
 // from Application objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
-func (r *ApplicationMappingReconciler) getApplicationMappingsForApplication(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	application, ok := obj.(*cpv1alpha2.Application)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", application))
-		return []reconcile.Request{}
-	}
-
+func (r *ApplicationMappingReconciler) getApplicationMappingsForApplication(ctx context.Context, obj *cpv1alpha2.Application) []reconcile.Request {
+	application := obj
 	applicationMappingList := &cpv1alpha2.ApplicationMappingList{}
 	if err := r.client.List(ctx, applicationMappingList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(applicationIndex, utils.NamespacedName(application).String()),
@@ -234,13 +231,8 @@ func (r *ApplicationMappingReconciler) getApplicationMappingsForApplication(ctx 
 
 // getApplicationMappingsForSubscription triggers the ApplicationMapping controller reconcile method based on the changes detected
 // from Subscription objects. If the changes are done for an API stored in the Operator Data store,
-func (r *ApplicationMappingReconciler) getApplicationMappingsForSubscription(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	subscription, ok := obj.(*cpv1alpha3.Subscription)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", subscription))
-		return []reconcile.Request{}
-	}
-
+func (r *ApplicationMappingReconciler) getApplicationMappingsForSubscription(ctx context.Context, obj *cpv1alpha3.Subscription) []reconcile.Request {
+	subscription := obj
 	applicationMappingList := &cpv1alpha2.ApplicationMappingList{}
 	if err := r.client.List(ctx, applicationMappingList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(subscriptionIndex, utils.NamespacedName(subscription).String()),

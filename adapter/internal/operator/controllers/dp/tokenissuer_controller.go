@@ -102,22 +102,24 @@ func NewTokenIssuerReconciler(mgr manager.Manager) error {
 	}
 
 	conf := config.ReadConfigs()
-	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.TokenIssuer{}), &handler.EnqueueRequestForObject{},
-		predicates...); err != nil {
+	predicateTokenIssuer := []predicate.TypedPredicate[*dpv1alpha1.TokenIssuer]{predicate.NewTypedPredicateFuncs[*dpv1alpha1.TokenIssuer](utils.FilterTokenIssuerByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.TokenIssuer{}, &handler.TypedEnqueueRequestForObject[*dpv1alpha1.TokenIssuer]{},
+		predicateTokenIssuer...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2656, logging.BLOCKER, "Error watching TokenIssuer resources: %v", err.Error()))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestsFromMapFunc(r.populateTokenReconcileRequestsForConfigMap),
-		predicates...); err != nil {
+	predicateConfigMap := []predicate.TypedPredicate[*corev1.ConfigMap]{predicate.NewTypedPredicateFuncs[*corev1.ConfigMap](utils.FilterConfigMapByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}, handler.TypedEnqueueRequestsFromMapFunc(r.populateTokenReconcileRequestsForConfigMap),
+		predicateConfigMap...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2644, logging.BLOCKER, "Error watching ConfigMap resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}), handler.EnqueueRequestsFromMapFunc(r.populateTokenReconcileRequestsForSecret),
-		predicates...); err != nil {
+	predicateSecret := []predicate.TypedPredicate[*corev1.Secret]{predicate.NewTypedPredicateFuncs[*corev1.Secret](utils.FilterSecretByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}, handler.TypedEnqueueRequestsFromMapFunc(r.populateTokenReconcileRequestsForSecret),
+		predicateSecret...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching Secret resources: %v", err))
 		return err
 	}
@@ -126,13 +128,8 @@ func NewTokenIssuerReconciler(mgr manager.Manager) error {
 	return nil
 }
 
-func (r *TokenssuerReconciler) populateTokenReconcileRequestsForConfigMap(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	configMap, ok := obj.(*corev1.ConfigMap)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
-			"Unexpected object type, bypassing reconciliation: %v", configMap))
-		return []reconcile.Request{}
-	}
+func (r *TokenssuerReconciler) populateTokenReconcileRequestsForConfigMap(ctx context.Context, obj *corev1.ConfigMap) []reconcile.Request {
+	configMap := obj
 	tokenIssuerList := &dpv1alpha1.TokenIssuerList{}
 	err := r.client.List(ctx, tokenIssuerList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configmapIssuerIndex, utils.NamespacedName(configMap).String()),
@@ -155,13 +152,8 @@ func (r *TokenssuerReconciler) populateTokenReconcileRequestsForConfigMap(ctx co
 	return requests
 }
 
-func (r *TokenssuerReconciler) populateTokenReconcileRequestsForSecret(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	secret, ok := obj.(*corev1.Secret)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
-			"Unexpected object type, bypassing reconciliation: %v", secret))
-		return []reconcile.Request{}
-	}
+func (r *TokenssuerReconciler) populateTokenReconcileRequestsForSecret(ctx context.Context, obj *corev1.Secret) []reconcile.Request {
+	secret := obj
 	tokenIssuerList := &dpv1alpha1.TokenIssuerList{}
 	err := r.client.List(ctx, tokenIssuerList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretTokenIssuerIndex, utils.NamespacedName(secret).String()),

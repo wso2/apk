@@ -42,9 +42,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	xds "github.com/wso2/apk/common-controller/internal/xds"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	xds "github.com/wso2/apk/common-controller/internal/xds"
 )
 
 // SubscriptionReconciler reconciles a Subscription object
@@ -69,7 +69,6 @@ func NewSubscriptionController(mgr manager.Manager, subscriptionStore *cache.Sub
 	}
 	ctx := context.Background()
 	conf := config.ReadConfigs()
-	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
 	if err := addSubscriptionControllerIndexes(ctx, mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2658, logging.CRITICAL, "Error adding indexes: %v", err))
 		return err
@@ -80,21 +79,23 @@ func NewSubscriptionController(mgr manager.Manager, subscriptionStore *cache.Sub
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha3.Subscription{}), &handler.EnqueueRequestForObject{},
-		predicate.NewPredicateFuncs(utils.FilterByNamespaces([]string{utils.GetOperatorPodNamespace()}))); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &cpv1alpha3.Subscription{}, &handler.TypedEnqueueRequestForObject[*cpv1alpha3.Subscription]{},
+		predicate.NewTypedPredicateFuncs(utils.FilterSubsByNamespaces([]string{utils.GetOperatorPodNamespace()})))); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2609, logging.BLOCKER, "Error watching Subscription resources: %v", err.Error()))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(r.getSubscriptionForRatelimit),
-		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching Subscription resources: %v", err))
+	predicateRateLimitPolicy := []predicate.TypedPredicate[*dpv1alpha3.RateLimitPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.RateLimitPolicy](utils.FilterRateLimitPolicyByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(r.getSubscriptionForRatelimit),
+		predicateRateLimitPolicy...)); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER, "Error watching Ratelimit resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIRateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(r.getSubscriptionForAIRatelimit),
-		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching AIratelimit policies resources: %v", err))
+	predicateAIRatelimitPolicy := []predicate.TypedPredicate[*dpv1alpha3.AIRateLimitPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.AIRateLimitPolicy](utils.FilterAIRatelimitPolicyByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIRateLimitPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(r.getSubscriptionForAIRatelimit),
+		predicateAIRatelimitPolicy...)); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching AIRatelimitPolicy resources: %v", err))
 		return err
 	}
 
@@ -212,13 +213,8 @@ func addSubscriptionControllerIndexes(ctx context.Context, mgr manager.Manager) 
 
 // getApplicationMappingsForSubscription triggers the ApplicationMapping controller reconcile method based on the changes detected
 // from Subscription objects. If the changes are done for an API stored in the Operator Data store,
-func (subscriptionReconciler *SubscriptionReconciler) getSubscriptionForRatelimit(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	ratelimit, ok := obj.(*dpv1alpha3.RateLimitPolicy)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", ratelimit))
-		return []reconcile.Request{}
-	}
-
+func (subscriptionReconciler *SubscriptionReconciler) getSubscriptionForRatelimit(ctx context.Context, obj *dpv1alpha3.RateLimitPolicy) []reconcile.Request {
+	ratelimit := obj
 	subList := &cpv1alpha3.SubscriptionList{}
 	if err := subscriptionReconciler.client.List(ctx, subList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(subscriptionIndex, utils.NamespacedName(ratelimit).String()),
@@ -247,13 +243,8 @@ func (subscriptionReconciler *SubscriptionReconciler) getSubscriptionForRatelimi
 }
 
 // getSubscriptionForAIRatelimit get the associated subscription reconcile request for a AIRatelimit resource change
-func (subscriptionReconciler *SubscriptionReconciler) getSubscriptionForAIRatelimit(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	airatelimit, ok := obj.(*dpv1alpha3.AIRateLimitPolicy)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", airatelimit))
-		return []reconcile.Request{}
-	}
-
+func (subscriptionReconciler *SubscriptionReconciler) getSubscriptionForAIRatelimit(ctx context.Context, obj *dpv1alpha3.AIRateLimitPolicy) []reconcile.Request {
+	airatelimit := obj
 	subList := &cpv1alpha3.SubscriptionList{}
 	if err := subscriptionReconciler.client.List(ctx, subList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(subscriptionToAIRatelimitIndex, utils.NamespacedName(airatelimit).String()),

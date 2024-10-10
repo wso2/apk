@@ -25,9 +25,13 @@ import (
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	"github.com/wso2/apk/common-controller/internal/config"
+	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
+	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/constants"
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 const nodeIDArrayMaxLength int = 20
@@ -100,11 +104,83 @@ func GetNodeIdentifier(request *discovery.DiscoveryRequest) string {
 	return nodeIdentifier
 }
 
-// FilterByNamespaces takes a list of namespaces and returns a filter function
+// FilterAppByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterByNamespaces(namespaces []string) func(object k8client.Object) bool {
-	return func(object k8client.Object) bool {
+func FilterAppByNamespaces(namespaces []string) func(object *cpv1alpha2.Application) bool {
+	return func(object *cpv1alpha2.Application) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterSubsByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterSubsByNamespaces(namespaces []string) func(object *cpv1alpha3.Subscription) bool {
+	return func(object *cpv1alpha3.Subscription) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterRateLimitPolicyByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterRateLimitPolicyByNamespaces(namespaces []string) func(object *dpv1alpha3.RateLimitPolicy) bool {
+	return func(object *dpv1alpha3.RateLimitPolicy) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterAIRatelimitPolicyByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterAIRatelimitPolicyByNamespaces(namespaces []string) func(object *dpv1alpha3.AIRateLimitPolicy) bool {
+	return func(object *dpv1alpha3.AIRateLimitPolicy) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterAPIByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterAPIByNamespaces(namespaces []string) func(object *dpv1alpha3.API) bool {
+	return func(object *dpv1alpha3.API) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterHTTPRouteByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterHTTPRouteByNamespaces(namespaces []string) func(object *gwapiv1.HTTPRoute) bool {
+	return func(object *gwapiv1.HTTPRoute) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterAppMappingByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterAppMappingByNamespaces(namespaces []string) func(object *cpv1alpha2.ApplicationMapping) bool {
+	return func(object *cpv1alpha2.ApplicationMapping) bool {
 		if namespaces == nil {
 			return true
 		}
