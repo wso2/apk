@@ -467,7 +467,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	// handle gRPC APIs
 	if len(prodRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == constants.GRPC {
 		if apiState.ProdGRPCRoute, err = apiReconciler.resolveGRPCRouteRefs(ctx, prodRouteRefs,
-			namespace, api); err != nil {
+			namespace, apiState.InterceptorServiceMapping, api); err != nil {
 			return nil, fmt.Errorf("error while resolving production grpcRouteref %s in namespace :%s was not found. %s",
 				prodRouteRefs, namespace, err.Error())
 		}
@@ -483,7 +483,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 
 	if len(sandRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == constants.GRPC {
 		if apiState.SandGRPCRoute, err = apiReconciler.resolveGRPCRouteRefs(ctx, sandRouteRefs,
-			namespace, api); err != nil {
+			namespace, apiState.InterceptorServiceMapping, api); err != nil {
 			return nil, fmt.Errorf("error while resolving sandbox grpcRouteref %s in namespace :%s was not found. %s",
 				sandRouteRefs, namespace, err.Error())
 		}
@@ -603,8 +603,12 @@ func (apiReconciler *APIReconciler) resolveHTTPRouteRefs(ctx context.Context, ht
 }
 
 func (apiReconciler *APIReconciler) resolveGRPCRouteRefs(ctx context.Context, grpcRouteRefs []string,
-	namespace string, api dpv1alpha3.API) (*synchronizer.GRPCRouteState, error) {
+	namespace string, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService, api dpv1alpha3.API) (*synchronizer.GRPCRouteState, error) {
 	grpcRouteState, err := apiReconciler.concatGRPCRoutes(ctx, grpcRouteRefs, namespace, api)
+	if err != nil {
+		return nil, err
+	}
+	grpcRouteState.BackendMapping, err = apiReconciler.getResolvedBackendsMappingForGRPC(ctx, &grpcRouteState, interceptorServiceMapping, api)
 	if err != nil {
 		return nil, err
 	}
@@ -633,7 +637,6 @@ func (apiReconciler *APIReconciler) concatGRPCRoutes(ctx context.Context, grpcRo
 	}
 	grpcRouteState.GRPCRoutePartitions = grpcRoutePartitions
 	backendNamespacedName := types.NamespacedName{
-		//TODO check if this is correct
 		Name:      string(grpcRouteState.GRPCRouteCombined.Spec.Rules[0].BackendRefs[0].BackendRef.Name),
 		Namespace: namespace,
 	}
@@ -1063,6 +1066,70 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 
 	loggers.LoggerAPKOperator.Debugf("Generated backendMapping: %v", backendMapping)
 	return backendMapping, airl, nil
+}
+
+func (apiReconciler *APIReconciler) getResolvedBackendsMappingForGRPC(ctx context.Context,
+	grpcRouteState *synchronizer.GRPCRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
+	api dpv1alpha3.API) (map[string]*dpv1alpha2.ResolvedBackend, error) {
+	backendMapping := make(map[string]*dpv1alpha2.ResolvedBackend)
+	grpcRoute := grpcRouteState.GRPCRouteCombined
+
+	for _, rule := range grpcRoute.Spec.Rules {
+		for _, backend := range rule.BackendRefs {
+			backendNamespacedName := types.NamespacedName{
+				Name:      string(backend.Name),
+				Namespace: utils.GetNamespace(backend.Namespace, grpcRoute.Namespace),
+			}
+			if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+				resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+				if resolvedBackend != nil {
+					backendMapping[backendNamespacedName.String()] = resolvedBackend
+				} else {
+					return nil, fmt.Errorf("unable to find backend %s", backendNamespacedName.String())
+				}
+			}
+		}
+
+		for _, filter := range rule.Filters {
+			if filter.RequestMirror != nil {
+				mirrorBackend := filter.RequestMirror.BackendRef
+				mirrorBackendNamespacedName := types.NamespacedName{
+					Name:      string(mirrorBackend.Name),
+					Namespace: utils.GetNamespace(mirrorBackend.Namespace, grpcRoute.Namespace),
+				}
+				if string(*mirrorBackend.Kind) == constants.KindBackend {
+					if _, exists := backendMapping[mirrorBackendNamespacedName.String()]; !exists {
+						resolvedMirrorBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, mirrorBackendNamespacedName, &api)
+						if resolvedMirrorBackend != nil {
+							backendMapping[mirrorBackendNamespacedName.String()] = resolvedMirrorBackend
+						} else {
+							return nil, fmt.Errorf("unable to find backend %s", mirrorBackendNamespacedName.String())
+						}
+					}
+				} else if string(*mirrorBackend.Kind) == constants.KindService {
+					var err error
+					service, err := utils.GetService(ctx, apiReconciler.client, utils.GetNamespace(mirrorBackend.Namespace, grpcRoute.Namespace), string(mirrorBackend.Name))
+					if err != nil {
+						return nil, fmt.Errorf("unable to find service %s", mirrorBackendNamespacedName.String())
+					}
+					backendMapping[mirrorBackendNamespacedName.String()], err = utils.GetResolvedBackendFromService(service, int(*mirrorBackend.Port))
+					if err != nil {
+						return nil, fmt.Errorf("error in getting service information %s", service)
+					}
+				}
+			}
+		}
+	}
+
+	// Resolve backends in InterceptorServices
+	interceptorServices := maps.Values(interceptorServiceMapping)
+	for _, interceptorService := range interceptorServices {
+		utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
+			interceptorService.Spec.BackendRef, interceptorService.Namespace, &api)
+	}
+
+	loggers.LoggerAPKOperator.Debugf("Generated backendMapping: %v", backendMapping)
+	return backendMapping, nil
 }
 
 // These proxy methods are designed as intermediaries for the getAPIsFor<CR objects> methods.

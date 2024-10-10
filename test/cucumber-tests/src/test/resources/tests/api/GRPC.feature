@@ -121,3 +121,24 @@ Feature: Generating APK conf for gRPC API
         And I have a valid subscription
         When I undeploy the API whose ID is "grpc-default-version-api"
         Then the response status code should be 202
+
+    Scenario: Deploying gRPC API with interceptor policy
+        Given The system is ready
+        And I have a valid subscription
+        When I use the APK Conf file "artifacts/apk-confs/grpc/grpc-interceptor.apk-conf"
+        And the definition file "artifacts/definitions/student.proto"
+        And make the API deployment request
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization | bearer ${accessToken} |
+        And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
+        And the gRPC response status code should be 0
+        And the student response body should contain name: "Student" age: 10
+        And the GRPC response should contain header "interceptor-response-header"
+        
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "grpc-interceptor-api"
+        Then the response status code should be 202
