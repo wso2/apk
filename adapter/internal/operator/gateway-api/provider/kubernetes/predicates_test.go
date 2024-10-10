@@ -38,7 +38,7 @@ type GroupKindNamespacedName struct {
 func TestGatewayClassHasMatchingController(t *testing.T) {
 	testCases := []struct {
 		name   string
-		obj    client.Object
+		obj    *gwapiv1.GatewayClass
 		client client.Client
 		expect bool
 	}{

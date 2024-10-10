@@ -141,10 +141,9 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 
 	conf := config.ReadConfigs()
 	apiReconciler.apiPropagationEnabled = conf.Adapter.ControlPlane.EnableAPIPropagation
-	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.Adapter.Operator.Namespaces))}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.API{}), &handler.EnqueueRequestForObject{},
-		predicates...); err != nil {
+	predicateAPI := []predicate.TypedPredicate[*dpv1alpha3.API]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.API](utils.FilterAPIByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.API{}, &handler.TypedEnqueueRequestForObject[*dpv1alpha3.API]{}, predicateAPI...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER, "Error watching API resources: %v", err))
 		return err
 	}
@@ -153,91 +152,107 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForHTTPRoute),
-		predicates...); err != nil {
+	predicateHTTPRoute := []predicate.TypedPredicate[*gwapiv1.HTTPRoute]{predicate.NewTypedPredicateFuncs[*gwapiv1.HTTPRoute](utils.FilterHTTPRouteByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{}, handler.TypedEnqueueRequestsFromMapFunc[*gwapiv1.HTTPRoute](apiReconciler.populateAPIReconcileRequestsForHTTPRoute),
+		predicateHTTPRoute...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER, "Error watching HTTPRoute resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.GQLRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForGQLRoute),
-		predicates...); err != nil {
+	predicateGQLRoute := []predicate.TypedPredicate[*dpv1alpha2.GQLRoute]{predicate.NewTypedPredicateFuncs[*dpv1alpha2.GQLRoute](utils.FilterGQLRouteByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.GQLRoute{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForGQLRoute),
+		predicateGQLRoute...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2667, logging.BLOCKER, "Error watching GQLRoute resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1a2.GRPCRoute{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForGRPCRoute),
-		predicates...); err != nil {
+	predicateGRPCRoute := []predicate.TypedPredicate[*gwapiv1a2.GRPCRoute]{predicate.NewTypedPredicateFuncs[*gwapiv1a2.GRPCRoute](utils.FilterGRPCRouteByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1a2.GRPCRoute{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForGRPCRoute),
+		predicateGRPCRoute...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2668, logging.BLOCKER, "Error watching GRPCRoute resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.Gateway{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.getAPIsForGateway),
-		predicates...); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER, "Error watching API resources: %v", err))
+	predicateGateway := []predicate.TypedPredicate[*gwapiv1.Gateway]{predicate.NewTypedPredicateFuncs[*gwapiv1.Gateway](utils.FilterGatewayByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.Gateway{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.getAPIsForGateway),
+		predicateGateway...)); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER, "Error watching Gateway resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackend),
-		predicates...); err != nil {
+	predicateBackend := []predicate.TypedPredicate[*dpv1alpha2.Backend]{predicate.NewTypedPredicateFuncs[*dpv1alpha2.Backend](utils.FilterBackendByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackend),
+		predicateBackend...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching Backend resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Authentication{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAuthentication),
-		predicates...); err != nil {
+	predicateAuthentication := []predicate.TypedPredicate[*dpv1alpha2.Authentication]{predicate.NewTypedPredicateFuncs[*dpv1alpha2.Authentication](utils.FilterAuthenticationByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Authentication{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAuthentication),
+		predicateAuthentication...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2616, logging.BLOCKER, "Error watching Authentication resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.InterceptorService{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForInterceptorService),
-		predicates...); err != nil {
+	predicateInterceptorService := []predicate.TypedPredicate[*dpv1alpha1.InterceptorService]{predicate.NewTypedPredicateFuncs[*dpv1alpha1.InterceptorService](utils.FilterInterceptorServiceByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.InterceptorService{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForInterceptorService),
+		predicateInterceptorService...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2640, logging.BLOCKER, "Error watching InterceptorService resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.BackendJWT{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackendJWT),
-		predicates...); err != nil {
+	predicateBackendJWT := []predicate.TypedPredicate[*dpv1alpha1.BackendJWT]{predicate.NewTypedPredicateFuncs[*dpv1alpha1.BackendJWT](utils.FilterBackendJWTByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.BackendJWT{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackendJWT),
+		predicateBackendJWT...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2661, logging.BLOCKER, "Error watching BackendJWT resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.APIPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAPIPolicy),
-		predicates...); err != nil {
+	predicateAPIPolicy := []predicate.TypedPredicate[*dpv1alpha3.APIPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.APIPolicy](utils.FilterAPIPolicyByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.APIPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAPIPolicy),
+		predicateAPIPolicy...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2617, logging.BLOCKER, "Error watching APIPolicy resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForRateLimitPolicy),
-		predicates...); err != nil {
+	predicateRateLimitPolicy := []predicate.TypedPredicate[*dpv1alpha3.RateLimitPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.RateLimitPolicy](utils.FilterRateLimitPolicyByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForRateLimitPolicy),
+		predicateRateLimitPolicy...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER, "Error watching Ratelimit resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Scope{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForScope),
-		predicates...); err != nil {
+	predicateScope := []predicate.TypedPredicate[*dpv1alpha1.Scope]{predicate.NewTypedPredicateFuncs[*dpv1alpha1.Scope](utils.FilterScopeByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.Scope{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForScope),
+		predicateScope...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2618, logging.BLOCKER, "Error watching scope resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForConfigMap),
-		predicates...); err != nil {
+	predicateConfigMap := []predicate.TypedPredicate[*corev1.ConfigMap]{predicate.NewTypedPredicateFuncs[*corev1.ConfigMap](utils.FilterConfigMapByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForConfigMap),
+		predicateConfigMap...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2644, logging.BLOCKER, "Error watching ConfigMap resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForSecret),
-		predicates...); err != nil {
+	predicateSecret := []predicate.TypedPredicate[*corev1.Secret]{predicate.NewTypedPredicateFuncs[*corev1.Secret](utils.FilterSecretByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForSecret),
+		predicateSecret...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching Secret resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIProvider{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAIProvider),
-		predicates...); err != nil {
+	predicateAIProvider := []predicate.TypedPredicate[*dpv1alpha3.AIProvider]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.AIProvider](utils.FilterAIProviderByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIProvider{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAIProvider),
+		predicateAIProvider...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching AIPolicy resources: %v", err))
 		return err
 	}
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIRateLimitPolicy{}), handler.EnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAIRatelimitPolicy),
-		predicates...); err != nil {
+
+	predicateAIRatelimitPolicy := []predicate.TypedPredicate[*dpv1alpha3.AIRateLimitPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.AIRateLimitPolicy](utils.FilterAIRatelimitPolicyByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIRateLimitPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAIRatelimitPolicy),
+		predicateAIRatelimitPolicy...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching AIRatelimitPolicy resources: %v", err))
 		return err
 	}
@@ -1068,7 +1083,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 // These proxy methods are designed as intermediaries for the getAPIsFor<CR objects> methods.
 // Their purpose is to encapsulate the process of updating owner references within the reconciliation watch methods.
 // By employing these proxies, we prevent redundant owner reference updates for the same object due to the hierarchical structure of these functions.
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGQLRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGQLRoute(ctx context.Context, obj *dpv1alpha2.GQLRoute) []reconcile.Request {
 	requests := apiReconciler.getAPIForGQLRoute(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1076,7 +1091,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGQLRoute(ctx 
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForHTTPRoute(ctx context.Context, obj *gwapiv1.HTTPRoute) []reconcile.Request {
 	requests := apiReconciler.getAPIForHTTPRoute(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1084,13 +1099,13 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForHTTPRoute(ctx
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGRPCRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGRPCRoute(ctx context.Context, obj *gwapiv1a2.GRPCRoute) []reconcile.Request {
 	requests := apiReconciler.getAPIForGRPCRoute(ctx, obj)
 	apiReconciler.handleOwnerReference(ctx, obj, &requests)
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForConfigMap(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForConfigMap(ctx context.Context, obj *corev1.ConfigMap) []reconcile.Request {
 	requests := apiReconciler.getAPIsForConfigMap(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1098,7 +1113,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForConfigMap(ctx
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForSecret(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForSecret(ctx context.Context, obj *corev1.Secret) []reconcile.Request {
 	requests := apiReconciler.getAPIsForSecret(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1106,7 +1121,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForSecret(ctx co
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIRatelimitPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIRatelimitPolicy(ctx context.Context, obj *dpv1alpha3.AIRateLimitPolicy) []reconcile.Request {
 	requests := apiReconciler.getAPIsForAIRatelimitPolicy(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1114,7 +1129,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIRatelimitPo
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAuthentication(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAuthentication(ctx context.Context, obj *dpv1alpha2.Authentication) []reconcile.Request {
 	requests := apiReconciler.getAPIsForAuthentication(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1122,7 +1137,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAuthenticatio
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAPIPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAPIPolicy(ctx context.Context, obj *dpv1alpha3.APIPolicy) []reconcile.Request {
 	requests := apiReconciler.getAPIsForAPIPolicy(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1130,7 +1145,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAPIPolicy(ctx
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForInterceptorService(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForInterceptorService(ctx context.Context, obj *dpv1alpha1.InterceptorService) []reconcile.Request {
 	requests := apiReconciler.getAPIsForInterceptorService(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1138,7 +1153,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForInterceptorSe
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackendJWT(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackendJWT(ctx context.Context, obj *dpv1alpha1.BackendJWT) []reconcile.Request {
 	requests := apiReconciler.getAPIsForBackendJWT(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1146,7 +1161,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackendJWT(ct
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForRateLimitPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForRateLimitPolicy(ctx context.Context, obj *dpv1alpha3.RateLimitPolicy) []reconcile.Request {
 	requests := apiReconciler.getAPIsForRateLimitPolicy(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1154,7 +1169,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForRateLimitPoli
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForScope(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForScope(ctx context.Context, obj *dpv1alpha1.Scope) []reconcile.Request {
 	requests := apiReconciler.getAPIsForScope(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1162,7 +1177,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForScope(ctx con
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx context.Context, obj *dpv1alpha2.Backend) []reconcile.Request {
 	requests := apiReconciler.getAPIsForBackend(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1170,7 +1185,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx c
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIProvider(ctx context.Context, obj k8client.Object) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIProvider(ctx context.Context, obj *dpv1alpha3.AIProvider) []reconcile.Request {
 	requests := apiReconciler.getAPIsForAIProvider(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1978,12 +1993,8 @@ func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k
 
 // getAPIsForGateway triggers the API controller reconcile method based on the changes detected
 // in gateway resources.
-func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	gateway, ok := obj.(*gwapiv1.Gateway)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", gateway))
-		return []reconcile.Request{}
-	}
+func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj *gwapiv1.Gateway) []reconcile.Request {
+	gateway := obj
 
 	httpRouteList := &gwapiv1.HTTPRouteList{}
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{

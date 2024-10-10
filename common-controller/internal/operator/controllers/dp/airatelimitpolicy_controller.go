@@ -52,7 +52,7 @@ type AIRateLimitPolicyReconciler struct {
 func NewAIRatelimitController(mgr manager.Manager, ratelimitStore *cache.RatelimitDataStore) error {
 	aiRateLimitPolicyReconciler := &AIRateLimitPolicyReconciler{
 		Client: mgr.GetClient(),
-		ods: ratelimitStore,
+		ods:    ratelimitStore,
 	}
 
 	c, err := controller.New(constants.AIRatelimitController, mgr, controller.Options{Reconciler: aiRateLimitPolicyReconciler})
@@ -63,9 +63,9 @@ func NewAIRatelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelim
 	}
 
 	conf := config.ReadConfigs()
-	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
+	predicateAIRatelimitPolicy := []predicate.TypedPredicate[*dpv1alpha3.AIRateLimitPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.AIRateLimitPolicy](utils.FilterAIRatelimitPolicyByNamespaces(conf.CommonController.Operator.Namespaces))}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIRateLimitPolicy{}), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIRateLimitPolicy{}, &handler.TypedEnqueueRequestForObject[*dpv1alpha3.AIRateLimitPolicy]{}, predicateAIRatelimitPolicy...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
 			"Error watching Ratelimit resources: %v", err.Error()))
 		return err

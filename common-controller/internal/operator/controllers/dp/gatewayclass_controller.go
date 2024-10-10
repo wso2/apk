@@ -71,7 +71,7 @@ func NewGatewayClassController(mgr manager.Manager, statusUpdater *status.Update
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.GatewayClass{}), &handler.EnqueueRequestForObject{}); err != nil {
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.GatewayClass{}, &handler.TypedEnqueueRequestForObject[*gwapiv1.GatewayClass]{})); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
 			"Error watching GatewayClass resources: %v", err.Error()))
 		return err

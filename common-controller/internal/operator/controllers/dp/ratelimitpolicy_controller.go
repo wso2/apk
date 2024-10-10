@@ -85,23 +85,25 @@ func NewratelimitController(mgr manager.Manager, ratelimitStore *cache.Ratelimit
 	}
 
 	conf := config.ReadConfigs()
-	predicates := []predicate.Predicate{predicate.NewPredicateFuncs(utils.FilterByNamespaces(conf.CommonController.Operator.Namespaces))}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.API{}),
-		handler.EnqueueRequestsFromMapFunc(ratelimitReconciler.getRatelimitForAPI), predicates...); err != nil {
+	predicateAPI := []predicate.TypedPredicate[*dpv1alpha3.API]{predicate.NewTypedPredicateFuncs(utils.FilterAPIByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.API{},
+		handler.TypedEnqueueRequestsFromMapFunc(ratelimitReconciler.getRatelimitForAPI), predicateAPI...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2611, logging.BLOCKER,
 			"Error watching API resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{}),
-		handler.EnqueueRequestsFromMapFunc(ratelimitReconciler.getRatelimitForHTTPRoute), predicates...); err != nil {
+	predicateHTTPRoute := []predicate.TypedPredicate[*gwapiv1.HTTPRoute]{predicate.NewTypedPredicateFuncs(utils.FilterHTTPRouteByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{},
+		handler.TypedEnqueueRequestsFromMapFunc(ratelimitReconciler.getRatelimitForHTTPRoute), predicateHTTPRoute...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
 			"Error watching HTTPRoute resources: %v", err))
 		return err
 	}
 
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}), &handler.EnqueueRequestForObject{}, predicates...); err != nil {
+	predicateRateLimitPolicy := []predicate.TypedPredicate[*dpv1alpha3.RateLimitPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.RateLimitPolicy](utils.FilterRateLimitPolicyByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.RateLimitPolicy{}, &handler.TypedEnqueueRequestForObject[*dpv1alpha3.RateLimitPolicy]{}, predicateRateLimitPolicy...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2639, logging.BLOCKER,
 			"Error watching Ratelimit resources: %v", err.Error()))
 		return err
@@ -188,13 +190,8 @@ func (ratelimitReconciler *RateLimitPolicyReconciler) Reconcile(ctx context.Cont
 	return ctrl.Result{}, nil
 }
 
-func (ratelimitReconciler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	api, ok := obj.(*dpv1alpha3.API)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
-			"Unexpected object type, bypassing reconciliation: %v", api))
-		return []reconcile.Request{}
-	}
+func (ratelimitReconciler *RateLimitPolicyReconciler) getRatelimitForAPI(ctx context.Context, obj *dpv1alpha3.API) []reconcile.Request {
+	api := obj
 
 	requests := []reconcile.Request{}
 
@@ -230,13 +227,8 @@ func (ratelimitReconciler *RateLimitPolicyReconciler) AddRatelimitRequest(obj k8
 	}}
 }
 
-func (ratelimitReconciler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	httpRoute, ok := obj.(*gwapiv1.HTTPRoute)
-	if !ok {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL,
-			"Unexpected object type, bypassing reconciliation: %v", httpRoute))
-		return []reconcile.Request{}
-	}
+func (ratelimitReconciler *RateLimitPolicyReconciler) getRatelimitForHTTPRoute(ctx context.Context, obj *gwapiv1.HTTPRoute) []reconcile.Request {
+	httpRoute := obj
 
 	requests := []reconcile.Request{}
 
