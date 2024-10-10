@@ -1089,36 +1089,6 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMappingForGRPC(ctx contex
 				}
 			}
 		}
-
-		for _, filter := range rule.Filters {
-			if filter.RequestMirror != nil {
-				mirrorBackend := filter.RequestMirror.BackendRef
-				mirrorBackendNamespacedName := types.NamespacedName{
-					Name:      string(mirrorBackend.Name),
-					Namespace: utils.GetNamespace(mirrorBackend.Namespace, grpcRoute.Namespace),
-				}
-				if string(*mirrorBackend.Kind) == constants.KindBackend {
-					if _, exists := backendMapping[mirrorBackendNamespacedName.String()]; !exists {
-						resolvedMirrorBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, mirrorBackendNamespacedName, &api)
-						if resolvedMirrorBackend != nil {
-							backendMapping[mirrorBackendNamespacedName.String()] = resolvedMirrorBackend
-						} else {
-							return nil, fmt.Errorf("unable to find backend %s", mirrorBackendNamespacedName.String())
-						}
-					}
-				} else if string(*mirrorBackend.Kind) == constants.KindService {
-					var err error
-					service, err := utils.GetService(ctx, apiReconciler.client, utils.GetNamespace(mirrorBackend.Namespace, grpcRoute.Namespace), string(mirrorBackend.Name))
-					if err != nil {
-						return nil, fmt.Errorf("unable to find service %s", mirrorBackendNamespacedName.String())
-					}
-					backendMapping[mirrorBackendNamespacedName.String()], err = utils.GetResolvedBackendFromService(service, int(*mirrorBackend.Port))
-					if err != nil {
-						return nil, fmt.Errorf("error in getting service information %s", service)
-					}
-				}
-			}
-		}
 	}
 
 	// Resolve backends in InterceptorServices

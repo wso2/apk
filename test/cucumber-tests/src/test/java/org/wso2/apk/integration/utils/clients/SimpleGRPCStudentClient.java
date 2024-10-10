@@ -9,6 +9,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import io.grpc.ManagedChannel;
+import io.grpc.Metadata;
+
 import org.wso2.apk.integration.utils.GenericClientInterceptor;
 import org.wso2.apk.integration.utils.clients.student_service.StudentRequest;
 import org.wso2.apk.integration.utils.clients.student_service.StudentResponse;
@@ -24,6 +26,7 @@ public class SimpleGRPCStudentClient {
     private static final int EVENTUAL_SUCCESS_RESPONSE_TIMEOUT_IN_SECONDS = 10;
     private final String host;
     private final int port;
+    private static Metadata responseHeaders;
 
     public SimpleGRPCStudentClient(String host, int port) {
         this.host = host;
@@ -53,6 +56,7 @@ public class SimpleGRPCStudentClient {
                 log.error("Failed to get student");
                 throw new RuntimeException("Failed to get student");
             }
+            setResponseHeaders(interceptor.getResponseHeaders());
             return response;
         } catch (SSLException e) {
             throw new RuntimeException("Failed to create SSL context", e);
@@ -70,6 +74,18 @@ public class SimpleGRPCStudentClient {
                 }
             }
         }
+    }
+
+    public static String getResponseHeader(String headerName) {
+        Metadata.Key<String> headerValue = Metadata.Key.of(headerName, Metadata.ASCII_STRING_MARSHALLER);
+        if (responseHeaders == null) {
+            return "";
+        }
+        return responseHeaders.get(headerValue);
+    }
+
+    public void setResponseHeaders(Metadata metadata) {
+        SimpleGRPCStudentClient.responseHeaders = metadata;
     }
 
     public StudentResponse GetStudentDefaultVersion(Map<String, String> headers) throws StatusRuntimeException {
