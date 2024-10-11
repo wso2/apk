@@ -1274,45 +1274,63 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		var policies = OperationPolicies{}
 		var endPoints []Endpoint
 		resourceAuthScheme := authScheme
+		resourceAPIPolicy := apiPolicy
 		resourceRatelimitPolicy := ratelimitPolicy
 		var scopes []string
 		for _, filter := range rule.Filters {
-			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindAuthentication {
-				if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
-					Name:      string(filter.ExtensionRef.Name),
-					Namespace: grpcRoute.Namespace,
-				}.String()]; found {
-					resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
-				} else {
-					return fmt.Errorf(`auth scheme: %s has not been resolved, spec.targetRef.kind should be 
-						'Resource' in resource level Authentications`, filter.ExtensionRef.Name)
+			switch filter.Type {
+			case gwapiv1a2.GRPCRouteFilterExtensionRef:
+				if filter.ExtensionRef.Kind == constants.KindAuthentication {
+					if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: grpcRoute.Namespace,
+					}.String()]; found {
+						resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
+					} else {
+						return fmt.Errorf(`auth scheme: %s has not been resolved, spec.targetRef.kind should be 
+					 	'Resource' in resource level Authentications`, filter.ExtensionRef.Name)
+					}
 				}
-			}
-			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindScope {
-				if ref, found := resourceParams.ResourceScopes[types.NamespacedName{
-					Name:      string(filter.ExtensionRef.Name),
-					Namespace: grpcRoute.Namespace,
-				}.String()]; found {
-					scopes = ref.Spec.Names
-					disableScopes = false
-				} else {
-					return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, grpcRoute.Namespace)
+				if filter.ExtensionRef.Kind == constants.KindAPIPolicy {
+					if ref, found := resourceParams.ResourceAPIPolicies[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: grpcRoute.Namespace,
+					}.String()]; found {
+						resourceAPIPolicy = concatAPIPolicies(apiPolicy, &ref)
+					} else {
+						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
+					 'Resource' in resource level APIPolicies`, filter.ExtensionRef.Name)
+					}
 				}
-			}
-			if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
-				if ref, found := resourceParams.ResourceRateLimitPolicies[types.NamespacedName{
-					Name:      string(filter.ExtensionRef.Name),
-					Namespace: grpcRoute.Namespace,
-				}.String()]; found {
-					resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
-				} else {
-					return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
-						'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
+				if filter.ExtensionRef.Kind == constants.KindScope {
+					if ref, found := resourceParams.ResourceScopes[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: grpcRoute.Namespace,
+					}.String()]; found {
+						scopes = ref.Spec.Names
+						disableScopes = false
+					} else {
+						return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, grpcRoute.Namespace)
+					}
+				}
+				if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+					if ref, found := resourceParams.ResourceRateLimitPolicies[types.NamespacedName{
+						Name:      string(filter.ExtensionRef.Name),
+						Namespace: grpcRoute.Namespace,
+					}.String()]; found {
+						resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
+					} else {
+						return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
+					 'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
+					}
 				}
 			}
 		}
+
+		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
 		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
 		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
+		addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, grpcRoute.Namespace)
 
 		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
 		apiAuth := getSecurity(resourceAuthScheme)
@@ -1321,7 +1339,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 			resourcePath := adapterInternalAPI.GetXWso2Basepath() + "." + *match.Method.Service + "/" + *match.Method.Method
 			endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)
 			resource := &Resource{path: resourcePath, pathMatchType: "Exact",
-				methods: []*Operation{{iD: uuid.New().String(), method: "GRPC", policies: policies,
+				methods: []*Operation{{iD: uuid.New().String(), method: "POST", policies: policies,
 					auth: apiAuth, rateLimitPolicy: parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes: scopes}},
 				iD: uuid.New().String(),
 			}
