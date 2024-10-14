@@ -227,7 +227,7 @@ version = "2.0"
 [[platform.java11.dependency]]
 groupId = "commons-io"
 artifactId = "commons-io"
-version = "2.11.0"
+version = "2.14.0"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
 [[platform.java11.dependency]]
