@@ -27,8 +27,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/vektah/gqlparser"
-	"github.com/vektah/gqlparser/ast"
+	"github.com/vektah/gqlparser/v2"
+	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	config "github.com/wso2/apk/common-go-libs/configs"
 	"github.com/wso2/apk/common-go-libs/loggers"

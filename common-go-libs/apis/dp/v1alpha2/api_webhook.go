@@ -30,8 +30,8 @@ import (
 	"regexp"
 	"strings"
 
-	gqlparser "github.com/vektah/gqlparser"
-	"github.com/vektah/gqlparser/ast"
+	gqlparser "github.com/vektah/gqlparser/v2"
+	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	config "github.com/wso2/apk/common-go-libs/configs"
 	loggers "github.com/wso2/apk/common-go-libs/loggers"
