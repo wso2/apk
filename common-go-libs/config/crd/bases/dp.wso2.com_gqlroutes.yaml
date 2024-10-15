@@ -211,7 +211,9 @@ spec:
                               ignored. \n This filter can be used multiple times within
                               the same rule. Note that not all implementations will
                               be able to support mirroring to multiple backends. \n
-                              Support: Extended"
+                              Support: Extended \n <gateway:experimental:validation:XValidation:message=\"Only
+                              one of percent or fraction may be specified in HTTPRequestMirrorFilter\",rule=\"!(has(self.percent)
+                              && has(self.fraction))\">"
                             properties:
                               backendRef:
                                 description: "BackendRef references a resource where
@@ -300,6 +302,41 @@ spec:
                                 - message: Must have port for Service reference
                                   rule: '(size(self.group) == 0 && self.kind == ''Service'')
                                     ? has(self.port) : true'
+                              fraction:
+                                description: "Fraction represents the fraction of
+                                  requests that should be mirrored to BackendRef.
+                                  \n Only one of Fraction or Percent may be specified.
+                                  If neither field is specified, 100% of requests
+                                  will be mirrored. \n <gateway:experimental>"
+                                properties:
+                                  denominator:
+                                    default: 100
+                                    format: int32
+                                    minimum: 1
+                                    type: integer
+                                  numerator:
+                                    format: int32
+                                    minimum: 0
+                                    type: integer
+                                required:
+                                - numerator
+                                type: object
+                                x-kubernetes-validations:
+                                - message: numerator must be less than or equal to
+                                    denominator
+                                  rule: self.numerator <= self.denominator
+                              percent:
+                                description: "Percent represents the percentage of
+                                  requests that should be mirrored to BackendRef.
+                                  Its minimum value is 0 (indicating 0% of requests)
+                                  and its maximum value is 100 (indicating 100% of
+                                  requests). \n Only one of Fraction or Percent may
+                                  be specified. If neither field is specified, 100%
+                                  of requests will be mirrored. \n <gateway:experimental>"
+                                format: int32
+                                maximum: 100
+                                minimum: 0
+                                type: integer
                             required:
                             - backendRef
                             type: object
@@ -862,11 +899,10 @@ spec:
                   for governing ParentRefs to Services - it is not possible to create
                   a \"producer\" route for a Service in a different namespace from
                   the Route. \n There are two kinds of parent resources with \"Core\"
-                  support: \n * Gateway (Gateway conformance profile) <gateway:experimental:description>
-                  * Service (Mesh conformance profile, experimental, ClusterIP Services
-                  only) </gateway:experimental:description> This API may be extended
-                  in the future to support additional kinds of parent resources. \n
-                  ParentRefs must be _distinct_. This means either that: \n * They
+                  support: \n * Gateway (Gateway conformance profile) * Service (Mesh
+                  conformance profile, ClusterIP Services only) \n This API may be
+                  extended in the future to support additional kinds of parent resources.
+                  \n ParentRefs must be _distinct_. This means either that: \n * They
                   select different objects.  If this is the case, then parentRef entries
                   are distinct. In terms of fields, this means that the multi-part
                   key defined by `group`, `kind`, `namespace`, and `name` must be
@@ -939,11 +975,11 @@ spec:
                     a Gateway) that can be considered a parent of this resource (usually
                     a route). There are two kinds of parent resources with \"Core\"
                     support: \n * Gateway (Gateway conformance profile) * Service
-                    (Mesh conformance profile, experimental, ClusterIP Services only)
-                    \n This API may be extended in the future to support additional
-                    kinds of parent resources. \n The API object must be valid in
-                    the cluster; the Group and Kind must be registered in the cluster
-                    for this reference to be valid."
+                    (Mesh conformance profile, ClusterIP Services only) \n This API
+                    may be extended in the future to support additional kinds of parent
+                    resources. \n The API object must be valid in the cluster; the
+                    Group and Kind must be registered in the cluster for this reference
+                    to be valid."
                   properties:
                     group:
                       default: gateway.networking.k8s.io
@@ -960,8 +996,8 @@ spec:
                       description: "Kind is kind of the referent. \n There are two
                         kinds of parent resources with \"Core\" support: \n * Gateway
                         (Gateway conformance profile) * Service (Mesh conformance
-                        profile, experimental, ClusterIP Services only) \n Support
-                        for other resources is Implementation-Specific."
+                        profile, ClusterIP Services only) \n Support for other resources
+                        is Implementation-Specific."
                       maxLength: 63
                       minLength: 1
                       pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
@@ -1020,8 +1056,7 @@ spec:
                         listeners accept attachment from the referencing Route, the
                         Route MUST be considered successfully attached. If no Gateway
                         listeners accept attachment from this Route, the Route MUST
-                        be considered detached from the Gateway. \n Support: Extended
-                        \n <gateway:experimental>"
+                        be considered detached from the Gateway. \n Support: Extended"
                       format: int32
                       maximum: 65535
                       minimum: 1
@@ -1029,14 +1064,12 @@ spec:
                     sectionName:
                       description: "SectionName is the name of a section within the
                         target resource. In the following resources, SectionName is
-                        interpreted as the following: \n * Gateway: Listener Name.
+                        interpreted as the following: \n * Gateway: Listener name.
                         When both Port (experimental) and SectionName are specified,
                         the name and port of the selected listener must match both
-                        specified values. * Service: Port Name. When both Port (experimental)
+                        specified values. * Service: Port name. When both Port (experimental)
                         and SectionName are specified, the name and port of the selected
-                        listener must match both specified values. Note that attaching
-                        Routes to Services as Parents is part of experimental Mesh
-                        support and is not supported for any other purpose. \n Implementations
+                        listener must match both specified values. \n Implementations
                         MAY choose to support attaching Routes to other resources.
                         If that is the case, they MUST clearly document how SectionName
                         is interpreted. \n When unspecified (empty string), this will

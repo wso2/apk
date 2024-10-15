@@ -19,7 +19,7 @@ package synchronizer
 import (
 	"errors"
 
-	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/dataholder"
@@ -107,7 +107,7 @@ func generateGRPCAdapterInternalAPI(apiState APIState, grpcRoute *GRPCRouteState
 }
 
 // getVhostForAPI returns the vHosts related to an API.
-func getVhostsForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute) map[string]struct{} {
+func getVhostsForGRPCAPI(grpcRoute *gwapiv1.GRPCRoute) map[string]struct{} {
 	vHosts := make(map[string]struct{})
 	for _, hostName := range grpcRoute.Spec.Hostnames {
 		vHosts[string(hostName)] = struct{}{}
@@ -116,7 +116,7 @@ func getVhostsForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute) map[string]struct{} {
 }
 
 // getLabelsForAPI returns the labels related to an API.
-func getLabelsForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute) map[string]struct{} {
+func getLabelsForGRPCAPI(grpcRoute *gwapiv1.GRPCRoute) map[string]struct{} {
 	labels := make(map[string]struct{})
 	for _, parentRef := range grpcRoute.Spec.ParentRefs {
 		err := xds.SanitizeGateway(string(parentRef.Name), false)
@@ -130,7 +130,7 @@ func getLabelsForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute) map[string]struct{} {
 }
 
 // getListenersForGRPCAPI returns the listeners related to an API.
-func getListenersForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute, apiUUID string) ([]string, []string) {
+func getListenersForGRPCAPI(grpcRoute *gwapiv1.GRPCRoute, apiUUID string) ([]string, []string) {
 	var listeners []string
 	var sectionNames []string
 	for _, parentRef := range grpcRoute.Spec.ParentRefs {
@@ -161,7 +161,7 @@ func getListenersForGRPCAPI(grpcRoute *gwapiv1a2.GRPCRoute, apiUUID string) ([]s
 	return listeners, sectionNames
 }
 
-func deleteGRPCAPIFromEnv(grpcRoute *gwapiv1a2.GRPCRoute, apiState APIState) error {
+func deleteGRPCAPIFromEnv(grpcRoute *gwapiv1.GRPCRoute, apiState APIState) error {
 	labels := getLabelsForGRPCAPI(grpcRoute)
 	uuid := string(apiState.APIDefinition.ObjectMeta.UID)
 	return xds.DeleteAPI(uuid, labels)

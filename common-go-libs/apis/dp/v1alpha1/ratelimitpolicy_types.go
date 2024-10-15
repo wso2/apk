@@ -24,9 +24,9 @@ import (
 
 // RateLimitPolicySpec defines the desired state of RateLimitPolicy
 type RateLimitPolicySpec struct {
-	Default   *RateLimitAPIPolicy             `json:"default,omitempty"`
-	Override  *RateLimitAPIPolicy             `json:"override,omitempty"`
-	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+	Default   *RateLimitAPIPolicy                       `json:"default,omitempty"`
+	Override  *RateLimitAPIPolicy                       `json:"override,omitempty"`
+	TargetRef gwapiv1b1.NamespacedPolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // RateLimitAPIPolicy defines the desired state of Policy

@@ -97,7 +97,7 @@ func (src *APIPolicy) ConvertTo(dstRaw conversion.Hub) error {
 		dst.Spec.Override = &convertedSpec
 	}
 	if src.Spec.TargetRef.Name != "" {
-		dst.Spec.TargetRef = gwapiv1b1.PolicyTargetReference{
+		dst.Spec.TargetRef = gwapiv1b1.NamespacedPolicyTargetReference{
 			Name:  src.Spec.TargetRef.Name,
 			Group: src.Spec.TargetRef.Group,
 			Kind:  src.Spec.TargetRef.Kind}
@@ -175,7 +175,7 @@ func (src *APIPolicy) ConvertFrom(srcRaw conversion.Hub) error {
 		src.Spec.Override = &convertedSpec
 	}
 	if dst.Spec.TargetRef.Name != "" {
-		src.Spec.TargetRef = gwapiv1b1.PolicyTargetReference{
+		src.Spec.TargetRef = gwapiv1b1.NamespacedPolicyTargetReference{
 			Name:  dst.Spec.TargetRef.Name,
 			Group: dst.Spec.TargetRef.Group,
 			Kind:  dst.Spec.TargetRef.Kind}

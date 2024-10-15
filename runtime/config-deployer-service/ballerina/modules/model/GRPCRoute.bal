@@ -56,14 +56,14 @@ public type GRPCBackendRef record {
 };
 
 public type GRPCRoute record {|
-    string apiVersion = "gateway.networking.k8s.io/v1alpha2";
+    string apiVersion = "gateway.networking.k8s.io/v1";
     string kind = "GRPCRoute";
     Metadata metadata;
     GRPCRouteSpec spec;
 |};
 
 public type GRPCRouteList record {|
-    string apiVersion = "gateway.networking.k8s.io/v1alpha2";
+    string apiVersion = "gateway.networking.k8s.io/v1";
     string kind = "GRPCRouteList";
     ListMeta metadata;
     GRPCRoute[] items;

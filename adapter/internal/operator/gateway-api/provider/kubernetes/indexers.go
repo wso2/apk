@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
+	gwapiv1a3 "sigs.k8s.io/gateway-api/apis/v1alpha3"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -182,15 +183,15 @@ func backendHTTPRouteIndexFunc(rawObj client.Object) []string {
 // referenced in GRPCRoute objects via `.spec.rules.backendRefs`. This helps in
 // querying for GRPCRoutes that are affected by a particular Service CRUD.
 func addGRPCRouteIndexers(ctx context.Context, mgr manager.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a2.GRPCRoute{}, gatewayGRPCRouteIndex, gatewayGRPCRouteIndexFunc); err != nil {
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1.GRPCRoute{}, gatewayGRPCRouteIndex, gatewayGRPCRouteIndexFunc); err != nil {
 		return err
 	}
 
-	return mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a2.GRPCRoute{}, backendGRPCRouteIndex, backendGRPCRouteIndexFunc)
+	return mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1.GRPCRoute{}, backendGRPCRouteIndex, backendGRPCRouteIndexFunc)
 }
 
 func gatewayGRPCRouteIndexFunc(rawObj client.Object) []string {
-	grpcroute := rawObj.(*gwapiv1a2.GRPCRoute)
+	grpcroute := rawObj.(*gwapiv1.GRPCRoute)
 	var gateways []string
 	for _, parent := range grpcroute.Spec.ParentRefs {
 		if parent.Kind == nil || string(*parent.Kind) == gatewayapi.KindGateway {
@@ -208,7 +209,7 @@ func gatewayGRPCRouteIndexFunc(rawObj client.Object) []string {
 }
 
 func backendGRPCRouteIndexFunc(rawObj client.Object) []string {
-	grpcroute := rawObj.(*gwapiv1a2.GRPCRoute)
+	grpcroute := rawObj.(*gwapiv1.GRPCRoute)
 	var backendRefs []string
 	for _, rule := range grpcroute.Spec.Rules {
 		for _, backend := range rule.BackendRefs {
@@ -414,14 +415,14 @@ func secretGatewayIndexFunc(rawObj client.Object) []string {
 // referenced in BackendTLSPolicy objects. This helps in querying for BackendTLSPolicies that are
 // affected by a particular ConfigMap CRUD.
 func addBtlsIndexers(ctx context.Context, mgr manager.Manager) error {
-	return mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a2.BackendTLSPolicy{}, configMapBtlsIndex, configMapBtlsIndexFunc)
+	return mgr.GetFieldIndexer().IndexField(ctx, &gwapiv1a3.BackendTLSPolicy{}, configMapBtlsIndex, configMapBtlsIndexFunc)
 }
 
 func configMapBtlsIndexFunc(rawObj client.Object) []string {
-	btls := rawObj.(*gwapiv1a2.BackendTLSPolicy)
+	btls := rawObj.(*gwapiv1a3.BackendTLSPolicy)
 	var configMapReferences []string
-	if btls.Spec.TLS.CACertRefs != nil {
-		for _, caCertRef := range btls.Spec.TLS.CACertRefs {
+	if btls.Spec.Validation.CACertificateRefs != nil {
+		for _, caCertRef := range btls.Spec.Validation.CACertificateRefs {
 			if string(caCertRef.Kind) == gatewayapi.KindConfigMap {
 				configMapReferences = append(configMapReferences,
 					types.NamespacedName{

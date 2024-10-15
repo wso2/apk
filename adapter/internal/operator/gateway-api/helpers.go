@@ -85,8 +85,9 @@ func ObjectNamePtr(val string) *v1alpha2.ObjectName {
 
 var (
 	PathMatchTypeDerefOr       = ptr.Deref[gwapiv1.PathMatchType]
-	GRPCMethodMatchTypeDerefOr = ptr.Deref[v1alpha2.GRPCMethodMatchType]
+	GRPCMethodMatchTypeDerefOr = ptr.Deref[gwapiv1.GRPCMethodMatchType]
 	HeaderMatchTypeDerefOr     = ptr.Deref[gwapiv1.HeaderMatchType]
+	GRPCHeaderMatchTypeDerefOr = ptr.Deref[gwapiv1.GRPCHeaderMatchType]
 	QueryParamMatchTypeDerefOr = ptr.Deref[gwapiv1.QueryParamMatchType]
 )
 
@@ -195,15 +196,15 @@ func ValidateHTTPRouteFilter(filter *gwapiv1.HTTPRouteFilter) error {
 }
 
 // ValidateGRPCRouteFilter validates the provided filter within GRPCRoute.
-func ValidateGRPCRouteFilter(filter *v1alpha2.GRPCRouteFilter, extGKs ...schema.GroupKind) error {
+func ValidateGRPCRouteFilter(filter *gwapiv1.GRPCRouteFilter, extGKs ...schema.GroupKind) error {
 	switch {
 	case filter == nil:
 		return errors.New("filter is nil")
-	case filter.Type == v1alpha2.GRPCRouteFilterRequestMirror ||
-		filter.Type == v1alpha2.GRPCRouteFilterRequestHeaderModifier ||
-		filter.Type == v1alpha2.GRPCRouteFilterResponseHeaderModifier:
+	case filter.Type == gwapiv1.GRPCRouteFilterRequestMirror ||
+		filter.Type == gwapiv1.GRPCRouteFilterRequestHeaderModifier ||
+		filter.Type == gwapiv1.GRPCRouteFilterResponseHeaderModifier:
 		return nil
-	case filter.Type == v1alpha2.GRPCRouteFilterExtensionRef:
+	case filter.Type == gwapiv1.GRPCRouteFilterExtensionRef:
 		switch {
 		case filter.ExtensionRef == nil:
 			return errors.New("extensionRef field must be specified for an extended filter")

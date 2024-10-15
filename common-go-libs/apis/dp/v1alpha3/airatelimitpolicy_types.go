@@ -24,16 +24,16 @@ import (
 
 // AIRateLimitPolicySpec defines the desired state of AIRateLimitPolicy
 type AIRateLimitPolicySpec struct {
-	Override  *AIRateLimit             `json:"override,omitempty"`
-	Default  *AIRateLimit             `json:"default,omitempty"`
-	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+	Override  *AIRateLimit                              `json:"override,omitempty"`
+	Default   *AIRateLimit                              `json:"default,omitempty"`
+	TargetRef gwapiv1b1.NamespacedPolicyTargetReference `json:"targetRef,omitempty"`
 }
 
-// AIRateLimit defines the AI ratelimit configuration 
+// AIRateLimit defines the AI ratelimit configuration
 type AIRateLimit struct {
-	Organization string `json:"organization,omitempty"`
-	TokenCount *TokenCount              `json:"tokenCount,omitempty"`
-	RequestCount *RequestCount          `json:"requestCount,omitempty"`
+	Organization string        `json:"organization,omitempty"`
+	TokenCount   *TokenCount   `json:"tokenCount,omitempty"`
+	RequestCount *RequestCount `json:"requestCount,omitempty"`
 }
 
 // TokenCount defines the Token based ratelimit configuration
@@ -43,23 +43,23 @@ type TokenCount struct {
 	// +kubebuilder:validation:Enum=Minute;Hour;Day
 	Unit string `json:"unit,omitempty"`
 
-	// RequestTokenCount specifies the maximum number of tokens allowed 
-	// in AI requests within a given unit of time. This value limits the 
+	// RequestTokenCount specifies the maximum number of tokens allowed
+	// in AI requests within a given unit of time. This value limits the
 	// token count sent by the client to the AI service over the defined period.
 	//
 	// +kubebuilder:validation:Minimum=1
 	RequestTokenCount uint32 `json:"requestTokenCount,omitempty"`
 
-	// ResponseTokenCount specifies the maximum number of tokens allowed 
-	// in AI responses within a given unit of time. This value limits the 
+	// ResponseTokenCount specifies the maximum number of tokens allowed
+	// in AI responses within a given unit of time. This value limits the
 	// token count received by the client from the AI service over the defined period.
 	//
 	// +kubebuilder:validation:Minimum=1
 	ResponseTokenCount uint32 `json:"responseTokenCount,omitempty"`
 
-	// TotalTokenCount represents the maximum allowable total token count 
+	// TotalTokenCount represents the maximum allowable total token count
 	// for both AI requests and responses within a specified unit of time.
-	// This value sets the limit for the number of tokens exchanged between 
+	// This value sets the limit for the number of tokens exchanged between
 	// the client and AI service during the defined period.
 	//
 	// +kubebuilder:validation:Minimum=1

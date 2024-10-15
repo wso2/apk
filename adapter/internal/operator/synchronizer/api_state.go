@@ -22,7 +22,6 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // APIState holds the state of the deployed APIs. This state is compared with
@@ -77,8 +76,8 @@ type GQLRouteState struct {
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type GRPCRouteState struct {
-	GRPCRouteCombined   *gwapiv1a2.GRPCRoute
-	GRPCRoutePartitions map[string]*gwapiv1a2.GRPCRoute
+	GRPCRouteCombined   *gwapiv1.GRPCRoute
+	GRPCRoutePartitions map[string]*gwapiv1.GRPCRoute
 	BackendMapping      map[string]*v1alpha2.ResolvedBackend
 	Scopes              map[string]v1alpha1.Scope
 }
