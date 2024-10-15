@@ -142,3 +142,17 @@ env:
 - "prod.gw.wso2.com"
 {{- end -}}
 {{- end -}}
+
+{{- define "apk.javaOptions" -}}
+  {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
+    {{- .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
+    {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled -}}
+      {{- " " }}-Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18006:/tmp/metrics/prometheus-jmx-config-enforcer.yml
+    {{- end }}
+  {{- else -}}
+    -Dhttpclient.hostnameVerifier=AllowAll -Xms5512m -Xmx512m -XX:MaxRAMFraction=2
+    {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+      {{- " " }}-Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18006:/tmp/metrics/prometheus-jmx-config-enforcer.yml
+    {{- end }}
+  {{- end }}
+{{- end }}

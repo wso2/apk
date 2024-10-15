@@ -131,7 +131,7 @@ data:
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService }}
     [enforcer.authService]
       {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize }}
-      maxMessageSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize }}
+      maxMessageSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize | int64 }}
       {{end}}
       {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxHeaderLimit }}
       maxHeaderLimit = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxHeaderLimit }}
