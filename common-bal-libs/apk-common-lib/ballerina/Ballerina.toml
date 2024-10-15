@@ -26,31 +26,31 @@ version = "2.10"
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.dataformat"
 artifactId = "jackson-dataformat-yaml"
-version = "2.14.2"
+version = "2.18.0"
 
-# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2
+# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.0
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-databind"
-version = "2.14.2"
+version = "2.18.0"
 
-# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2
+# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.0
 [[platform.java11.dependency]]
 groupId = "org.yaml"
 artifactId = "snakeyaml"
-version = "1.33"
+version = "2.2"
 
-# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2
+# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.0
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-core"
-version = "2.14.2"
+version = "2.18.0"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.common:0.0.1-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-annotations"
-version = "2.14.2"
+version = "2.18.0"
 
 # transitive dependency of org.wso2.apk:org.wso2.apk.common:0.0.1-SNAPSHOT
 [[platform.java11.dependency]]
