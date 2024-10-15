@@ -127,7 +127,6 @@ public class RestAPI implements API {
             aiProvider.setTotalToken(new org.wso2.apk.enforcer.commons.model.ValueDetails(
                     api.getAiprovider().getTotalToken().getIn(), api.getAiprovider().getTotalToken().getValue()));
         }
-        //System.out.println("AIProvider: " + aiProvider.getProviderName() + " " + aiProvider.getProviderAPIVersion() + " " + aiProvider.getOrganization() + " " + aiProvider.getEnabled() );
         byte[] apiDefinition = api.getApiDefinitionFile().toByteArray();
 
         this.apiConfig = new APIConfig.Builder(name).uuid(api.getId()).vhost(vhost).basePath(basePath).version(version)
