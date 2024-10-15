@@ -84,8 +84,8 @@ postgresql = {module = "org.postgresql:postgresql", version.ref = "postgresql"}
 prometheus = {module = "io.prometheus.jmx:jmx_prometheus_javaagent", version.ref = "prometheus"}
 snakeyaml = {module = "org.yaml:snakeyaml", version.ref = "snakeyaml"}
 sun-saaj-impl = {module = "com.sun.xml.messaging.saaj:saaj-impl", version.ref = "sun"}
-swagger-annotations = {module = "io.swagger:swagger-annotations", version.ref = "io-swagger"}
-swagger-codegen = {module = "io.swagger:swagger-codegen", version.ref = "swagger-codegen"}
+swagger-annotations = {module = "io.swagger.core.v3:swagger-annotations", version.ref = "io-swagger-v3"}
+swagger-codegen = {module = "io.swagger.codegen.v3:swagger-codegen", version.ref = "swagger-codegen"}
 swagger-core-v3 = {module = "io.swagger.core.v3:swagger-core", version.ref = "io-swagger-v3"}
 swagger-jaxrs = {module = "io.swagger:swagger-jaxrs", version.ref = "swagger-jaxrs"}
 swagger-models-v3 = {module = "io.swagger.core.v3:swagger-models", version.ref = "io-swagger-v3"}
@@ -145,8 +145,7 @@ hibernate-validator = "5.4.3.Final"
 hikari = "5.0.1"
 httpcomponents = "4.5.14"
 io-github-openfeign = "11.0"
-io-swagger = "1.6.9"
-io-swagger-v3 = "2.2.9"
+io-swagger-v3 = "2.2.23"
 jackson = "2.18.0"
 javax-cache = "1.1.1"
 javax-validation = "2.0.1.Final"
@@ -171,9 +170,9 @@ postgresql = "42.5.0"
 prometheus = "0.20.0"
 snakeyaml = "2.0"
 sun = "1.5.3"
-swagger-codegen = "2.4.11"
-swagger-jaxrs = "1.6.1"
-swagger-parser-v3 = "2.1.13"
+swagger-codegen = "3.0.62"
+swagger-jaxrs = "1.6.14"
+swagger-parser-v3 = "2.1.22"
 tomcat = "6.0.53"
 websocket = "1.5.3"
 wsdl4j = "1.6.3.wso2v3"

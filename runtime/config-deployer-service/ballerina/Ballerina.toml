@@ -19,325 +19,295 @@ artifactId = "org.wso2.apk.config"
 version = "1.2.0-SNAPSHOT"
 path = "../java/build/libs/org.wso2.apk.config-1.2.0-SNAPSHOT.jar"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "commons-logging"
 artifactId = "commons-logging"
 version = "1.1.1"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.google.code.gson"
 artifactId = "gson"
 version = "2.10"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.swagger.parser.v3"
 artifactId = "swagger-parser"
-version = "2.1.13"
+version = "2.1.22"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "io.swagger.parser.v3"
 artifactId = "swagger-parser-v2-converter"
-version = "2.1.13"
+version = "2.1.22"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "io.swagger"
 artifactId = "swagger-core"
-version = "1.6.10"
+version = "1.6.14"
 
-# transitive dependency of io.prometheus.jmx:jmx_prometheus_javaagent:0.20.0
-[[platform.java11.dependency]]
-groupId = "io.prometheus.jmx"
-artifactId = "jmx_prometheus_javaagent"
-version = "0.20.0"
-
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "io.swagger"
 artifactId = "swagger-models"
-version = "1.6.10"
+version = "1.6.14"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "io.swagger"
 artifactId = "swagger-annotations"
-version = "1.6.10"
+version = "1.6.14"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
-[[platform.java11.dependency]]
-groupId = "com.google.guava"
-artifactId = "guava"
-version = "31.1-android"
-
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
-[[platform.java11.dependency]]
-groupId = "com.google.guava"
-artifactId = "failureaccess"
-version = "1.0.1"
-
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
-[[platform.java11.dependency]]
-groupId = "com.google.guava"
-artifactId = "listenablefuture"
-version = "9999.0-empty-to-avoid-conflict-with-guava"
-
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
-[[platform.java11.dependency]]
-groupId = "com.google.code.findbugs"
-artifactId = "jsr305"
-version = "3.0.2"
-
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
-[[platform.java11.dependency]]
-groupId = "org.checkerframework"
-artifactId = "checker-qual"
-version = "3.12.0"
-
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
-[[platform.java11.dependency]]
-groupId = "com.google.errorprone"
-artifactId = "error_prone_annotations"
-version = "2.11.0"
-
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
-[[platform.java11.dependency]]
-groupId = "com.google.j2objc"
-artifactId = "j2objc-annotations"
-version = "1.3"
-
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "io.swagger"
 artifactId = "swagger-parser"
-version = "1.0.65"
+version = "1.0.70"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
+[[platform.java11.dependency]]
+groupId = "io.swagger"
+artifactId = "swagger-parser-safe-url-resolver"
+version = "1.0.70"
+
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "io.swagger"
 artifactId = "swagger-compat-spec-parser"
-version = "1.0.65"
+version = "1.0.70"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.github.java-json-tools"
 artifactId = "json-schema-validator"
 version = "2.2.14"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.github.java-json-tools"
 artifactId = "jackson-coreutils-equivalence"
 version = "1.0"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.github.java-json-tools"
 artifactId = "json-schema-core"
 version = "1.2.14"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.github.java-json-tools"
 artifactId = "uri-template"
 version = "0.10"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "org.mozilla"
 artifactId = "rhino"
 version = "1.7.7.2"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.googlecode.libphonenumber"
 artifactId = "libphonenumber"
 version = "8.11.1"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
+[[platform.java11.dependency]]
+groupId = "com.google.code.findbugs"
+artifactId = "jsr305"
+version = "3.0.2"
+
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "net.sf.jopt-simple"
 artifactId = "jopt-simple"
 version = "5.0.4"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.github.java-json-tools"
 artifactId = "json-patch"
 version = "1.13"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.github.java-json-tools"
 artifactId = "msg-simple"
 version = "1.2"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.github.java-json-tools"
 artifactId = "btf"
 version = "1.3"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "com.github.java-json-tools"
 artifactId = "jackson-coreutils"
 version = "2.0"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "org.apache.httpcomponents"
 artifactId = "httpclient"
 version = "4.5.14"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "org.apache.httpcomponents"
 artifactId = "httpcore"
 version = "4.4.16"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "commons-codec"
 artifactId = "commons-codec"
 version = "1.11"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "io.swagger.parser.v3"
 artifactId = "swagger-parser-core"
-version = "2.1.13"
+version = "2.1.22"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "io.swagger.parser.v3"
 artifactId = "swagger-parser-v3"
-version = "2.1.13"
+version = "2.1.22"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
+[[platform.java11.dependency]]
+groupId = "io.swagger.parser.v3"
+artifactId = "swagger-parser-safe-url-resolver"
+version = "2.1.22"
+
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "org.yaml"
 artifactId = "snakeyaml"
-version = "2.0"
+version = "2.2"
 
-# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.13
+# transitive dependency of io.swagger.parser.v3:swagger-parser:2.1.22
 [[platform.java11.dependency]]
 groupId = "commons-io"
 artifactId = "commons-io"
-version = "2.14.0"
+version = "2.15.1"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.swagger.core.v3"
 artifactId = "swagger-models"
-version = "2.2.9"
+version = "2.2.23"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.swagger.core.v3"
 artifactId = "swagger-core"
-version = "2.2.9"
+version = "2.2.23"
 
-# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.23
 [[platform.java11.dependency]]
 groupId = "jakarta.xml.bind"
 artifactId = "jakarta.xml.bind-api"
-version = "2.3.2"
+version = "2.3.3"
 
-# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.23
 [[platform.java11.dependency]]
 groupId = "jakarta.activation"
 artifactId = "jakarta.activation-api"
-version = "1.2.1"
+version = "1.2.2"
 
-# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.23
 [[platform.java11.dependency]]
 groupId = "org.apache.commons"
 artifactId = "commons-lang3"
-version = "3.12.0"
+version = "3.14.0"
 
-# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.23
 [[platform.java11.dependency]]
 groupId = "org.slf4j"
 artifactId = "slf4j-api"
-version = "1.7.36"
+version = "2.0.9"
 
-# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.23
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-databind"
-version = "2.14.2"
+version = "2.16.2"
 
-# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.23
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.datatype"
 artifactId = "jackson-datatype-jsr310"
-version = "2.14.2"
+version = "2.16.2"
 
-# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.23
 [[platform.java11.dependency]]
 groupId = "io.swagger.core.v3"
 artifactId = "swagger-annotations"
-version = "2.2.9"
+version = "2.2.23"
 
-# transitive dependency of io.swagger.core.v3:swagger-core:2.2.9
+# transitive dependency of io.swagger.core.v3:swagger-core:2.2.23
 [[platform.java11.dependency]]
 groupId = "jakarta.validation"
 artifactId = "jakarta.validation-api"
 version = "2.0.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.dataformat"
 artifactId = "jackson-dataformat-yaml"
-version = "2.14.2"
+version = "2.18.0"
 
-# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2
+# transitive dependency of com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.0
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-core"
-version = "2.14.2"
+version = "2.18.0"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.graphql-java"
 artifactId = "graphql-java"
-version = "21.1"
+version = "22.3"
 
-# transitive dependency of com.graphql-java:graphql-java:21.1
+# transitive dependency of com.graphql-java:graphql-java:22.3
 [[platform.java11.dependency]]
 groupId = "com.graphql-java"
 artifactId = "java-dataloader"
-version = "3.2.0"
+version = "3.3.0"
 
-# transitive dependency of com.graphql-java:graphql-java:21.1
+# transitive dependency of com.graphql-java:graphql-java:22.3
 [[platform.java11.dependency]]
 groupId = "org.reactivestreams"
 artifactId = "reactive-streams"
 version = "1.0.3"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.fasterxml.jackson.core"
 artifactId = "jackson-annotations"
-version = "2.14.2"
+version = "2.18.0"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "org.wso2.orbit.org.everit.json"
 artifactId = "org.everit.json.schema"
 version = "1.5.0.wso2.v2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "io.apicurio"
 artifactId = "apicurio-data-models"
 version = "1.1.5"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "commons-validator"
 artifactId = "commons-validator"
@@ -361,7 +331,7 @@ groupId = "commons-collections"
 artifactId = "commons-collections"
 version = "3.2.2"
 
-# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.0.0-SNAPSHOT
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
 [[platform.java11.dependency]]
 groupId = "com.damnhandy"
 artifactId = "handy-uri-templates"
@@ -384,3 +354,15 @@ version = "20231013"
 groupId = "commons-lang"
 artifactId = "commons-lang"
 version = "2.4"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "io.prometheus.jmx"
+artifactId = "jmx_prometheus_javaagent"
+version = "0.20.0"
+
+# transitive dependency of org.wso2.apk:org.wso2.apk.config:1.2.0-SNAPSHOT
+[[platform.java11.dependency]]
+groupId = "com.google.protobuf"
+artifactId = "protobuf-java"
+version = "3.25.5"
