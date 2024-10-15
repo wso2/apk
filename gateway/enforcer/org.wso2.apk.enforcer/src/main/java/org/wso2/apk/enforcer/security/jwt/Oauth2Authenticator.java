@@ -270,7 +270,7 @@ public class Oauth2Authenticator implements Authenticator {
                                 String versionToMatch = requestContext.getMatchedAPI().getVersion();
                                 Matcher matcher = pattern.matcher(versionToMatch);
                                 if (matcher.matches()) {
-                                    if (!"Unlimited".equals(subscription.getRatelimitTier())) {
+                                    if (!"Unlimited".equals(subscription.getRatelimitTier()) && subscription.getRatelimitTier() != null && !subscription.getRatelimitTier().isEmpty()) {
                                         String subscriptionId = subscription.getSubscribedApi().getName() + ":" +
                                                 applicationId + subscription.getSubscriptionId();
                                         requestContext.addMetadataToMap("ratelimit:subscription", subscriptionId);
