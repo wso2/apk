@@ -145,11 +145,8 @@ public class DeployerClient {
                 return e909028();
             }
         } on fail var e {
-            if e is commons:APKError {
-                return e;
-            }
             log:printError("Internal Error occured while deploying API", e);
-            return e909028();
+            return e;
         }
     }
 
