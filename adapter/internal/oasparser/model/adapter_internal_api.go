@@ -37,7 +37,6 @@ import (
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // AdapterInternalAPI represents the object structure holding the information related to the
@@ -1187,7 +1186,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 
 // SetInfoGRPCRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwapiv1a2.GRPCRoute, resourceParams ResourceParams) error {
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwapiv1.GRPCRoute, resourceParams ResourceParams) error {
 	var resources []*Resource
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
@@ -1279,7 +1278,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 		var scopes []string
 		for _, filter := range rule.Filters {
 			switch filter.Type {
-			case gwapiv1a2.GRPCRouteFilterExtensionRef:
+			case gwapiv1.GRPCRouteFilterExtensionRef:
 				if filter.ExtensionRef.Kind == constants.KindAuthentication {
 					if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
 						Name:      string(filter.ExtensionRef.Name),

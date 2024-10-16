@@ -27,9 +27,9 @@ import (
 
 // APIPolicySpec defines the desired state of APIPolicy
 type APIPolicySpec struct {
-	Default   *PolicySpec                     `json:"default,omitempty"`
-	Override  *PolicySpec                     `json:"override,omitempty"`
-	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+	Default   *PolicySpec                               `json:"default,omitempty"`
+	Override  *PolicySpec                               `json:"override,omitempty"`
+	TargetRef gwapiv1b1.NamespacedPolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // PolicySpec contains API policies

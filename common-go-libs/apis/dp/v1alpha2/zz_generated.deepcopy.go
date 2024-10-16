@@ -1483,7 +1483,7 @@ func (in *TokenIssuerSpec) DeepCopyInto(out *TokenIssuerSpec) {
 	}
 	if in.TargetRef != nil {
 		in, out := &in.TargetRef, &out.TargetRef
-		*out = new(apisv1alpha2.PolicyTargetReference)
+		*out = new(apisv1alpha2.NamespacedPolicyTargetReference)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.Environments != nil {

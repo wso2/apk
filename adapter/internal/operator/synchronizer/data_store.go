@@ -26,7 +26,6 @@ import (
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // OperatorDataStore holds the APIStore and API, HttpRoute mappings
@@ -702,7 +701,7 @@ func (ods *OperatorDataStore) GetCachedGateway(gatewayName types.NamespacedName)
 	return GatewayState{}, false
 }
 
-func isEqualGRPCRoutes(cachedGRPCRoutes, newGRPCRoutes map[string]*gwapiv1a2.GRPCRoute) bool {
+func isEqualGRPCRoutes(cachedGRPCRoutes, newGRPCRoutes map[string]*gwapiv1.GRPCRoute) bool {
 	for key, cachedGRPCRoute := range cachedGRPCRoutes {
 		if newGRPCRoutes[key] == nil {
 			return false

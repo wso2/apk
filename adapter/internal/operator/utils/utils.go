@@ -43,7 +43,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // NamespacedName generates namespaced name for Kubernetes objects
@@ -105,8 +104,8 @@ func FilterGQLRouteByNamespaces(namespaces []string) func(object *dpv1alpha2.GQL
 // FilterGRPCRouteByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterGRPCRouteByNamespaces(namespaces []string) func(object *gwapiv1a2.GRPCRoute) bool {
-	return func(object *gwapiv1a2.GRPCRoute) bool {
+func FilterGRPCRouteByNamespaces(namespaces []string) func(object *gwapiv1.GRPCRoute) bool {
+	return func(object *gwapiv1.GRPCRoute) bool {
 		if namespaces == nil {
 			return true
 		}

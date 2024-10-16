@@ -28,7 +28,7 @@ import (
 type AuthenticationSpec struct {
 	Default   *AuthSpec                       `json:"default,omitempty"`
 	Override  *AuthSpec                       `json:"override,omitempty"`
-	TargetRef gwapiv1b1.PolicyTargetReference `json:"targetRef,omitempty"`
+	TargetRef gwapiv1b1.NamespacedPolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // AuthSpec specification of the authentication service

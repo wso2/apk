@@ -372,26 +372,26 @@ isolated function getBackendJWTCrsForAPI(string apiName, string apiVersion, stri
 }
 
 isolated function getGrpcRoute(string name, string namespace) returns model:GRPCRoute|http:ClientError {
-    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/" + name;
+    string endpoint = "/apis/gateway.networking.k8s.io/v1/namespaces/" + namespace + "/grpcroutes/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:GRPCRoute);
 }
 
 isolated function deleteGrpcRoute(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/" + name;
+    string endpoint = "/apis/gateway.networking.k8s.io/v1/namespaces/" + namespace + "/grpcroutes/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
 isolated function deployGrpcRoute(model:GRPCRoute grpcRoute, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes";
+    string endpoint = "/apis/gateway.networking.k8s.io/v1/namespaces/" + namespace + "/grpcroutes";
     return k8sApiServerEp->post(endpoint, grpcRoute, targetType = http:Response);
 }
 
 isolated function updateGrpcRoute(model:GRPCRoute grpcRoute, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/" + grpcRoute.metadata.name;
+    string endpoint = "/apis/gateway.networking.k8s.io/v1/namespaces/" + namespace + "/grpcroutes/" + grpcRoute.metadata.name;
     return k8sApiServerEp->put(endpoint, grpcRoute, targetType = http:Response);
 }
 
 public isolated function getGrpcRoutesForAPIs(string apiName, string apiVersion, string namespace, string organization) returns model:GRPCRouteList|http:ClientError|error {
-    string endpoint = "/apis/gateway.networking.k8s.io/v1alpha2/namespaces/" + namespace + "/grpcroutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    string endpoint = "/apis/gateway.networking.k8s.io/v1/namespaces/" + namespace + "/grpcroutes/?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:GRPCRouteList);
 }

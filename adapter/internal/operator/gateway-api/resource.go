@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
+	gwapiv1a3 "sigs.k8s.io/gateway-api/apis/v1alpha3"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1beta1"
 )
 
@@ -49,7 +50,7 @@ type Resources struct {
 	GatewayClass        *gwapiv1.GatewayClass         `json:"gatewayClass,omitempty" yaml:"gatewayClass,omitempty"`
 	Gateways            []*gwapiv1.Gateway            `json:"gateways,omitempty" yaml:"gateways,omitempty"`
 	HTTPRoutes          []*gwapiv1.HTTPRoute          `json:"httpRoutes,omitempty" yaml:"httpRoutes,omitempty"`
-	GRPCRoutes          []*gwapiv1a2.GRPCRoute        `json:"grpcRoutes,omitempty" yaml:"grpcRoutes,omitempty"`
+	GRPCRoutes          []*gwapiv1.GRPCRoute          `json:"grpcRoutes,omitempty" yaml:"grpcRoutes,omitempty"`
 	TLSRoutes           []*gwapiv1a2.TLSRoute         `json:"tlsRoutes,omitempty" yaml:"tlsRoutes,omitempty"`
 	TCPRoutes           []*gwapiv1a2.TCPRoute         `json:"tcpRoutes,omitempty" yaml:"tcpRoutes,omitempty"`
 	UDPRoutes           []*gwapiv1a2.UDPRoute         `json:"udpRoutes,omitempty" yaml:"udpRoutes,omitempty"`
@@ -61,7 +62,7 @@ type Resources struct {
 	Secrets             []*v1.Secret                  `json:"secrets,omitempty" yaml:"secrets,omitempty"`
 	ConfigMaps          []*v1.ConfigMap               `json:"configMaps,omitempty" yaml:"configMaps,omitempty"`
 	ExtensionRefFilters []unstructured.Unstructured   `json:"extensionRefFilters,omitempty" yaml:"extensionRefFilters,omitempty"`
-	BackendTLSPolicies  []*gwapiv1a2.BackendTLSPolicy `json:"backendTLSPolicies,omitempty" yaml:"backendTLSPolicies,omitempty"`
+	BackendTLSPolicies  []*gwapiv1a3.BackendTLSPolicy `json:"backendTLSPolicies,omitempty" yaml:"backendTLSPolicies,omitempty"`
 	APIs                []*dpv1alpha2.API             `json:"apis,omitempty" yaml:"apis,omitempty"`
 }
 
@@ -69,7 +70,7 @@ func NewResources() *Resources {
 	return &Resources{
 		Gateways:            []*gwapiv1.Gateway{},
 		HTTPRoutes:          []*gwapiv1.HTTPRoute{},
-		GRPCRoutes:          []*gwapiv1a2.GRPCRoute{},
+		GRPCRoutes:          []*gwapiv1.GRPCRoute{},
 		TLSRoutes:           []*gwapiv1a2.TLSRoute{},
 		Services:            []*v1.Service{},
 		EndpointSlices:      []*discoveryv1.EndpointSlice{},
@@ -78,7 +79,7 @@ func NewResources() *Resources {
 		ReferenceGrants:     []*gwapiv1b1.ReferenceGrant{},
 		Namespaces:          []*v1.Namespace{},
 		ExtensionRefFilters: []unstructured.Unstructured{},
-		BackendTLSPolicies:  []*gwapiv1a2.BackendTLSPolicy{},
+		BackendTLSPolicies:  []*gwapiv1a3.BackendTLSPolicy{},
 		APIs:                []*dpv1alpha2.API{},
 	}
 }
