@@ -19,6 +19,8 @@ wso2:
     imagePullSecrets: ""
 
   apk:
+    helmHooks:
+      webhooksCleanupEnabled: true
     webhooks:
       validatingwebhookconfigurations: true
       mutatingwebhookconfigurations: true
@@ -249,7 +251,7 @@ wso2:
 #            logging:
 #              level: DEBUG
             configs:
-             javaOpts: "-Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2"
+             javaOpts: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006 -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2"
 #              tls:
 #                secretName: "router-cert"
 #                certKeyFilename: ""
