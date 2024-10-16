@@ -29,6 +29,7 @@ public distinct class RuntimeAPICommonUtil {
     public function toString() returns string {
         return java:toString(self.jObj) ?: "";
     }
+
     # The function that maps to the `equals` method of `org.wso2.apk.config.RuntimeAPICommonUtil`.
     #
     # + arg0 - The `javalang:Object` value required to map with the Java method parameter.
@@ -126,7 +127,7 @@ public isolated function RuntimeAPICommonUtil_generateDefinition2(orgwso2apkconf
         orgwso2apkconfigapi:APIManagementException e = error orgwso2apkconfigapi:APIManagementException(orgwso2apkconfigapi:APIMANAGEMENTEXCEPTION, externalObj, message = externalObj.message());
         return e;
     } else {
-        return java:toString(externalObj);
+        return java:toString(externalObj) ?: "";
     }
 }
 
