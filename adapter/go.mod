@@ -13,12 +13,12 @@ require (
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
 	github.com/pelletier/go-toml v1.9.5
-	github.com/prometheus/client_golang v1.20.4
+	github.com/prometheus/client_golang v1.20.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/telepresenceio/watchable v0.0.0-20220726211108-9bb86f92afa7
-	github.com/wso2/apk/common-go-libs v0.0.0-20241009065849-c09a29e9dae6
+	github.com/wso2/apk/common-go-libs v0.0.0-20241016075419-fc842057860d
 	go.opentelemetry.io/proto/otlp v1.3.1
-	golang.org/x/exp v0.0.0-20241004190924-225e2abe05e6
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	google.golang.org/grpc v1.67.1
 	google.golang.org/protobuf v1.35.1
 	gopkg.in/yaml.v2 v2.4.0
