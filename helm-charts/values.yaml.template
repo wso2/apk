@@ -21,9 +21,6 @@ wso2:
     imagePullSecrets: ""
     
   apk:
-    helmHooks:
-      # -- Helm hooks for cleaning up webhooks before installing, upgrading and uninstalling
-      webhooksCleanupEnabled: true
     webhooks:
       validatingwebhookconfigurations : true
       mutatingwebhookconfigurations : true
