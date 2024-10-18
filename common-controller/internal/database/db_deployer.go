@@ -111,7 +111,7 @@ func (dbDeployer DBDeployer) DeploySubscription(subscription server.Subscription
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, insertSubscription)
 		return AddSubscription(tx, subscription.UUID, subscription.SubscribedAPI.Name, subscription.SubscribedAPI.Version,
-			subscription.SubStatus, subscription.Organization)
+			subscription.SubStatus, subscription.Organization, subscription.RatelimitTier)
 	})
 	server.AddSubscription(subscription)
 	return nil
@@ -122,7 +122,7 @@ func (dbDeployer DBDeployer) UpdateSubscription(subscription server.Subscription
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, updateSubscription)
 		return UpdateSubscription(tx, subscription.UUID, subscription.SubscribedAPI.Name, subscription.SubscribedAPI.Version,
-			subscription.SubStatus, subscription.Organization)
+			subscription.SubStatus, subscription.Organization, subscription.RatelimitTier)
 	})
 	server.DeleteSubscription(subscription.UUID)
 	server.AddSubscription(subscription)
@@ -344,7 +344,7 @@ func (dbDeployer DBDeployer) DeployAllSubscriptions(subscriptions server.Subscri
 		server.DeleteAllSubscriptions()
 		for _, subscription := range subscriptions.List {
 			if err := AddSubscription(tx, subscription.UUID, subscription.SubscribedAPI.Name, subscription.SubscribedAPI.Version,
-				subscription.SubStatus, subscription.Organization); err != nil {
+				subscription.SubStatus, subscription.Organization, subscription.RatelimitTier); err != nil {
 				loggers.LoggerAPI.Error("Error while adding subscription ", err)
 				return err
 			}

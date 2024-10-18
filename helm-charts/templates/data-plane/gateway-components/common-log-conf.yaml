@@ -46,7 +46,7 @@ data:
       enabled = {{ .Values.wso2.apk.dp.commonController.deployment.database.enabled | default false }}
       name = "{{ .Values.wso2.apk.dp.commonController.deployment.database.name | default "DATAPLANE" }}"
       host = "{{ .Values.wso2.apk.dp.commonController.deployment.database.host | default "wso2apk-db-service.apk" }}"
-      port = "{{ .Values.wso2.apk.dp.commonController.deployment.database.port | default "5432" }}"
+      port = {{ .Values.wso2.apk.dp.commonController.deployment.database.port | default 5432 }}
       username = "{{ .Values.wso2.apk.dp.commonController.deployment.database.username | default "wso2carbon" }}"
       password = "{{ .Values.wso2.apk.dp.commonController.deployment.database.password | default "wso2carbon" }}"
 

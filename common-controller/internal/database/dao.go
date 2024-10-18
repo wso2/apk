@@ -112,7 +112,7 @@ func GetAllSubscription(tx pgx.Tx) ([]server.Subscription, error) {
 			SubscribedAPI: &server.SubscribedAPI{},
 		}
 
-		err := rows.Scan(&sub.UUID, &sub.SubscribedAPI.Name, &sub.SubscribedAPI.Version, &sub.SubStatus, &sub.Organization)
+		err := rows.Scan(&sub.UUID, &sub.SubscribedAPI.Name, &sub.SubscribedAPI.Version, &sub.SubStatus, &sub.Organization, &sub.RatelimitTier)
 		if err != nil {
 			return nil, err
 		}
@@ -196,13 +196,13 @@ func DeleteAllAppAttributes(tx pgx.Tx) error {
 }
 
 // AddSubscription adds a subscription to the database
-func AddSubscription(tx pgx.Tx, uuid, apiName, apiVersion, subStatus, organization string) error {
-	return ExecDBQuery(tx, insertSubscription, uuid, apiName, apiVersion, subStatus, organization)
+func AddSubscription(tx pgx.Tx, uuid, apiName, apiVersion, subStatus, organization string, rateLimitTier string) error {
+	return ExecDBQuery(tx, insertSubscription, uuid, apiName, apiVersion, subStatus, organization, rateLimitTier)
 }
 
 // UpdateSubscription updates a subscription in the database
-func UpdateSubscription(tx pgx.Tx, uuid, apiName, apiVersion, subStatus, organization string) error {
-	return ExecDBQuery(tx, updateSubscription, uuid, apiName, apiVersion, subStatus, organization)
+func UpdateSubscription(tx pgx.Tx, uuid, apiName, apiVersion, subStatus, organization string, rateLimitTier string) error {
+	return ExecDBQuery(tx, updateSubscription, uuid, apiName, apiVersion, subStatus, organization, rateLimitTier)
 }
 
 // DeleteSubscription deletes a subscription from the database
