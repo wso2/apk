@@ -19,8 +19,6 @@ wso2:
     imagePullSecrets: ""
 
   apk:
-    helmHooks:
-      webhooksCleanupEnabled: true
     webhooks:
       validatingwebhookconfigurations: true
       mutatingwebhookconfigurations: true
