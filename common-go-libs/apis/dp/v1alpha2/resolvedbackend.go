@@ -17,6 +17,8 @@
 
 package v1alpha2
 
+import "reflect"
+
 // ResolvedBackend holds backend properties
 type ResolvedBackend struct {
 	Backend        Backend
@@ -55,4 +57,39 @@ type ResolvedAPIKeySecurityConfig struct {
 	In    string
 	Name  string
 	Value string
+}
+
+func (rb ResolvedBackend) IsSimilar(other ResolvedBackend) bool {
+	
+	if !reflect.DeepEqual(rb.Backend, other.Backend) {
+		return false
+	}
+	if len(rb.Services) != len(other.Services) {
+		return false
+	}
+	if !reflect.DeepEqual(rb.Protocol, other.Protocol) {
+		return false
+	}
+	if !reflect.DeepEqual(rb.TLS, other.TLS) {
+		return false
+	}
+	if !reflect.DeepEqual(rb.Security, other.Security) {
+		return false
+	}
+	if !reflect.DeepEqual(rb.CircuitBreaker, other.CircuitBreaker) {
+		return false
+	}
+	if !reflect.DeepEqual(rb.Timeout, other.Timeout) {
+		return false
+	}
+	if !reflect.DeepEqual(rb.Retry, other.Retry) {
+		return false
+	}
+	if rb.BasePath != other.BasePath {
+		return false
+	}
+	if !reflect.DeepEqual(rb.HealthCheck, other.HealthCheck) {
+		return false
+	}
+	return true
 }
