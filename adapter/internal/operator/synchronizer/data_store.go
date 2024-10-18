@@ -467,9 +467,6 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 					updated = true
 					events = append(events, endpointType+" Backend Properties")
 					break
-				} else {
-					// log the backend and chaed backend
-					loggers.LoggerAPKOperator.Infof("Backend %+v is similar to the existing backend %+v", backend.Security, existingBackend.Security)
 				}
 			} else {
 				cachedHTTPRoute.BackendMapping = httpRoute.BackendMapping
