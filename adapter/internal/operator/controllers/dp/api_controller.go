@@ -2970,10 +2970,12 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	}
 	subType := "DEFAULT"
 	aiConfiguration := controlplane.AIConfiguration{}
+	loggers.LoggerAPKOperator.Debugf("AI Provider in state: %+v", apiState.AIProvider)
 	if apiState.AIProvider != nil {
 		loggers.LoggerAPKOperator.Debugf("AIProvider is found")
 		subType = "AIAPI"
 		aiConfiguration = controlplane.AIConfiguration{
+			LLMProviderID:         apiState.AIProvider.ObjectMeta.Name,
 			LLMProviderName:       apiState.AIProvider.Spec.ProviderName,
 			LLMProviderAPIVersion: apiState.AIProvider.Spec.ProviderAPIVersion,
 		}
