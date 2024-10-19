@@ -95,6 +95,7 @@ func PrepareQueries(tx pgx.Tx, queries ...string) {
 
 // performTransaction performs a transaction
 func performTransaction(fn func(tx pgx.Tx) error) error {
+	ConnectToDB()
 	con := context.Background()
 	tx, err := dbPool.BeginTx(con, pgx.TxOptions{})
 	if err != nil {
