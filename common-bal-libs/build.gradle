@@ -5,27 +5,9 @@ task buildcommonBalLibs(type:Exec) {
         println "apk-common-lib build is being executed"
     }
 }
-task buildNotificationGrpcClient(type:Exec) {
-    workingDir 'notification-grpc-client'
-    commandLine './gradlew', 'build'
-    mustRunAfter 'buildcommonBalLibs'
-    doLast {
-        println "notification-grpc-client build is being executed"
-    }
-}
-task buildKeyManagerLibs(type:Exec) {
-    workingDir 'apk-keymanager-libs'
-    commandLine './gradlew', 'build'
-    mustRunAfter 'buildcommonBalLibs'
-    doLast {
-        println "apk-keymanager-libs build is being executed"
-    }
-}
 task build {
     doLast {
         println "All the common bal libs are built"
     }
     dependsOn 'buildcommonBalLibs'
-    dependsOn 'buildNotificationGrpcClient'
-    dependsOn 'buildKeyManagerLibs'
 }
