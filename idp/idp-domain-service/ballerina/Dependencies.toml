@@ -415,4 +415,3 @@ dependencies = [
 modules = [
 	{org = "wso2", packageName = "idp_domain_service", moduleName = "idp_domain_service"}
 ]
-
