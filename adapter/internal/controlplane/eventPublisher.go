@@ -116,6 +116,7 @@ type AIRL struct {
 
 // AIConfiguration holds the AI configuration
 type AIConfiguration struct {
+	LLMProviderID         string `json:"llmProviderID"`
 	LLMProviderName       string `json:"llmProviderName"`
 	LLMProviderAPIVersion string `json:"llmProviderAPIVersion"`
 }
