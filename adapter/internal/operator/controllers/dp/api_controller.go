@@ -1896,8 +1896,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 	if err := apiReconciler.client.List(ctx, httpRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(httprouteScopeIndex, utils.NamespacedName(scope).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated HTTPRoutes: %s", utils.NamespacedName(scope).String()))
-		return []reconcile.Request{}
+		loggers.LoggerAPKOperator.Warn(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated HTTPRoutes: %s", utils.NamespacedName(scope).String()))
 	}
 
 	if len(httpRouteList.Items) == 0 {
@@ -1914,8 +1913,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 	if err := apiReconciler.client.List(ctx, gqlRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gqlRouteScopeIndex, utils.NamespacedName(scope).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GQLRoute: %s", utils.NamespacedName(scope).String()))
-		return []reconcile.Request{}
+		loggers.LoggerAPKOperator.Warn(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GQLRoute: %s", utils.NamespacedName(scope).String()))
 	}
 
 	if len(gqlRouteList.Items) == 0 {
@@ -1931,8 +1929,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(grpcRouteScopeIndex, utils.NamespacedName(scope).String()),
 	}); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(scope).String()))
-		return []reconcile.Request{}
+		loggers.LoggerAPKOperator.Warn(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GRPCRoutes: %s", utils.NamespacedName(scope).String()))
 	}
 
 	if len(grpcRouteList.Items) == 0 {
