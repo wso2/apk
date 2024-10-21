@@ -1,0 +1,144 @@
+openapi: 3.0.3
+info:
+  title: To-Do API
+  description: A simple to-do service API
+  version: 1.0.0
+servers:
+  - url: http://todo-app-service:80
+    description: Local development server
+paths:
+  /todos:
+    get:
+      summary: Retrieve all to-dos
+      description: Returns a list of all to-do items
+      responses:
+        '200':
+          description: A list of to-do items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ToDo'
+    post:
+      summary: Create a new to-do
+      description: Adds a new to-do item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewToDo'
+      responses:
+        '201':
+          description: To-do created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToDo'
+        '400':
+          description: Invalid input
+  /todos/{id}:
+    get:
+      summary: Retrieve a single to-do item
+      description: Returns the details of a specific to-do item by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The requested to-do item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToDo'
+        '404':
+          description: To-do not found
+    put:
+      summary: Update a to-do item
+      description: Updates an existing to-do item by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewToDo'
+      responses:
+        '200':
+          description: To-do updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToDo'
+        '400':
+          description: Invalid input
+        '404':
+          description: To-do not found
+    delete:
+      summary: Delete a to-do item
+      description: Deletes a to-do item by its ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: To-do deleted successfully
+        '404':
+          description: To-do not found
+  /register:
+    post:
+      summary: Register a user
+      description: Registers a new user and expects a custom header `user-reg`
+      parameters:
+        - name: user-reg
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Missing or invalid header
+components:
+  schemas:
+    ToDo:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier of the to-do item
+        task:
+          type: string
+          description: The task description
+        done:
+          type: boolean
+          description: Status of the to-do (completed or not)
+      required:
+        - id
+        - task
+        - done
+    NewToDo:
+      type: object
+      properties:
+        task:
+          type: string
+          description: The task description
+        done:
+          type: boolean
+          description: Status of the to-do (completed or not)
+      required:
+        - task
+        - done
