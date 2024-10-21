@@ -330,6 +330,8 @@ func (apiReconciler *APIReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		loggers.LoggerAPKOperator.Infof("Ready to deploy CRs for API in namespace : %s with API UUID : %v, %v",
 			req.NamespacedName.String(), string(apiCR.ObjectMeta.UID), err)
 		*apiReconciler.ch <- apiState
+	} else {
+		loggers.LoggerAPKOperator.Infof("No changes detected for API in namespace : %s with API UUID : %v",)
 	}
 	return ctrl.Result{}, nil
 }

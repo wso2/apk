@@ -462,6 +462,12 @@ func updateHTTPRoute(httpRoute *HTTPRouteState, cachedHTTPRoute *HTTPRouteState,
 					events = append(events, endpointType+" Backend Properties")
 					break
 				}
+				if !existingBackend.IsSimilar(*backend) {
+					cachedHTTPRoute.BackendMapping = httpRoute.BackendMapping
+					updated = true
+					events = append(events, endpointType+" Backend Properties")
+					break
+				}
 			} else {
 				cachedHTTPRoute.BackendMapping = httpRoute.BackendMapping
 				updated = true
