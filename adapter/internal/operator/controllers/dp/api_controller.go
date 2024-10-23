@@ -2918,7 +2918,7 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	for _, val := range spec.APIProperties {
 		properties[val.Name] = val.Value
 	}
-	prodEndpoint, sandEndpoint, endpointProtocol := findProdSandEndpoints(&apiState)
+	prodEndpoint, sandEndpoint, endpointProtocol, prodAPIKeyName, prodAPIKeyIn, prodAPIKeyValue, prodBasicUsername, prodBasicPassword, sandAPIKeyName, sandAPIKeyIn, sandAPIKeyValue, sandBasicUsername, sandBasicPassword, prodEndpointSecurityType, sandEndpointSecurityType, prodEndpointSecurityEnabled, sandEndpointSecurityEnabled := findProdSandEndpoints(&apiState)
 	corsPolicy := pickOneCorsForCP(&apiState)
 	vhost := getProdVhost(&apiState)
 	sandVhost := geSandVhost(&apiState)
@@ -2968,6 +2968,24 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 			RequestCount:         requestC,
 		}
 	}
+	prodEndpointSecurity := controlplane.EndpointSecurity{
+		Enabled:       prodEndpointSecurityEnabled,
+		SecurityType:  prodEndpointSecurityType,
+		APIKeyName:    prodAPIKeyName,
+		APIKeyIn:      prodAPIKeyIn,
+		APIKeyValue:   prodAPIKeyValue,
+		BasicUsername: prodBasicUsername,
+		BasicPassword: prodBasicPassword,
+	}
+	sandEndpointSecurity := controlplane.EndpointSecurity{
+		Enabled:       sandEndpointSecurityEnabled,
+		SecurityType:  sandEndpointSecurityType,
+		APIKeyName:    sandAPIKeyName,
+		APIKeyIn:      sandAPIKeyIn,
+		APIKeyValue:   sandAPIKeyValue,
+		BasicUsername: sandBasicUsername,
+		BasicPassword: sandBasicPassword,
+	}
 	subType := "DEFAULT"
 	aiConfiguration := controlplane.AIConfiguration{}
 	loggers.LoggerAPKOperator.Debugf("AI Provider in state: %+v", apiState.AIProvider)
@@ -2983,33 +3001,35 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	loggers.LoggerAPKOperator.Debugf("Resolved aiConfiguration: %+v", aiConfiguration)
 
 	api := controlplane.API{
-		APIName:          spec.APIName,
-		APIVersion:       spec.APIVersion,
-		IsDefaultVersion: spec.IsDefaultVersion,
-		APIType:          spec.APIType,
-		APISubType:       subType,
-		BasePath:         spec.BasePath,
-		Organization:     spec.Organization,
-		Environment:      spec.Environment,
-		SystemAPI:        spec.SystemAPI,
-		Definition:       apiDef,
-		APIUUID:          apiUUID,
-		RevisionID:       revisionID,
-		APIProperties:    properties,
-		ProdEndpoint:     prodEndpoint,
-		SandEndpoint:     sandEndpoint,
-		EndpointProtocol: endpointProtocol,
-		CORSPolicy:       corsPolicy,
-		Vhost:            vhost,
-		SandVhost:        sandVhost,
-		SecurityScheme:   securityScheme,
-		AuthHeader:       authHeader,
-		Operations:       operations,
-		APIHash:          apiHash,
-		APIKeyHeader:     apiKeyHeader,
-		SandAIRL:         sandAIRLToAgent,
-		ProdAIRL:         prodAIRLToAgent,
-		AIConfiguration:  aiConfiguration,
+		APIName:              spec.APIName,
+		APIVersion:           spec.APIVersion,
+		IsDefaultVersion:     spec.IsDefaultVersion,
+		APIType:              spec.APIType,
+		APISubType:           subType,
+		BasePath:             spec.BasePath,
+		Organization:         spec.Organization,
+		Environment:          spec.Environment,
+		SystemAPI:            spec.SystemAPI,
+		Definition:           apiDef,
+		APIUUID:              apiUUID,
+		RevisionID:           revisionID,
+		APIProperties:        properties,
+		ProdEndpoint:         prodEndpoint,
+		SandEndpoint:         sandEndpoint,
+		ProdEndpointSecurity: prodEndpointSecurity,
+		SandEndpointSecurity: sandEndpointSecurity,
+		EndpointProtocol:     endpointProtocol,
+		CORSPolicy:           corsPolicy,
+		Vhost:                vhost,
+		SandVhost:            sandVhost,
+		SecurityScheme:       securityScheme,
+		AuthHeader:           authHeader,
+		Operations:           operations,
+		APIHash:              apiHash,
+		APIKeyHeader:         apiKeyHeader,
+		SandAIRL:             sandAIRLToAgent,
+		ProdAIRL:             prodAIRLToAgent,
+		AIConfiguration:      aiConfiguration,
 	}
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
@@ -3193,15 +3213,43 @@ func (apiReconciler *APIReconciler) getAPIHash(apiState *synchronizer.APIState) 
 	return truncatedHash
 }
 
-func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, string) {
+func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, string, string, string, string, string, string, string, string, string, string, string, string, string, bool, bool) {
 	prodEndpoint := ""
 	sandEndpoint := ""
 	endpointProtocol := ""
+	prodEndpointSecurityType := ""
+	prodEndpointSecurityEnabled := false
+	prodAPIKeyName := ""
+	prodAPIKeyIn := ""
+	prodAPIKeyValue := ""
+	prodBasicUsername := ""
+	prodBasicPassword := ""
+	sandEndpointSecurityType := ""
+	sandEndpointSecurityEnabled := false
+	sandAPIKeyName := ""
+	sandAPIKeyIn := ""
+	sandAPIKeyValue := ""
+	sandBasicUsername := ""
+	sandBasicPassword := ""
+
 	if apiState.ProdHTTPRoute != nil {
 		for _, backend := range apiState.ProdHTTPRoute.BackendMapping {
 			if len(backend.Backend.Spec.Services) > 0 {
 				prodEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
 				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+			if backend.Security.Basic.Username != "" && backend.Security.Basic.Password != "" {
+				prodEndpointSecurityEnabled = true
+				prodEndpointSecurityType = "basic"
+				prodBasicUsername = backend.Security.Basic.Username
+				prodBasicPassword = backend.Security.Basic.Password
+			}
+			if backend.Security.APIKey.Name != "" && backend.Security.APIKey.Value != "" && backend.Security.APIKey.In != "" {
+				prodEndpointSecurityEnabled = true
+				prodEndpointSecurityType = "apikey"
+				prodAPIKeyName = backend.Security.APIKey.Name
+				prodAPIKeyIn = string(backend.Security.APIKey.In)
+				prodAPIKeyValue = backend.Security.APIKey.Value
 			}
 		}
 	}
@@ -3211,6 +3259,19 @@ func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, str
 				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
 				endpointProtocol = string(backend.Backend.Spec.Protocol)
 			}
+			if backend.Security.Basic.Username != "" && backend.Security.Basic.Password != "" {
+				sandEndpointSecurityEnabled = true
+				sandEndpointSecurityType = "basic"
+				sandBasicUsername = backend.Security.Basic.Username
+				sandBasicPassword = backend.Security.Basic.Password
+			}
+			if backend.Security.APIKey.Name != "" && backend.Security.APIKey.Value != "" && backend.Security.APIKey.In != "" {
+				sandEndpointSecurityEnabled = true
+				sandEndpointSecurityType = "apikey"
+				sandAPIKeyName = backend.Security.APIKey.Name
+				sandAPIKeyIn = string(backend.Security.APIKey.In)
+				sandAPIKeyValue = backend.Security.APIKey.Value
+			}
 		}
 	}
 	if apiState.ProdGQLRoute != nil {
@@ -3218,6 +3279,19 @@ func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, str
 			if len(backend.Backend.Spec.Services) > 0 {
 				prodEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
 				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+			if backend.Security.Basic.Username != "" && backend.Security.Basic.Password != "" {
+				prodEndpointSecurityEnabled = true
+				prodEndpointSecurityType = "basic"
+				prodBasicUsername = backend.Security.Basic.Username
+				prodBasicPassword = backend.Security.Basic.Password
+			}
+			if backend.Security.APIKey.Name != "" && backend.Security.APIKey.Value != "" && backend.Security.APIKey.In != "" {
+				prodEndpointSecurityEnabled = true
+				prodEndpointSecurityType = "apikey"
+				prodAPIKeyName = backend.Security.APIKey.Name
+				prodAPIKeyIn = string(backend.Security.APIKey.In)
+				prodAPIKeyValue = backend.Security.APIKey.Value
 			}
 		}
 	}
@@ -3227,9 +3301,22 @@ func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, str
 				sandEndpoint = fmt.Sprintf("%s:%d", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port)
 				endpointProtocol = string(backend.Backend.Spec.Protocol)
 			}
+			if backend.Security.Basic.Username != "" && backend.Security.Basic.Password != "" {
+				sandEndpointSecurityEnabled = true
+				sandEndpointSecurityType = "basic"
+				sandBasicUsername = backend.Security.Basic.Username
+				sandBasicPassword = backend.Security.Basic.Password
+			}
+			if backend.Security.APIKey.Name != "" && backend.Security.APIKey.Value != "" && backend.Security.APIKey.In != "" {
+				sandEndpointSecurityEnabled = true
+				sandEndpointSecurityType = "apikey"
+				sandAPIKeyName = backend.Security.APIKey.Name
+				sandAPIKeyIn = string(backend.Security.APIKey.In)
+				sandAPIKeyValue = backend.Security.APIKey.Value
+			}
 		}
 	}
-	return prodEndpoint, sandEndpoint, endpointProtocol
+	return prodEndpoint, sandEndpoint, endpointProtocol, prodAPIKeyName, prodAPIKeyIn, prodAPIKeyValue, prodBasicUsername, prodBasicPassword, sandAPIKeyName, sandAPIKeyIn, sandAPIKeyValue, sandBasicUsername, sandBasicPassword, prodEndpointSecurityType, sandEndpointSecurityType, prodEndpointSecurityEnabled, sandEndpointSecurityEnabled
 }
 
 func pickOneCorsForCP(apiState *synchronizer.APIState) *controlplane.CORSPolicy {
