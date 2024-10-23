@@ -88,6 +88,8 @@ func (dbDeployer DBDeployer) DeployApplication(application server.Application) e
 		return deployApplicationwithAttributes(tx, application)
 	})
 	server.AddApplication(application)
+	utils.SendApplicationEvent(constants.ApplicationCreated, application.UUID, application.Name, application.Owner,
+		application.OrganizationID, application.Attributes)
 	return nil
 }
 
@@ -103,6 +105,8 @@ func (dbDeployer DBDeployer) UpdateApplication(application server.Application) e
 	})
 	server.DeleteApplication(application.UUID)
 	server.AddApplication(application)
+	utils.SendApplicationEvent(constants.ApplicationUpdated, application.UUID, application.Name, application.Owner,
+		application.OrganizationID, application.Attributes)
 	return nil
 }
 
@@ -114,6 +118,8 @@ func (dbDeployer DBDeployer) DeploySubscription(subscription server.Subscription
 			subscription.SubStatus, subscription.Organization, subscription.RatelimitTier)
 	})
 	server.AddSubscription(subscription)
+	utils.SendSubscriptionEvent(constants.SubscriptionCreated, subscription.UUID, subscription.SubStatus, subscription.Organization,
+		subscription.SubscribedAPI.Name, subscription.SubscribedAPI.Version, subscription.RatelimitTier)
 	return nil
 }
 
@@ -126,6 +132,8 @@ func (dbDeployer DBDeployer) UpdateSubscription(subscription server.Subscription
 	})
 	server.DeleteSubscription(subscription.UUID)
 	server.AddSubscription(subscription)
+	utils.SendSubscriptionEvent(constants.SubscriptionUpdated, subscription.UUID, subscription.SubStatus, subscription.Organization,
+		subscription.SubscribedAPI.Name, subscription.SubscribedAPI.Version, subscription.RatelimitTier)
 	return nil
 }
 
@@ -137,6 +145,8 @@ func (dbDeployer DBDeployer) DeployApplicationMappings(applicationMapping server
 			applicationMapping.OrganizationID)
 	})
 	server.AddApplicationMapping(applicationMapping)
+	utils.SendApplicationMappingEvent(constants.ApplicationMappingCreated, applicationMapping.UUID, applicationMapping.ApplicationRef,
+		applicationMapping.SubscriptionRef, applicationMapping.OrganizationID)
 	return nil
 }
 
@@ -155,6 +165,8 @@ func (dbDeployer DBDeployer) DeployKeyMappings(keyMapping server.ApplicationKeyM
 	})
 
 	server.AddApplicationKeyMapping(keyMapping)
+	utils.SendApplicationKeyMappingEvent(constants.ApplicationKeyMappingCreated, keyMapping.ApplicationUUID, keyMapping.SecurityScheme,
+		keyMapping.ApplicationIdentifier, keyMapping.KeyType, keyMapping.EnvID, keyMapping.OrganizationID)
 	return nil
 }
 
@@ -184,6 +196,7 @@ func (dbDeployer DBDeployer) DeleteApplication(applicationID string) error {
 		return DeleteApplicationAttributes(tx, applicationID)
 	})
 	server.DeleteApplication(applicationID)
+	utils.SendApplicationEvent(constants.ApplicationDeleted, applicationID, "", "", "", nil)
 	return nil
 }
 
@@ -194,6 +207,7 @@ func (dbDeployer DBDeployer) DeleteApplicationMappings(applicationMapping string
 		return DeleteAppSub(tx, applicationMapping)
 	})
 	server.DeleteApplicationMapping(applicationMapping)
+	utils.SendApplicationMappingEvent(constants.ApplicationMappingDeleted, applicationMapping, "", "", "")
 	return nil
 }
 
@@ -206,6 +220,8 @@ func (dbDeployer DBDeployer) UpdateApplicationMappings(applicationMapping server
 	})
 	server.DeleteApplicationMapping(applicationMapping.UUID)
 	server.AddApplicationMapping(applicationMapping)
+	utils.SendApplicationMappingEvent(constants.ApplicationMappingUpdated, applicationMapping.UUID, applicationMapping.ApplicationRef,
+		applicationMapping.SubscriptionRef, applicationMapping.OrganizationID)
 	return nil
 }
 
@@ -216,6 +232,8 @@ func (dbDeployer DBDeployer) DeleteKeyMappings(keyMapping server.ApplicationKeyM
 		return DeleteApplicationKeyMapping(tx, keyMapping.ApplicationUUID, keyMapping.SecurityScheme, keyMapping.EnvID)
 	})
 	server.DeleteApplicationKeyMapping(keyMapping)
+	utils.SendApplicationKeyMappingEvent(constants.ApplicationKeyMappingDeleted, keyMapping.ApplicationUUID, keyMapping.SecurityScheme,
+		keyMapping.ApplicationIdentifier, keyMapping.KeyType, keyMapping.EnvID, keyMapping.OrganizationID)
 	return nil
 }
 
@@ -226,6 +244,7 @@ func (dbDeployer DBDeployer) DeleteSubscription(subscriptionID string) error {
 		return DeleteSubscription(tx, subscriptionID)
 	})
 	server.DeleteSubscription(subscriptionID)
+	utils.SendSubscriptionEvent(constants.SubscriptionDeleted, subscriptionID, "", "", "", "", "")
 	return nil
 }
 
@@ -299,6 +318,8 @@ func (dbDeployer DBDeployer) UpdateKeyMappings(keyMapping server.ApplicationKeyM
 
 	server.DeleteApplicationKeyMapping(keyMapping)
 	server.AddApplicationKeyMapping(keyMapping)
+	utils.SendApplicationKeyMappingEvent(constants.ApplicationKeyMappingUpdated, keyMapping.ApplicationUUID, keyMapping.SecurityScheme,
+		keyMapping.ApplicationIdentifier, keyMapping.KeyType, keyMapping.EnvID, keyMapping.OrganizationID)
 	return nil
 }
 
