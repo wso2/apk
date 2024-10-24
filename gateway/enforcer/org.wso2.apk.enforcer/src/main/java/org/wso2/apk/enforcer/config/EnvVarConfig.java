@@ -81,7 +81,7 @@ public class EnvVarConfig {
     public static final String DEFAULT_XDS_MAX_RETRIES = Integer.toString(Constants.MAX_XDS_RETRIES);
     public static final String DEFAULT_XDS_RETRY_PERIOD = Integer.toString(Constants.XDS_DEFAULT_RETRY);
     public static final String DEFAULT_HOSTNAME = "Unassigned";
-    public static final String DEFAULT_REDIS_USERNAME = "default";
+    public static final String DEFAULT_REDIS_USERNAME = "";
     public static final String DEFAULT_REDIS_PASSWORD = "";
     public static final String DEFAULT_REDIS_HOST = "redis-master";
     public static final int DEFAULT_REDIS_PORT = 6379;

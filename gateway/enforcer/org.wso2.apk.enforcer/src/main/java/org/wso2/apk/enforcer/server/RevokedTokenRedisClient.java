@@ -82,8 +82,10 @@ public class RevokedTokenRedisClient {
         this.revokedTokenCleanupInterval = ConfigHolder.getInstance().getEnvVarConfig().getRevokedTokenCleanupInterval();
         String caCert = ConfigHolder.getInstance().getEnvVarConfig().getRedisCaCertFile();
         DefaultJedisClientConfig.Builder builder = DefaultJedisClientConfig.builder()
-                .user(userName)
                 .password(password);
+        if (!userName.isEmpty()) {
+            builder.user(userName);
+        }
         if (isSSLEnabled) {
             SSLSocketFactory sslFactory = createSslSocketFactory(caCert);
             builder = builder
@@ -152,6 +154,8 @@ public class RevokedTokenRedisClient {
                     logger.warn("Error while processing key: " + key, e);
                 }
             }
+        } catch (Exception e) {
+            logger.error("Error while creating redis connection.", e);
         }
     }
 
@@ -202,7 +206,12 @@ public class RevokedTokenRedisClient {
 
                     @Override
                     public void onUnsubscribe(String channel, int subscribedChannels) {
-                        logger.debug("Channel: " + channel + " subscribed channels: " + subscribedChannels);
+                        logger.info("Unsubscribed Channel: {} subscribed channels: {}", channel, subscribedChannels);
+                    }
+
+                    @Override
+                    public void onSubscribe(String channel, int subscribedChannels) {
+                        logger.info("Subscribed Channel: {} subscribed channels: {}", channel, subscribedChannels);
                     }
                 };
                 jedis.subscribe(jedisPubSub, this.redisRevokedTokensChannel);

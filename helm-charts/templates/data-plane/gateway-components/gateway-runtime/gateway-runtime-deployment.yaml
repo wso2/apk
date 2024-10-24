@@ -142,19 +142,19 @@ spec:
             - name: REDIS_HOST
               value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.host | default "redis-master" }}
             - name: REDIS_PORT
-              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.port | default "6379" }}
+              value: "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.port | default "6379" }}"
             - name: IS_REDIS_TLS_ENABLED
-              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.tlsEnabled | default "false" }}
+              value: "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.tlsEnabled | default "false" }}"
             - name: REDIS_REVOKED_TOKENS_CHANNEL
               value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.channelName | default "wso2-apk-revoked-tokens-channel" }}
             - name: REDIS_KEY_FILE
-              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.userKeyPath | default "/home/wso2/security/redis/redis.key" }}
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.userKeyPath | default "/home/wso2/security/truststore/enforcer.key" }}
             - name: REDIS_CERT_FILE
-              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.userCertPath | default "/home/wso2/security/redis/redis.crt" }}
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.userCertPath | default "/home/wso2/security/truststore/enforcer.crt" }}
             - name: REDIS_CA_CERT_FILE
-              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.redisCaCertPath | default "/home/wso2/security/redis/redis-ca.key" }}
+              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.redisCaCertPath | default "/home/wso2/security/truststore/enforcer.crt" }}
             - name: REVOKED_TOKEN_CLEANUP_INTERVAL
-              value: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.tokenCleanupInterval | default "3600" }}
+              value: "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.redis.tokenCleanupInterval | default "3600" }}"
             {{- else }}
             - name: REDIS_USERNAME
               value: "default"
@@ -169,11 +169,11 @@ spec:
             - name: REDIS_REVOKED_TOKENS_CHANNEL
               value: "wso2-apk-revoked-tokens-channel"
             - name: REDIS_KEY_FILE
-              value: "/home/wso2/security/redis/redis.key"
+              value: "/home/wso2/security/truststore/enforcer.key"
             - name: REDIS_CERT_FILE
-              value: "/home/wso2/security/redis/redis.crt"
+              value: "/home/wso2/security/truststore/enforcer.crt"
             - name: REDIS_CA_CERT_FILE
-              value: "/home/wso2/security/redis/redis-ca.key"
+              value: "/home/wso2/security/truststore/enforcer.crt"
             - name: REVOKED_TOKEN_CLEANUP_INTERVAL
               value: "3600"
             {{- end }}
