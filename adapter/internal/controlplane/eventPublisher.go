@@ -76,33 +76,35 @@ type APICPEvent struct {
 
 // API holds the data that needs to be sent to agent
 type API struct {
-	APIUUID          string            `json:"apiUUID"`
-	APIName          string            `json:"apiName"`
-	APIVersion       string            `json:"apiVersion"`
-	IsDefaultVersion bool              `json:"isDefaultVersion"`
-	Definition       string            `json:"definition"`
-	APIType          string            `json:"apiType"`
-	APISubType       string            `json:"apiSubType"`
-	BasePath         string            `json:"basePath"`
-	Organization     string            `json:"organization"`
-	SystemAPI        bool              `json:"systemAPI"`
-	APIProperties    map[string]string `json:"apiProperties,omitempty"`
-	Environment      string            `json:"environment,omitempty"`
-	RevisionID       string            `json:"revisionID"`
-	SandEndpoint     string            `json:"sandEndpoint"`
-	ProdEndpoint     string            `json:"prodEndpoint"`
-	EndpointProtocol string            `json:"endpointProtocol"`
-	CORSPolicy       *CORSPolicy       `json:"cORSPolicy,omitempty"`
-	Vhost            string            `json:"vhost"`
-	SandVhost        string            `json:"sandVhost"`
-	SecurityScheme   []string          `json:"securityScheme"`
-	AuthHeader       string            `json:"authHeader"`
-	APIKeyHeader     string            `json:"apiKeyHeader"`
-	Operations       []Operation       `json:"operations"`
-	AIConfiguration  AIConfiguration   `json:"aiConfiguration"`
-	APIHash          string            `json:"-"`
-	SandAIRL         *AIRL             `json:"sandAIRL"`
-	ProdAIRL         *AIRL             `json:"prodAIRL"`
+	APIUUID              string            `json:"apiUUID"`
+	APIName              string            `json:"apiName"`
+	APIVersion           string            `json:"apiVersion"`
+	IsDefaultVersion     bool              `json:"isDefaultVersion"`
+	Definition           string            `json:"definition"`
+	APIType              string            `json:"apiType"`
+	APISubType           string            `json:"apiSubType"`
+	BasePath             string            `json:"basePath"`
+	Organization         string            `json:"organization"`
+	SystemAPI            bool              `json:"systemAPI"`
+	APIProperties        map[string]string `json:"apiProperties,omitempty"`
+	Environment          string            `json:"environment,omitempty"`
+	RevisionID           string            `json:"revisionID"`
+	SandEndpoint         string            `json:"sandEndpoint"`
+	SandEndpointSecurity EndpointSecurity  `json:"sandEndpointSecurity"`
+	ProdEndpoint         string            `json:"prodEndpoint"`
+	ProdEndpointSecurity EndpointSecurity  `json:"prodEndpointSecurity"`
+	EndpointProtocol     string            `json:"endpointProtocol"`
+	CORSPolicy           *CORSPolicy       `json:"cORSPolicy,omitempty"`
+	Vhost                string            `json:"vhost"`
+	SandVhost            string            `json:"sandVhost"`
+	SecurityScheme       []string          `json:"securityScheme"`
+	AuthHeader           string            `json:"authHeader"`
+	APIKeyHeader         string            `json:"apiKeyHeader"`
+	Operations           []Operation       `json:"operations"`
+	AIConfiguration      AIConfiguration   `json:"aiConfiguration"`
+	APIHash              string            `json:"-"`
+	SandAIRL             *AIRL             `json:"sandAIRL"`
+	ProdAIRL             *AIRL             `json:"prodAIRL"`
 }
 
 // AIRL holds AI ratelimit related data
@@ -112,6 +114,17 @@ type AIRL struct {
 	TotalTokenCount      *uint32 `json:"totalTokenCount"`
 	TimeUnit             string  `json:"timeUnit"`
 	RequestCount         *uint32 `json:"requestCount"`
+}
+
+// EndpointSecurity holds the endpoint security information
+type EndpointSecurity struct {
+	Enabled       bool   `json:"enabled"`
+	SecurityType  string `json:"securityType"`
+	APIKeyName    string `json:"apiKeyName"`
+	APIKeyValue   string `json:"apiKeyValue"`
+	APIKeyIn      string `json:"apiKeyIn"`
+	BasicUsername string `json:"basicUsername"`
+	BasicPassword string `json:"basicPassword"`
 }
 
 // AIConfiguration holds the AI configuration
