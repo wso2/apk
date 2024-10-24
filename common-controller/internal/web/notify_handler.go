@@ -96,22 +96,30 @@ func initRedisClient() error {
 		caCertPool := x509.NewCertPool()
 		caCertPool.AppendCertsFromPEM(caCert)
 
-		rdb = redis.NewClient(&redis.Options{
-			Addr: redisAddr,
-			Username: redisUsername, 
-			Password: redisPassword, 
+		options := &redis.Options{
+			Addr:     redisAddr,
+			Password: redisPassword,
 			TLSConfig: &tls.Config{
 				MinVersion:   tls.VersionTLS12,
 				Certificates: []tls.Certificate{cert},
 				RootCAs:      caCertPool,
+				InsecureSkipVerify: true,
 			},
-		})
+		}
+		if redisUsername != "" {
+			options.Username = redisUsername
+		}
+		rdb = redis.NewClient(options)
 	} else {
-		rdb = redis.NewClient(&redis.Options{
-			Addr: redisAddr,
-			Username: redisUsername, 
+		options := &redis.Options{
+			Addr:     redisAddr,
 			Password: redisPassword,
-		})
+		}
+		// Only set Username if it's not empty
+		if redisUsername != "" {
+			options.Username = redisUsername
+		}
+		rdb = redis.NewClient(options)
 	}
 	return nil;
 }
@@ -175,7 +183,17 @@ func storeTokenInRedis(token string, expiry int64) error {
 	key := generateKey(token)
 	err := rdb.Do(context.Background(), "set", key, expiry, "EXAT", expiry).Err()
 	if err != nil {
-		return err
+		loggers.LoggerAPI.Warnf("Error occured while trying to set key with expiry. Error: %+v. \n Trying to use SET and EXPIREAT command...", err)
+		err = rdb.Do(context.Background(), "set", key, expiry).Err()
+		if err != nil { 
+			loggers.LoggerAPI.Errorf("Error occured while setting the key. Error %+v", err)
+			return err
+		} 
+		err = rdb.Do(context.Background(), "expireat", key, expiry).Err()
+		if err != nil {
+			loggers.LoggerAPI.Errorf("Error occured while setting the expiry. Error %+v", err)
+			return err
+		}
 	}
 	publishValue := fmt.Sprintf("%s%s%d", token, tokenExpiryDivider, expiry)
 	err = rdb.Do(context.Background(), "publish", redisRevokedTokenChannel, publishValue).Err()

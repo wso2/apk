@@ -42,7 +42,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	xds "github.com/wso2/apk/common-controller/internal/xds"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 )
@@ -61,11 +60,10 @@ const (
 )
 
 // NewSubscriptionController creates a new Subscription controller instance.
-func NewSubscriptionController(mgr manager.Manager, subscriptionStore *cache.SubscriptionDataStore, ratelimitStore *cache.RatelimitDataStore) error {
+func NewSubscriptionController(mgr manager.Manager, subscriptionStore *cache.SubscriptionDataStore) error {
 	r := &SubscriptionReconciler{
 		client: mgr.GetClient(),
 		ods:    subscriptionStore,
-		rlODS:  ratelimitStore,
 	}
 	ctx := context.Background()
 	conf := config.ReadConfigs()
@@ -136,20 +134,6 @@ func (subscriptionReconciler *SubscriptionReconciler) Reconcile(ctx context.Cont
 			}
 		}
 	} else {
-		if subscription.Spec.RatelimitRef.Name != "" {
-			nn := types.NamespacedName{
-				Namespace: subscription.Namespace,
-				Name:      subscription.Spec.RatelimitRef.Name,
-			}
-			var airl dpv1alpha3.AIRateLimitPolicy
-			if err := subscriptionReconciler.client.Get(ctx, nn, &airl); err == nil {
-				subscriptionReconciler.rlODS.AddorUpdateAIRatelimitToStore(nn, airl.Spec)
-				subscriptionReconciler.rlODS.MarkAIRatelimitAsSubscriptionEnabled(nn)
-				xds.UpdateRateLimitXDSCacheForAubscriptionBasedAIRatelimitPolicies(subscriptionReconciler.rlODS.GetSubscriptionEnabledAIRatelimitPolicies(), subscriptionReconciler.rlODS.GetAIRatelimitPolicySpecs())
-				conf := config.ReadConfigs()
-				xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
-			}
-		}
 		sendSubUpdates(subscription)
 		utils.SendAddSubscriptionEvent(subscription)
 		subscriptionReconciler.ods.AddorUpdateSubscriptionToStore(subscriptionKey, subscription.Spec)

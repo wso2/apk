@@ -19,6 +19,7 @@ package dp
 
 import (
 	"context"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -101,7 +102,9 @@ func (r *AIRateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		loggers.LoggerAPKOperator.Errorf("Error retrieving AIRatelimit")
 		// It could be deletion event. So lets try to delete the related entried from the ods and update xds
 		r.ods.DeleteAIRatelimitPolicySpec(ratelimitKey)
+		r.ods.DeleteSubscriptionBasedAIRatelimitPolicySpec(ratelimitKey)
 		xds.UpdateRateLimitXDSCacheForAIRatelimitPolicies(r.ods.GetAIRatelimitPolicySpecs())
+		xds.UpdateRateLimitXDSCacheForSubscriptionBasedAIRatelimitPolicies(r.ods.GetSubscriptionBasedAIRatelimitPolicySpecs())
 		xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 	} else {
 		loggers.LoggerAPKOperator.Infof("ratelimits found")
@@ -112,9 +115,15 @@ func (r *AIRateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			r.ods.AddorUpdateAIRatelimitToStore(ratelimitKey, ratelimitPolicy.Spec)
 			xds.UpdateRateLimitXDSCacheForAIRatelimitPolicies(r.ods.GetAIRatelimitPolicySpecs())
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
+		} else if strings.EqualFold(string(ratelimitPolicy.Spec.TargetRef.Kind), "Subscription") {
+			r.ods.AddorUpdateSubscriptionBasedAIRatelimitToStore(ratelimitKey, ratelimitPolicy.Spec)
+			xds.UpdateRateLimitXDSCacheForSubscriptionBasedAIRatelimitPolicies(r.ods.GetSubscriptionBasedAIRatelimitPolicySpecs())
+			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		} else {
 			r.ods.DeleteAIRatelimitPolicySpec(ratelimitKey)
+			r.ods.DeleteSubscriptionBasedAIRatelimitPolicySpec(ratelimitKey)
 			xds.UpdateRateLimitXDSCacheForAIRatelimitPolicies(r.ods.GetAIRatelimitPolicySpecs())
+			xds.UpdateRateLimitXDSCacheForSubscriptionBasedAIRatelimitPolicies(r.ods.GetSubscriptionBasedAIRatelimitPolicySpecs())
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
 		}
 	}

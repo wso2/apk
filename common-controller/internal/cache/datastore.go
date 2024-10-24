@@ -29,12 +29,12 @@ import (
 
 // RatelimitDataStore is a cache for rate limit policies.
 type RatelimitDataStore struct {
-	resolveRatelimitStore                  map[types.NamespacedName][]dpv1alpha1.ResolveRateLimitAPIPolicy
-	resolveSubscriptionRatelimitStore      map[types.NamespacedName]dpv1alpha3.ResolveSubscriptionRatelimitPolicy
-	customRatelimitStore                   map[types.NamespacedName]*dpv1alpha1.CustomRateLimitPolicyDef
-	mu                                     sync.Mutex
-	aiRatelimitPolicySpecs                 map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec
-	subscriptionEnabledAIRatelimitPolicies map[types.NamespacedName]struct{}
+	resolveRatelimitStore                   map[types.NamespacedName][]dpv1alpha1.ResolveRateLimitAPIPolicy
+	resolveSubscriptionRatelimitStore       map[types.NamespacedName]dpv1alpha3.ResolveSubscriptionRatelimitPolicy
+	customRatelimitStore                    map[types.NamespacedName]*dpv1alpha1.CustomRateLimitPolicyDef
+	mu                                      sync.Mutex
+	aiRatelimitPolicySpecs                  map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec
+	subscriptionBasedAIRatelimitPolicySpecs map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec
 }
 
 // CreateNewOperatorDataStore creates a new RatelimitDataStore.
@@ -103,24 +103,16 @@ func (ods *RatelimitDataStore) AddorUpdateAIRatelimitToStore(rateLimit types.Nam
 	ods.aiRatelimitPolicySpecs[rateLimit] = &aiRatelimitSpec
 }
 
-// MarkAIRatelimitAsSubscriptionEnabled add an entry to specify an AI RatelimitPolicy is associated with a subscription
-func (ods *RatelimitDataStore) MarkAIRatelimitAsSubscriptionEnabled(nn types.NamespacedName) {
+// AddorUpdateSubscriptionBasedAIRatelimitToStore adds a new ratelimit to the RatelimitDataStore.
+func (ods *RatelimitDataStore) AddorUpdateSubscriptionBasedAIRatelimitToStore(rateLimit types.NamespacedName,
+	aiRatelimitSpec dpv1alpha3.AIRateLimitPolicySpec) {
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
-	if ods.subscriptionEnabledAIRatelimitPolicies == nil {
-		ods.subscriptionEnabledAIRatelimitPolicies = make(map[types.NamespacedName]struct{})
+	logger.Infof("Adding/Updating AI ratelimit spec to cache")
+	if ods.subscriptionBasedAIRatelimitPolicySpecs == nil {
+		ods.subscriptionBasedAIRatelimitPolicySpecs = make(map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec)
 	}
-	ods.subscriptionEnabledAIRatelimitPolicies[nn] = struct{}{}
-}
-
-// MarkAIRatelimitAsSubscriptionDisabled  deletes the entry which was added to specify an AI RatelimitPolicy is associated with a subscription
-func (ods *RatelimitDataStore) MarkAIRatelimitAsSubscriptionDisabled(nn types.NamespacedName) {
-	ods.mu.Lock()
-	defer ods.mu.Unlock()
-	if ods.subscriptionEnabledAIRatelimitPolicies == nil {
-		return
-	}
-	delete(ods.subscriptionEnabledAIRatelimitPolicies, nn)
+	ods.subscriptionBasedAIRatelimitPolicySpecs[rateLimit] = &aiRatelimitSpec
 }
 
 // GetResolveRatelimitPolicy get cached ratelimit
@@ -148,10 +140,11 @@ func (ods *RatelimitDataStore) GetAIRatelimitPolicySpecs() map[types.NamespacedN
 	return ods.aiRatelimitPolicySpecs
 }
 
-// GetSubscriptionEnabledAIRatelimitPolicies gets all the AIRatelimitPolicy stored in ods
-func (ods *RatelimitDataStore) GetSubscriptionEnabledAIRatelimitPolicies() map[types.NamespacedName]struct{} {
-	return ods.subscriptionEnabledAIRatelimitPolicies
+// GetSubscriptionBasedAIRatelimitPolicySpecs gets all the AIRatelimitPolicy stored in ods
+func (ods *RatelimitDataStore) GetSubscriptionBasedAIRatelimitPolicySpecs() map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec {
+	return ods.subscriptionBasedAIRatelimitPolicySpecs
 }
+
 
 // DeleteResolveRatelimitPolicy delete from ratelimit cache
 func (ods *RatelimitDataStore) DeleteResolveRatelimitPolicy(rateLimit types.NamespacedName) {
@@ -182,7 +175,7 @@ func (ods *RatelimitDataStore) DeleteSubscriptionBasedAIRatelimitPolicySpec(subs
 	ods.mu.Lock()
 	defer ods.mu.Unlock()
 	logger.Debug("Deleting AI ratelimit from cache")
-	delete(ods.aiRatelimitPolicySpecs, subscription)
+	delete(ods.subscriptionBasedAIRatelimitPolicySpecs, subscription)
 }
 
 // NamespacedName generates namespaced name for Kubernetes objects

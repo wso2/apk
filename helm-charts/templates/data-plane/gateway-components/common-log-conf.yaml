@@ -66,12 +66,12 @@ data:
     {{- if .Values.wso2.apk.dp.commonController.deployment.redis }}
       host = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.host | default "redis-master" }}"
       port = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.port | default "6379" }}"
-      username = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.username | default "default" }}"
+      username = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.username | default "" }}"
       password = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.password | default "" }}"
       userCertPath = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.userCertPath | default "/home/wso2/security/keystore/commoncontroller.crt" }}"
       userKeyPath = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.userKeyPath | default "/home/wso2/security/keystore/commoncontroller.key" }}"
       cACertPath = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.redisCaCertPath | default "/home/wso2/security/keystore/commoncontroller.crt" }}"
-      tlsEnabled = {{ .Values.wso2.apk.dp.commonController.deployment.redis.tlsEnabled | default false }}
+      tLSEnabled = {{ .Values.wso2.apk.dp.commonController.deployment.redis.tlsEnabled | default false }}
       revokedTokenChannel = "{{ .Values.wso2.apk.dp.commonController.deployment.redis.channelName | default "wso2-apk-revoked-tokens-channel" }}"
     {{- else }}
       host = "redis-master"

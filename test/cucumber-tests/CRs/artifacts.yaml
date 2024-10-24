@@ -1342,6 +1342,10 @@ spec:
     requestCount:
       requestsPerUnit: 6000
       unit: Minute
+  targetRef:
+    kind: Subscription
+    name: llm-backend-header
+    group: gateway.networking.k8s.io
 ---
 apiVersion: dp.wso2.com/v1alpha3
 kind: APIPolicy

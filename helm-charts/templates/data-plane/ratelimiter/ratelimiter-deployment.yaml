@@ -102,9 +102,9 @@ spec:
             - name: REDIS_PERSECOND_TLS
               value: "true"
             - name: REDIS_TLS_CLIENT_CERT
-              value: "/home/wso2/security/truststore/redis.crt"
+              value: "/home/wso2/security/keystore/ratelimiter.crt"
             - name: REDIS_TLS_CLIENT_KEY
-              value: "/home/wso2/security/keystore/redis.key"
+              value: "/home/wso2/security/keystore/ratelimiter.key"
             {{ end }}
             {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.auth .Values.wso2.apk.dp.redis.auth.enabled}}
             - name: REDIS_AUTH
@@ -115,7 +115,7 @@ spec:
             {{end}}
             {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.poolSize }}
             - name: REDIS_POOL_SIZE
-              value: {{ .Values.wso2.apk.dp.redis.poolSize }}
+              value: "{{ .Values.wso2.apk.dp.redis.poolSize }}"
             {{ end }}
             - name: GRPC_HOST
               value: "0.0.0.0"
