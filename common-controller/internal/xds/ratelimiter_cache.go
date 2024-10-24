@@ -333,72 +333,71 @@ func (r *rateLimitPolicyCache) AddCustomRateLimitPolicies(customRateLimitPolicy 
 }
 
 // ProcessSubscriptionBasedAIRatelimitPolicySpecsAndUpdateCache process the specs and update the cache
-func (r *rateLimitPolicyCache) ProcessSubscriptionBasedAIRatelimitPolicySpecsAndUpdateCache(subscriptionEnabledAIRatelimitPolicies map[types.NamespacedName]struct{}, aiRatelimitPolicySpecs map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
+func (r *rateLimitPolicyCache) ProcessSubscriptionBasedAIRatelimitPolicySpecsAndUpdateCache(aiRatelimitPolicySpecs map[types.NamespacedName]*dpv1alpha3.AIRateLimitPolicySpec) {
 	aiRlDescriptors := make([]*rls_config.RateLimitDescriptor, 0)
-	for namespacedNameRl := range subscriptionEnabledAIRatelimitPolicies {
-		if airl, exists := aiRatelimitPolicySpecs[namespacedNameRl]; exists {
-			if airl.Override.TokenCount != nil {
-				// Add descriptor for RequestTokenCount
-				aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
-					Key:   DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
-					Value: prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl),
-					Descriptors: []*rls_config.RateLimitDescriptor{
-						{
-							Key: DescriptorKeyForSubscription,
-							RateLimit: &rls_config.RateLimitPolicy{
-								Unit:            getRateLimitUnit(airl.Override.TokenCount.Unit),
-								RequestsPerUnit: uint32(airl.Override.TokenCount.RequestTokenCount),
-							},
+	for namespacedNameRl, airl := range aiRatelimitPolicySpecs {
+		if airl.Override.TokenCount != nil {
+			// Add descriptor for RequestTokenCount
+			aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
+				Key:   DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
+				Value: prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl),
+				Descriptors: []*rls_config.RateLimitDescriptor{
+					{
+						Key: DescriptorKeyForSubscription,
+						RateLimit: &rls_config.RateLimitPolicy{
+							Unit:            getRateLimitUnit(airl.Override.TokenCount.Unit),
+							RequestsPerUnit: uint32(airl.Override.TokenCount.RequestTokenCount),
 						},
 					},
-				})
-				// Add descriptor for ResponseTokenCount
-				aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
-					Key:   DescriptorKeyForSubscriptionBasedAIResponseTokenCount,
-					Value: prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl),
-					Descriptors: []*rls_config.RateLimitDescriptor{
-						{
-							Key: DescriptorKeyForSubscription,
-							RateLimit: &rls_config.RateLimitPolicy{
-								Unit:            getRateLimitUnit(airl.Override.TokenCount.Unit),
-								RequestsPerUnit: uint32(airl.Override.TokenCount.ResponseTokenCount),
-							},
+				},
+			})
+			// Add descriptor for ResponseTokenCount
+			aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
+				Key:   DescriptorKeyForSubscriptionBasedAIResponseTokenCount,
+				Value: prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl),
+				Descriptors: []*rls_config.RateLimitDescriptor{
+					{
+						Key: DescriptorKeyForSubscription,
+						RateLimit: &rls_config.RateLimitPolicy{
+							Unit:            getRateLimitUnit(airl.Override.TokenCount.Unit),
+							RequestsPerUnit: uint32(airl.Override.TokenCount.ResponseTokenCount),
 						},
 					},
-				})
-				// Add descriptor for TotalTokenCount
-				aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
-					Key:   DescriptorKeyForSubscriptionBasedAITotalTokenCount,
-					Value: prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl),
-					Descriptors: []*rls_config.RateLimitDescriptor{
-						{
-							Key: DescriptorKeyForSubscription,
-							RateLimit: &rls_config.RateLimitPolicy{
-								Unit:            getRateLimitUnit(airl.Override.TokenCount.Unit),
-								RequestsPerUnit: uint32(airl.Override.TokenCount.TotalTokenCount),
-							},
+				},
+			})
+			// Add descriptor for TotalTokenCount
+			aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
+				Key:   DescriptorKeyForSubscriptionBasedAITotalTokenCount,
+				Value: prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl),
+				Descriptors: []*rls_config.RateLimitDescriptor{
+					{
+						Key: DescriptorKeyForSubscription,
+						RateLimit: &rls_config.RateLimitPolicy{
+							Unit:            getRateLimitUnit(airl.Override.TokenCount.Unit),
+							RequestsPerUnit: uint32(airl.Override.TokenCount.TotalTokenCount),
 						},
 					},
-				})
-			}
-			// Add descriptor for RequestCount
-			if airl.Override.RequestCount != nil {
-				aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
-					Key:   DescriptorKeyForSubscriptionBasedAIRequestCount,
-					Value: prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl),
-					Descriptors: []*rls_config.RateLimitDescriptor{
-						{
-							Key: DescriptorKeyForSubscription,
-							RateLimit: &rls_config.RateLimitPolicy{
-								Unit:            getRateLimitUnit(airl.Override.RequestCount.Unit),
-								RequestsPerUnit: uint32(airl.Override.RequestCount.RequestsPerUnit),
-							},
+				},
+			})
+		}
+		// Add descriptor for RequestCount
+		if airl.Override.RequestCount != nil {
+			aiRlDescriptors = append(aiRlDescriptors, &rls_config.RateLimitDescriptor{
+				Key:   DescriptorKeyForSubscriptionBasedAIRequestCount,
+				Value: prepareSubscriptionBasedAIRatelimitIdentifier(airl.Override.Organization, namespacedNameRl),
+				Descriptors: []*rls_config.RateLimitDescriptor{
+					{
+						Key: DescriptorKeyForSubscription,
+						RateLimit: &rls_config.RateLimitPolicy{
+							Unit:            getRateLimitUnit(airl.Override.RequestCount.Unit),
+							RequestsPerUnit: uint32(airl.Override.RequestCount.RequestsPerUnit),
 						},
 					},
-				})
-			}
+				},
+			})
 		}
 	}
+	
 	r.subscriptionBasedAIRatelimitDescriptors = aiRlDescriptors
 }
 
