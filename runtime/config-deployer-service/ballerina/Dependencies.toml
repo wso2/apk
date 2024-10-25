@@ -70,7 +70,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.12.2"
+version = "2.12.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -102,7 +102,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.6.1"
+version = "1.6.2"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -346,7 +346,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "url"
-version = "2.4.0"
+version = "2.4.1"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -433,7 +433,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "config_deployer_service"
-version = "1.2.0-rc"
+version = "1.2.0-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "crypto"},
@@ -466,4 +466,3 @@ modules = [
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.model"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.partitionClient"}
 ]
-
