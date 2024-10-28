@@ -47,24 +47,11 @@ spec:
                 type: object
               organization:
                 type: string
-              ratelimitRef:
-                description: RatelimitRef defines the ratelimit associated with the
-                  subscription
-                properties:
-                  level:
-                    type: string
-                  name:
-                    type: string
-                required:
-                - level
-                - name
-                type: object
               subscriptionStatus:
                 type: string
             required:
             - api
             - organization
-            - ratelimitRef
             - subscriptionStatus
             type: object
           status:
