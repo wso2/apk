@@ -157,6 +157,24 @@ data:
     {{end}}
     {{end}}
 
+    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors }}
+    [enforcer.cors]
+      enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.enabled | default false }}
+      accessControlAllowOrigins = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowOrigins }}]
+      accessControlAllowMethods = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowMethods }}]
+      accessControlAllowHeaders = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowHeaders }}]
+      accessControlAllowCredentials = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowCredentials | default false }}
+      accessControlExposeHeaders = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlExposeHeaders }}]
+    {{- else }}
+    [enforcer.cors]
+      enabled = true
+      accessControlAllowOrigins = ["*"]
+      accessControlAllowMethods = ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+      accessControlAllowHeaders = ["authorization", "Access-Control-Allow-Origin", "Content-Type", "Internal-key", "apiKey"]
+      accessControlAllowCredentials = false
+      accessControlExposeHeaders = ["*"]
+    {{end}}
+
     [enforcer.jwtGenerator]
       publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
       privateKeyPath = "/home/wso2/security/keystore/mg.key"
