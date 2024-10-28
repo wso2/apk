@@ -900,7 +900,7 @@ data:
     u0/ITEw=
     -----END CERTIFICATE-----
 ---
-apiVersion: cp.wso2.com/v1alpha2
+apiVersion: cp.wso2.com/v1alpha3
 kind: Subscription
 metadata:
   name: semantic-versioning-subscription
@@ -1385,7 +1385,7 @@ spec:
       in: "Body"
       value: "usage.total_tokens"
 ---
-apiVersion: cp.wso2.com/v1alpha2
+apiVersion: cp.wso2.com/v1alpha3
 kind: Subscription
 metadata:
   name: llm-subs
