@@ -384,15 +384,19 @@ wso2:
         # -- Remote tracer port
         port: ""
 
+      keyManager:
+        enableLightweightAPIKeyGeneration: false
+        allowSubscriptionValidationDisabling: true
+
   deployment:
     # Container image configurations
     image:
       # -- Container registry hostname
       registry: "docker.io"
       # -- Azure ACR repository name consisting the image
-      repository: "rakhitharr/wso2am:4.4.0-rc"
+      repository: "rakhitharr/wso2am:4.4.0-rc2"
       # -- Docker image digest
-      digest: "sha256:fc62b8d87f85c7347a617a904cdfc4e9ae9572e0577f0053d5708e0ca2ee553f"
+      digest: "sha256:b528b9b6020b2c6508075f3732be1d12715f9ce37ecd415f8b43cfbf1c0df998"
       # -- Refer to the Kubernetes documentation on updating images (https://kubernetes.io/docs/concepts/containers/images/#updating-images)
       imagePullPolicy: Always
 
