@@ -93,7 +93,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-config-deployer-service:1.2.0-rc
+          image: wso2/apk-config-deployer-service:1.2.0
           # debug: true
           # configs:
           #   tls:
@@ -120,7 +120,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-adapter:1.2.0-rc
+          image: wso2/apk-adapter:1.2.0
           security:
             sslHostname: "adapter"
           logging:
@@ -154,7 +154,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-common-controller:1.2.0-rc
+          image: wso2/apk-common-controller:1.2.0
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -181,7 +181,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-ratelimiter:1.2.0-rc
+          image: wso2/apk-ratelimiter:1.2.0
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -211,7 +211,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/apk-router:1.2.0-rc
+            image: wso2/apk-router:1.2.0
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -242,7 +242,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/apk-enforcer:1.2.0-rc
+            image: wso2/apk-enforcer:1.2.0
             security:
               sslHostname: "enforcer"
             #            logging:
@@ -315,7 +315,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/apk-idp-domain-service:1.2.0-rc
+      image: wso2/apk-idp-domain-service:1.2.0
   idpui:
     deployment:
       resources:
@@ -336,7 +336,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/apk-idp-ui:1.2.0-rc
+      image: wso2/apk-idp-ui:1.2.0
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
