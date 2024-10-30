@@ -61,7 +61,7 @@ dependencies = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.12.2"
+version = "2.12.1"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -381,7 +381,7 @@ modules = [
 [[package]]
 org = "ballerinax"
 name = "prometheus"
-version = "0.3.2"
+version = "0.3.1"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
@@ -395,7 +395,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "idp_domain_service"
-version = "1.2.0"
+version = "1.2.0-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "http"},
 	{org = "ballerina", name = "io"},
@@ -415,4 +415,3 @@ dependencies = [
 modules = [
 	{org = "wso2", packageName = "idp_domain_service", moduleName = "idp_domain_service"}
 ]
-
