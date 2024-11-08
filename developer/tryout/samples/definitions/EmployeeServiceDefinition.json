@@ -6,13 +6,13 @@
     },
     "servers": [
         {
-            "url": "http://employee-service:80",
+            "url": "http://employee-service:8080",
             "description": "Server URL",
             "variables": {}
         }
     ],
     "paths": {
-        "/employee": {
+        "/employees": {
             "get": {
                 "tags": [
                     "employee-controller"

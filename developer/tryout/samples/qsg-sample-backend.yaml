@@ -5,8 +5,8 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - port: 80
-      targetPort: 80
+    - port: 8080
+      targetPort: 8080
   selector:
     app: employee-app
 ---
@@ -28,4 +28,4 @@ spec:
         - name: employee-service-container
           image: sega1234/json-server-service:latest
           ports:
-            - containerPort: 80
+            - containerPort: 8080
