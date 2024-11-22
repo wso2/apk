@@ -9,7 +9,7 @@ The following should be installed in your dev machine.
 - [Gradle](https://gradle.org/install/) >= 7.5.1 version
 - [Docker](https://docs.docker.com/engine/install/ubuntu/) >= 17.03 version
 - [Golang](https://go.dev/doc/install) >= 1.23 version
-- [Revive](https://github.com/mgechev/revive#installation) latest version
+- [Revive](https://github.com/mgechev/revive#installation) = 1.3.4 version
 - [Kubebuilder](https://book.kubebuilder.io/quick-start.html#installation)
 
 ## Setting up
@@ -39,18 +39,22 @@ Code for the operator lies in `{PROJECT_HOME}/adapter/internal/operator`. This w
 
 Following are some tasks with the steps that a developer might do in operator development:
 
-- [Adding a new Kind](#adding-a-new-kind)
-- [Adding a new property to an existing Kind](#adding-a-new-property-to-an-existing-kind)
-- [Adding validating and defaulting logic](#adding-validating-and-defaulting-logic)
+- [WSO2 APK - Adapter](#wso2-apk---adapter)
+  - [Prerequisites](#prerequisites)
+  - [Setting up](#setting-up)
+  - [Operator](#operator)
+    - [Adding a new Kind](#adding-a-new-kind)
+    - [Adding a new property to an existing Kind](#adding-a-new-property-to-an-existing-kind)
+    - [Adding validating and defaulting logic](#adding-validating-and-defaulting-logic)
 
 ### Adding a new Kind
 
 1. Decide what the k8s resource group will be depending on whether the CRD is for the control-plane or for the data-plane.
 
-    | Plane  | k8s group |
-    | ------------- | ------------- |
-    | Data Plane  | dp  |
-    | Control Plane  | cp  |
+    | Plane         | k8s group |
+    | ------------- | --------- |
+    | Data Plane    | dp        |
+    | Control Plane | cp        |
 
 2. Decide the version for the CRD. Current version for all the CRDs are used as `v1alpha1`. 
 

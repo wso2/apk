@@ -82,6 +82,7 @@ require (
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/term v0.25.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
@@ -105,7 +106,6 @@ replace github.com/wso2/apk/common-go-libs => ../common-go-libs
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/sys v0.26.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	sigs.k8s.io/gateway-api v1.2.0
 )

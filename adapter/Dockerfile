@@ -33,11 +33,11 @@ ARG GRPC_HEALTH_PROBE_PATH=/bin/grpc_health_probe
 ARG TARGETARCH
 
 ARG MOTD="\n\
- Welcome to WSO2 Docker Resources \n\
- --------------------------------- \n\
- This Docker container comprises of a WSO2 product, running with its latest GA release \n\
- which is under the Apache License, Version 2.0. \n\
- Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
+    Welcome to WSO2 Docker Resources \n\
+    --------------------------------- \n\
+    This Docker container comprises of a WSO2 product, running with its latest GA release \n\
+    which is under the Apache License, Version 2.0. \n\
+    Read more about Apache License, Version 2.0 here @ http://www.apache.org/licenses/LICENSE-2.0.\n"
 
 RUN \
     addgroup -S -g ${APK_USER_GROUP_ID} ${APK_USER_GROUP} \
@@ -50,7 +50,7 @@ RUN \
     wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.34/grpc_health_probe-linux-${TARGETARCH} \
     && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH} \
     && if [ "${TARGETARCH}" = "amd64" ]; then echo "${CHECKSUM_AMD64}  ${GRPC_HEALTH_PROBE_PATH}" | sha256sum -c -; fi
-    
+
 RUN \
     chmod +x ${GRPC_HEALTH_PROBE_PATH} \
     && chown ${APK_USER}:${APK_USER_GROUP} ${GRPC_HEALTH_PROBE_PATH} \
@@ -61,7 +61,11 @@ WORKDIR ${APK_USER_HOME}
 USER ${APK_USER_ID}
 
 COPY resources/conf/config.toml conf/
+
 COPY resources/check_health.sh .
+# Remove the Windows line endings (carriage returns)
+RUN sed -i 's/\r//' check_health.sh
+
 COPY resources/conf/log_config.toml conf/
 COPY ./${TARGETARCH}/main adapter
 

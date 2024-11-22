@@ -45,8 +45,13 @@ tasks.register('go_tidy', Exec) {
 tasks.register('go_build') {
     group 'go'
     description 'Compiles the packages named by the import paths, along with their dependencies. AMD64 Archtecture'
-    dependsOn go_mac_os_build
-    dependsOn go_linux_build
+    
+    if(osName.contains("windows")) {
+        dependsOn go_windows_build
+    } else {
+        dependsOn go_mac_os_build
+        dependsOn go_linux_build
+    }
 }
 tasks.register('go_mac_os_build', Exec) {
     group 'go'
@@ -63,6 +68,19 @@ tasks.register('go_linux_build', Exec) {
     description 'Compiles the packages named by the import paths, along with their dependencies. AMD64 Archtecture'
     if (project.hasProperty('file')) {
         commandLine 'env', 'GOOS=linux', 'GOARCH=amd64','CGO_ENABLED=0', 'go', 'build', '-o','amd64/main', file
+    } else {
+        throw new StopExecutionException('Missing "file" property')
+    }
+}
+tasks.register('go_windows_build', Exec) {
+    group 'go'
+    description 'Compiles the packages named by the import paths, along with their dependencies. AMD64 Archtecture'
+    if (project.hasProperty('file')) {
+        environment 'GOOS', 'linux'
+        environment 'GOARCH', 'amd64'
+        environment 'CGO_ENABLED', '0'
+
+        commandLine 'go', 'build', '-o', 'amd64/main', file
     } else {
         throw new StopExecutionException('Missing "file" property')
     }

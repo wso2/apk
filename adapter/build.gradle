@@ -59,7 +59,13 @@ tasks.register('go_test', Exec) {
     environment "APK_test_test_uint32array", "100"
     environment "APK_test_test_uint64array", "42949672959"
     environment "APK_test_test_uintarray2", "-50"
-    commandLine 'sh', '-c', "go test -race -coverprofile=coverage.out -covermode=atomic ./..."
+    
+    def osName = System.getProperty("os.name").toLowerCase(Locale.ENGLISH)
+    if (osName.contains("windows")) {
+        commandLine 'cmd', '/c', 'set', 'CGO_ENABLED=1', "go test -race -coverprofile=coverage.out -covermode=atomic ./..."
+    } else {
+        commandLine 'sh', '-c', "go test -race -coverprofile=coverage.out -covermode=atomic ./..."
+    }
 }
 
 tasks.named('go_revive_run').configure { 
