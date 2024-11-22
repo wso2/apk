@@ -122,8 +122,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: apk-adapter:1.2.0-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/apk-adapter:1.2.0
           security:
             sslHostname: "adapter"
           logging:
