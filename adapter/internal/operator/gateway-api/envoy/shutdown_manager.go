@@ -30,10 +30,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
-
-	"golang.org/x/sys/unix"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/bootstrap"
@@ -76,7 +75,8 @@ func ShutdownManager(readyTimeout time.Duration) error {
 		signal.Notify(s, os.Interrupt, syscall.SIGTERM)
 
 		r := <-s
-		loggers.LoggerAPKOperator.Info(fmt.Sprintf("received %s", unix.SignalName(r.(syscall.Signal))))
+		// loggers.LoggerAPKOperator.Info(fmt.Sprintf("received %s", unix.SignalName(r.(syscall.Signal))))
+		loggers.LoggerAPKOperator.Info(fmt.Sprintf("received %s", strconv.Itoa(int(r.(syscall.Signal)))))
 
 		// Shutdown HTTP server without interrupting active connections
 		if err := srv.Shutdown(context.Background()); err != nil {
