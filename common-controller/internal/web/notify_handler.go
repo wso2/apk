@@ -228,7 +228,8 @@ func extractClaimsFromJWT(jwtToken string) (jWTClaims, error) {
 		loggers.LoggerAPI.ErrorC(logging.PrintError(logging.Error3205, logging.MAJOR, "Invalid JWT"))
 		return claims, fmt.Errorf("Invalid JWT token")
 	}
-	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	payloadStr := strings.TrimRight(parts[1], "=")
+	payload, err := base64.RawURLEncoding.DecodeString(payloadStr)
 	if err != nil {
 		loggers.LoggerAPI.ErrorC(logging.PrintError(logging.Error3205, logging.MAJOR, "Invalid JWT"))
 		return claims, fmt.Errorf("Error decoding payload: %v", err)
