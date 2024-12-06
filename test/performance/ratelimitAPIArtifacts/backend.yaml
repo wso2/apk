@@ -1,0 +1,74 @@
+---
+apiVersion: "dp.wso2.com/v1alpha2"
+kind: "Backend"
+metadata:
+  name: "backend-65bb2c47600834c7bb4b8a405b1cfe3921fc7d74-api"
+  labels:
+    api-name: "cd66352292ca1b9f45d6d490f8ae612a962ac112"
+    api-version: "983b34771fb7185d04c9603559c9e46f4b70496d"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  services:
+  - host: "backend"
+    port: 80
+  basePath: "/anything"
+  protocol: "http"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netty-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: netty-backend
+  template:
+    metadata:
+      labels:
+        app: netty-backend
+    spec:
+      containers:
+        - name: netty-backend
+          image: renukafernando/netty-http-echo-service:0.4.6-ubuntu-java8
+          args:
+            - "-m"
+            - "1g"
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: "4096Mi"
+              cpu: "2000m"
+            limits:
+              memory: "6114Mi"
+              cpu: "2000m"
+          ports:
+            - containerPort: 8688
+          livenessProbe:
+            tcpSocket:
+              port: 8688
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: 8688
+            initialDelaySeconds: 8
+            periodSeconds: 5
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend
+  name: backend
+spec:
+  type: NodePort
+  selector:
+    app: netty-backend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8688
+      protocol: TCP

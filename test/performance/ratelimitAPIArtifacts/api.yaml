@@ -1,0 +1,25 @@
+---
+kind: "API"
+apiVersion: "dp.wso2.com/v1alpha2"
+metadata:
+  name: "default-api-definition-endpoint-test"
+  labels:
+    api-name: "cd66352292ca1b9f45d6d490f8ae612a962ac112"
+    api-version: "983b34771fb7185d04c9603559c9e46f4b70496d"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+  annotations:
+    wso2apk/api-uuid: "default-api-definition-endpoint-test"
+spec:
+  apiName: "APIDefinitionEndpointDefault"
+  apiType: "REST"
+  apiVersion: "3.14"
+  basePath: "/test-definition-default/3.14"
+  organization: "default"
+  definitionFileRef: "default-api-definition-endpoint-test-definition"
+  production:
+  - routeRefs:
+    - "01ee3d7a-36d0-176e-aee2-6b601948eb64"
+  sandbox: null
+  apiProperties: []
+status: null
