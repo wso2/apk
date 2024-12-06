@@ -1,0 +1,13 @@
+apiVersion: dp.wso2.com/v1alpha3
+kind: RateLimitPolicy
+metadata:
+  name: api-ratelimit-policy
+spec:
+  default:
+    api:
+      requestsPerUnit: 1000000
+      unit: Minute
+  targetRef:
+    kind: API
+    name: default-api-definition-endpoint-test
+    group: gateway.networking.k8s.io

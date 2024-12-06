@@ -1,0 +1,79 @@
+---
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: "01ee3d7a-36d0-176e-aee2-6b601948eb64"
+  labels:
+    api-name: "cd66352292ca1b9f45d6d490f8ae612a962ac112"
+    api-version: "983b34771fb7185d04c9603559c9e46f4b70496d"
+    organization: "7505d64a54e061b7acd54ccd58b49dc43500b635"
+    managed-by: "apk"
+spec:
+  hostnames:
+  - "default.gw.wso2.com"
+  rules:
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/employee"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/employee"
+    backendRefs:
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend-65bb2c47600834c7bb4b8a405b1cfe3921fc7d74-api"
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/employee"
+      method: "POST"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/employee"
+    backendRefs:
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend-65bb2c47600834c7bb4b8a405b1cfe3921fc7d74-api"
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/employee/(.*)"
+      method: "PUT"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/employee/\\1"
+    backendRefs:
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend-65bb2c47600834c7bb4b8a405b1cfe3921fc7d74-api"
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/employee/(.*)"
+      method: "DELETE"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/employee/\\1"
+    backendRefs:
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend-65bb2c47600834c7bb4b8a405b1cfe3921fc7d74-api"
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "wso2-apk-default"
+    sectionName: "httpslistener"
