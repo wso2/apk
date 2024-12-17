@@ -17,6 +17,23 @@ import (
 	egv1a1 "github.com/envoyproxy/gateway/api/v1alpha1"
 )
 
+const (
+	// ErrorLevel is the logr verbosity level for errors.
+	ErrorLevel = 0
+
+	// WarnLevel is the logr verbosity level for warnings.
+	WarnLevel = 0
+
+	// InfoLevel is the logr verbosity level for info logs.
+	InfoLevel = 0
+
+	// DebugLevel is the logr verbosity level for debug logs.
+	DebugLevel = 1
+
+	// TraceLevel is the logr verbosity level for trace logs.
+	TraceLevel = 2
+)
+
 type Logger struct {
 	logr.Logger
 	logging       *egv1a1.EnvoyGatewayLogging
@@ -110,4 +127,25 @@ func initZapLogger(w io.Writer, logging *egv1a1.EnvoyGatewayLogging, level egv1a
 	core := zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()), zapcore.AddSync(w), zap.NewAtomicLevelAt(parseLevel))
 
 	return zap.New(core, zap.AddCaller())
+}
+
+
+// Debug logs a debug level message using the provided logger.
+// The log level is set to DebugLevel and the message is logged with Info method.
+//
+// Parameters:
+//   log (logr.Logger): The logger instance to use for logging.
+//   msg (string): The debug message to log.
+func Debug(log logr.Logger, msg string) {
+	log.V(DebugLevel).Info(msg)
+}
+
+// Error logs an error level message using the provided logger.
+// The log level is set to ErrorLevel and the message is logged with Info method.
+//
+// Parameters:
+//   log (logr.Logger): The logger instance to use for logging.
+//   msg (string): The error message to log.
+func Info(log logr.Logger, msg string) {
+	log.V(InfoLevel).Info(msg)
 }
