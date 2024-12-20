@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+// JWTIssuerXDSClient is a client for managing gRPC connections to the API Discovery Service (XDS) 
+// for JWT issuer-related configurations. It includes retry logic, TLS configuration, and logging.
 type JWTIssuerXDSClient struct {
 	Host          string
 	Port          string
@@ -26,6 +28,8 @@ type JWTIssuerXDSClient struct {
 	log           logging.Logger
 }
 
+// NewJWTIssuerXDSClient creates a new instance of JWTIssuerXDSClient.
+// It initializes the client with the given host, port, retry parameters, TLS configuration, and logger.
 func NewJWTIssuerXDSClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server) *JWTIssuerXDSClient {
 	// Create a new APIClient object
 	return &JWTIssuerXDSClient{
@@ -39,6 +43,8 @@ func NewJWTIssuerXDSClient(host string, port string, maxRetries int, retryInterv
 	}
 }
 
+// InitiateSubscriptionXDSConnection establishes and maintains a gRPC connection to the API Discovery Service.
+// It also handles reconnection logic on errors and listens for incoming JWT issuer configuration streams.
 func (c *JWTIssuerXDSClient) InitiateSubscriptionXDSConnection() {
 	grpcConn := util.CreateGRPCConnectionWithRetryAndPanic(nil, c.Host, c.Port, c.tlsConfig, c.maxRetries, c.retryInterval)
 	c.grpcConn = grpcConn

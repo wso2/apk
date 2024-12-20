@@ -1,4 +1,4 @@
-package ext_proc
+package extproc
 
 import (
 	"io"
@@ -12,10 +12,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// ExternalProcessingServer represents a server for handling external processing requests.
+// It contains a logger for logging purposes.
 type ExternalProcessingServer struct {
 	log logging.Logger
 }
 
+// StartExternalProcessingServer initializes and starts the external processing server.
+// It creates a gRPC server using the provided configuration and registers the external
+// processor server with it.
+//
+// Parameters:
+//   - cfg: A pointer to the Server configuration which includes paths to the enforcer's
+//          public and private keys, and a logger instance.
+//
+// If there is an error during the creation of the gRPC server, the function will panic.
 func StartExternalProcessingServer(cfg *config.Server) {
 	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
 	if err != nil {
@@ -24,6 +35,24 @@ func StartExternalProcessingServer(cfg *config.Server) {
 	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger})
 }
 
+// Process handles the external processing server stream. It continuously receives
+// requests from the stream, processes them, and sends back appropriate responses.
+// The function supports different types of processing requests including request headers,
+// response headers, request body, and response body.
+//
+// Parameters:
+// - srv: The stream server for processing external requests.
+//
+// Returns:
+// - error: Returns an error if the context is done or if there is an issue receiving or sending the stream request.
+//
+// The function processes the following request types:
+// - envoy_service_proc_v3.ProcessingRequest_RequestHeaders: Logs and processes request headers.
+// - envoy_service_proc_v3.ProcessingRequest_ResponseHeaders: Logs and processes response headers.
+// - envoy_service_proc_v3.ProcessingRequest_RequestBody: Logs and processes request body.
+// - envoy_service_proc_v3.ProcessingRequest_ResponseBody: Logs and processes response body.
+//
+// If an unknown request type is received, it logs the unknown request type.
 func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalProcessor_ProcessServer) error {
 	ctx := srv.Context()
 	for {
