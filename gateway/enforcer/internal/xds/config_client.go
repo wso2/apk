@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc"
 )
 
+// ConfigXDSClient is a client for managing gRPC connections to the Config Discovery Service (XDS).
+// It handles retry logic, TLS configuration, and logging for configuration data streams.
 type ConfigXDSClient struct {
 	Host          string
 	Port          string
@@ -26,6 +28,8 @@ type ConfigXDSClient struct {
 	log           logging.Logger
 }
 
+// NewXDSConfigClient creates a new instance of ConfigXDSClient.
+// It initializes the client with the given host, port, retry parameters, TLS configuration, and logger.
 func NewXDSConfigClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server) *ConfigXDSClient {
 	// Create a new APIClient object
 	return &ConfigXDSClient{
@@ -39,6 +43,8 @@ func NewXDSConfigClient(host string, port string, maxRetries int, retryInterval 
 	}
 }
 
+// InitiateConfigXDSConnection establishes and maintains a gRPC connection to the Config Discovery Service.
+// It also handles reconnection logic on errors and listens for incoming configuration streams.
 func (c *ConfigXDSClient) InitiateConfigXDSConnection() {
 	grpcConn := util.CreateGRPCConnectionWithRetryAndPanic(nil, c.Host, c.Port, c.tlsConfig, c.maxRetries, c.retryInterval)
 	c.grpcConn = grpcConn

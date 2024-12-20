@@ -4,11 +4,13 @@ go 1.23.2
 
 require (
 	github.com/envoyproxy/gateway v1.2.3
+	github.com/envoyproxy/go-control-plane v0.13.1
 	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/zapr v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/stretchr/testify v1.10.0
-	github.com/wso2/apk/adapter v0.0.0-00010101000000-000000000000
+	github.com/wso2/apk/adapter v0.0.0-20231207051518-6dd728943082
+	github.com/wso2/apk/common-go-libs v0.0.0-20241016075419-fc842057860d
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.67.1
 )
@@ -16,7 +18,6 @@ require (
 require (
 	github.com/cncf/xds/go v0.0.0-20240905190251-b4127c9b8d78 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/envoyproxy/go-control-plane v0.13.1 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.1.0 // indirect
 	github.com/evanphx/json-patch v5.9.0+incompatible // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
@@ -61,3 +62,5 @@ require (
 replace github.com/wso2/apk/gateway/enforcer => ../enforcer
 
 replace github.com/wso2/apk/adapter => ../../adapter
+
+replace github.com/wso2/apk/common-go-libs => ../../common-go-libs

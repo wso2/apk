@@ -34,12 +34,22 @@ const (
 	TraceLevel = 2
 )
 
+// Logger is a struct that embeds logr.Logger and provides additional logging capabilities.
+// It includes a reference to EnvoyGatewayLogging configuration and a SugaredLogger for
+// structured logging.
+//
+// Fields:
+// - logging: A pointer to EnvoyGatewayLogging configuration.
+// - sugaredLogger: A SugaredLogger instance for structured logging.
 type Logger struct {
 	logr.Logger
 	logging       *egv1a1.EnvoyGatewayLogging
 	sugaredLogger *zap.SugaredLogger
 }
 
+// NewLogger creates a new Logger instance that logs to stdout.
+// It uses the provided EnvoyGatewayLogging configuration and initializes
+// the logger with the default log level for the Gateway component.
 func NewLogger(logging *egv1a1.EnvoyGatewayLogging) Logger {
 	logger := initZapLogger(os.Stdout, logging, logging.Level[egv1a1.LogComponentGatewayDefault])
 
@@ -50,6 +60,9 @@ func NewLogger(logging *egv1a1.EnvoyGatewayLogging) Logger {
 	}
 }
 
+// FileLogger creates a Logger instance that logs to the specified file.
+// The log level is configured using the provided level parameter.
+// If the file cannot be opened, it panics.
 func FileLogger(file string, name string, level egv1a1.LogLevel) Logger {
 	writer, err := os.OpenFile(file, os.O_WRONLY, 0o666)
 	if err != nil {
@@ -66,6 +79,8 @@ func FileLogger(file string, name string, level egv1a1.LogLevel) Logger {
 	}
 }
 
+// DefaultLogger creates a Logger instance with default logging settings.
+// It logs to stdout and uses the specified log level for all components.
 func DefaultLogger(level egv1a1.LogLevel) Logger {
 	logging := egv1a1.DefaultEnvoyGatewayLogging()
 	logger := initZapLogger(os.Stdout, logging, level)
@@ -100,7 +115,7 @@ func (l Logger) WithValues(keysAndValues ...interface{}) Logger {
 	return l
 }
 
-// A Sugar wraps the base Logger functionality in a slower, but less
+// Sugar wraps the base Logger functionality in a slower, but less
 // verbose, API. Any Logger can be converted to a SugaredLogger with its Sugar
 // method.
 //
@@ -140,12 +155,12 @@ func Debug(log logr.Logger, msg string) {
 	log.V(DebugLevel).Info(msg)
 }
 
-// Error logs an error level message using the provided logger.
-// The log level is set to ErrorLevel and the message is logged with Info method.
+// Info logs an informational message using the provided logger.
+// The log level is set to InfoLevel and the message is logged with the Info method.
 //
 // Parameters:
 //   log (logr.Logger): The logger instance to use for logging.
-//   msg (string): The error message to log.
+//   msg (string): The informational message to log.
 func Info(log logr.Logger, msg string) {
 	log.V(InfoLevel).Info(msg)
 }
