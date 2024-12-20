@@ -76,3 +76,34 @@ func (c *EventingGRPCClient) InitiateEventingGRPCConnection() {
 		}
 	}()
 }
+
+
+// handleNotificationEvent translates the Java method to Go
+func handleNotificationEvent(event *Event) {
+	switch event.Type {
+	case "ALL_EVENTS":
+		log.Println("Received all events from the server")
+		SubscriptionDataStoreUtil.loadStartupArtifacts()
+	case "APPLICATION_CREATED":
+		log.Println("********")
+		SubscriptionDataStoreUtil.addApplication(event.Application)
+	case "SUBSCRIPTION_CREATED", "SUBSCRIPTION_UPDATED":
+		SubscriptionDataStoreUtil.addSubscription(event.Subscription)
+	case "APPLICATION_MAPPING_CREATED", "APPLICATION_MAPPING_UPDATED":
+		SubscriptionDataStoreUtil.addApplicationMapping(event.ApplicationMapping)
+	case "APPLICATION_KEY_MAPPING_CREATED", "APPLICATION_KEY_MAPPING_UPDATED":
+		SubscriptionDataStoreUtil.addApplicationKeyMapping(event.ApplicationKeyMapping)
+	case "APPLICATION_UPDATED":
+		SubscriptionDataStoreUtil.addApplication(event.Application)
+	case "APPLICATION_MAPPING_DELETED":
+		SubscriptionDataStoreUtil.removeApplicationMapping(event.ApplicationMapping)
+	case "APPLICATION_KEY_MAPPING_DELETED":
+		SubscriptionDataStoreUtil.removeApplicationKeyMapping(event.ApplicationKeyMapping)
+	case "SUBSCRIPTION_DELETED":
+		SubscriptionDataStoreUtil.removeSubscription(event.Subscription)
+	case "APPLICATION_DELETED":
+		SubscriptionDataStoreUtil.removeApplication(event.Application)
+	default:
+		log.Println("Unknown event type received from the server")
+	}
+}

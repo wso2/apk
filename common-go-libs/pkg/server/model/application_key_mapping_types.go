@@ -1,4 +1,4 @@
-package server
+package model
 
 // ApplicationKeyMapping defines the desired state of ApplicationKeyMapping
 type ApplicationKeyMapping struct {
