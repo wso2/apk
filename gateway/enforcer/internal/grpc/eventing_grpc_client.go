@@ -4,11 +4,15 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"log"
 	"time"
 
 	api_ads "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	subscription_service "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
+	subscription_proto_model "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/subscription"
+	rest_server_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	data_store "github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"google.golang.org/grpc"
@@ -17,30 +21,32 @@ import (
 // EventingGRPCClient is a client for managing gRPC connections to an eventing service.
 // It includes configuration for retries, TLS, and logging.
 type EventingGRPCClient struct {
-	Host          string
-	Port          string
-	maxRetries    int
-	retryInterval time.Duration
-	tlsConfig     *tls.Config
-	grpcConn      *grpc.ClientConn
-	ctx           context.Context
-	cancel        context.CancelFunc
-	client        api_ads.ApiDiscoveryServiceClient
-	log           logging.Logger
+	Host            string
+	Port            string
+	maxRetries      int
+	retryInterval   time.Duration
+	tlsConfig       *tls.Config
+	grpcConn        *grpc.ClientConn
+	ctx             context.Context
+	cancel          context.CancelFunc
+	client          api_ads.ApiDiscoveryServiceClient
+	log             logging.Logger
+	subAppDataStore *data_store.SubscriptionApplicationDataStore
 }
 
 // NewEventingGRPCClient creates a new instance of EventingGRPCClient.
 // It initializes the client with the given host, port, retry parameters, TLS configuration, and logger.
-func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server) *EventingGRPCClient {
+func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, dataStore *data_store.SubscriptionApplicationDataStore) *EventingGRPCClient {
 	// Create a new APIClient object
 	return &EventingGRPCClient{
-		Host:          host,
-		Port:          port,
-		maxRetries:    maxRetries,
-		retryInterval: retryInterval,
-		tlsConfig:     tlsConfig,
-		grpcConn:      nil,
-		log:           cfg.Logger,
+		Host:            host,
+		Port:            port,
+		maxRetries:      maxRetries,
+		retryInterval:   retryInterval,
+		tlsConfig:       tlsConfig,
+		grpcConn:        nil,
+		log:             cfg.Logger,
+		subAppDataStore: dataStore,
 	}
 }
 
@@ -77,33 +83,73 @@ func (c *EventingGRPCClient) InitiateEventingGRPCConnection() {
 	}()
 }
 
-
 // handleNotificationEvent translates the Java method to Go
-func handleNotificationEvent(event *Event) {
+func (c *EventingGRPCClient) handleNotificationEvent(event *subscription_proto_model.Event) {
 	switch event.Type {
 	case "ALL_EVENTS":
 		log.Println("Received all events from the server")
-		SubscriptionDataStoreUtil.loadStartupArtifacts()
-	case "APPLICATION_CREATED":
-		log.Println("********")
-		SubscriptionDataStoreUtil.addApplication(event.Application)
+		c.subAppDataStore.LoadStartupData()
 	case "SUBSCRIPTION_CREATED", "SUBSCRIPTION_UPDATED":
-		SubscriptionDataStoreUtil.addSubscription(event.Subscription)
+		c.subAppDataStore.AddSubscription(convertProtoSubscriptionToRestSubscription(event.Subscription))
+	case "APPLICATION_CREATED", "APPLICATION_UPDATED":
+		c.subAppDataStore.AddApplication(convertProtoApplicationToRestApplication(event.Application))
 	case "APPLICATION_MAPPING_CREATED", "APPLICATION_MAPPING_UPDATED":
-		SubscriptionDataStoreUtil.addApplicationMapping(event.ApplicationMapping)
+		c.subAppDataStore.AddApplicationMapping(convertProtoApplicationMappingToRestApplicationMapping(event.ApplicationMapping))
 	case "APPLICATION_KEY_MAPPING_CREATED", "APPLICATION_KEY_MAPPING_UPDATED":
-		SubscriptionDataStoreUtil.addApplicationKeyMapping(event.ApplicationKeyMapping)
-	case "APPLICATION_UPDATED":
-		SubscriptionDataStoreUtil.addApplication(event.Application)
-	case "APPLICATION_MAPPING_DELETED":
-		SubscriptionDataStoreUtil.removeApplicationMapping(event.ApplicationMapping)
-	case "APPLICATION_KEY_MAPPING_DELETED":
-		SubscriptionDataStoreUtil.removeApplicationKeyMapping(event.ApplicationKeyMapping)
+		c.subAppDataStore.AddApplicationKeyMapping(convertProtoApplicationKeyMappingToRestApplicationKeyMapping(event.ApplicationKeyMapping))
 	case "SUBSCRIPTION_DELETED":
-		SubscriptionDataStoreUtil.removeSubscription(event.Subscription)
+		c.subAppDataStore.DeleteSubscription(event.Subscription.Uuid)
+	case "APPLICATION_MAPPING_DELETED":
+		c.subAppDataStore.DeleteApplicationMapping(event.ApplicationMapping.Uuid)
+	case "APPLICATION_KEY_MAPPING_DELETED":
+		c.subAppDataStore.DeleteApplicationKeyMapping(event.ApplicationKeyMapping.ApplicationIdentifier)
 	case "APPLICATION_DELETED":
-		SubscriptionDataStoreUtil.removeApplication(event.Application)
+		c.subAppDataStore.DeleteApplication(event.Application.Uuid)
 	default:
 		log.Println("Unknown event type received from the server")
+	}
+}
+
+func convertProtoApplicationToRestApplication(appSource *subscription_proto_model.Application) *rest_server_model.Application {
+	return &rest_server_model.Application{
+		UUID:           appSource.Uuid,
+		Name:           appSource.Name,
+		Owner:          appSource.Owner,
+		Attributes:     appSource.Attributes,
+		OrganizationID: appSource.Organization,
+		TimeStamp:      time.Now().Unix(),
+	}
+}
+
+func convertProtoSubscriptionToRestSubscription(subSource *subscription_proto_model.Subscription) *rest_server_model.Subscription {
+	return &rest_server_model.Subscription{
+		UUID:          subSource.Uuid,
+		SubStatus:     subSource.SubStatus,
+		Organization:  subSource.Organization,
+		RatelimitTier: subSource.RatelimitTier,
+		SubscribedAPI: &rest_server_model.SubscribedAPI{
+			Name:    subSource.SubscribedApi.Name,
+			Version: subSource.SubscribedApi.Version,
+		},
+	}
+}
+
+func convertProtoApplicationMappingToRestApplicationMapping(appMapSource *subscription_proto_model.ApplicationMapping) *rest_server_model.ApplicationMapping {
+	return &rest_server_model.ApplicationMapping{
+		UUID:            appMapSource.Uuid,
+		ApplicationRef:  appMapSource.ApplicationRef,
+		SubscriptionRef: appMapSource.SubscriptionRef,
+		OrganizationID:  appMapSource.Organization,
+	}
+}
+
+func convertProtoApplicationKeyMappingToRestApplicationKeyMapping(appKeyMapSource *subscription_proto_model.ApplicationKeyMapping) *rest_server_model.ApplicationKeyMapping {
+	return &rest_server_model.ApplicationKeyMapping{
+		ApplicationUUID:       appKeyMapSource.ApplicationUUID,
+		ApplicationIdentifier: appKeyMapSource.ApplicationIdentifier,
+		OrganizationID:        appKeyMapSource.Organization,
+		SecurityScheme:        appKeyMapSource.SecurityScheme,
+		KeyType:               appKeyMapSource.KeyType,
+		EnvID:                 appKeyMapSource.EnvID,
 	}
 }
