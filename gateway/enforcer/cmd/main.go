@@ -7,5 +7,9 @@ import(
 
 func main() {
 	cfg := config.GetConfig()
+	
 	xds.CreateXDSClients(cfg)
+
+	// Wait forever
+	select {}
 }
