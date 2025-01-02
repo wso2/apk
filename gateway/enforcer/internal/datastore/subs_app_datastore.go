@@ -12,56 +12,66 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
-// Define the datastore
+// SubscriptionApplicationDataStore is a data store that holds information about applications,
+// application mappings, application key mappings, and subscriptions. It provides thread-safe
+// access to these data structures using a read-write mutex.
+//
+// Fields:
+// - applications: A map of application IDs to Application objects.
+// - applicationMappings: A map of application IDs to ApplicationMapping objects.
+// - applicationKeyMappings: A map of application IDs to ApplicationKeyMapping objects.
+// - subscriptions: A map of subscription IDs to Subscription objects.
+// - mu: A read-write mutex to ensure thread-safe access to the data store.
+// - commonControllerRestBaseUrl: The base URL for the common controller REST API.
 type SubscriptionApplicationDataStore struct {
 	applications                map[string]*subscription_model.Application
 	applicationMappings         map[string]*subscription_model.ApplicationMapping
 	applicationKeyMappings      map[string]*subscription_model.ApplicationKeyMapping
 	subscriptions               map[string]*subscription_model.Subscription
 	mu                          sync.RWMutex
-	commonControllerRestBaseUrl string
+	commonControllerRestBaseURL string
 }
 
-// Initialize the datastore
+// NewDataStore Initialize the datastore
 func NewDataStore(cfg *config.Server) *SubscriptionApplicationDataStore {
 	return &SubscriptionApplicationDataStore{
 		applications:                make(map[string]*subscription_model.Application),
 		applicationMappings:         make(map[string]*subscription_model.ApplicationMapping),
 		applicationKeyMappings:      make(map[string]*subscription_model.ApplicationKeyMapping),
 		subscriptions:               make(map[string]*subscription_model.Subscription),
-		commonControllerRestBaseUrl: "https://" + cfg.CommonControllerHost + ":" + cfg.CommonControllerRestPort,
+		commonControllerRestBaseURL: "https://" + cfg.CommonControllerHost + ":" + cfg.CommonControllerRestPort,
 	}
 }
 
-// Add a new Application
+//  AddApplication adds a new Application
 func (ds *SubscriptionApplicationDataStore) AddApplication(app *subscription_model.Application) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
 	ds.applications[app.UUID] = app
 }
 
-// Add a new ApplicationMapping
+// AddApplicationMapping add a new ApplicationMapping
 func (ds *SubscriptionApplicationDataStore) AddApplicationMapping(mapping *subscription_model.ApplicationMapping) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
 	ds.applicationMappings[mapping.UUID] = mapping
 }
 
-// Add a new ApplicationKeyMapping
+// AddApplicationKeyMapping adds a new ApplicationKeyMapping
 func (ds *SubscriptionApplicationDataStore) AddApplicationKeyMapping(keyMapping *subscription_model.ApplicationKeyMapping) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
 	ds.applicationKeyMappings[keyMapping.ApplicationIdentifier] = keyMapping
 }
 
-// Add a new Subscription
+// AddSubscription Add a new Subscription
 func (ds *SubscriptionApplicationDataStore) AddSubscription(subscription *subscription_model.Subscription) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
 	ds.subscriptions[subscription.UUID] = subscription
 }
 
-// Delete an Application by UUID
+// DeleteApplication Delete an Application by UUID
 func (ds *SubscriptionApplicationDataStore) DeleteApplication(id string) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -72,7 +82,7 @@ func (ds *SubscriptionApplicationDataStore) DeleteApplication(id string) error {
 	return errors.New("application not found")
 }
 
-// Delete an ApplicationMapping by UUID
+// DeleteApplicationMapping Delete an ApplicationMapping by UUID
 func (ds *SubscriptionApplicationDataStore) DeleteApplicationMapping(id string) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -83,7 +93,7 @@ func (ds *SubscriptionApplicationDataStore) DeleteApplicationMapping(id string) 
 	return errors.New("applicationMapping not found")
 }
 
-// Delete an ApplicationKeyMapping by UUID
+// DeleteApplicationKeyMapping Delete an ApplicationKeyMapping by UUID
 func (ds *SubscriptionApplicationDataStore) DeleteApplicationKeyMapping(id string) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -94,7 +104,7 @@ func (ds *SubscriptionApplicationDataStore) DeleteApplicationKeyMapping(id strin
 	return errors.New("applicationKeyMapping not found")
 }
 
-// Delete a Subscription by UUID
+// DeleteSubscription Delete a Subscription by UUID
 func (ds *SubscriptionApplicationDataStore) DeleteSubscription(id string) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -105,7 +115,7 @@ func (ds *SubscriptionApplicationDataStore) DeleteSubscription(id string) error 
 	return errors.New("subscription not found")
 }
 
-// Update an Application
+// UpdateApplication Update an Application
 func (ds *SubscriptionApplicationDataStore) UpdateApplication(app *subscription_model.Application) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -116,7 +126,7 @@ func (ds *SubscriptionApplicationDataStore) UpdateApplication(app *subscription_
 	return errors.New("application not found")
 }
 
-// Update an ApplicationMapping
+// UpdateApplicationMapping Update an ApplicationMapping
 func (ds *SubscriptionApplicationDataStore) UpdateApplicationMapping(mapping *subscription_model.ApplicationMapping) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -127,7 +137,7 @@ func (ds *SubscriptionApplicationDataStore) UpdateApplicationMapping(mapping *su
 	return errors.New("applicationMapping not found")
 }
 
-// Update an ApplicationKeyMapping
+// UpdateApplicationKeyMapping Update an ApplicationKeyMapping
 func (ds *SubscriptionApplicationDataStore) UpdateApplicationKeyMapping(keyMapping *subscription_model.ApplicationKeyMapping) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -138,7 +148,7 @@ func (ds *SubscriptionApplicationDataStore) UpdateApplicationKeyMapping(keyMappi
 	return errors.New("applicationKeyMapping not found")
 }
 
-// Update a Subscription
+// UpdateSubscription Update a Subscription
 func (ds *SubscriptionApplicationDataStore) UpdateSubscription(subscription *subscription_model.Subscription) error {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()
@@ -156,41 +166,37 @@ func (ds *SubscriptionApplicationDataStore) LoadStartupData() error {
 	subsList, err := ds.getAllSubscriptions()
 	if err != nil {
 		return err
-	} else {
-		for _, sub := range subsList.List {
-			ds.AddSubscription(&sub)
-		}
+	}
+	for _, sub := range subsList.List {
+		ds.AddSubscription(&sub)
 	}
 	appList, err := ds.getAllApplications()
 	if err != nil {
 		return err
-	} else {
-		for _, app := range appList.List {
-			ds.AddApplication(&app)
-		}
+	}
+	for _, app := range appList.List {
+		ds.AddApplication(&app)
 	}
 	appMappingList, err := ds.getAllApplicationMappings()
 	if err != nil {
 		return err
-	} else {
-		for _, appMapping := range appMappingList.List {
-			ds.AddApplicationMapping(&appMapping)
-		}
+	}
+	for _, appMapping := range appMappingList.List {
+		ds.AddApplicationMapping(&appMapping)
 	}
 	appKeyMappingList, err := ds.getAllApplicationKeyMappings()
 	if err != nil {
 		return err
-	} else {
-		for _, appKeyMapping := range appKeyMappingList.List {
-			ds.AddApplicationKeyMapping(&appKeyMapping)
-		}
+	}
+	for _, appKeyMapping := range appKeyMappingList.List {
+		ds.AddApplicationKeyMapping(&appKeyMapping)
 	}
 	return nil
 }
 
 // Get all applications
 func (ds *SubscriptionApplicationDataStore) getAllApplications() (*subscription_model.ApplicationList, error) {
-	url := fmt.Sprintf("%s/applications", ds.commonControllerRestBaseUrl)
+	url := fmt.Sprintf("%s/applications", ds.commonControllerRestBaseURL)
 	resp, err := util.MakeGETRequest(url)
 	if err != nil {
 		return nil, err
@@ -207,7 +213,7 @@ func (ds *SubscriptionApplicationDataStore) getAllApplications() (*subscription_
 
 // Get all subscriptions
 func (ds *SubscriptionApplicationDataStore) getAllSubscriptions() (*subscription_model.SubscriptionList, error) {
-	url := fmt.Sprintf("%s/subscriptions", ds.commonControllerRestBaseUrl)
+	url := fmt.Sprintf("%s/subscriptions", ds.commonControllerRestBaseURL)
 	resp, err := util.MakeGETRequest(url)
 	if err != nil {
 		return nil, err
@@ -224,7 +230,7 @@ func (ds *SubscriptionApplicationDataStore) getAllSubscriptions() (*subscription
 
 // Get all application mappings
 func (ds *SubscriptionApplicationDataStore) getAllApplicationMappings() (*subscription_model.ApplicationMappingList, error) {
-	url := fmt.Sprintf("%s/applicationmappings", ds.commonControllerRestBaseUrl)
+	url := fmt.Sprintf("%s/applicationmappings", ds.commonControllerRestBaseURL)
 	resp, err := util.MakeGETRequest(url)
 	if err != nil {
 		return nil, err
@@ -241,7 +247,7 @@ func (ds *SubscriptionApplicationDataStore) getAllApplicationMappings() (*subscr
 
 // Get all application key mappings
 func (ds *SubscriptionApplicationDataStore) getAllApplicationKeyMappings() (*subscription_model.ApplicationKeyMappingList, error) {
-	url := fmt.Sprintf("%s/applicationkeymappings", ds.commonControllerRestBaseUrl)
+	url := fmt.Sprintf("%s/applicationkeymappings", ds.commonControllerRestBaseURL)
 	resp, err := util.MakeGETRequest(url)
 	if err != nil {
 		return nil, err
