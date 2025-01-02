@@ -5,6 +5,8 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"io/fs"
+	"path/filepath"
 )
 
 // LoadCertificates loads a client certificate and private key from the given file paths.
@@ -17,18 +19,51 @@ func LoadCertificates(publicKeyPath, privateKeyPath string) (tls.Certificate, er
 	return clientCert, nil
 }
 
-// LoadCACertificates loads the CA certificates from the provided file path.
-// It reads the certificate file and appends it to a new CertPool. 
-// If any error occurs during reading or appending, it returns an error.
-func LoadCACertificates(trustedCertsPath string) (*x509.CertPool, error) {
-	caCert, err := ioutil.ReadFile(trustedCertsPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read CA certificate: %v", err)
-	}
+// // LoadCACertificates loads the CA certificates from the provided file path.
+// // It reads the certificate file and appends it to a new CertPool. 
+// // If any error occurs during reading or appending, it returns an error.
+// func LoadCACertificates(trustedCertsPath string) (*x509.CertPool, error) {
+// 	caCert, err := ioutil.ReadFile(trustedCertsPath)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("failed to read CA certificate: %v", err)
+// 	}
 
+// 	certPool := x509.NewCertPool()
+// 	if !certPool.AppendCertsFromPEM(caCert) {
+// 		return nil, fmt.Errorf("failed to append CA certificate")
+// 	}
+
+// 	return certPool, nil
+// }
+
+// LoadCACertificates loads all CA certificates from the provided folder path.
+// It reads all .pem or .crt files in the folder and appends them to a new CertPool.
+// If any error occurs during reading or appending, it returns an error.
+func LoadCACertificates(folderPath string) (*x509.CertPool, error) {
 	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(caCert) {
-		return nil, fmt.Errorf("failed to append CA certificate")
+
+	err := filepath.WalkDir(folderPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return fmt.Errorf("error accessing file %s: %v", path, err)
+		}
+
+		// Only process files with .pem or .crt extensions
+		if !d.IsDir() && (filepath.Ext(path) == ".pem" || filepath.Ext(path) == ".crt") {
+			caCert, err := ioutil.ReadFile(path)
+			if err != nil {
+				return fmt.Errorf("failed to read CA certificate from %s: %v", path, err)
+			}
+
+			if !certPool.AppendCertsFromPEM(caCert) {
+				return fmt.Errorf("failed to append CA certificate from %s", path)
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	return certPool, nil
