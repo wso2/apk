@@ -24,6 +24,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/server"
+	"github.com/wso2/apk/common-go-libs/pkg/server/model"
 	"github.com/wso2/apk/common-controller/internal/utils"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/constants"
@@ -131,8 +132,8 @@ func (applicationReconciler *ApplicationReconciler) sendAppUpdates(application c
 	}
 }
 
-func marshalApplication(application cpv1alpha2.Application) server.Application {
-	return server.Application{
+func marshalApplication(application cpv1alpha2.Application) model.Application {
+	return model.Application{
 		UUID:           application.Name,
 		Name:           application.Spec.Name,
 		Owner:          application.Spec.Owner,
@@ -141,12 +142,12 @@ func marshalApplication(application cpv1alpha2.Application) server.Application {
 	}
 }
 
-func marshalApplicationKeyMapping(appInternal cpv1alpha2.Application) []server.ApplicationKeyMapping {
-	applicationKeyMappings := []server.ApplicationKeyMapping{}
+func marshalApplicationKeyMapping(appInternal cpv1alpha2.Application) []model.ApplicationKeyMapping {
+	applicationKeyMappings := []model.ApplicationKeyMapping{}
 	var oauth2SecurityScheme = appInternal.Spec.SecuritySchemes.OAuth2
 	if oauth2SecurityScheme != nil {
 		for _, env := range oauth2SecurityScheme.Environments {
-			appIdentifier := server.ApplicationKeyMapping{
+			appIdentifier := model.ApplicationKeyMapping{
 				ApplicationUUID:       appInternal.Name,
 				SecurityScheme:        constants.OAuth2,
 				ApplicationIdentifier: env.AppID,

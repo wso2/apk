@@ -15,7 +15,7 @@
  *
  */
 
-package server
+package model
 
 // Subscription defines the desired state of Subscription
 type Subscription struct {

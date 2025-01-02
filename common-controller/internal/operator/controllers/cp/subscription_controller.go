@@ -25,6 +25,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/config"
 	loggers "github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/server"
+	"github.com/wso2/apk/common-go-libs/pkg/server/model"
 	"github.com/wso2/apk/common-controller/internal/utils"
 	"github.com/wso2/apk/common-go-libs/constants"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
@@ -146,9 +147,9 @@ func sendSubUpdates(subscription cpv1alpha3.Subscription) {
 	server.AddSubscription(subList)
 }
 
-func marshalSubscription(subscription cpv1alpha3.Subscription) server.Subscription {
-	subscribedAPI := &server.SubscribedAPI{}
-	sub := server.Subscription{
+func marshalSubscription(subscription cpv1alpha3.Subscription) model.Subscription {
+	subscribedAPI := &model.SubscribedAPI{}
+	sub := model.Subscription{
 		UUID:         subscription.Name,
 		SubStatus:    subscription.Spec.SubscriptionStatus,
 		Organization: subscription.Spec.Organization,

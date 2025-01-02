@@ -15,19 +15,17 @@
  *
  */
 
-package server
+package model
 
-// Application defines the desired state of Application
-type Application struct {
-	UUID           string            `json:"uuid"`
-	Name           string            `json:"name"`
-	Owner          string            `json:"owner"`
-	Attributes     map[string]string `json:"attributes,omitempty"`
-	OrganizationID string            `json:"organizationId"`
-	TimeStamp      int64             `json:"timeStamp"`
+// ApplicationMapping defines the desired state of ApplicationMapping
+type ApplicationMapping struct {
+	UUID            string `json:"uuid"`
+	ApplicationRef  string `json:"applicationRef"`
+	SubscriptionRef string `json:"subscriptionRef"`
+	OrganizationID  string `json:"organizationId"`
 }
 
-// ApplicationList contains a list of Application
-type ApplicationList struct {
-	List []Application `json:"list"`
+// ApplicationMappingList contains a list of ApplicationMapping
+type ApplicationMappingList struct {
+	List []ApplicationMapping `json:"list"`
 }

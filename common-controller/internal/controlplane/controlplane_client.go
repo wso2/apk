@@ -32,7 +32,7 @@ import (
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/wso2/apk/common-controller/internal/config"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	"github.com/wso2/apk/common-controller/internal/server"
+	"github.com/wso2/apk/common-go-libs/pkg/server/model"
 	"github.com/wso2/apk/common-controller/internal/utils"
 	"github.com/wso2/apk/common-go-libs/constants"
 	apkmgt "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
@@ -172,7 +172,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.ApplicationCreated {
 		loggers.LoggerAPKOperator.Infof("Received APPLICATION_CREATED event.")
 		if event.Application != nil {
-			application := server.Application{UUID: event.Application.Uuid,
+			application := model.Application{UUID: event.Application.Uuid,
 				Name:           event.Application.Name,
 				Owner:          event.Application.Owner,
 				OrganizationID: event.Application.Organization,
@@ -184,7 +184,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 		}
 	} else if event.Type == constants.ApplicationUpdated {
 		if event.Application != nil {
-			application := server.Application{UUID: event.Application.Uuid,
+			application := model.Application{UUID: event.Application.Uuid,
 				Name:           event.Application.Name,
 				Owner:          event.Application.Owner,
 				OrganizationID: event.Application.Organization,
@@ -195,7 +195,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 		}
 	} else if event.Type == constants.ApplicationDeleted {
 		if event.Application != nil {
-			application := server.Application{UUID: event.Application.Uuid,
+			application := model.Application{UUID: event.Application.Uuid,
 				Name:           event.Application.Name,
 				Owner:          event.Application.Owner,
 				OrganizationID: event.Application.Organization,
@@ -207,10 +207,10 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.SubscriptionCreated {
 		loggers.LoggerAPKOperator.Infof("Received SUBSCRIPTION_CREATED event.")
 		if event.Subscription != nil {
-			subscription := server.Subscription{UUID: event.Subscription.Uuid,
+			subscription := model.Subscription{UUID: event.Subscription.Uuid,
 				Organization:  event.Subscription.Organization,
 				SubStatus:     event.Subscription.SubStatus,
-				SubscribedAPI: &server.SubscribedAPI{Name: event.Subscription.SubscribedApi.Name, Version: event.Subscription.SubscribedApi.Version},
+				SubscribedAPI: &model.SubscribedAPI{Name: event.Subscription.SubscribedApi.Name, Version: event.Subscription.SubscribedApi.Version},
 				RatelimitTier: event.Subscription.RatelimitTier,
 			}
 			loggers.LoggerAPKOperator.Infof("Received Subscription %s", subscription.UUID)
@@ -219,10 +219,10 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.SubscriptionUpdated {
 		loggers.LoggerAPKOperator.Infof("Received SUBSCRIPTION_UPDATED event.")
 		if event.Subscription != nil {
-			subscription := server.Subscription{UUID: event.Subscription.Uuid,
+			subscription := model.Subscription{UUID: event.Subscription.Uuid,
 				Organization:  event.Subscription.Organization,
 				SubStatus:     event.Subscription.SubStatus,
-				SubscribedAPI: &server.SubscribedAPI{Name: event.Subscription.SubscribedApi.Name, Version: event.Subscription.SubscribedApi.Version},
+				SubscribedAPI: &model.SubscribedAPI{Name: event.Subscription.SubscribedApi.Name, Version: event.Subscription.SubscribedApi.Version},
 				RatelimitTier: event.Subscription.RatelimitTier,
 			}
 			loggers.LoggerAPKOperator.Infof("Received Subscription %s", subscription.UUID)
@@ -231,10 +231,10 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.SubscriptionDeleted {
 		loggers.LoggerAPKOperator.Infof("Received SUBSCRIPTION_DELETED event.")
 		if event.Subscription != nil {
-			subscription := server.Subscription{UUID: event.Subscription.Uuid,
+			subscription := model.Subscription{UUID: event.Subscription.Uuid,
 				Organization:  event.Subscription.Organization,
 				SubStatus:     event.Subscription.SubStatus,
-				SubscribedAPI: &server.SubscribedAPI{Name: event.Subscription.SubscribedApi.Name, Version: event.Subscription.SubscribedApi.Version},
+				SubscribedAPI: &model.SubscribedAPI{Name: event.Subscription.SubscribedApi.Name, Version: event.Subscription.SubscribedApi.Version},
 			}
 			loggers.LoggerAPKOperator.Infof("Received Subscription %s", subscription.UUID)
 			controlPlaneGrpcClient.artifactDeployer.DeleteSubscription(subscription.UUID)
@@ -242,7 +242,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.ApplicationKeyMappingCreated {
 		loggers.LoggerAPKOperator.Infof("Received APPLICATION_KEY_MAPPING_CREATED event.")
 		if event.ApplicationKeyMapping != nil {
-			applicationKeyMapping := server.ApplicationKeyMapping{ApplicationUUID: event.ApplicationKeyMapping.ApplicationUUID,
+			applicationKeyMapping := model.ApplicationKeyMapping{ApplicationUUID: event.ApplicationKeyMapping.ApplicationUUID,
 				SecurityScheme:        event.ApplicationKeyMapping.SecurityScheme,
 				ApplicationIdentifier: event.ApplicationKeyMapping.ApplicationIdentifier,
 				KeyType:               event.ApplicationKeyMapping.KeyType,
@@ -255,7 +255,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.ApplicationKeyMappingDeleted {
 		loggers.LoggerAPKOperator.Infof("Received APPLICATION_KEY_MAPPING_DELETED event.")
 		if event.ApplicationKeyMapping != nil {
-			applicationKeyMapping := server.ApplicationKeyMapping{ApplicationUUID: event.ApplicationKeyMapping.ApplicationUUID,
+			applicationKeyMapping := model.ApplicationKeyMapping{ApplicationUUID: event.ApplicationKeyMapping.ApplicationUUID,
 				SecurityScheme:        event.ApplicationKeyMapping.SecurityScheme,
 				ApplicationIdentifier: event.ApplicationKeyMapping.ApplicationIdentifier,
 				KeyType:               event.ApplicationKeyMapping.KeyType,
@@ -268,7 +268,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.ApplicationMappingCreated {
 		loggers.LoggerAPKOperator.Infof("Received APPLICATION_MAPPING_CREATED event.")
 		if event.ApplicationMapping != nil {
-			applicationMapping := server.ApplicationMapping{UUID: event.ApplicationMapping.Uuid,
+			applicationMapping := model.ApplicationMapping{UUID: event.ApplicationMapping.Uuid,
 				ApplicationRef:  event.ApplicationMapping.ApplicationRef,
 				SubscriptionRef: event.ApplicationMapping.SubscriptionRef,
 				OrganizationID:  event.ApplicationMapping.Organization,
@@ -279,7 +279,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.ApplicationMappingDeleted {
 		loggers.LoggerAPKOperator.Infof("Received APPLICATION_MAPPING_DELETED event.")
 		if event.ApplicationMapping != nil {
-			applicationMapping := server.ApplicationMapping{UUID: event.ApplicationMapping.Uuid,
+			applicationMapping := model.ApplicationMapping{UUID: event.ApplicationMapping.Uuid,
 				ApplicationRef:  event.ApplicationMapping.ApplicationRef,
 				SubscriptionRef: event.ApplicationMapping.SubscriptionRef,
 				OrganizationID:  event.ApplicationMapping.Organization,
@@ -290,7 +290,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.ApplicationMappingUpdated {
 		loggers.LoggerAPKOperator.Infof("Received APPLICATION_MAPPING_UPDATED event.")
 		if event.ApplicationMapping != nil {
-			applicationMapping := server.ApplicationMapping{UUID: event.ApplicationMapping.Uuid,
+			applicationMapping := model.ApplicationMapping{UUID: event.ApplicationMapping.Uuid,
 				ApplicationRef:  event.ApplicationMapping.ApplicationRef,
 				SubscriptionRef: event.ApplicationMapping.SubscriptionRef,
 				OrganizationID:  event.ApplicationMapping.Organization,
@@ -301,7 +301,7 @@ func (controlPlaneGrpcClient *Agent) handleEvents(event *subscription.Event) {
 	} else if event.Type == constants.ApplicationKeyMappingUpdated {
 		loggers.LoggerAPKOperator.Infof("Received APPLICATION_KEY_MAPPING_UPDATED event.")
 		if event.ApplicationKeyMapping != nil {
-			applicationKeyMapping := server.ApplicationKeyMapping{ApplicationUUID: event.ApplicationKeyMapping.ApplicationUUID,
+			applicationKeyMapping := model.ApplicationKeyMapping{ApplicationUUID: event.ApplicationKeyMapping.ApplicationUUID,
 				SecurityScheme:        event.ApplicationKeyMapping.SecurityScheme,
 				ApplicationIdentifier: event.ApplicationKeyMapping.ApplicationIdentifier,
 				KeyType:               event.ApplicationKeyMapping.KeyType,
@@ -470,37 +470,37 @@ func (controlPlaneGrpcClient *Agent) retrieveDataFromResponseChannel(response re
 		}
 	}
 }
-func marshalMultipleSubscriptions(subList *SubscriptionList) server.SubscriptionList {
-	subscriptionList := server.SubscriptionList{List: []server.Subscription{}}
+func marshalMultipleSubscriptions(subList *SubscriptionList) model.SubscriptionList {
+	subscriptionList := model.SubscriptionList{List: []model.Subscription{}}
 	for _, subscription := range subList.List {
 		loggers.LoggerAPI.Debugf("Subscription: %v", subscription)
-		subscriptionList.List = append(subscriptionList.List, server.Subscription{UUID: subscription.UUID, Organization: subscription.Organization, SubStatus: subscription.SubStatus, SubscribedAPI: &server.SubscribedAPI{Name: subscription.SubscribedAPI.Name, Version: subscription.SubscribedAPI.Version}})
+		subscriptionList.List = append(subscriptionList.List, model.Subscription{UUID: subscription.UUID, Organization: subscription.Organization, SubStatus: subscription.SubStatus, SubscribedAPI: &model.SubscribedAPI{Name: subscription.SubscribedAPI.Name, Version: subscription.SubscribedAPI.Version}})
 	}
 	return subscriptionList
 }
-func marshalMultipleApplications(appList *ApplicationList) server.ApplicationList {
-	applicationList := server.ApplicationList{List: []server.Application{}}
+func marshalMultipleApplications(appList *ApplicationList) model.ApplicationList {
+	applicationList := model.ApplicationList{List: []model.Application{}}
 	for _, application := range appList.List {
 		loggers.LoggerAPI.Debugf("Application: %v", application)
-		applicationList.List = append(applicationList.List, server.Application{UUID: application.UUID, Name: application.Name, Owner: application.Owner, OrganizationID: application.Organization, Attributes: application.Attributes})
+		applicationList.List = append(applicationList.List, model.Application{UUID: application.UUID, Name: application.Name, Owner: application.Owner, OrganizationID: application.Organization, Attributes: application.Attributes})
 	}
 	return applicationList
 }
-func marshalMultipleApplicationKeyMappings(appList *ApplicationList) server.ApplicationKeyMappingList {
-	applicationKeyMappingList := server.ApplicationKeyMappingList{List: []server.ApplicationKeyMapping{}}
+func marshalMultipleApplicationKeyMappings(appList *ApplicationList) model.ApplicationKeyMappingList {
+	applicationKeyMappingList := model.ApplicationKeyMappingList{List: []model.ApplicationKeyMapping{}}
 	for _, application := range appList.List {
 		loggers.LoggerAPI.Debugf("Application: %v", application)
 		for _, securityScheme := range application.SecuritySchemes {
-			applicationKeyMappingList.List = append(applicationKeyMappingList.List, server.ApplicationKeyMapping{ApplicationUUID: application.UUID, SecurityScheme: securityScheme.SecurityScheme, ApplicationIdentifier: securityScheme.ApplicationIdentifier, KeyType: securityScheme.KeyType, EnvID: securityScheme.EnvID, OrganizationID: application.Organization})
+			applicationKeyMappingList.List = append(applicationKeyMappingList.List, model.ApplicationKeyMapping{ApplicationUUID: application.UUID, SecurityScheme: securityScheme.SecurityScheme, ApplicationIdentifier: securityScheme.ApplicationIdentifier, KeyType: securityScheme.KeyType, EnvID: securityScheme.EnvID, OrganizationID: application.Organization})
 		}
 	}
 	return applicationKeyMappingList
 }
-func marshalMultipleApplicationMappings(appMappingList *ApplicationMappingList) server.ApplicationMappingList {
-	applicationMappingList := server.ApplicationMappingList{List: []server.ApplicationMapping{}}
+func marshalMultipleApplicationMappings(appMappingList *ApplicationMappingList) model.ApplicationMappingList {
+	applicationMappingList := model.ApplicationMappingList{List: []model.ApplicationMapping{}}
 	for _, applicationMapping := range appMappingList.List {
 		loggers.LoggerAPI.Debugf("ApplicationMapping: %v", applicationMapping)
-		applicationMappingList.List = append(applicationMappingList.List, server.ApplicationMapping{UUID: applicationMapping.UUID, ApplicationRef: applicationMapping.ApplicationRef, SubscriptionRef: applicationMapping.SubscriptionRef, OrganizationID: applicationMapping.Organization})
+		applicationMappingList.List = append(applicationMappingList.List, model.ApplicationMapping{UUID: applicationMapping.UUID, ApplicationRef: applicationMapping.ApplicationRef, SubscriptionRef: applicationMapping.SubscriptionRef, OrganizationID: applicationMapping.Organization})
 	}
 	return applicationMappingList
 }

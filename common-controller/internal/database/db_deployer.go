@@ -23,7 +23,8 @@ import (
 	"github.com/wso2/apk/common-controller/internal/utils"
 	"github.com/wso2/apk/common-go-libs/constants"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/manager"	
+	"github.com/wso2/apk/common-go-libs/pkg/server/model"
 )
 
 // DBDeployer is a struct that implements ArtifactDeployer interface
@@ -83,7 +84,7 @@ func populateMapFromDB() error {
 }
 
 // DeployApplication deploys an application
-func (dbDeployer DBDeployer) DeployApplication(application server.Application) error {
+func (dbDeployer DBDeployer) DeployApplication(application model.Application) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		return deployApplicationwithAttributes(tx, application)
 	})
@@ -94,7 +95,7 @@ func (dbDeployer DBDeployer) DeployApplication(application server.Application) e
 }
 
 // UpdateApplication updates an application
-func (dbDeployer DBDeployer) UpdateApplication(application server.Application) error {
+func (dbDeployer DBDeployer) UpdateApplication(application model.Application) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, updateApplication, insertApplicationAttributes, deleteAllAppAttributes)
 		if err := UpdateApplication(tx, application.UUID, application.Name, application.Owner, application.OrganizationID); err != nil {
@@ -111,7 +112,7 @@ func (dbDeployer DBDeployer) UpdateApplication(application server.Application) e
 }
 
 // DeploySubscription deploys a subscription
-func (dbDeployer DBDeployer) DeploySubscription(subscription server.Subscription) error {
+func (dbDeployer DBDeployer) DeploySubscription(subscription model.Subscription) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, insertSubscription)
 		return AddSubscription(tx, subscription.UUID, subscription.SubscribedAPI.Name, subscription.SubscribedAPI.Version,
@@ -124,7 +125,7 @@ func (dbDeployer DBDeployer) DeploySubscription(subscription server.Subscription
 }
 
 // UpdateSubscription updates a subscription
-func (dbDeployer DBDeployer) UpdateSubscription(subscription server.Subscription) error {
+func (dbDeployer DBDeployer) UpdateSubscription(subscription model.Subscription) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, updateSubscription)
 		return UpdateSubscription(tx, subscription.UUID, subscription.SubscribedAPI.Name, subscription.SubscribedAPI.Version,
@@ -138,7 +139,7 @@ func (dbDeployer DBDeployer) UpdateSubscription(subscription server.Subscription
 }
 
 // DeployApplicationMappings deploys an application mapping
-func (dbDeployer DBDeployer) DeployApplicationMappings(applicationMapping server.ApplicationMapping) error {
+func (dbDeployer DBDeployer) DeployApplicationMappings(applicationMapping model.ApplicationMapping) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, insertAppSub)
 		return AddAppSub(tx, applicationMapping.UUID, applicationMapping.ApplicationRef, applicationMapping.SubscriptionRef,
@@ -151,7 +152,7 @@ func (dbDeployer DBDeployer) DeployApplicationMappings(applicationMapping server
 }
 
 // DeployKeyMappings deploys a key mapping
-func (dbDeployer DBDeployer) DeployKeyMappings(keyMapping server.ApplicationKeyMapping) error {
+func (dbDeployer DBDeployer) DeployKeyMappings(keyMapping model.ApplicationKeyMapping) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, insertApplicationKeyMapping)
 		if keyMapping.SecurityScheme == constants.OAuth2 {
@@ -212,7 +213,7 @@ func (dbDeployer DBDeployer) DeleteApplicationMappings(applicationMapping string
 }
 
 // UpdateApplicationMappings updates an application mapping
-func (dbDeployer DBDeployer) UpdateApplicationMappings(applicationMapping server.ApplicationMapping) error {
+func (dbDeployer DBDeployer) UpdateApplicationMappings(applicationMapping model.ApplicationMapping) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, updateAppSub)
 		return UpdateAppSub(tx, applicationMapping.UUID, applicationMapping.ApplicationRef, applicationMapping.SubscriptionRef,
@@ -226,7 +227,7 @@ func (dbDeployer DBDeployer) UpdateApplicationMappings(applicationMapping server
 }
 
 // DeleteKeyMappings deletes a key mapping
-func (dbDeployer DBDeployer) DeleteKeyMappings(keyMapping server.ApplicationKeyMapping) error {
+func (dbDeployer DBDeployer) DeleteKeyMappings(keyMapping model.ApplicationKeyMapping) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, deleteApplicationKeyMapping)
 		return DeleteApplicationKeyMapping(tx, keyMapping.ApplicationUUID, keyMapping.SecurityScheme, keyMapping.EnvID)
@@ -249,7 +250,7 @@ func (dbDeployer DBDeployer) DeleteSubscription(subscriptionID string) error {
 }
 
 // DeployAllApplicationMappings deploys all application mappings
-func (dbDeployer DBDeployer) DeployAllApplicationMappings(applicationMappings server.ApplicationMappingList) error {
+func (dbDeployer DBDeployer) DeployAllApplicationMappings(applicationMappings model.ApplicationMappingList) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, insertAppSub, deleteAllAppSub)
 		if err := DeleteAllAppSub(tx); err != nil {
@@ -274,7 +275,7 @@ func (dbDeployer DBDeployer) DeployAllApplicationMappings(applicationMappings se
 }
 
 // DeployAllApplications deploys all key mappings
-func (dbDeployer DBDeployer) DeployAllApplications(applications server.ApplicationList) error {
+func (dbDeployer DBDeployer) DeployAllApplications(applications model.ApplicationList) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, deleteAllApplications, deleteAllAppAttributes, insertApplication, insertApplicationAttributes)
 		if err := DeleteAllApplications(tx); err != nil {
@@ -303,7 +304,7 @@ func (dbDeployer DBDeployer) DeployAllApplications(applications server.Applicati
 }
 
 // UpdateKeyMappings updates a key mapping
-func (dbDeployer DBDeployer) UpdateKeyMappings(keyMapping server.ApplicationKeyMapping) error {
+func (dbDeployer DBDeployer) UpdateKeyMappings(keyMapping model.ApplicationKeyMapping) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, updateApplicationKeyMapping)
 		if keyMapping.SecurityScheme == constants.OAuth2 {
@@ -324,7 +325,7 @@ func (dbDeployer DBDeployer) UpdateKeyMappings(keyMapping server.ApplicationKeyM
 }
 
 // DeployAllKeyMappings deploys all key mappings
-func (dbDeployer DBDeployer) DeployAllKeyMappings(keyMappings server.ApplicationKeyMappingList) error {
+func (dbDeployer DBDeployer) DeployAllKeyMappings(keyMappings model.ApplicationKeyMappingList) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, deleteAllApplicationKeyMappings, insertApplicationKeyMapping)
 		if err := DeleteAllApplicationKeyMappings(tx); err != nil {
@@ -355,7 +356,7 @@ func (dbDeployer DBDeployer) DeployAllKeyMappings(keyMappings server.Application
 }
 
 // DeployAllSubscriptions deploys all subscriptions
-func (dbDeployer DBDeployer) DeployAllSubscriptions(subscriptions server.SubscriptionList) error {
+func (dbDeployer DBDeployer) DeployAllSubscriptions(subscriptions model.SubscriptionList) error {
 	retryUntilTransaction(func(tx pgx.Tx) error {
 		PrepareQueries(tx, deleteAllSubscriptions, insertSubscription)
 		if err := DeleteAllSubscriptions(tx); err != nil {
@@ -382,41 +383,41 @@ func (dbDeployer DBDeployer) DeployAllSubscriptions(subscriptions server.Subscri
 }
 
 // GetAllApplicationMappings returns all application mappings
-func (dbDeployer DBDeployer) GetAllApplicationMappings() (server.ApplicationMappingList, error) {
-	return server.ApplicationMappingList{}, nil
+func (dbDeployer DBDeployer) GetAllApplicationMappings() (model.ApplicationMappingList, error) {
+	return model.ApplicationMappingList{}, nil
 }
 
 // GetAllApplications returns all applications
-func (dbDeployer DBDeployer) GetAllApplications() (server.ApplicationList, error) {
-	return server.ApplicationList{}, nil
+func (dbDeployer DBDeployer) GetAllApplications() (model.ApplicationList, error) {
+	return model.ApplicationList{}, nil
 }
 
 // GetAllKeyMappings returns all key mappings
-func (dbDeployer DBDeployer) GetAllKeyMappings() (server.ApplicationKeyMappingList, error) {
-	return server.ApplicationKeyMappingList{}, nil
+func (dbDeployer DBDeployer) GetAllKeyMappings() (model.ApplicationKeyMappingList, error) {
+	return model.ApplicationKeyMappingList{}, nil
 }
 
 // GetAllSubscriptions returns all subscriptions
-func (dbDeployer DBDeployer) GetAllSubscriptions() (server.SubscriptionList, error) {
-	return server.SubscriptionList{}, nil
+func (dbDeployer DBDeployer) GetAllSubscriptions() (model.SubscriptionList, error) {
+	return model.SubscriptionList{}, nil
 }
 
 // GetApplication returns an application
-func (dbDeployer DBDeployer) GetApplication(applicationID string) (server.Application, error) {
-	return server.Application{}, nil
+func (dbDeployer DBDeployer) GetApplication(applicationID string) (model.Application, error) {
+	return model.Application{}, nil
 }
 
 // GetApplicationMappings returns an application mapping
-func (dbDeployer DBDeployer) GetApplicationMappings(applicationID string) (server.ApplicationMapping, error) {
-	return server.ApplicationMapping{}, nil
+func (dbDeployer DBDeployer) GetApplicationMappings(applicationID string) (model.ApplicationMapping, error) {
+	return model.ApplicationMapping{}, nil
 }
 
 // GetKeyMappings returns a key mapping
-func (dbDeployer DBDeployer) GetKeyMappings(applicationID string) (server.ApplicationKeyMapping, error) {
-	return server.ApplicationKeyMapping{}, nil
+func (dbDeployer DBDeployer) GetKeyMappings(applicationID string) (model.ApplicationKeyMapping, error) {
+	return model.ApplicationKeyMapping{}, nil
 }
 
 // GetSubscription returns a subscription
-func (dbDeployer DBDeployer) GetSubscription(subscriptionID string) (server.Subscription, error) {
-	return server.Subscription{}, nil
+func (dbDeployer DBDeployer) GetSubscription(subscriptionID string) (model.Subscription, error) {
+	return model.Subscription{}, nil
 }

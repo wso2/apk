@@ -16,32 +16,35 @@
  */
 package controlplane
 
-import "github.com/wso2/apk/common-controller/internal/server"
+import (
+	"github.com/wso2/apk/common-go-libs/pkg/server/model"
+)
+
 
 // ArtifactDeployer is an interface that defines the methods that should be implemented by an artifact deployer
 type ArtifactDeployer interface {
-	DeployApplication(application server.Application) error
-	UpdateApplication(application server.Application) error
-	DeploySubscription(subscription server.Subscription) error
-	UpdateSubscription(subscription server.Subscription) error
-	DeployApplicationMappings(applicationMapping server.ApplicationMapping) error
-	UpdateApplicationMappings(applicationMapping server.ApplicationMapping) error
-	DeployKeyMappings(keyMapping server.ApplicationKeyMapping) error
-	UpdateKeyMappings(keyMapping server.ApplicationKeyMapping) error
-	GetApplication(applicationID string) (server.Application, error)
-	GetSubscription(subscriptionID string) (server.Subscription, error)
-	GetApplicationMappings(applicationID string) (server.ApplicationMapping, error)
-	GetKeyMappings(applicationID string) (server.ApplicationKeyMapping, error)
-	GetAllApplications() (server.ApplicationList, error)
-	GetAllSubscriptions() (server.SubscriptionList, error)
-	GetAllApplicationMappings() (server.ApplicationMappingList, error)
-	GetAllKeyMappings() (server.ApplicationKeyMappingList, error)
+	DeployApplication(application model.Application) error
+	UpdateApplication(application model.Application) error
+	DeploySubscription(subscription model.Subscription) error
+	UpdateSubscription(subscription model.Subscription) error
+	DeployApplicationMappings(applicationMapping model.ApplicationMapping) error
+	UpdateApplicationMappings(applicationMapping model.ApplicationMapping) error
+	DeployKeyMappings(keyMapping model.ApplicationKeyMapping) error
+	UpdateKeyMappings(keyMapping model.ApplicationKeyMapping) error
+	GetApplication(applicationID string) (model.Application, error)
+	GetSubscription(subscriptionID string) (model.Subscription, error)
+	GetApplicationMappings(applicationID string) (model.ApplicationMapping, error)
+	GetKeyMappings(applicationID string) (model.ApplicationKeyMapping, error)
+	GetAllApplications() (model.ApplicationList, error)
+	GetAllSubscriptions() (model.SubscriptionList, error)
+	GetAllApplicationMappings() (model.ApplicationMappingList, error)
+	GetAllKeyMappings() (model.ApplicationKeyMappingList, error)
 	DeleteApplication(applicationID string) error
 	DeleteSubscription(subscriptionID string) error
 	DeleteApplicationMappings(applicationID string) error
-	DeleteKeyMappings(keyMapping server.ApplicationKeyMapping) error
-	DeployAllApplications(applications server.ApplicationList) error
-	DeployAllSubscriptions(subscriptions server.SubscriptionList) error
-	DeployAllApplicationMappings(applicationMappings server.ApplicationMappingList) error
-	DeployAllKeyMappings(keyMappings server.ApplicationKeyMappingList) error
+	DeleteKeyMappings(keyMapping model.ApplicationKeyMapping) error
+	DeployAllApplications(applications model.ApplicationList) error
+	DeployAllSubscriptions(subscriptions model.SubscriptionList) error
+	DeployAllApplicationMappings(applicationMappings model.ApplicationMappingList) error
+	DeployAllKeyMappings(keyMappings model.ApplicationKeyMappingList) error
 }

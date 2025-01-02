@@ -20,11 +20,11 @@ package database
 import (
 	"github.com/jackc/pgx/v5"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	"github.com/wso2/apk/common-controller/internal/server"
+	"github.com/wso2/apk/common-go-libs/pkg/server/model"
 )
 
 // deployApplicationAttributes deploys application attributes
-func deployApplicationwithAttributes(tx pgx.Tx, application server.Application) error {
+func deployApplicationwithAttributes(tx pgx.Tx, application model.Application) error {
 	PrepareQueries(tx, insertApplication, insertApplicationAttributes)
 	err := AddApplication(tx, application.UUID, application.Name, application.Owner, application.OrganizationID)
 	if err != nil {
@@ -41,7 +41,7 @@ func deployApplicationwithAttributes(tx pgx.Tx, application server.Application) 
 	return nil
 }
 
-func updateApplicationAttributes(tx pgx.Tx, application server.Application) error {
+func updateApplicationAttributes(tx pgx.Tx, application model.Application) error {
 	PrepareQueries(tx, insertApplicationAttributes, deleteAllAppAttributes)
 	err := DeleteApplicationAttributes(tx, application.UUID)
 	if err != nil {
@@ -59,7 +59,7 @@ func updateApplicationAttributes(tx pgx.Tx, application server.Application) erro
 }
 
 // GetAllApplications gets all applications from the database
-func GetAllApplications(tx pgx.Tx) ([]server.Application, error) {
+func GetAllApplications(tx pgx.Tx) ([]model.Application, error) {
 	rows, err := ExecDBQueryRows(tx, getAllApplicationAttributes)
 	if err != nil {
 		return nil, err
@@ -86,9 +86,9 @@ func GetAllApplications(tx pgx.Tx) ([]server.Application, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var applications []server.Application
+	var applications []model.Application
 	for rows.Next() {
-		var app server.Application
+		var app model.Application
 		err := rows.Scan(&app.UUID, &app.Name, &app.Owner, &app.OrganizationID)
 		if err != nil {
 			return nil, err
@@ -100,16 +100,16 @@ func GetAllApplications(tx pgx.Tx) ([]server.Application, error) {
 }
 
 // GetAllSubscription gets all subscriptions from the database
-func GetAllSubscription(tx pgx.Tx) ([]server.Subscription, error) {
+func GetAllSubscription(tx pgx.Tx) ([]model.Subscription, error) {
 	rows, err := ExecDBQueryRows(tx, getAllSubscriptions)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var subscriptions []server.Subscription
+	var subscriptions []model.Subscription
 	for rows.Next() {
-		sub := server.Subscription{
-			SubscribedAPI: &server.SubscribedAPI{},
+		sub := model.Subscription{
+			SubscribedAPI: &model.SubscribedAPI{},
 		}
 
 		err := rows.Scan(&sub.UUID, &sub.SubscribedAPI.Name, &sub.SubscribedAPI.Version, &sub.SubStatus, &sub.Organization, &sub.RatelimitTier)
@@ -122,15 +122,15 @@ func GetAllSubscription(tx pgx.Tx) ([]server.Subscription, error) {
 }
 
 // GetAllApplicationKeyMappings gets all application key mappings from the database
-func GetAllApplicationKeyMappings(tx pgx.Tx) ([]server.ApplicationKeyMapping, error) {
+func GetAllApplicationKeyMappings(tx pgx.Tx) ([]model.ApplicationKeyMapping, error) {
 	rows, err := ExecDBQueryRows(tx, getAllApplicationKeyMappings)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var appKeyMappings []server.ApplicationKeyMapping
+	var appKeyMappings []model.ApplicationKeyMapping
 	for rows.Next() {
-		var appKeyMapping server.ApplicationKeyMapping
+		var appKeyMapping model.ApplicationKeyMapping
 		err := rows.Scan(&appKeyMapping.ApplicationUUID, &appKeyMapping.SecurityScheme, &appKeyMapping.ApplicationIdentifier,
 			&appKeyMapping.KeyType, &appKeyMapping.EnvID, &appKeyMapping.OrganizationID)
 		if err != nil {
@@ -142,15 +142,15 @@ func GetAllApplicationKeyMappings(tx pgx.Tx) ([]server.ApplicationKeyMapping, er
 }
 
 // GetAllAppSubs gets all application subscription mappings from the database
-func GetAllAppSubs(tx pgx.Tx) ([]server.ApplicationMapping, error) {
+func GetAllAppSubs(tx pgx.Tx) ([]model.ApplicationMapping, error) {
 	rows, err := ExecDBQueryRows(tx, getAllAppSubs)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var appSubs []server.ApplicationMapping
+	var appSubs []model.ApplicationMapping
 	for rows.Next() {
-		var appSub server.ApplicationMapping
+		var appSub model.ApplicationMapping
 		err := rows.Scan(&appSub.UUID, &appSub.ApplicationRef, &appSub.SubscriptionRef, &appSub.OrganizationID)
 		if err != nil {
 			return nil, err
