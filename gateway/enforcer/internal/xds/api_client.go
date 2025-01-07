@@ -6,11 +6,20 @@ import (
 	"fmt"
 	"time"
 
+	v3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	api_ads "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
+	status "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
+)
+
+const (
+	apiTypedURL = "type.googleapis.com/wso2.discovery.api.Api"
 )
 
 // APIXDSClient manages the connection to the API Discovery Service via gRPC.
@@ -26,11 +35,16 @@ type APIXDSClient struct {
 	cancel        context.CancelFunc
 	client        api_ads.ApiDiscoveryServiceClient
 	log           logging.Logger
+	cfg           *config.Server
+	latestReceived *v3.DiscoveryResponse
+	latestACKed    *v3.DiscoveryResponse
+	stream         api_ads.ApiDiscoveryService_StreamApisClient
+	apiDatastore  *datastore.APIStore
 }
 
 // NewAPIXDSClient initializes a new instance of APIXDSClient with the given parameters.
 // It sets up the host, port, retry logic, TLS configuration, and logger.
-func NewAPIXDSClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server) *APIXDSClient {
+func NewAPIXDSClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, apiDatastore *datastore.APIStore) *APIXDSClient {
 	// Create a new APIClient object
 	return &APIXDSClient{
 		Host:          host,
@@ -40,6 +54,8 @@ func NewAPIXDSClient(host string, port string, maxRetries int, retryInterval tim
 		tlsConfig:     tlsConfig,
 		grpcConn:      nil,
 		log:           cfg.Logger,
+		cfg:           cfg,
+		apiDatastore:  apiDatastore,
 	}
 }
 
@@ -50,6 +66,7 @@ func (c *APIXDSClient) InitiateAPIXDSConnection() {
 	grpcConn := util.CreateGRPCConnectionWithRetryAndPanic(nil, c.Host, c.Port, c.tlsConfig, c.maxRetries, c.retryInterval)
 	c.grpcConn = grpcConn
 	client := api_ads.NewApiDiscoveryServiceClient(grpcConn)
+	c.client = client
 
 	ctx, cancel := context.WithCancel(context.Background())
 	c.ctx = ctx
@@ -59,20 +76,68 @@ func (c *APIXDSClient) InitiateAPIXDSConnection() {
 	if err != nil {
 		cancel()
 		c.grpcConn.Close()
-		panic(fmt.Errorf("Failed to initiate XDS connection with API Discovery Service: %v", err))
+		panic(fmt.Errorf("failed to initiate XDS connection with API Discovery Service: %v", err))
 	}
-
+	c.stream = stream
+	// Send initial request
+	dreq := DiscoveryRequestForNode(CreateNode(c.cfg.EnforcerLabel, c.cfg.InstanceIdentifier), "", "", nil, apiTypedURL)
+	if err := stream.Send(dreq); err != nil {
+		cancel()
+		c.grpcConn.Close()
+		panic(fmt.Errorf("failed to send initial discovery request: %v", err))
+	}
 	go func() {
 		for {
 			resp, err := stream.Recv()
 			if err != nil {
 				c.log.Error(err, "Failed to receive API stream data")
+				c.nack(err)
 				cancel()
 				c.grpcConn.Close()
 				go c.InitiateAPIXDSConnection()
 				break
 			}
-			c.log.Info(fmt.Sprintf("Received config: %v", resp))
+			c.latestReceived = resp
+			handleResponseErr := c.handleResponse(resp)
+			if handleResponseErr != nil {
+				c.nack(handleResponseErr)
+				continue
+			}
+			c.ack()
 		}
 	}()
 }
+
+func (c *APIXDSClient) ack() {
+	dreq := DiscoveryRequestForNode(CreateNode(c.cfg.EnforcerLabel, c.cfg.InstanceIdentifier), c.latestReceived.GetVersionInfo(), c.latestReceived.GetNonce(), nil, apiTypedURL)
+	c.stream.Send(dreq)
+	c.latestACKed = c.latestReceived
+}
+
+func (c *APIXDSClient) nack(e error) {
+	errDetail := &status.Status{
+		Message: e.Error(),
+	}
+	dreq := DiscoveryRequestForNode(CreateNode(c.cfg.EnforcerLabel, c.cfg.InstanceIdentifier), c.latestACKed.GetVersionInfo(), c.latestReceived.GetNonce(), errDetail, apiTypedURL)
+	c.stream.Send(dreq)
+	c.latestACKed = c.latestReceived
+}
+
+func (c *APIXDSClient) handleResponse(response *v3.DiscoveryResponse) error {
+
+	var apis []*api.Api
+	for _, res := range response.GetResources() {
+		var apiResource api.Api
+		if err := proto.Unmarshal(res.GetValue(), &apiResource); err != nil {
+			c.log.Info(fmt.Sprintf("Failed to unmarshal API resource: %v", err))
+			return err
+		}
+		apis = append(apis, &apiResource)
+	}
+	c.apiDatastore.AddAPIs(apis)
+	c.log.Info(fmt.Sprintf("Number of APIs received: %d", len(apis)))
+	return nil
+}
+
+
+
