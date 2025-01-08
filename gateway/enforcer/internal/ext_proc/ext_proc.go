@@ -52,7 +52,11 @@ func StartExternalProcessingServer(cfg *config.Server) {
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
 	}
-	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath, grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize), grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)), grpc.KeepaliveParams(kaParams))
+	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath, 
+		cfg.EnforcerPrivateKeyPath, 
+		grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize), 
+		grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)), 
+		grpc.KeepaliveParams(kaParams))
 	if err != nil {
 		panic(err)
 	}
