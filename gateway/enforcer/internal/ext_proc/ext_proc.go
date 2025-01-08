@@ -25,8 +25,11 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 
-  "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
+	"time"
 )
 
 // ExternalProcessingServer represents a server for handling external processing requests.
@@ -45,7 +48,11 @@ type ExternalProcessingServer struct {
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
 func StartExternalProcessingServer(cfg *config.Server) {
-	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
+	kaParams := keepalive.ServerParameters{
+		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
+		Timeout: 20 * time.Second,
+	}
+	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath, grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize), grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)), grpc.KeepaliveParams(kaParams))
 	if err != nil {
 		panic(err)
 	}
