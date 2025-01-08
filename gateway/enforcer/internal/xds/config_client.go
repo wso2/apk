@@ -1,4 +1,21 @@
-package xds
+/*
+ *  Copyright (c) 2025, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+ 
+ package xds
 
 import (
 	"context"
@@ -6,13 +23,22 @@ import (
 	"fmt"
 	"time"
 
+	v3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	config_ads "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"google.golang.org/grpc"
+	status "google.golang.org/genproto/googleapis/rpc/status"
+	config_from_adapter "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
+	"google.golang.org/protobuf/proto"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 )
 
+const (
+	configTypedURL = "type.googleapis.com/wso2.discovery.config.enforcer.Config"
+	commonEnforcerLabel = "commonEnforcerLabel"
+)
 // ConfigXDSClient is a client for managing gRPC connections to the Config Discovery Service (XDS).
 // It handles retry logic, TLS configuration, and logging for configuration data streams.
 type ConfigXDSClient struct {
@@ -26,11 +52,16 @@ type ConfigXDSClient struct {
 	cancel        context.CancelFunc
 	client        config_ads.ConfigDiscoveryServiceClient
 	log           logging.Logger
+	cfg 		 *config.Server
+	latestReceived *v3.DiscoveryResponse
+	latestACKed    *v3.DiscoveryResponse
+	stream 	   config_ads.ConfigDiscoveryService_StreamConfigsClient
+	configDatastore *datastore.ConfigStore
 }
 
 // NewXDSConfigClient creates a new instance of ConfigXDSClient.
 // It initializes the client with the given host, port, retry parameters, TLS configuration, and logger.
-func NewXDSConfigClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server) *ConfigXDSClient {
+func NewXDSConfigClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, configDatastore *datastore.ConfigStore) *ConfigXDSClient {
 	// Create a new APIClient object
 	return &ConfigXDSClient{
 		Host:          host,
@@ -40,6 +71,8 @@ func NewXDSConfigClient(host string, port string, maxRetries int, retryInterval 
 		tlsConfig:     tlsConfig,
 		grpcConn:      nil,
 		log:           cfg.Logger,
+		cfg: 		 cfg,
+		configDatastore: configDatastore,
 	}
 }
 
@@ -61,17 +94,65 @@ func (c *ConfigXDSClient) InitiateConfigXDSConnection() {
 		panic(fmt.Errorf("Failed to initiate XDS connection with API Discovery Service: %v", err))
 	}
 
+	c.stream = stream
+	// Send initial request
+	dreq := DiscoveryRequestForNode(CreateNode(commonEnforcerLabel, c.cfg.InstanceIdentifier), "", "", nil, configTypedURL)
+	if err := stream.Send(dreq); err != nil {
+		cancel()
+		c.grpcConn.Close()
+		panic(fmt.Errorf("failed to send initial discovery request: %v", err))
+	}
+
 	go func() {
 		for {
 			resp, err := stream.Recv()
 			if err != nil {
 				c.log.Error(err, "Failed to receive config data")
+				c.nack(err)
 				cancel()
 				c.grpcConn.Close()
 				go c.InitiateConfigXDSConnection()
 				break
 			}
 			c.log.Info(fmt.Sprintf("Received config: %v", resp))
+			c.latestReceived = resp
+			handleRespErr := c.handleResponse(resp)
+			if handleRespErr != nil {
+				c.nack(handleRespErr)
+				continue
+			}
+			c.ack()
 		}
 	}()
+}
+
+func (c *ConfigXDSClient) ack() {
+	dreq := DiscoveryRequestForNode(CreateNode(commonEnforcerLabel, c.cfg.InstanceIdentifier), c.latestReceived.GetVersionInfo(), c.latestReceived.GetNonce(), nil, configTypedURL)
+	c.stream.Send(dreq)
+	c.latestACKed = c.latestReceived
+}
+
+func (c *ConfigXDSClient) nack(e error) {
+	errDetail := &status.Status{
+		Message: e.Error(),
+	}
+	dreq := DiscoveryRequestForNode(CreateNode(commonEnforcerLabel, c.cfg.InstanceIdentifier), c.latestACKed.GetVersionInfo(), c.latestReceived.GetNonce(), errDetail, configTypedURL)
+	c.stream.Send(dreq)
+	c.latestACKed = c.latestReceived
+}
+
+func (c *ConfigXDSClient) handleResponse(response *v3.DiscoveryResponse) error {
+
+	var configs []*config_from_adapter.Config
+	for _, res := range response.GetResources() {
+		var configResource config_from_adapter.Config
+		if err := proto.Unmarshal(res.GetValue(), &configResource); err != nil {
+			c.log.Info(fmt.Sprintf("Failed to unmarshal Config resource: %v", err))
+			return err
+		}
+		configs = append(configs, &configResource)
+	}
+	c.configDatastore.AddConfigs(configs)
+	c.log.Info(fmt.Sprintf("Number of Configs received: %d", len(configs)))
+	return nil
 }
