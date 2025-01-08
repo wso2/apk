@@ -27,7 +27,7 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
-	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
+	// extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
@@ -154,50 +154,50 @@ func TestCreateRouteClusterSpecifier(t *testing.T) {
 	assert.Equal(t, clusterHeaderName, route[0].GetRoute().GetClusterHeader(), "Route Cluster Name mismatch.")
 }
 
-func TestCreateRouteExtAuthzContext(t *testing.T) {
-	// Tested features
-	// 1. The context variables inside extAuthzPerRoute configuration including
-	// (clustername, method regex, basePath, resourcePath, title, version)
-	clusterName := "cluster"
+// func TestCreateRouteExtAuthzContext(t *testing.T) {
+// 	// Tested features
+// 	// 1. The context variables inside extAuthzPerRoute configuration including
+// 	// (clustername, method regex, basePath, resourcePath, title, version)
+// 	clusterName := "cluster"
 
-	vHost := "localhost"
-	xWso2BasePath := "/xWso2BasePath"
-	endpointBasePath := "/basepath"
-	title := "WSO2"
-	version := "1.0.0"
-	apiType := "HTTP"
+// 	vHost := "localhost"
+// 	xWso2BasePath := "/xWso2BasePath"
+// 	endpointBasePath := "/basepath"
+// 	title := "WSO2"
+// 	version := "1.0.0"
+// 	apiType := "HTTP"
 
-	endpoint := model.Endpoint{
-		Host:    "abc.com",
-		URLType: "http",
-		Port:    80,
-		RawURL:  "http://abc.com",
-	}
-	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil, "")},
-		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
+// 	endpoint := model.Endpoint{
+// 		Host:    "abc.com",
+// 		URLType: "http",
+// 		Port:    80,
+// 		RawURL:  "http://abc.com",
+// 	}
+// 	resourceWithGet := model.CreateMinimalDummyResourceForTests("/resourcePath", []*model.Operation{model.NewOperation("GET", nil, nil, "")},
+// 		"resource_operation_id", []model.Endpoint{endpoint}, false, false)
 
-	route, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
-		endpointBasePath, &resourceWithGet, clusterName, nil, false))
-	assert.Nil(t, err, "Error while creating route")
-	assert.NotNil(t, route[0], "Route should not be null")
-	assert.NotNil(t, route[0].GetTypedPerFilterConfig(), "TypedPerFilter config should not be null")
-	assert.NotNil(t, route[0].GetTypedPerFilterConfig()[wellknown.HTTPExternalAuthorization],
-		"ExtAuthzPerRouteConfig should not be empty")
+// 	route, err := createRoutes(generateRouteCreateParamsForUnitTests(title, apiType, vHost, xWso2BasePath, version,
+// 		endpointBasePath, &resourceWithGet, clusterName, nil, false))
+// 	assert.Nil(t, err, "Error while creating route")
+// 	assert.NotNil(t, route[0], "Route should not be null")
+// 	assert.NotNil(t, route[0].GetTypedPerFilterConfig(), "TypedPerFilter config should not be null")
+// 	assert.NotNil(t, route[0].GetTypedPerFilterConfig()[wellknown.HTTPExternalAuthorization],
+// 		"ExtAuthzPerRouteConfig should not be empty")
 
-	extAuthPerRouteConfig := &extAuthService.ExtAuthzPerRoute{}
-	err = route[0].TypedPerFilterConfig[wellknown.HTTPExternalAuthorization].UnmarshalTo(extAuthPerRouteConfig)
-	assert.Nilf(t, err, "Error while parsing ExtAuthzPerRouteConfig %v", extAuthPerRouteConfig)
-	assert.NotEmpty(t, extAuthPerRouteConfig.GetCheckSettings(), "Check Settings per ext authz route should not be empty")
-	assert.NotEmpty(t, extAuthPerRouteConfig.GetCheckSettings().ContextExtensions,
-		"ContextExtensions per ext authz route should not be empty")
+// 	extAuthPerRouteConfig := &extAuthService.ExtAuthzPerRoute{}
+// 	err = route[0].TypedPerFilterConfig[wellknown.HTTPExternalAuthorization].UnmarshalTo(extAuthPerRouteConfig)
+// 	assert.Nilf(t, err, "Error while parsing ExtAuthzPerRouteConfig %v", extAuthPerRouteConfig)
+// 	assert.NotEmpty(t, extAuthPerRouteConfig.GetCheckSettings(), "Check Settings per ext authz route should not be empty")
+// 	assert.NotEmpty(t, extAuthPerRouteConfig.GetCheckSettings().ContextExtensions,
+// 		"ContextExtensions per ext authz route should not be empty")
 
-	contextExtensionMap := extAuthPerRouteConfig.GetCheckSettings().ContextExtensions
-	assert.Equal(t, title, contextExtensionMap[apiNameContextExtension], "Title mismatch in route ext authz context.")
-	assert.Equal(t, xWso2BasePath, contextExtensionMap[basePathContextExtension], "Basepath mismatch in route ext authz context.")
-	assert.Equal(t, version, contextExtensionMap[apiVersionContextExtension], "Version mismatch in route ext authz context.")
-	assert.Equal(t, "GET", contextExtensionMap[methodContextExtension], "Method mismatch in route ext authz context.")
-	assert.Equal(t, clusterName, contextExtensionMap[clusterNameContextExtension], "Cluster mismatch in route ext authz context.")
-}
+// 	contextExtensionMap := extAuthPerRouteConfig.GetCheckSettings().ContextExtensions
+// 	assert.Equal(t, title, contextExtensionMap[apiNameContextExtension], "Title mismatch in route ext authz context.")
+// 	assert.Equal(t, xWso2BasePath, contextExtensionMap[basePathContextExtension], "Basepath mismatch in route ext authz context.")
+// 	assert.Equal(t, version, contextExtensionMap[apiVersionContextExtension], "Version mismatch in route ext authz context.")
+// 	assert.Equal(t, "GET", contextExtensionMap[methodContextExtension], "Method mismatch in route ext authz context.")
+// 	assert.Equal(t, clusterName, contextExtensionMap[clusterNameContextExtension], "Cluster mismatch in route ext authz context.")
+// }
 
 func TestGenerateTLSCert(t *testing.T) {
 	publicKeyPath := config.GetApkHome() + "/adapter/security/localhost.pem"

@@ -62,7 +62,10 @@ type Server struct {
 	ChoreoAnalyticsAuthURL      string `envconfig:"CHOREO_ANALYTICS_AUTH_URL" default:""`
 	MoesifToken                 string `envconfig:"MOESIF_TOKEN" default:""`
 	LogLevel                    string `envconfig:"LOG_LEVEL" default:"INFO"`
-	ExternalProcessingPort      string `envconfig:"EXTERNAL_PROCESSING_PORT" default:"8080"`
+	ExternalProcessingPort      string `envconfig:"EXTERNAL_PROCESSING_PORT" default:"8081"`
+	ExternalProcessingKeepAliveTime int `envconfig:"EXTERNAL_PROCESSING_KEEP_ALIVE_TIME" default:"600"`
+	ExternalProcessingMaxMessageSize int `envconfig:"EXTERNAL_PROCESSING_MAX_MESSAGE_SIZE" default:"1000000000"`
+	ExternalProcessingMaxHeaderLimit int `envconfig:"EXTERNAL_PROCESSING_MAX_HEADER_LIMIT" default:"8192"`
 	Logger                      logging.Logger
 }
 

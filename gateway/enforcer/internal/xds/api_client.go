@@ -93,11 +93,19 @@ func (c *APIXDSClient) InitiateAPIXDSConnection() {
 	if err != nil {
 		cancel()
 		c.grpcConn.Close()
-		panic(fmt.Errorf("failed to initiate XDS connection with API Discovery Service: %v", err))
+		c.log.Error(err, "failed to initiate XDS connection with API Discovery Service. Retrying the connection.")
+		go c.InitiateAPIXDSConnection()
 	}
 	c.stream = stream
 	// Send initial request
 	dreq := DiscoveryRequestForNode(CreateNode(c.cfg.EnforcerLabel, c.cfg.InstanceIdentifier), "", "", nil, apiTypedURL)
+	if stream == nil {
+		c.log.Error(fmt.Errorf("failed to initiate XDS connection with Config Discovery Service"), "Retrying the connection")
+		c.grpcConn.Close()
+		
+		go c.InitiateAPIXDSConnection()
+		return
+	}
 	if err := stream.Send(dreq); err != nil {
 		cancel()
 		c.grpcConn.Close()

@@ -91,11 +91,19 @@ func (c *ConfigXDSClient) InitiateConfigXDSConnection() {
 	if err != nil {
 		cancel()
 		c.grpcConn.Close()
-		panic(fmt.Errorf("Failed to initiate XDS connection with API Discovery Service: %v", err))
+		c.log.Error(err, "Failed to initiate XDS connection with Config Discovery Service. Retrying the connection.")
+		go c.InitiateConfigXDSConnection()
 	}
 
 	c.stream = stream
 	// Send initial request
+	if stream == nil {
+		c.log.Error(fmt.Errorf("failed to initiate XDS connection with Config Discovery Service"), "Retrying the connection")
+		c.grpcConn.Close()
+
+		go c.InitiateConfigXDSConnection()
+		return
+	}
 	dreq := DiscoveryRequestForNode(CreateNode(commonEnforcerLabel, c.cfg.InstanceIdentifier), "", "", nil, configTypedURL)
 	if err := stream.Send(dreq); err != nil {
 		cancel()
@@ -114,7 +122,7 @@ func (c *ConfigXDSClient) InitiateConfigXDSConnection() {
 				go c.InitiateConfigXDSConnection()
 				break
 			}
-			c.log.Info(fmt.Sprintf("Received config: %v", resp))
+			// c.log.Info(fmt.Sprintf("Received config: %v", resp))
 			c.latestReceived = resp
 			handleRespErr := c.handleResponse(resp)
 			if handleRespErr != nil {
