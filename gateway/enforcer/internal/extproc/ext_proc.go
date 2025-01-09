@@ -25,8 +25,12 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 
-  "google.golang.org/grpc/codes"
+    "google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
+	"time"
+	"net"
 )
 
 // ExternalProcessingServer represents a server for handling external processing requests.
@@ -45,11 +49,28 @@ type ExternalProcessingServer struct {
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
 func StartExternalProcessingServer(cfg *config.Server) {
-	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
+	kaParams := keepalive.ServerParameters{
+		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
+		Timeout: 20 * time.Second,
+	}
+	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath, 
+		cfg.EnforcerPrivateKeyPath, 
+		grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize), 
+		grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)), 
+		grpc.KeepaliveParams(kaParams))
 	if err != nil {
 		panic(err)
 	}
+
 	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger})
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
+	if err != nil {
+		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
+	}
+	cfg.Logger.Info("Starting to serve external processing server")
+	if err := server.Serve(listener); err != nil {
+		cfg.Logger.Error(err, "Failed to serve grpc server")
+	}
 }
 
 // Process handles the external processing server stream. It continuously receives
@@ -89,10 +110,11 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
+			s.log.Info(fmt.Sprintf("request header %+v", v.RequestHeaders))
 			if v.RequestHeaders != nil {
 				hdrs := v.RequestHeaders.Headers.GetHeaders()
 				for _, hdr := range hdrs {
-					s.log.Info(fmt.Sprintf("Header: %v\n", hdr))
+					s.log.Info(fmt.Sprintf("Header: %+v\n", hdr))
 				}
 			}
 
@@ -106,7 +128,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
-			s.log.Info(fmt.Sprintf("response header"))
+			s.log.Info(fmt.Sprintf("response header %+v", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 				},
@@ -119,7 +141,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			httpBody := req.GetResponseBody()
-			s.log.Info(fmt.Sprintf("request body %v\n", httpBody))
+			s.log.Info(fmt.Sprintf("response body %v\n", httpBody))
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 				},

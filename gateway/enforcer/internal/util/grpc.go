@@ -80,7 +80,7 @@ func CreateGRPCConnectionWithRetryAndPanic(ctx context.Context, host, port strin
 
 // CreateGRPCServer creates a new gRPC server using the provided public and private key paths to load the TLS credentials.
 // It returns the created gRPC server or an error if the credentials cannot be loaded.
-func CreateGRPCServer(publicKeyPath, privateKeyPath string) (*grpc.Server, error) {
+func CreateGRPCServer(publicKeyPath, privateKeyPath string, opts ...grpc.ServerOption) (*grpc.Server, error) {
 	// Load TLS credentials
 	cert, err := LoadCertificates(publicKeyPath, privateKeyPath)
 	if err != nil {
@@ -88,6 +88,10 @@ func CreateGRPCServer(publicKeyPath, privateKeyPath string) (*grpc.Server, error
 	}
 
 	creds := credentials.NewTLS(&tls.Config{Certificates: []tls.Certificate{cert}})
-	// Create and return a new gRPC server with the loaded credentials
-	return grpc.NewServer(grpc.Creds(creds)), nil
+
+	// Append TLS credentials to the options
+	opts = append(opts, grpc.Creds(creds))
+
+	// Create and return a new gRPC server with the provided options
+	return grpc.NewServer(opts...), nil
 }

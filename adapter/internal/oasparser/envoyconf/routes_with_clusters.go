@@ -847,22 +847,22 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	// to validate the key type component in the token.
 	contextExtensions[clusterNameContextExtension] = clusterName
 
-	extAuthPerFilterConfig := extAuthService.ExtAuthzPerRoute{
-		Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
-			CheckSettings: &extAuthService.CheckSettings{
-				ContextExtensions: contextExtensions,
-				// negation is performing to match the envoy config name (disable_request_body_buffering)
-				DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
-			},
-		},
-	}
+	// extAuthPerFilterConfig := extAuthService.ExtAuthzPerRoute{
+	// 	Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
+	// 		CheckSettings: &extAuthService.CheckSettings{
+	// 			ContextExtensions: contextExtensions,
+	// 			// negation is performing to match the envoy config name (disable_request_body_buffering)
+	// 			DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
+	// 		},
+	// 	},
+	// }
 
-	data, _ := proto.Marshal(&extAuthPerFilterConfig)
+	// data, _ := proto.Marshal(&extAuthPerFilterConfig)
 
-	extAuthzFilter := &any.Any{
-		TypeUrl: extAuthzPerRouteName,
-		Value:   data,
-	}
+	// extAuthzFilter := &any.Any{
+	// 	TypeUrl: extAuthzPerRouteName,
+	// 	Value:   data,
+	// }
 
 	var luaPerFilterConfig lua.LuaPerRoute
 	if len(requestInterceptor) < 1 && len(responseInterceptor) < 1 {
@@ -925,7 +925,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 
-	data, _ = proto.Marshal(&luaPerFilterConfig)
+	data, _ := proto.Marshal(&luaPerFilterConfig)
 
 	luaFilter := &any.Any{
 		TypeUrl: luaPerRouteName,
@@ -934,43 +934,43 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 
 	corsFilter, _ := anypb.New(corsPolicy)
 	perRouteFilterConfigs := map[string]*any.Any{
-		wellknown.HTTPExternalAuthorization: extAuthzFilter,
+		// wellknown.HTTPExternalAuthorization: extAuthzFilter,
 		LuaLocal:                            luaFilter,
 		wellknown.CORS:                      corsFilter,
 	}
-	if !params.isAiAPI {
-		perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
-			Override: &extProcessorv3.ExtProcPerRoute_Disabled{
-				Disabled: true,
-			},
-		}
-		dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
-		filterExtProc := &any.Any{
-			TypeUrl: extProcPerRouteName,
-			Value:   dataExtProc,
-		}
-		perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
-	} else {
-		if strings.ToUpper(resource.GetExtractTokenFromValue()) == "HEADER" {
-			perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
-				Override: &extProcessorv3.ExtProcPerRoute_Overrides{
-					Overrides: &extProcessorv3.ExtProcOverrides{
-						ProcessingMode: &extProcessorv3.ProcessingMode{
-							RequestHeaderMode:  extProcessorv3.ProcessingMode_SKIP,
-							ResponseHeaderMode: extProcessorv3.ProcessingMode_SEND,
-							ResponseBodyMode:   extProcessorv3.ProcessingMode_NONE,
-						},
-					},
-				},
-			}
-			dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
-			filterExtProc := &any.Any{
-				TypeUrl: extProcPerRouteName,
-				Value:   dataExtProc,
-			}
-			perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
-		}
-	}
+	// if !params.isAiAPI {
+	// 	perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+	// 		Override: &extProcessorv3.ExtProcPerRoute_Disabled{
+	// 			Disabled: true,
+	// 		},
+	// 	}
+	// 	dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+	// 	filterExtProc := &any.Any{
+	// 		TypeUrl: extProcPerRouteName,
+	// 		Value:   dataExtProc,
+	// 	}
+	// 	perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
+	// } else {
+	// 	if strings.ToUpper(resource.GetExtractTokenFromValue()) == "HEADER" {
+	// 		perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+	// 			Override: &extProcessorv3.ExtProcPerRoute_Overrides{
+	// 				Overrides: &extProcessorv3.ExtProcOverrides{
+	// 					ProcessingMode: &extProcessorv3.ProcessingMode{
+	// 						RequestHeaderMode:  extProcessorv3.ProcessingMode_SKIP,
+	// 						ResponseHeaderMode: extProcessorv3.ProcessingMode_SEND,
+	// 						ResponseBodyMode:   extProcessorv3.ProcessingMode_NONE,
+	// 					},
+	// 				},
+	// 			},
+	// 		}
+	// 		dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+	// 		filterExtProc := &any.Any{
+	// 			TypeUrl: extProcPerRouteName,
+	// 			Value:   dataExtProc,
+	// 		}
+	// 		perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
+	// 	}
+	// }
 	perFilterConfigRL := ratelimitv3.RateLimitPerRoute{
 		VhRateLimits: ratelimitv3.RateLimitPerRoute_INCLUDE,
 	}

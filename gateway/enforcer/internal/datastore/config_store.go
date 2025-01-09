@@ -44,7 +44,7 @@ func (s *ConfigStore) AddConfigs(apis []*config_from_adapter.Config) {
 }
 
 // GetConfigs retrieves the list of Config from the store.
-// This method is thread-safe.
+// This method is thread-safe. 
 func (s *ConfigStore) GetConfigs() []*config_from_adapter.Config {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

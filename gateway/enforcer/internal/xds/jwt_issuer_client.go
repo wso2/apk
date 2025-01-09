@@ -91,12 +91,20 @@ func (c *JWTIssuerXDSClient) InitiateSubscriptionXDSConnection() {
 	if err != nil {
 		cancel()
 		c.grpcConn.Close()
-		panic(fmt.Errorf("Failed to initiate XDS connection with API Discovery Service: %v", err))
+		c.log.Error(err, "Failed to initiate XDS connection with JWT Issuer Discovery Service. Retrying the connection.")
+		go c.InitiateSubscriptionXDSConnection()
 	}
 
 	c.stream = stream
 	// Send initial request
 	dreq := DiscoveryRequestForNode(CreateNode(commonEnforcerLabel, c.cfg.InstanceIdentifier), "", "", nil, jwtIssuerTypedURL)
+	if stream == nil {
+		c.log.Error(fmt.Errorf("failed to initiate XDS connection with Config Discovery Service"), "Retrying the connection")
+		c.grpcConn.Close()
+		
+		go c.InitiateSubscriptionXDSConnection()
+		return
+	}
 	if err := stream.Send(dreq); err != nil {
 		cancel()
 		c.grpcConn.Close()
@@ -114,7 +122,7 @@ func (c *JWTIssuerXDSClient) InitiateSubscriptionXDSConnection() {
 				go c.InitiateSubscriptionXDSConnection()
 				break
 			}
-			c.log.Info(fmt.Sprintf("Received jwtossier resp: %v", resp))
+			// c.log.Info(fmt.Sprintf("Received jwtossier resp: %v", resp))
 			c.latestReceived = resp
 			handleRespErr := c.handleResponse(resp)
 			if handleRespErr != nil {

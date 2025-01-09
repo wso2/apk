@@ -7,6 +7,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/grpc"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"github.com/wso2/apk/gateway/enforcer/internal/xds"
+	"github.com/wso2/apk/gateway/enforcer/internal/extproc"
 )
 
 func main() {
@@ -30,8 +31,11 @@ func main() {
 	// Start the connection
 	client.InitiateEventingGRPCConnection()
 
+	// Create the XDS clients
 	xds.CreateXDSClients(cfg)
-	// Create the gRPC client
+	
+	// Start the external processing server
+	go extproc.StartExternalProcessingServer(cfg)
 
 	// Wait forever
 	select {}

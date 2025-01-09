@@ -31,7 +31,7 @@ import (
 	"strings"
 
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
-	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
+	// extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -110,33 +110,33 @@ func enableFilterOnRoute(filterType, filterName string, route *routev3.Route) er
 			filterType, route)
 	}
 
-	routeCfgAny, err := anypb.New(&routev3.FilterConfig{
-		Config: &anypb.Any{},
-	})
+	// routeCfgAny, err := anypb.New(&routev3.FilterConfig{
+	// 	Config: &anypb.Any{},
+	// })
 
 	if filterType == extAuthFilter {
 		contextExtensions := make(map[string]string)
 		contextExtensions["route-name"] = route.Name
-		extAuthPerFilterConfig := &extAuthService.ExtAuthzPerRoute{
-			Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
-				CheckSettings: &extAuthService.CheckSettings{
-					ContextExtensions: contextExtensions,
-					// negation is performing to match the envoy config name (disable_request_body_buffering)
-					// DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
-				},
-			},
-		}
+		// extAuthPerFilterConfig := &extAuthService.ExtAuthzPerRoute{
+		// 	Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
+		// 		CheckSettings: &extAuthService.CheckSettings{
+		// 			ContextExtensions: contextExtensions,
+		// 			// negation is performing to match the envoy config name (disable_request_body_buffering)
+		// 			// DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
+		// 		},
+		// 	},
+		// }
 		// Enable the corresponding filter for this route.
-		routeCfgAny, err = anypb.New(extAuthPerFilterConfig)
-		if err != nil {
-			return err
-		}
+		// routeCfgAny, err = anypb.New(extAuthPerFilterConfig)
+		// if err != nil {
+		// 	return err
+		// }
 	}
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	route.TypedPerFilterConfig[filterName] = routeCfgAny
+	// route.TypedPerFilterConfig[filterName] = routeCfgAny
 	return nil
 }
 
