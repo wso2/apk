@@ -14,8 +14,8 @@
  *  limitations under the License.
  *
  */
- 
- package xds
+
+package xds
 
 import (
 	"context"
@@ -42,21 +42,21 @@ const (
 // APIXDSClient manages the connection to the API Discovery Service via gRPC.
 // It supports connection retries, TLS configuration, and handling of API stream data.
 type APIXDSClient struct {
-	Host          string
-	Port          string
-	maxRetries    int
-	retryInterval time.Duration
-	tlsConfig     *tls.Config
-	grpcConn      *grpc.ClientConn
-	ctx           context.Context
-	cancel        context.CancelFunc
-	client        api_ads.ApiDiscoveryServiceClient
-	log           logging.Logger
-	cfg           *config.Server
+	Host           string
+	Port           string
+	maxRetries     int
+	retryInterval  time.Duration
+	tlsConfig      *tls.Config
+	grpcConn       *grpc.ClientConn
+	ctx            context.Context
+	cancel         context.CancelFunc
+	client         api_ads.ApiDiscoveryServiceClient
+	log            logging.Logger
+	cfg            *config.Server
 	latestReceived *v3.DiscoveryResponse
 	latestACKed    *v3.DiscoveryResponse
 	stream         api_ads.ApiDiscoveryService_StreamApisClient
-	apiDatastore  *datastore.APIStore
+	apiDatastore   *datastore.APIStore
 }
 
 // NewAPIXDSClient initializes a new instance of APIXDSClient with the given parameters.
@@ -94,16 +94,16 @@ func (c *APIXDSClient) InitiateAPIXDSConnection() {
 		cancel()
 		c.grpcConn.Close()
 		c.log.Error(err, "failed to initiate XDS connection with API Discovery Service. Retrying the connection.")
-		go c.InitiateAPIXDSConnection()
+		c.waitAndRetry()
+		return
 	}
 	c.stream = stream
 	// Send initial request
 	dreq := DiscoveryRequestForNode(CreateNode(c.cfg.EnforcerLabel, c.cfg.InstanceIdentifier), "", "", nil, apiTypedURL)
 	if stream == nil {
-		c.log.Error(fmt.Errorf("failed to initiate XDS connection with Config Discovery Service"), "Retrying the connection")
+		c.log.Error(fmt.Errorf("failed to initiate XDS connection with API Discovery Service"), "Retrying the connection")
 		c.grpcConn.Close()
-		
-		go c.InitiateAPIXDSConnection()
+		c.waitAndRetry()
 		return
 	}
 	if err := stream.Send(dreq); err != nil {
@@ -119,8 +119,8 @@ func (c *APIXDSClient) InitiateAPIXDSConnection() {
 				c.nack(err)
 				cancel()
 				c.grpcConn.Close()
-				go c.InitiateAPIXDSConnection()
-				break
+				c.waitAndRetry()
+				return
 			}
 			c.latestReceived = resp
 			handleResponseErr := c.handleResponse(resp)
@@ -131,6 +131,13 @@ func (c *APIXDSClient) InitiateAPIXDSConnection() {
 			c.ack()
 		}
 	}()
+}
+
+func (c *APIXDSClient) waitAndRetry() {
+	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Microseconds()))
+	// Wait for a while before retrying the connection
+	time.Sleep(c.retryInterval)
+	go c.InitiateAPIXDSConnection()
 }
 
 func (c *APIXDSClient) ack() {
@@ -163,6 +170,3 @@ func (c *APIXDSClient) handleResponse(response *v3.DiscoveryResponse) error {
 	c.log.Info(fmt.Sprintf("Number of APIs received: %d", len(apis)))
 	return nil
 }
-
-
-

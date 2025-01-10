@@ -14,8 +14,8 @@
  *  limitations under the License.
  *
  */
- 
- package util
+
+package util
 
 import (
 	"context"
@@ -33,10 +33,10 @@ import (
 // It returns a gRPC connection object and an error if the connection fails.
 func CreateGRPCConnection(ctx context.Context, host, port string, tlsConfig *tls.Config) (*grpc.ClientConn, error) {
 	address := fmt.Sprintf("%s:%s", host, port)
-	
+
 	kacp := keepalive.ClientParameters{
 		Time:                300 * time.Second,
-		PermitWithoutStream: true,             
+		PermitWithoutStream: true,
 	}
 
 	dialOptions := []grpc.DialOption{
@@ -68,7 +68,7 @@ func CreateGRPCConnectionWithRetry(ctx context.Context, host, port string, tlsCo
 	return nil, fmt.Errorf("failed to create gRPC connection after %d retries", maxRetries)
 }
 
-// CreateGRPCConnectionWithRetryAndPanic is similar to CreateGRPCConnectionWithRetry, but it panics if the connection cannot be established 
+// CreateGRPCConnectionWithRetryAndPanic is similar to CreateGRPCConnectionWithRetry, but it panics if the connection cannot be established
 // after the specified number of retries. It is typically used when the application cannot proceed without the connection.
 func CreateGRPCConnectionWithRetryAndPanic(ctx context.Context, host, port string, tlsConfig *tls.Config, maxRetries int, retryInterval time.Duration) *grpc.ClientConn {
 	conn, err := CreateGRPCConnectionWithRetry(ctx, host, port, tlsConfig, maxRetries, retryInterval)

@@ -14,8 +14,8 @@
  *  limitations under the License.
  *
  */
- 
- package xds
+
+package xds
 
 import (
 	"context"
@@ -23,39 +23,39 @@ import (
 	"fmt"
 	"time"
 
+	v3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	jwt_issuer_ads "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/subscription"
+	subscription "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
-	"google.golang.org/grpc"
-	v3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	status "google.golang.org/genproto/googleapis/rpc/status"
-	subscription "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
-	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 )
 
 const (
 	jwtIssuerTypedURL = "type.googleapis.com/wso2.discovery.subscription.JWTIssuerList"
 )
 
-// JWTIssuerXDSClient is a client for managing gRPC connections to the API Discovery Service (XDS) 
+// JWTIssuerXDSClient is a client for managing gRPC connections to the API Discovery Service (XDS)
 // for JWT issuer-related configurations. It includes retry logic, TLS configuration, and logging.
 type JWTIssuerXDSClient struct {
-	Host          string
-	Port          string
-	maxRetries    int
-	retryInterval time.Duration
-	tlsConfig     *tls.Config
-	grpcConn      *grpc.ClientConn
-	ctx           context.Context
-	cancel        context.CancelFunc
-	client        jwt_issuer_ads.JWTIssuerDiscoveryServiceClient
-	log           logging.Logger
-	cfg 		   *config.Server
-	latestReceived *v3.DiscoveryResponse
-	latestACKed    *v3.DiscoveryResponse
-	stream 	     jwt_issuer_ads.JWTIssuerDiscoveryService_StreamJWTIssuersClient 
+	Host                string
+	Port                string
+	maxRetries          int
+	retryInterval       time.Duration
+	tlsConfig           *tls.Config
+	grpcConn            *grpc.ClientConn
+	ctx                 context.Context
+	cancel              context.CancelFunc
+	client              jwt_issuer_ads.JWTIssuerDiscoveryServiceClient
+	log                 logging.Logger
+	cfg                 *config.Server
+	latestReceived      *v3.DiscoveryResponse
+	latestACKed         *v3.DiscoveryResponse
+	stream              jwt_issuer_ads.JWTIssuerDiscoveryService_StreamJWTIssuersClient
 	jwtIssuersDatastore *datastore.JWTIssuerStore
 }
 
@@ -64,14 +64,14 @@ type JWTIssuerXDSClient struct {
 func NewJWTIssuerXDSClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, jwtIssuersDatastore *datastore.JWTIssuerStore) *JWTIssuerXDSClient {
 	// Create a new APIClient object
 	return &JWTIssuerXDSClient{
-		Host:          host,
-		Port:          port,
-		maxRetries:    maxRetries,
-		retryInterval: retryInterval,
-		tlsConfig:     tlsConfig,
-		grpcConn:      nil,
-		log:           cfg.Logger,
-		cfg:		   cfg,
+		Host:                host,
+		Port:                port,
+		maxRetries:          maxRetries,
+		retryInterval:       retryInterval,
+		tlsConfig:           tlsConfig,
+		grpcConn:            nil,
+		log:                 cfg.Logger,
+		cfg:                 cfg,
 		jwtIssuersDatastore: jwtIssuersDatastore,
 	}
 }
@@ -92,17 +92,17 @@ func (c *JWTIssuerXDSClient) InitiateSubscriptionXDSConnection() {
 		cancel()
 		c.grpcConn.Close()
 		c.log.Error(err, "Failed to initiate XDS connection with JWT Issuer Discovery Service. Retrying the connection.")
-		go c.InitiateSubscriptionXDSConnection()
+		c.waitAndRetry()
+		return
 	}
 
 	c.stream = stream
 	// Send initial request
 	dreq := DiscoveryRequestForNode(CreateNode(commonEnforcerLabel, c.cfg.InstanceIdentifier), "", "", nil, jwtIssuerTypedURL)
 	if stream == nil {
-		c.log.Error(fmt.Errorf("failed to initiate XDS connection with Config Discovery Service"), "Retrying the connection")
+		c.log.Error(fmt.Errorf("failed to initiate XDS connection with JWTIssuer Discovery Service"), "Retrying the connection")
 		c.grpcConn.Close()
-		
-		go c.InitiateSubscriptionXDSConnection()
+		c.waitAndRetry()
 		return
 	}
 	if err := stream.Send(dreq); err != nil {
@@ -119,8 +119,8 @@ func (c *JWTIssuerXDSClient) InitiateSubscriptionXDSConnection() {
 				c.nack(err)
 				cancel()
 				c.grpcConn.Close()
-				go c.InitiateSubscriptionXDSConnection()
-				break
+				c.waitAndRetry()
+				return
 			}
 			// c.log.Info(fmt.Sprintf("Received jwtossier resp: %v", resp))
 			c.latestReceived = resp
@@ -133,8 +133,6 @@ func (c *JWTIssuerXDSClient) InitiateSubscriptionXDSConnection() {
 		}
 	}()
 }
-
-
 
 func (c *JWTIssuerXDSClient) ack() {
 	dreq := DiscoveryRequestForNode(CreateNode(commonEnforcerLabel, c.cfg.InstanceIdentifier), c.latestReceived.GetVersionInfo(), c.latestReceived.GetNonce(), nil, jwtIssuerTypedURL)
@@ -150,7 +148,6 @@ func (c *JWTIssuerXDSClient) nack(e error) {
 	c.stream.Send(dreq)
 	c.latestACKed = c.latestReceived
 }
-
 
 func (c *JWTIssuerXDSClient) handleResponse(response *v3.DiscoveryResponse) error {
 
@@ -170,4 +167,11 @@ func (c *JWTIssuerXDSClient) handleResponse(response *v3.DiscoveryResponse) erro
 	c.jwtIssuersDatastore.AddJWTIssuers(jwtIssuers)
 	c.log.Info(fmt.Sprintf("Number of jwt issuers received: %d", len(jwtIssuerLists)))
 	return nil
+}
+
+func (c *JWTIssuerXDSClient) waitAndRetry() {
+	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
+	// Wait for a while before retrying the connection
+	time.Sleep(c.retryInterval)
+	go c.InitiateSubscriptionXDSConnection()
 }

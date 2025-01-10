@@ -14,8 +14,8 @@
  *  limitations under the License.
  *
  */
- 
- package xds
+
+package xds
 
 import (
 	"context"
@@ -24,38 +24,39 @@ import (
 	"time"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
+	config_from_adapter "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
 	config_ads "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
-	"google.golang.org/grpc"
 	status "google.golang.org/genproto/googleapis/rpc/status"
-	config_from_adapter "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
-	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 )
 
 const (
-	configTypedURL = "type.googleapis.com/wso2.discovery.config.enforcer.Config"
+	configTypedURL      = "type.googleapis.com/wso2.discovery.config.enforcer.Config"
 	commonEnforcerLabel = "commonEnforcerLabel"
 )
+
 // ConfigXDSClient is a client for managing gRPC connections to the Config Discovery Service (XDS).
 // It handles retry logic, TLS configuration, and logging for configuration data streams.
 type ConfigXDSClient struct {
-	Host          string
-	Port          string
-	maxRetries    int
-	retryInterval time.Duration
-	tlsConfig     *tls.Config
-	grpcConn      *grpc.ClientConn
-	ctx           context.Context
-	cancel        context.CancelFunc
-	client        config_ads.ConfigDiscoveryServiceClient
-	log           logging.Logger
-	cfg 		 *config.Server
-	latestReceived *v3.DiscoveryResponse
-	latestACKed    *v3.DiscoveryResponse
-	stream 	   config_ads.ConfigDiscoveryService_StreamConfigsClient
+	Host            string
+	Port            string
+	maxRetries      int
+	retryInterval   time.Duration
+	tlsConfig       *tls.Config
+	grpcConn        *grpc.ClientConn
+	ctx             context.Context
+	cancel          context.CancelFunc
+	client          config_ads.ConfigDiscoveryServiceClient
+	log             logging.Logger
+	cfg             *config.Server
+	latestReceived  *v3.DiscoveryResponse
+	latestACKed     *v3.DiscoveryResponse
+	stream          config_ads.ConfigDiscoveryService_StreamConfigsClient
 	configDatastore *datastore.ConfigStore
 }
 
@@ -64,14 +65,14 @@ type ConfigXDSClient struct {
 func NewXDSConfigClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, configDatastore *datastore.ConfigStore) *ConfigXDSClient {
 	// Create a new APIClient object
 	return &ConfigXDSClient{
-		Host:          host,
-		Port:          port,
-		maxRetries:    maxRetries,
-		retryInterval: retryInterval,
-		tlsConfig:     tlsConfig,
-		grpcConn:      nil,
-		log:           cfg.Logger,
-		cfg: 		 cfg,
+		Host:            host,
+		Port:            port,
+		maxRetries:      maxRetries,
+		retryInterval:   retryInterval,
+		tlsConfig:       tlsConfig,
+		grpcConn:        nil,
+		log:             cfg.Logger,
+		cfg:             cfg,
 		configDatastore: configDatastore,
 	}
 }
@@ -92,7 +93,8 @@ func (c *ConfigXDSClient) InitiateConfigXDSConnection() {
 		cancel()
 		c.grpcConn.Close()
 		c.log.Error(err, "Failed to initiate XDS connection with Config Discovery Service. Retrying the connection.")
-		go c.InitiateConfigXDSConnection()
+		c.waitAndRetry()
+		return
 	}
 
 	c.stream = stream
@@ -100,8 +102,7 @@ func (c *ConfigXDSClient) InitiateConfigXDSConnection() {
 	if stream == nil {
 		c.log.Error(fmt.Errorf("failed to initiate XDS connection with Config Discovery Service"), "Retrying the connection")
 		c.grpcConn.Close()
-
-		go c.InitiateConfigXDSConnection()
+		c.waitAndRetry()
 		return
 	}
 	dreq := DiscoveryRequestForNode(CreateNode(commonEnforcerLabel, c.cfg.InstanceIdentifier), "", "", nil, configTypedURL)
@@ -119,8 +120,8 @@ func (c *ConfigXDSClient) InitiateConfigXDSConnection() {
 				c.nack(err)
 				cancel()
 				c.grpcConn.Close()
-				go c.InitiateConfigXDSConnection()
-				break
+				c.waitAndRetry()
+				return
 			}
 			// c.log.Info(fmt.Sprintf("Received config: %v", resp))
 			c.latestReceived = resp
@@ -163,4 +164,11 @@ func (c *ConfigXDSClient) handleResponse(response *v3.DiscoveryResponse) error {
 	c.configDatastore.AddConfigs(configs)
 	c.log.Info(fmt.Sprintf("Number of Configs received: %d", len(configs)))
 	return nil
+}
+
+func (c *ConfigXDSClient) waitAndRetry() {
+	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
+	// Wait for a while before retrying the connection
+	time.Sleep(c.retryInterval)
+	go c.InitiateConfigXDSConnection()
 }

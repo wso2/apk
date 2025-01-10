@@ -831,21 +831,21 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	pathMatchType := resource.GetPathMatchType()
 
 	contextExtensions := make(map[string]string)
-	contextExtensions[pathContextExtension] = resourcePath
-	contextExtensions[vHostContextExtension] = vHost
+	contextExtensions[pathAttribute] = resourcePath
+	contextExtensions[vHostAttribute] = vHost
 	if xWso2Basepath != "" {
-		contextExtensions[basePathContextExtension] = xWso2Basepath
+		contextExtensions[basePathAttribute] = xWso2Basepath
 	} else {
-		contextExtensions[basePathContextExtension] = endpointBasepath
+		contextExtensions[basePathAttribute] = endpointBasepath
 	}
-	contextExtensions[methodContextExtension] = strings.Join(resourceMethods, " ")
-	contextExtensions[apiVersionContextExtension] = version
-	contextExtensions[apiNameContextExtension] = title
+	contextExtensions[methodAttribute] = strings.Join(resourceMethods, " ")
+	contextExtensions[apiVersionAttribute] = version
+	contextExtensions[apiNameAttribute] = title
 	// One of these values will be selected and added as the cluster-header http header
 	// from enhancer
 	// Even if the routing is based on direct cluster, these properties needs to be populated
 	// to validate the key type component in the token.
-	contextExtensions[clusterNameContextExtension] = clusterName
+	contextExtensions[clusterNameAttribute] = clusterName
 
 	// extAuthPerFilterConfig := extAuthService.ExtAuthzPerRoute{
 	// 	Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
@@ -904,13 +904,13 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		// so, no need to change two places
 		iInvCtx := &interceptor.InvocationContext{
 			OrganizationID:   params.organizationID,
-			BasePath:         contextExtensions[basePathContextExtension],
-			SupportedMethods: contextExtensions[methodContextExtension],
-			APIName:          contextExtensions[apiNameContextExtension],
-			APIVersion:       contextExtensions[apiVersionContextExtension],
-			PathTemplate:     contextExtensions[pathContextExtension],
-			Vhost:            contextExtensions[vHostContextExtension],
-			ClusterName:      contextExtensions[clusterNameContextExtension],
+			BasePath:         contextExtensions[basePathAttribute],
+			SupportedMethods: contextExtensions[methodAttribute],
+			APIName:          contextExtensions[apiNameAttribute],
+			APIVersion:       contextExtensions[apiVersionAttribute],
+			PathTemplate:     contextExtensions[pathAttribute],
+			Vhost:            contextExtensions[vHostAttribute],
+			ClusterName:      contextExtensions[clusterNameAttribute],
 			APIProperties:    getAPIProperties(params.apiProperties),
 			Environment:      params.environment,
 		}
@@ -935,8 +935,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	corsFilter, _ := anypb.New(corsPolicy)
 	perRouteFilterConfigs := map[string]*any.Any{
 		// wellknown.HTTPExternalAuthorization: extAuthzFilter,
-		LuaLocal:                            luaFilter,
-		wellknown.CORS:                      corsFilter,
+		LuaLocal:       luaFilter,
+		wellknown.CORS: corsFilter,
 	}
 	// if !params.isAiAPI {
 	// 	perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
@@ -1038,28 +1038,68 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	}
 	routeConfig := resource.GetEndpoints().Config
 	metaData := &corev3.Metadata{}
-	if params.isAiAPI {
-		metaData = &corev3.Metadata{
-			FilterMetadata: map[string]*structpb.Struct{
-				"envoy.filters.http.ext_proc": &structpb.Struct{
-					Fields: map[string]*structpb.Value{
-						"EnableBackendBasedAIRatelimit": &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: fmt.Sprintf("%t", resource.GetEnableBackendBasedAIRatelimit()),
-							},
+	// if params.isAiAPI {
+	metaData = &corev3.Metadata{
+		FilterMetadata: map[string]*structpb.Struct{
+			"envoy.filters.http.ext_proc": &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					enableBackendBasedAIRatelimitAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: fmt.Sprintf("%t", resource.GetEnableBackendBasedAIRatelimit()),
 						},
-						"BackendBasedAIRatelimitDescriptorValue": &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: resource.GetBackendBasedAIRatelimitDescriptorValue(),
-							},
+					},
+					backendBasedAIRatelimitDescriptorValueAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: resource.GetBackendBasedAIRatelimitDescriptorValue(),
+						},
+					},
+					pathAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: resourcePath,
+						},
+					},
+					vHostAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: vHost,
+						},
+					},
+					basePathAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: func() string {
+								if xWso2Basepath != "" {
+									return xWso2Basepath
+								}
+								return endpointBasepath
+							}(),
+						},
+					},
+					methodAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: strings.Join(resourceMethods, " "),
+						},
+					},
+					apiVersionAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: version,
+						},
+					},
+					apiNameAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: title,
+						},
+					},
+					clusterNameAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: clusterName,
 						},
 					},
 				},
 			},
-		}
-	} else {
-		metaData = nil
+		},
 	}
+	// } else {
+	// 	metaData = nil
+	// }
 	if resource.HasPolicies() {
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
 		operations := resource.GetOperations()
