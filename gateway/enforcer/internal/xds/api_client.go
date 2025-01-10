@@ -134,7 +134,7 @@ func (c *APIXDSClient) InitiateAPIXDSConnection() {
 }
 
 func (c *APIXDSClient) waitAndRetry() {
-	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Microseconds()))
+	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
 	// Wait for a while before retrying the connection
 	time.Sleep(c.retryInterval)
 	go c.InitiateAPIXDSConnection()
