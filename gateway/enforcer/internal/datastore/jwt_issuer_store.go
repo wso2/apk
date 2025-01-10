@@ -14,18 +14,19 @@
  *  limitations under the License.
  *
  */
- 
- package datastore
+
+package datastore
 
 import (
-	subscription "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 	"sync"
+
+	subscription "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
 )
 
 // JWTIssuerStore is a thread-safe store for APIs.
 type JWTIssuerStore struct {
 	jwtIssuers []*subscription.JWTIssuer
-	mu   sync.RWMutex
+	mu         sync.RWMutex
 }
 
 // NewJWTIssuerStore creates a new instance of JWTIssuerStore.

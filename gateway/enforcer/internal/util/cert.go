@@ -14,15 +14,15 @@
  *  limitations under the License.
  *
  */
- 
- package util
+
+package util
 
 import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"io/fs"
+	"io/ioutil"
 	"path/filepath"
 )
 
@@ -37,7 +37,7 @@ func LoadCertificates(publicKeyPath, privateKeyPath string) (tls.Certificate, er
 }
 
 // // LoadCACertificates loads the CA certificates from the provided file path.
-// // It reads the certificate file and appends it to a new CertPool. 
+// // It reads the certificate file and appends it to a new CertPool.
 // // If any error occurs during reading or appending, it returns an error.
 // func LoadCACertificates(trustedCertsPath string) (*x509.CertPool, error) {
 // 	caCert, err := ioutil.ReadFile(trustedCertsPath)

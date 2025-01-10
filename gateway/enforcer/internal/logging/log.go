@@ -15,7 +15,6 @@
  *
  */
 
- 
 package logging
 
 import (
@@ -157,13 +156,13 @@ func initZapLogger(w io.Writer, logging *egv1a1.EnvoyGatewayLogging, level egv1a
 	return zap.New(core, zap.AddCaller())
 }
 
-
 // Debug logs a debug level message using the provided logger.
 // The log level is set to DebugLevel and the message is logged with Info method.
 //
 // Parameters:
-//   log (logr.Logger): The logger instance to use for logging.
-//   msg (string): The debug message to log.
+//
+//	log (logr.Logger): The logger instance to use for logging.
+//	msg (string): The debug message to log.
 func Debug(log logr.Logger, msg string) {
 	log.V(DebugLevel).Info(msg)
 }
@@ -172,8 +171,9 @@ func Debug(log logr.Logger, msg string) {
 // The log level is set to InfoLevel and the message is logged with the Info method.
 //
 // Parameters:
-//   log (logr.Logger): The logger instance to use for logging.
-//   msg (string): The informational message to log.
+//
+//	log (logr.Logger): The logger instance to use for logging.
+//	msg (string): The informational message to log.
 func Info(log logr.Logger, msg string) {
 	log.V(InfoLevel).Info(msg)
 }

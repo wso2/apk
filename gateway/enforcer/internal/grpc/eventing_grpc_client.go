@@ -14,8 +14,8 @@
  *  limitations under the License.
  *
  */
- 
- package grpc
+
+package grpc
 
 import (
 	"context"
@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	api_ads "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/service/api"
 	subscription_service "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	subscription_proto_model "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/subscription"
 	rest_server_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
@@ -46,9 +45,6 @@ type EventingGRPCClient struct {
 	retryInterval   time.Duration
 	tlsConfig       *tls.Config
 	grpcConn        *grpc.ClientConn
-	ctx             context.Context
-	cancel          context.CancelFunc
-	client          api_ads.ApiDiscoveryServiceClient
 	log             logging.Logger
 	subAppDataStore *data_store.SubscriptionApplicationDataStore
 }
@@ -89,9 +85,10 @@ func (c *EventingGRPCClient) InitiateEventingGRPCConnection() {
 
 	stream, err := client.StreamEvents(ctx, &subscription_service.Request{Event: "ALL_EVENTS"})
 	if err != nil {
-		c.cancel()
 		c.grpcConn.Close()
-		panic(fmt.Errorf("Failed to initiate GRPC connection with CommonController subscription grpc server: %v", err))
+		c.log.Error(err, "Failed to initiate GRPC connection with CommonController subscription grpc server")
+		c.waitAndRetry()
+		return
 	}
 
 	// Handle incoming messages in a separate goroutine
@@ -101,10 +98,10 @@ func (c *EventingGRPCClient) InitiateEventingGRPCConnection() {
 			resp, err := stream.Recv()
 			if err != nil {
 				c.log.Error(err, "Failed to receive API stream data")
-				c.cancel()
+				// c.cancel()
 				c.grpcConn.Close()
-				go c.InitiateEventingGRPCConnection()
-				break
+				c.waitAndRetry()
+				return
 			}
 			c.log.Info(fmt.Sprintf("Received config: %v", resp))
 		}
@@ -137,6 +134,13 @@ func (c *EventingGRPCClient) handleNotificationEvent(event *subscription_proto_m
 	default:
 		log.Println("Unknown event type received from the server")
 	}
+}
+
+func (c *EventingGRPCClient) waitAndRetry() {
+	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
+	// Wait for a while before retrying the connection
+	time.Sleep(c.retryInterval)
+	go c.InitiateEventingGRPCConnection()
 }
 
 func convertProtoApplicationToRestApplication(appSource *subscription_proto_model.Application) *rest_server_model.Application {

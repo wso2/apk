@@ -14,8 +14,8 @@
  *  limitations under the License.
  *
  */
- 
- package datastore
+
+package datastore
 
 import (
 	"encoding/json"
@@ -60,7 +60,7 @@ func NewDataStore(cfg *config.Server) *SubscriptionApplicationDataStore {
 	}
 }
 
-//  AddApplication adds a new Application
+// AddApplication adds a new Application
 func (ds *SubscriptionApplicationDataStore) AddApplication(app *subscription_model.Application) {
 	ds.mu.Lock()
 	defer ds.mu.Unlock()

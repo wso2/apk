@@ -18,8 +18,9 @@
 package datastore
 
 import (
-	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"sync"
+
+	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 )
 
 // APIStore is a thread-safe store for APIs.

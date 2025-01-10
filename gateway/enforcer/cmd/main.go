@@ -27,7 +27,7 @@ func main() {
 
 	//Create the TLS configuration
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
-	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Second, tlsConfig, cfg, nil)
+	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, nil)
 	// Start the connection
 	client.InitiateEventingGRPCConnection()
 

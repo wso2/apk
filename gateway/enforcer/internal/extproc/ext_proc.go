@@ -14,30 +14,67 @@
  *  limitations under the License.
  *
  */
- 
- package extproc
+
+package extproc
 
 import (
-	"io"
 	"fmt"
-	"github.com/wso2/apk/gateway/enforcer/internal/config"
-	"github.com/wso2/apk/gateway/enforcer/internal/util"
-	"github.com/wso2/apk/gateway/enforcer/internal/logging"
-	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
+	"io"
 
-    "google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
-	"time"
+	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
+	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	"github.com/wso2/apk/gateway/enforcer/internal/logging"
+	"github.com/wso2/apk/gateway/enforcer/internal/util"
+
 	"net"
+	"regexp"
+	"time"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/keepalive"
+	"google.golang.org/grpc/status"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 // ExternalProcessingServer represents a server for handling external processing requests.
 // It contains a logger for logging purposes.
 type ExternalProcessingServer struct {
-	log logging.Logger
+	log                               logging.Logger
+	externalProcessingEnvoyAttributes *ExternalProcessingEnvoyAttributes
 }
+
+// ExternalProcessingEnvoyAttributes represents the attributes extracted from the external processing request.
+type ExternalProcessingEnvoyAttributes struct {
+	EnableBackendBasedAIRatelimit          string `json:"enableBackendBasedAIRatelimitAttribute"`
+	BackendBasedAIRatelimitDescriptorValue string `json:"backendBasedAIRatelimitDescriptorValueAttribute"`
+	Path                                   string `json:"pathAttribute"`
+	VHost                                  string `json:"vHostAttribute"`
+	BasePath                               string `json:"basePathAttribute"`
+	Method                                 string `json:"methodAttribute"`
+	APIVersion                             string `json:"apiVersionAttribute"`
+	APIName                                string `json:"apiNameAttribute"`
+	ClusterName                            string `json:"clusterNameAttribute"`
+}
+
+const (
+	pathAttribute                                   string = "path"
+	vHostAttribute                                  string = "vHost"
+	basePathAttribute                               string = "basePath"
+	methodAttribute                                 string = "method"
+	apiVersionAttribute                             string = "version"
+	apiNameAttribute                                string = "name"
+	clusterNameAttribute                            string = "clusterName"
+	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
+	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
+)
+
+// Define the regular expression as a constant
+const keyValuePattern = `key: "(.*?)" value { string_value: "(.*?)" }`
+
+// Pre-compile the regular expression
+var re = regexp.MustCompile(keyValuePattern)
 
 // StartExternalProcessingServer initializes and starts the external processing server.
 // It creates a gRPC server using the provided configuration and registers the external
@@ -45,7 +82,7 @@ type ExternalProcessingServer struct {
 //
 // Parameters:
 //   - cfg: A pointer to the Server configuration which includes paths to the enforcer's
-//          public and private keys, and a logger instance.
+//     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
 func StartExternalProcessingServer(cfg *config.Server) {
@@ -53,16 +90,16 @@ func StartExternalProcessingServer(cfg *config.Server) {
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
 	}
-	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath, 
-		cfg.EnforcerPrivateKeyPath, 
-		grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize), 
-		grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)), 
+	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath,
+		cfg.EnforcerPrivateKeyPath,
+		grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize),
+		grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)),
 		grpc.KeepaliveParams(kaParams))
 	if err != nil {
 		panic(err)
 	}
 
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger})
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, nil})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -110,16 +147,27 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
-			s.log.Info(fmt.Sprintf("request header %+v", v.RequestHeaders))
-			if v.RequestHeaders != nil {
-				hdrs := v.RequestHeaders.Headers.GetHeaders()
-				for _, hdr := range hdrs {
-					s.log.Info(fmt.Sprintf("Header: %+v\n", hdr))
-				}
+			attributes, err := extractExternalProcessingAttributes(req.GetAttributes())
+			if err != nil {
+				s.log.Error(err, "failed to extract context attributes")
 			}
+			s.externalProcessingEnvoyAttributes = attributes
 
 			rhq := &envoy_service_proc_v3.HeadersResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{},
+				Response: &envoy_service_proc_v3.CommonResponse{
+					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
+						SetHeaders: []*corev3.HeaderValueOption{
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "x-wso2-cluster-header",
+									RawValue: []byte(s.externalProcessingEnvoyAttributes.ClusterName),
+								},
+							},
+						},
+					},
+					// This is necessary if the remote server modified headers that are used to calculate the route.
+					ClearRouteCache: true,
+				},
 			}
 			resp = &envoy_service_proc_v3.ProcessingResponse{
 				Response: &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
@@ -128,10 +176,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
-			s.log.Info(fmt.Sprintf("response header %+v", v.ResponseHeaders))
+			// s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{
-				},
+				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
 			resp = &envoy_service_proc_v3.ProcessingResponse{
 				Response: &envoy_service_proc_v3.ProcessingResponse_ResponseHeaders{
@@ -140,29 +187,27 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
-			httpBody := req.GetResponseBody()
-			s.log.Info(fmt.Sprintf("response body %v\n", httpBody))
+			// httpBody := req.GetResponseBody()
+			// s.log.Info(fmt.Sprint("response body \n"))
 			rbq := &envoy_service_proc_v3.BodyResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{
-				},
+				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
 			resp = &envoy_service_proc_v3.ProcessingResponse{
-					Response: &envoy_service_proc_v3.ProcessingResponse_ResponseBody{
-							ResponseBody: rbq,
-					},
+				Response: &envoy_service_proc_v3.ProcessingResponse_ResponseBody{
+					ResponseBody: rbq,
+				},
 			}
-			
+
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
-			httpBody := req.GetRequestBody()
-			s.log.Info(fmt.Sprintf("request body %v\n", httpBody))
+			// httpBody := req.GetRequestBody()
+			// s.log.Info(fmt.Sprint("request body"))
 			rbq := &envoy_service_proc_v3.BodyResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{
-				},
+				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
 			resp = &envoy_service_proc_v3.ProcessingResponse{
-					Response: &envoy_service_proc_v3.ProcessingResponse_RequestBody{
-							RequestBody: rbq,
-					},
+				Response: &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+					RequestBody: rbq,
+				},
 			}
 		default:
 			s.log.Info(fmt.Sprintf("Unknown Request type %v\n", v))
@@ -171,4 +216,57 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.log.Info(fmt.Sprintf("send error %v", err))
 		}
 	}
+}
+
+func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*ExternalProcessingEnvoyAttributes, error) {
+
+	// Get the fields from the map
+	extProcData, exists := data["envoy.filters.http.ext_proc"]
+	if !exists {
+		return nil, fmt.Errorf("key envoy.filters.http.ext_proc not found")
+	}
+
+	// Extract the "fields" and iterate over them
+	attributes := &ExternalProcessingEnvoyAttributes{}
+	fields := extProcData.Fields
+
+	// We need to navigate through the nested fields to get the actual values
+	if field, ok := fields["xds.route_metadata"]; ok {
+
+		filterMetadata := field.GetStringValue()
+
+		matches := re.FindAllStringSubmatch(filterMetadata, -1)
+
+		// Iterate over the matches and assign values to the struct
+		for _, match := range matches {
+			key, value := match[1], match[2]
+
+			switch key {
+			case enableBackendBasedAIRatelimitAttribute:
+				attributes.EnableBackendBasedAIRatelimit = value
+			case backendBasedAIRatelimitDescriptorValueAttribute:
+				attributes.BackendBasedAIRatelimitDescriptorValue = value
+			case pathAttribute:
+				attributes.Path = value
+			case vHostAttribute:
+				attributes.VHost = value
+			case basePathAttribute:
+				attributes.BasePath = value
+			case methodAttribute:
+				attributes.Method = value
+			case apiNameAttribute:
+				attributes.APIName = value
+			case apiVersionAttribute:
+				attributes.APIVersion = value
+			case clusterNameAttribute:
+				attributes.ClusterName = value
+			default:
+			}
+		}
+	} else {
+		fmt.Println("Key 'xds.route_metadata' not found in fields")
+	}
+
+	// Return the populated struct
+	return attributes, nil
 }
