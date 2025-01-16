@@ -36,6 +36,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -128,8 +129,8 @@ func FilterGatewayByNamespaces(namespaces []string) func(object *gwapiv1.Gateway
 // FilterBackendByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterBackendByNamespaces(namespaces []string) func(object *dpv1alpha2.Backend) bool {
-	return func(object *dpv1alpha2.Backend) bool {
+func FilterBackendByNamespaces(namespaces []string) func(object *dpv1alpha4.Backend) bool {
+	return func(object *dpv1alpha4.Backend) bool {
 		if namespaces == nil {
 			return true
 		}
@@ -176,8 +177,8 @@ func FilterBackendJWTByNamespaces(namespaces []string) func(object *dpv1alpha1.B
 // FilterAPIPolicyByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterAPIPolicyByNamespaces(namespaces []string) func(object *dpv1alpha3.APIPolicy) bool {
-	return func(object *dpv1alpha3.APIPolicy) bool {
+func FilterAPIPolicyByNamespaces(namespaces []string) func(object *dpv1alpha4.APIPolicy) bool {
+	return func(object *dpv1alpha4.APIPolicy) bool {
 		if namespaces == nil {
 			return true
 		}
@@ -236,8 +237,8 @@ func FilterSecretByNamespaces(namespaces []string) func(object *corev1.Secret) b
 // FilterAIProviderByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterAIProviderByNamespaces(namespaces []string) func(object *dpv1alpha3.AIProvider) bool {
-	return func(object *dpv1alpha3.AIProvider) bool {
+func FilterAIProviderByNamespaces(namespaces []string) func(object *dpv1alpha4.AIProvider) bool {
+	return func(object *dpv1alpha4.AIProvider) bool {
 		if namespaces == nil {
 			return true
 		}
@@ -512,7 +513,7 @@ func GetService(ctx context.Context, client k8client.Client, namespace, serviceN
 }
 
 // GetResolvedBackendFromService converts a Kubernetes Service to a Resolved Backend.
-func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*dpv1alpha2.ResolvedBackend, error) {
+func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*dpv1alpha4.ResolvedBackend, error) {
 
 	var host string
 	var port uint32
@@ -546,13 +547,13 @@ func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*dp
 		return nil, fmt.Errorf("unsupported service type %s", k8sService.Spec.Type)
 	}
 
-	backend := &dpv1alpha2.ResolvedBackend{Services: []dpv1alpha2.Service{{Host: host, Port: port}}, Protocol: dpv1alpha2.HTTPProtocol}
+	backend := &dpv1alpha4.ResolvedBackend{Services: []dpv1alpha4.Service{{Host: host, Port: port}}, Protocol: dpv1alpha4.HTTPProtocol}
 	return backend, nil
 }
 
 // ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
 func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
-	backendMapping map[string]*dpv1alpha2.ResolvedBackend,
+	backendMapping map[string]*dpv1alpha4.ResolvedBackend,
 	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string, api *dpv1alpha3.API) {
 	backendName := types.NamespacedName{
 		Name:      backendRef.Name,
@@ -573,10 +574,10 @@ func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha3.API
 
 // GetResolvedBackend resolves backend TLS configurations.
 func GetResolvedBackend(ctx context.Context, client k8client.Client,
-	backendNamespacedName types.NamespacedName, api *dpv1alpha3.API) *dpv1alpha2.ResolvedBackend {
-	resolvedBackend := dpv1alpha2.ResolvedBackend{}
-	resolvedTLSConfig := dpv1alpha2.ResolvedTLSConfig{}
-	var backend dpv1alpha2.Backend
+	backendNamespacedName types.NamespacedName, api *dpv1alpha3.API) *dpv1alpha4.ResolvedBackend {
+	resolvedBackend := dpv1alpha4.ResolvedBackend{}
+	resolvedTLSConfig := dpv1alpha4.ResolvedTLSConfig{}
+	var backend dpv1alpha4.Backend
 	if err := ResolveRef(ctx, client, api, backendNamespacedName, false, &backend); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2646, logging.CRITICAL, "Error while getting backend: %v, error: %v", backendNamespacedName, err.Error()))
 		return nil
@@ -586,7 +587,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 	resolvedBackend.Protocol = backend.Spec.Protocol
 	resolvedBackend.BasePath = backend.Spec.BasePath
 	if backend.Spec.CircuitBreaker != nil {
-		resolvedBackend.CircuitBreaker = &dpv1alpha2.CircuitBreaker{
+		resolvedBackend.CircuitBreaker = &dpv1alpha4.CircuitBreaker{
 			MaxConnections:     backend.Spec.CircuitBreaker.MaxConnections,
 			MaxRequests:        backend.Spec.CircuitBreaker.MaxRequests,
 			MaxRetries:         backend.Spec.CircuitBreaker.MaxRetries,
@@ -595,30 +596,33 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 		}
 	}
 	if backend.Spec.Timeout != nil {
-		resolvedBackend.Timeout = &dpv1alpha2.Timeout{
+		resolvedBackend.Timeout = &dpv1alpha4.Timeout{
 			UpstreamResponseTimeout:      backend.Spec.Timeout.UpstreamResponseTimeout,
 			DownstreamRequestIdleTimeout: backend.Spec.Timeout.DownstreamRequestIdleTimeout,
 		}
 	}
 	if backend.Spec.Retry != nil {
-		resolvedBackend.Retry = &dpv1alpha2.RetryConfig{
+		resolvedBackend.Retry = &dpv1alpha4.RetryConfig{
 			Count:              backend.Spec.Retry.Count,
 			BaseIntervalMillis: backend.Spec.Retry.BaseIntervalMillis,
 			StatusCodes:        backend.Spec.Retry.StatusCodes,
 		}
 	}
 	if backend.Spec.HealthCheck != nil {
-		resolvedBackend.HealthCheck = &dpv1alpha2.HealthCheck{
+		resolvedBackend.HealthCheck = &dpv1alpha4.HealthCheck{
 			Timeout:            backend.Spec.HealthCheck.Timeout,
 			Interval:           backend.Spec.HealthCheck.Interval,
 			UnhealthyThreshold: backend.Spec.HealthCheck.UnhealthyThreshold,
 			HealthyThreshold:   backend.Spec.HealthCheck.HealthyThreshold,
 		}
 	}
+	if backend.Spec.SupportedModels != nil {
+		resolvedBackend.SupportedModels = backend.Spec.SupportedModels
+	}
 	var err error
 	if backend.Spec.TLS != nil {
 		resolvedTLSConfig.ResolvedCertificate, err = ResolveCertificate(ctx, client,
-			backend.Namespace, backend.Spec.TLS.CertificateInline, ConvertRefConfigsV1ToV2(backend.Spec.TLS.ConfigMapRef), ConvertRefConfigsV1ToV2(backend.Spec.TLS.SecretRef))
+			backend.Namespace, backend.Spec.TLS.CertificateInline, backend.Spec.TLS.ConfigMapRef, backend.Spec.TLS.SecretRef)
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2654, logging.CRITICAL, "Error resolving certificate for Backend %v", err.Error()))
 			return nil
@@ -653,8 +657,8 @@ func UpdateCR(ctx context.Context, client k8client.Client, child metav1.Object) 
 
 // getResolvedBackendSecurity resolves backend security configurations.
 func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
-	namespace string, security dpv1alpha2.SecurityConfig) dpv1alpha2.ResolvedSecurityConfig {
-	resolvedSecurity := dpv1alpha2.ResolvedSecurityConfig{}
+	namespace string, security dpv1alpha4.SecurityConfig) dpv1alpha4.ResolvedSecurityConfig {
+	resolvedSecurity := dpv1alpha4.ResolvedSecurityConfig{}
 	if security.Basic != nil {
 		var err error
 		var username string
@@ -666,9 +670,9 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 		if err != nil || username == "" || password == "" {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2648, logging.CRITICAL, "Error while reading key from secretRef: %s", security.Basic.SecretRef))
 		}
-		resolvedSecurity = dpv1alpha2.ResolvedSecurityConfig{
+		resolvedSecurity = dpv1alpha4.ResolvedSecurityConfig{
 			Type: "Basic",
-			Basic: dpv1alpha2.ResolvedBasicSecurityConfig{
+			Basic: dpv1alpha4.ResolvedBasicSecurityConfig{
 				Username: username,
 				Password: password,
 			},
@@ -689,9 +693,9 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 		} else {
 			keyValue = security.APIKey.ValueFrom.ValueKey
 		}
-		resolvedSecurity = dpv1alpha2.ResolvedSecurityConfig{
+		resolvedSecurity = dpv1alpha4.ResolvedSecurityConfig{
 			Type: "APIKey",
-			APIKey: dpv1alpha2.ResolvedAPIKeySecurityConfig{
+			APIKey: dpv1alpha4.ResolvedAPIKeySecurityConfig{
 				In:    in,
 				Name:  keyName,
 				Value: keyValue,
@@ -736,12 +740,12 @@ func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha2.Mutua
 		}
 	} else if mutualSSL.ConfigMapRefs != nil {
 		for _, cert := range mutualSSL.ConfigMapRefs {
-			certificate, err = ResolveCertificate(ctx, client, namespace, nil, cert, nil)
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, ConvertRefConfigsV1ToV2(cert), nil)
 			resolvedCertificates = append(resolvedCertificates, certificate)
 		}
 	} else if mutualSSL.SecretRefs != nil {
 		for _, cert := range mutualSSL.SecretRefs {
-			certificate, err = ResolveCertificate(ctx, client, namespace, nil, nil, cert)
+			certificate, err = ResolveCertificate(ctx, client, namespace, nil, nil, ConvertRefConfigsV1ToV2(cert))
 			resolvedCertificates = append(resolvedCertificates, certificate)
 		}
 	}
@@ -751,7 +755,7 @@ func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha2.Mutua
 // ResolveCertificate reads the certificate from TLSConfig, first checks the certificateInline field,
 // if no value then load the certificate from secretRef using util function called getSecretValue
 func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string,
-	configMapRef *dpv1alpha2.RefConfig, secretRef *dpv1alpha2.RefConfig) (string, error) {
+	configMapRef *dpv1alpha4.RefConfig, secretRef *dpv1alpha4.RefConfig) (string, error) {
 	var certificate string
 	var err error
 	if certificateInline != nil && len(*certificateInline) > 0 {
@@ -799,7 +803,7 @@ func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
 
 // GetInterceptorService reads InterceptorService when interceptorReference is given
 func GetInterceptorService(ctx context.Context, client k8client.Client, namespace string,
-	interceptorReference *dpv1alpha3.InterceptorReference, api *dpv1alpha3.API) *dpv1alpha1.InterceptorService {
+	interceptorReference *dpv1alpha4.InterceptorReference, api *dpv1alpha3.API) *dpv1alpha1.InterceptorService {
 	interceptorService := &dpv1alpha1.InterceptorService{}
 	interceptorRef := types.NamespacedName{
 		Namespace: namespace,
@@ -831,8 +835,8 @@ func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
 
 // GetAIProvider reads AIProvider when aiProviderReference is given
 func GetAIProvider(ctx context.Context, client k8client.Client, namespace string,
-	aiProviderReference string, api *dpv1alpha3.API) *dpv1alpha3.AIProvider {
-	aiProvider := &dpv1alpha3.AIProvider{}
+	aiProviderReference string, api *dpv1alpha3.API) *dpv1alpha4.AIProvider {
+	aiProvider := &dpv1alpha4.AIProvider{}
 	aiProviderRef := types.NamespacedName{
 		Namespace: namespace,
 		Name:      aiProviderReference,
@@ -873,9 +877,9 @@ func RetrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha3.API, error) {
 }
 
 // ConvertRefConfigsV1ToV2 converts RefConfig v2 to v1
-func ConvertRefConfigsV1ToV2(refConfig *dpv1alpha2.RefConfig) *dpv1alpha2.RefConfig {
+func ConvertRefConfigsV1ToV2(refConfig *dpv1alpha2.RefConfig) *dpv1alpha4.RefConfig {
 	if refConfig != nil {
-		return &dpv1alpha2.RefConfig{
+		return &dpv1alpha4.RefConfig{
 			Name: refConfig.Name,
 			Key:  refConfig.Key,
 		}

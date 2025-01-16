@@ -85,7 +85,7 @@ spec:
     kind: "API"
     name: "api1"
 ---
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha4"
 kind: "Backend"
 metadata:
   name: "backend2"
@@ -102,7 +102,7 @@ spec:
   basePath: "/anything"
   protocol: "http"
 ---
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha4"
 kind: "Backend"
 metadata:
   name: "backend1"

@@ -21,6 +21,7 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -39,9 +40,10 @@ type APIState struct {
 	RateLimitPolicies         map[string]v1alpha3.RateLimitPolicy
 	ResourceAuthentications   map[string]v1alpha2.Authentication
 	ResourceRateLimitPolicies map[string]v1alpha3.RateLimitPolicy
-	ResourceAPIPolicies       map[string]v1alpha3.APIPolicy
-	APIPolicies               map[string]v1alpha3.APIPolicy
-	AIProvider                *v1alpha3.AIProvider
+	ResourceAPIPolicies       map[string]v1alpha4.APIPolicy
+	APIPolicies               map[string]v1alpha4.APIPolicy
+	AIProvider                *v1alpha4.AIProvider
+	ModelBasedRoundRobin      *v1alpha4.ModelBasedRoundRobin
 	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	BackendJWTMapping         map[string]v1alpha1.BackendJWT
 	APIDefinitionFile         []byte
@@ -57,7 +59,7 @@ type APIState struct {
 type HTTPRouteState struct {
 	HTTPRouteCombined                 *gwapiv1.HTTPRoute
 	HTTPRoutePartitions               map[string]*gwapiv1.HTTPRoute
-	BackendMapping                    map[string]*v1alpha2.ResolvedBackend
+	BackendMapping                    map[string]*v1alpha4.ResolvedBackend
 	Scopes                            map[string]v1alpha1.Scope
 	RuleIdxToAiRatelimitPolicyMapping map[int]*v1alpha3.AIRateLimitPolicy
 }
@@ -68,7 +70,7 @@ type HTTPRouteState struct {
 type GQLRouteState struct {
 	GQLRouteCombined   *v1alpha2.GQLRoute
 	GQLRoutePartitions map[string]*v1alpha2.GQLRoute
-	BackendMapping     map[string]*v1alpha2.ResolvedBackend
+	BackendMapping     map[string]*v1alpha4.ResolvedBackend
 	Scopes             map[string]v1alpha1.Scope
 }
 
@@ -78,6 +80,6 @@ type GQLRouteState struct {
 type GRPCRouteState struct {
 	GRPCRouteCombined   *gwapiv1.GRPCRoute
 	GRPCRoutePartitions map[string]*gwapiv1.GRPCRoute
-	BackendMapping      map[string]*v1alpha2.ResolvedBackend
+	BackendMapping      map[string]*v1alpha4.ResolvedBackend
 	Scopes              map[string]v1alpha1.Scope
 }

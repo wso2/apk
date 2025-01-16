@@ -34,6 +34,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -100,6 +101,7 @@ type InternalAIProvider struct {
 	ProviderName       string
 	ProviderAPIVersion string
 	Organization       string
+	SupportedModels    []string
 	Model              ValueDetails
 	PromptTokens       ValueDetails
 	CompletionToken    ValueDetails
@@ -451,12 +453,13 @@ func (adapterInternalAPI *AdapterInternalAPI) GetEnvironment() string {
 }
 
 // SetAIProvider sets the AIProvider of the API.
-func (adapterInternalAPI *AdapterInternalAPI) SetAIProvider(aiProvider dpv1alpha3.AIProvider) {
+func (adapterInternalAPI *AdapterInternalAPI) SetAIProvider(aiProvider dpv1alpha4.AIProvider) {
 	adapterInternalAPI.AIProvider = InternalAIProvider{
 		Enabled:            true,
 		ProviderName:       aiProvider.Spec.ProviderName,
 		ProviderAPIVersion: aiProvider.Spec.ProviderAPIVersion,
 		Organization:       aiProvider.Spec.Organization,
+		SupportedModels:    aiProvider.Spec.SupportedModels,
 		Model: ValueDetails{
 			In:    aiProvider.Spec.Model.In,
 			Value: aiProvider.Spec.Model.Value,
@@ -515,7 +518,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha3.APIPolicy
+	var apiPolicy *dpv1alpha4.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
@@ -1043,7 +1046,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha3.APIPolicy
+	var apiPolicy *dpv1alpha4.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
@@ -1199,7 +1202,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha3.APIPolicy
+	var apiPolicy *dpv1alpha4.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
