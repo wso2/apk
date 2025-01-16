@@ -93,7 +93,7 @@ spec:
     namespace: gateway-integration-test-infra
     name: grpc-api
 ---
-apiVersion: dp.wso2.com/v1alpha1
+apiVersion: dp.wso2.com/v1alpha4
 kind: Backend
 metadata:
   name: grpc-backend-v1

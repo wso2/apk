@@ -779,6 +779,328 @@ spec:
             type: object
         type: object
     served: true
+    storage: false
+    subresources:
+      status: {}
+  - name: v1alpha4
+    schema:
+      openAPIV3Schema:
+        description: APIPolicy is the Schema for the apipolicies API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: APIPolicySpec defines the desired state of APIPolicy
+            properties:
+              default:
+                description: PolicySpec contains API policies
+                properties:
+                  aiProvider:
+                    description: AIProvider referenced to AIProvider resource to be
+                      applied to the API.
+                    properties:
+                      name:
+                        description: Name is the referced CR's name of AIProvider
+                          resource.
+                        type: string
+                    type: object
+                  backendJwtPolicy:
+                    description: BackendJWTPolicy holds reference to backendJWT policy
+                      configurations
+                    properties:
+                      name:
+                        description: Name holds the name of the BackendJWT resource.
+                        type: string
+                    type: object
+                  cORSPolicy:
+                    description: CORS policy to be applied to the API.
+                    properties:
+                      accessControlAllowCredentials:
+                        description: AllowCredentials indicates whether the request
+                          can include user credentials like cookies, HTTP authentication
+                          or client side SSL certificates.
+                        type: boolean
+                      accessControlAllowHeaders:
+                        description: AccessControlAllowHeaders indicates which headers
+                          can be used during the actual request.
+                        items:
+                          type: string
+                        type: array
+                      accessControlAllowMethods:
+                        description: AccessControlAllowMethods indicates which methods
+                          can be used during the actual request.
+                        items:
+                          type: string
+                        type: array
+                      accessControlAllowOrigins:
+                        description: AccessControlAllowOrigins indicates which origins
+                          can be used during the actual request.
+                        items:
+                          type: string
+                        type: array
+                      accessControlExposeHeaders:
+                        description: AccessControlExposeHeaders indicates which headers
+                          can be exposed as part of the response by listing their
+                          names.
+                        items:
+                          type: string
+                        type: array
+                      accessControlMaxAge:
+                        description: AccessControlMaxAge indicates how long the results
+                          of a preflight request can be cached in a preflight result
+                          cache.
+                        type: integer
+                      enabled:
+                        default: true
+                        description: Enabled is to enable CORs policy for the API.
+                        type: boolean
+                    type: object
+                  modelBasedRoundRobin:
+                    description: ModelBasedRoundRobin holds the model based round
+                      robin configurations
+                    properties:
+                      models:
+                        items:
+                          description: ModelBackend holds the model configurations
+                          properties:
+                            backendRef:
+                              type: string
+                            model:
+                              type: string
+                            weight:
+                              type: integer
+                          required:
+                          - backendRef
+                          - model
+                          type: object
+                        type: array
+                      onQuotaExceedSuspendDuration:
+                        type: integer
+                    required:
+                    - models
+                    type: object
+                  requestInterceptors:
+                    description: RequestInterceptors referenced to intercetor services
+                      to be applied to the request flow.
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the referced CR's name of InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    maxItems: 1
+                    nullable: true
+                    type: array
+                  responseInterceptors:
+                    description: ResponseInterceptors referenced to intercetor services
+                      to be applied to the response flow.
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the referced CR's name of InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    maxItems: 1
+                    nullable: true
+                    type: array
+                  subscriptionValidation:
+                    default: false
+                    description: SubscriptionValidation denotes whether subscription
+                      validation is enabled for the API
+                    type: boolean
+                type: object
+              override:
+                description: PolicySpec contains API policies
+                properties:
+                  aiProvider:
+                    description: AIProvider referenced to AIProvider resource to be
+                      applied to the API.
+                    properties:
+                      name:
+                        description: Name is the referced CR's name of AIProvider
+                          resource.
+                        type: string
+                    type: object
+                  backendJwtPolicy:
+                    description: BackendJWTPolicy holds reference to backendJWT policy
+                      configurations
+                    properties:
+                      name:
+                        description: Name holds the name of the BackendJWT resource.
+                        type: string
+                    type: object
+                  cORSPolicy:
+                    description: CORS policy to be applied to the API.
+                    properties:
+                      accessControlAllowCredentials:
+                        description: AllowCredentials indicates whether the request
+                          can include user credentials like cookies, HTTP authentication
+                          or client side SSL certificates.
+                        type: boolean
+                      accessControlAllowHeaders:
+                        description: AccessControlAllowHeaders indicates which headers
+                          can be used during the actual request.
+                        items:
+                          type: string
+                        type: array
+                      accessControlAllowMethods:
+                        description: AccessControlAllowMethods indicates which methods
+                          can be used during the actual request.
+                        items:
+                          type: string
+                        type: array
+                      accessControlAllowOrigins:
+                        description: AccessControlAllowOrigins indicates which origins
+                          can be used during the actual request.
+                        items:
+                          type: string
+                        type: array
+                      accessControlExposeHeaders:
+                        description: AccessControlExposeHeaders indicates which headers
+                          can be exposed as part of the response by listing their
+                          names.
+                        items:
+                          type: string
+                        type: array
+                      accessControlMaxAge:
+                        description: AccessControlMaxAge indicates how long the results
+                          of a preflight request can be cached in a preflight result
+                          cache.
+                        type: integer
+                      enabled:
+                        default: true
+                        description: Enabled is to enable CORs policy for the API.
+                        type: boolean
+                    type: object
+                  modelBasedRoundRobin:
+                    description: ModelBasedRoundRobin holds the model based round
+                      robin configurations
+                    properties:
+                      models:
+                        items:
+                          description: ModelBackend holds the model configurations
+                          properties:
+                            backendRef:
+                              type: string
+                            model:
+                              type: string
+                            weight:
+                              type: integer
+                          required:
+                          - backendRef
+                          - model
+                          type: object
+                        type: array
+                      onQuotaExceedSuspendDuration:
+                        type: integer
+                    required:
+                    - models
+                    type: object
+                  requestInterceptors:
+                    description: RequestInterceptors referenced to intercetor services
+                      to be applied to the request flow.
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the referced CR's name of InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    maxItems: 1
+                    nullable: true
+                    type: array
+                  responseInterceptors:
+                    description: ResponseInterceptors referenced to intercetor services
+                      to be applied to the response flow.
+                    items:
+                      description: InterceptorReference holds InterceptorService reference
+                        using name and namespace
+                      properties:
+                        name:
+                          description: Name is the referced CR's name of InterceptorService
+                            resource.
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    maxItems: 1
+                    nullable: true
+                    type: array
+                  subscriptionValidation:
+                    default: false
+                    description: SubscriptionValidation denotes whether subscription
+                      validation is enabled for the API
+                    type: boolean
+                type: object
+              targetRef:
+                description: NamespacedPolicyTargetReference identifies an API object
+                  to apply a direct or inherited policy to, potentially in a different
+                  namespace. This should only be used as part of Policy resources
+                  that need to be able to target resources in different namespaces.
+                  For more information on how this policy attachment model works,
+                  and a sample Policy resource, refer to the policy attachment documentation
+                  for Gateway API.
+                properties:
+                  group:
+                    description: Group is the group of the target resource.
+                    maxLength: 253
+                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                    type: string
+                  kind:
+                    description: Kind is kind of the target resource.
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                    type: string
+                  name:
+                    description: Name is the name of the target resource.
+                    maxLength: 253
+                    minLength: 1
+                    type: string
+                  namespace:
+                    description: Namespace is the namespace of the referent. When
+                      unspecified, the local namespace is inferred. Even when policy
+                      targets a resource in a different namespace, it MUST only apply
+                      to traffic originating from the same namespace as the policy.
+                    maxLength: 63
+                    minLength: 1
+                    pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                    type: string
+                required:
+                - group
+                - kind
+                - name
+                type: object
+            type: object
+          status:
+            description: APIPolicyStatus defines the observed state of APIPolicy
+            type: object
+        type: object
+    served: true
     storage: true
     subresources:
       status: {}

@@ -41,6 +41,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	discoveryv1 "k8s.io/api/discovery/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -391,7 +392,7 @@ func (r *gatewayReconcilerNew) enqueueService(_ context.Context, _ *corev1.Servi
 	}}}
 }
 
-func (r *gatewayReconcilerNew) enqueueBackend(_ context.Context, _ *dpv1alpha2.Backend) []reconcile.Request {
+func (r *gatewayReconcilerNew) enqueueBackend(_ context.Context, _ *dpv1alpha4.Backend) []reconcile.Request {
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{
 		Name: string(gatewayClassControllerName),
 	}}}
@@ -547,9 +548,9 @@ func (r *gatewayReconcilerNew) watchResources(ctx context.Context, mgr manager.M
 	}
 
 	// Watch Service CRUDs and process affected *Route objects and services belongs to gateways
-	backendPredicates := []predicate.TypedPredicate[*dpv1alpha2.Backend]{predicate.NewTypedPredicateFuncs(r.validateBackendForReconcile)}
+	backendPredicates := []predicate.TypedPredicate[*dpv1alpha4.Backend]{predicate.NewTypedPredicateFuncs(r.validateBackendForReconcile)}
 	if err := c.Watch(
-		source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{},
+		source.Kind(mgr.GetCache(), &dpv1alpha4.Backend{},
 			handler.TypedEnqueueRequestsFromMapFunc(r.enqueueBackend),
 			backendPredicates...,
 		)); err != nil {
@@ -723,7 +724,7 @@ func (r *gatewayReconcilerNew) processBackendRefs(ctx context.Context, gwcResour
 			endpointSliceLabelKey = discoveryv1.LabelServiceName
 
 		case gatewayapi.KindBackend:
-			backend := new(dpv1alpha2.Backend)
+			backend := new(dpv1alpha4.Backend)
 			err := r.client.Get(ctx, types.NamespacedName{Namespace: string(*backendRef.Namespace), Name: string(backendRef.Name)}, backend)
 			if err != nil {
 				loggers.LoggerAPKOperator.Errorf("Failed to get Backend namespace %s, name %s, Error: %v", string(*backendRef.Namespace),

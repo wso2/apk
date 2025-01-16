@@ -16,7 +16,7 @@
 // under the License.
 //
 public type Backend record {
-    string apiVersion = "dp.wso2.com/v1alpha2";
+    string apiVersion = "dp.wso2.com/v1alpha4";
     string kind = "Backend";
     Metadata metadata;
     BackendSpec spec;
@@ -31,6 +31,7 @@ public type BackendSpec record {|
     CircuitBreaker circuitBreaker?;
     Timeout timeout?;
     Retry 'retry?;
+    string[] selectedAIModels?;
 |};
 
 public type BackendService record {

@@ -25,6 +25,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -33,11 +34,11 @@ import (
 type ResourceParams struct {
 	AuthSchemes               map[string]dpv1alpha2.Authentication
 	ResourceAuthSchemes       map[string]dpv1alpha2.Authentication
-	APIPolicies               map[string]dpv1alpha3.APIPolicy
-	ResourceAPIPolicies       map[string]dpv1alpha3.APIPolicy
+	APIPolicies               map[string]dpv1alpha4.APIPolicy
+	ResourceAPIPolicies       map[string]dpv1alpha4.APIPolicy
 	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
 	BackendJWTMapping         map[string]dpv1alpha1.BackendJWT
-	BackendMapping            map[string]*dpv1alpha2.ResolvedBackend
+	BackendMapping            map[string]*dpv1alpha4.ResolvedBackend
 	ResourceScopes            map[string]dpv1alpha1.Scope
 	RateLimitPolicies         map[string]dpv1alpha3.RateLimitPolicy
 	ResourceRateLimitPolicies map[string]dpv1alpha3.RateLimitPolicy
@@ -69,7 +70,7 @@ func parseBackendJWTTokenToInternal(backendJWTToken dpv1alpha1.BackendJWTSpec) *
 	return backendJWTTokenInternal
 }
 
-func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha3.APIPolicy) *CorsConfig {
+func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha4.APIPolicy) *CorsConfig {
 	globalCorsConfig := config.ReadConfigs().Enforcer.Cors
 
 	var corsConfig = CorsConfig{
@@ -111,9 +112,9 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha3.RateLimitPolicy)
 }
 
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
-func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha3.APIPolicy,
+func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha4.APIPolicy,
 	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService,
-	backendMapping map[string]*dpv1alpha2.ResolvedBackend, namespace string) {
+	backendMapping map[string]*dpv1alpha4.ResolvedBackend, namespace string) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
 		if len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
 			requestInterceptor := interceptorServicesMapping[types.NamespacedName{
@@ -161,7 +162,7 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 }
 
 // GetEndpoints creates endpoints using resolved backends in backendMapping
-func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha2.ResolvedBackend) []Endpoint {
+func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha4.ResolvedBackend) []Endpoint {
 	endpoints := []Endpoint{}
 	backend, ok := backendMapping[backendName.String()]
 	if ok && backend != nil {
@@ -182,7 +183,7 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*d
 }
 
 // GetBackendBasePath gets basePath of the the Backend
-func GetBackendBasePath(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha2.ResolvedBackend) string {
+func GetBackendBasePath(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha4.ResolvedBackend) string {
 	backend, ok := backendMapping[backendName.String()]
 	if ok && backend != nil {
 		if len(backend.Services) > 0 {
@@ -204,8 +205,8 @@ func concatRateLimitPolicies(schemeUp *dpv1alpha3.RateLimitPolicy, schemeDown *d
 	return &finalRateLimit
 }
 
-func concatAPIPolicies(schemeUp *dpv1alpha3.APIPolicy, schemeDown *dpv1alpha3.APIPolicy) *dpv1alpha3.APIPolicy {
-	apiPolicy := dpv1alpha3.APIPolicy{}
+func concatAPIPolicies(schemeUp *dpv1alpha4.APIPolicy, schemeDown *dpv1alpha4.APIPolicy) *dpv1alpha4.APIPolicy {
+	apiPolicy := dpv1alpha4.APIPolicy{}
 	if schemeUp != nil && schemeDown != nil {
 		apiPolicy.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {

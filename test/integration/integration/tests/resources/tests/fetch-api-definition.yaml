@@ -69,7 +69,7 @@ metadata:
 binaryData:
   definition: H4sIAAAAAAAAAMVRPU/EMAz9K8gjun7csXVjRAyHhI4F3RCl7tVSmkSJe3BU/e/YqWBlJENs+dnvPektECJ6Ewk6eKjbeg+7OyA/BOgWYGKHAjBmfnx5eivgFVOm4GW8l/0WVplltHMivkH3vkCPg5kdS39ezwJGw2NWuuZe/wuyloQ5Bp+xIIe21dJjtokib/THZ1j/JP+szMxjxbcoRjnNWGY8psDsyF8qJkxCdvKOJmLsi98Y8j+bKKQ2TCKPnov+j8SrHXHaLP0KSRaFHIIqHTSHwYWPskRTdGSpbCkaEn0ZtX9KTi5G5pi7ptEQa1HU22wldT1et/cNLrti+gYCAAA=
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: dp.wso2.com/v1alpha4
 kind: Backend
 metadata:
   name: infra-backend-v1

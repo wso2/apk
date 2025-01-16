@@ -276,7 +276,6 @@ type BackendStatus struct{}
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:storageversion
 
 // Backend is the Schema for the backends API
 type Backend struct {

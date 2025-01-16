@@ -184,22 +184,22 @@ isolated function deleteScopeCr(string name, string namespace) returns http:Resp
 }
 
 isolated function deleteBackendPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/backends/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
 isolated function getBackendCR(string name, string namespace) returns model:Backend|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/backends/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:Backend);
 }
 
 isolated function deployBackendCR(model:Backend backend, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends";
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/backends";
     return k8sApiServerEp->post(endpoint, backend, targetType = http:Response);
 }
 
 isolated function updateBackendCR(model:Backend backend, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends/" + backend.metadata.name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/backends/" + backend.metadata.name;
     return k8sApiServerEp->put(endpoint, backend, targetType = http:Response);
 }
 
@@ -297,27 +297,27 @@ isolated function getAIRateLimitPolicyCRsForAPI(string apiName, string apiVersio
 }
 
 isolated function deployAPIPolicyCR(model:APIPolicy apiPolicy, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/apipolicies";
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/apipolicies";
     return k8sApiServerEp->post(endpoint, apiPolicy, targetType = http:Response);
 }
 
 isolated function getAPIPolicyCR(string policyName, string namespace) returns model:APIPolicy|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/apipolicies/" + policyName;
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/apipolicies/" + policyName;
     return k8sApiServerEp->get(endpoint, targetType = model:APIPolicy);
 }
 
 isolated function updateAPIPolicyCR(model:APIPolicy apiPolicy, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/apipolicies/" + apiPolicy.metadata.name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/apipolicies/" + apiPolicy.metadata.name;
     return k8sApiServerEp->put(endpoint, apiPolicy, targetType = http:Response);
 }
 
 isolated function deleteAPIPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/apipolicies/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/apipolicies/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
 isolated function getAPIPolicyCRsForAPI(string apiName, string apiVersion, string namespace, string organization) returns model:APIPolicyList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha3/namespaces/" + namespace + "/apipolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    string endpoint = "/apis/dp.wso2.com/v1alpha4/namespaces/" + namespace + "/apipolicies?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:APIPolicyList);
 }
 
