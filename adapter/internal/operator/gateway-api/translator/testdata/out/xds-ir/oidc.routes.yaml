@@ -12,10 +12,6 @@
         cluster: first-route-dest
         upgradeConfigs:
         - upgradeType: websocket
-      typedPerFilterConfig:
-        envoy.filters.http.oauth2_first-route:
-          '@type': type.googleapis.com/envoy.config.route.v3.FilterConfig
-          config: {}
     - match:
         path: bar
       name: second-route
@@ -23,7 +19,3 @@
         cluster: second-route-dest
         upgradeConfigs:
         - upgradeType: websocket
-      typedPerFilterConfig:
-        envoy.filters.http.oauth2_second-route:
-          '@type': type.googleapis.com/envoy.config.route.v3.FilterConfig
-          config: {}

@@ -32,7 +32,7 @@ import (
 // CreateXDSClients initializes and establishes connections for multiple XDS clients,
 // including API XDS, Config XDS, and JWT Issuer XDS clients.
 // It handles TLS configuration, certificate loading, and connection setup.
-func CreateXDSClients(cfg *config.Server) {
+func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.ConfigStore, *datastore.JWTIssuerStore) {
 	clientCert, err := util.LoadCertificates(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
 	if err != nil {
 		panic(err)
@@ -57,6 +57,7 @@ func CreateXDSClients(cfg *config.Server) {
 	configXDSClient.InitiateConfigXDSConnection()
 	jwtIssuerXDSClient.InitiateSubscriptionXDSConnection()
 	cfg.Logger.Info("XDS clients initiated successfully")
+	return apiDatastore, configDatastore, jwtIssuerDatastore
 }
 
 // CreateNode creates a new Node object with the given node ID and instance identifier.
