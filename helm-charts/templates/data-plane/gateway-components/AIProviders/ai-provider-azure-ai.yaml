@@ -1,4 +1,4 @@
-apiVersion: dp.wso2.com/v1alpha3
+apiVersion: dp.wso2.com/v1alpha4
 kind: AIProvider
 metadata:
   name: ai-provider-azure-ai

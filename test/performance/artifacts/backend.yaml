@@ -1,5 +1,5 @@
 ---
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "dp.wso2.com/v1alpha2"
 kind: "Backend"
 metadata:
   name: "backend-65bb2c47600834c7bb4b8a405b1cfe3921fc7d74-api"

@@ -71,14 +71,14 @@ webhooks:
     service:
       name: {{ template "apk-helm.resource.prefix" . }}-common-controller-service
       namespace: {{ .Release.Namespace }}
-      path: /validate-dp-wso2-com-v1alpha3-apipolicy
+      path: /validate-dp-wso2-com-v1alpha4-apipolicy
   failurePolicy: Fail
   name: vapipolicy.kb.io
   rules:
     - apiGroups:
         - dp.wso2.com
       apiVersions:
-        - v1alpha3
+        - v1alpha4
       operations:
         - CREATE
         - UPDATE
