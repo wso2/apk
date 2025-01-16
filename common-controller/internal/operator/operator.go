@@ -41,6 +41,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -64,6 +65,7 @@ func init() {
 	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
+	utilruntime.Must(dpv1alpha4.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
@@ -157,6 +159,11 @@ func InitOperator(metricsConfig config.Metrics) {
 			"Unable to create webhook for APIPolicy, error: %v", err))
 	}
 
+	if err = (&dpv1alpha4.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
+			"Unable to create webhook for APIPolicy, error: %v", err))
+	}
+
 	if err = (&dpv1alpha2.Authentication{}).SetupWebhookWithManager(mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
 			"Unable to create webhook for Authentication, error: %v", err))
@@ -171,6 +178,7 @@ func InitOperator(metricsConfig config.Metrics) {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2655, logging.MAJOR,
 			"Unable to create webhook for Backend, error: %v", err))
 	}
+
 	if err := dpcontrollers.NewratelimitController(mgr, ratelimitStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
 			"Error creating JWT Issuer controller, error: %v", err))

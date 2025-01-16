@@ -36,6 +36,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -176,8 +177,8 @@ func FilterBackendJWTByNamespaces(namespaces []string) func(object *dpv1alpha1.B
 // FilterAPIPolicyByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterAPIPolicyByNamespaces(namespaces []string) func(object *dpv1alpha3.APIPolicy) bool {
-	return func(object *dpv1alpha3.APIPolicy) bool {
+func FilterAPIPolicyByNamespaces(namespaces []string) func(object *dpv1alpha4.APIPolicy) bool {
+	return func(object *dpv1alpha4.APIPolicy) bool {
 		if namespaces == nil {
 			return true
 		}
@@ -236,8 +237,8 @@ func FilterSecretByNamespaces(namespaces []string) func(object *corev1.Secret) b
 // FilterAIProviderByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterAIProviderByNamespaces(namespaces []string) func(object *dpv1alpha3.AIProvider) bool {
-	return func(object *dpv1alpha3.AIProvider) bool {
+func FilterAIProviderByNamespaces(namespaces []string) func(object *dpv1alpha4.AIProvider) bool {
+	return func(object *dpv1alpha4.AIProvider) bool {
 		if namespaces == nil {
 			return true
 		}
@@ -799,7 +800,7 @@ func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
 
 // GetInterceptorService reads InterceptorService when interceptorReference is given
 func GetInterceptorService(ctx context.Context, client k8client.Client, namespace string,
-	interceptorReference *dpv1alpha3.InterceptorReference, api *dpv1alpha3.API) *dpv1alpha1.InterceptorService {
+	interceptorReference *dpv1alpha4.InterceptorReference, api *dpv1alpha3.API) *dpv1alpha1.InterceptorService {
 	interceptorService := &dpv1alpha1.InterceptorService{}
 	interceptorRef := types.NamespacedName{
 		Namespace: namespace,
@@ -831,8 +832,8 @@ func GetBackendJWT(ctx context.Context, client k8client.Client, namespace,
 
 // GetAIProvider reads AIProvider when aiProviderReference is given
 func GetAIProvider(ctx context.Context, client k8client.Client, namespace string,
-	aiProviderReference string, api *dpv1alpha3.API) *dpv1alpha3.AIProvider {
-	aiProvider := &dpv1alpha3.AIProvider{}
+	aiProviderReference string, api *dpv1alpha3.API) *dpv1alpha4.AIProvider {
+	aiProvider := &dpv1alpha4.AIProvider{}
 	aiProviderRef := types.NamespacedName{
 		Namespace: namespace,
 		Name:      aiProviderReference,

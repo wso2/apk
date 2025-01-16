@@ -81,7 +81,7 @@ spec:
               type: ReplaceFullPath
               replaceFullPath: /books
 ---
-apiVersion: dp.wso2.com/v1alpha3
+apiVersion: dp.wso2.com/v1alpha4
 kind: APIPolicy
 metadata:
   name: interceptor-api-policy-resource-level

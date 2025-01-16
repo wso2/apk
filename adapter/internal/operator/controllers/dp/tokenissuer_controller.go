@@ -299,7 +299,7 @@ func getJWTIssuers(ctx context.Context, client k8client.Client, namespace types.
 		if jwtIssuer.Spec.SignatureValidation.Certificate != nil {
 			tlsCertificate, err := utils.ResolveCertificate(ctx, client, jwtIssuer.ObjectMeta.Namespace,
 				jwtIssuer.Spec.SignatureValidation.Certificate.CertificateInline,
-				jwtIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef, jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef)
+				utils.ConvertRefConfigsV1ToV2(jwtIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef), utils.ConvertRefConfigsV1ToV2(jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef))
 			if err != nil {
 				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2659, logging.MAJOR,
 					"Error resolving certificate for JWKS for issuer %s in CR %s, %v", resolvedJwtIssuer.Issuer, utils.NamespacedName(&jwtIssuer).String(), err.Error()))

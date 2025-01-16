@@ -61,7 +61,7 @@ spec:
           kind: Backend
           name: infra-backend-v1
 ---
-apiVersion: dp.wso2.com/v1alpha3
+apiVersion: dp.wso2.com/v1alpha4
 kind: APIPolicy
 metadata:
   name: cors-policy
@@ -140,7 +140,7 @@ spec:
     - host: infra-backend-v1.gateway-integration-test-infra
       port: 8080
 ---
-apiVersion: dp.wso2.com/v1alpha3
+apiVersion: dp.wso2.com/v1alpha4
 kind: APIPolicy
 metadata:
   name: no-cors-policy
