@@ -12,7 +12,3 @@
         cluster: first-route-dest
         upgradeConfigs:
         - upgradeType: websocket
-      typedPerFilterConfig:
-        envoy.filters.http.basic_auth_first-route:
-          '@type': type.googleapis.com/envoy.config.route.v3.FilterConfig
-          config: {}

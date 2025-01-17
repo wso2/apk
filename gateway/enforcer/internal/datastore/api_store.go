@@ -21,18 +21,19 @@ import (
 	"sync"
 
 	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
+	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
 // APIStore is a thread-safe store for APIs.
 type APIStore struct {
-	apis []*api.Api
+	apis map[string]*api.Api
 	mu   sync.RWMutex
 }
 
 // NewAPIStore creates a new instance of APIStore.
 func NewAPIStore() *APIStore {
 	return &APIStore{
-		apis: make([]*api.Api, 0),
+		// apis: make(map[string]*api.Api, 0),
 	}
 }
 
@@ -41,13 +42,23 @@ func NewAPIStore() *APIStore {
 func (s *APIStore) AddAPIs(apis []*api.Api) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.apis = apis
+	s.apis = make(map[string]*api.Api, len(apis))
+	for _, api := range apis {
+		s.apis[util.PrepareAPIKey(api.Vhost, api.BasePath, api.Version)] = api
+	}
 }
 
 // GetAPIs retrieves the list of APIs from the store.
 // This method is thread-safe.
-func (s *APIStore) GetAPIs() []*api.Api {
+func (s *APIStore) GetAPIs() map[string]*api.Api {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.apis
+}
+
+// GetMatchedAPI retrieves the API that matches the given API key.
+func (s *APIStore) GetMatchedAPI(apiKey string) *api.Api {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.apis[apiKey]
 }

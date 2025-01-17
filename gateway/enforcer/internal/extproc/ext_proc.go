@@ -23,8 +23,11 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
+	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
+	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 
 	"net"
@@ -35,6 +38,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/prototext"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -43,6 +47,9 @@ import (
 type ExternalProcessingServer struct {
 	log                               logging.Logger
 	externalProcessingEnvoyAttributes *ExternalProcessingEnvoyAttributes
+	matchedAPI                        *api.Api
+	apiStore                          *datastore.APIStore
+	ratelimitHelper                   *ratelimit.AIRatelimitHelper
 }
 
 // ExternalProcessingEnvoyAttributes represents the attributes extracted from the external processing request.
@@ -71,7 +78,7 @@ const (
 )
 
 // Define the regular expression as a constant
-const keyValuePattern = `key: "(.*?)" value { string_value: "(.*?)" }`
+const keyValuePattern = `key: "([^.]*)" value { string_value: "(.*?)" }`
 
 // Pre-compile the regular expression
 var re = regexp.MustCompile(keyValuePattern)
@@ -85,7 +92,7 @@ var re = regexp.MustCompile(keyValuePattern)
 //     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
-func StartExternalProcessingServer(cfg *config.Server) {
+func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore) {
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
@@ -99,7 +106,8 @@ func StartExternalProcessingServer(cfg *config.Server) {
 		panic(err)
 	}
 
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, nil})
+	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, nil, nil, apiStore, ratelimitHelper})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -152,6 +160,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Error(err, "failed to extract context attributes")
 			}
 			s.externalProcessingEnvoyAttributes = attributes
+			s.matchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(s.externalProcessingEnvoyAttributes.VHost, s.externalProcessingEnvoyAttributes.BasePath, s.externalProcessingEnvoyAttributes.APIVersion))
 
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
@@ -185,10 +194,25 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ResponseHeaders: rhq,
 				},
 			}
+			// s.log.Info(fmt.Sprintf("Matched api: %s", s.matchedAPI))
+			if s.matchedAPI.Aiprovider != nil &&
+				s.matchedAPI.Aiprovider.CompletionToken != nil &&
+				s.externalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
+				s.matchedAPI.Aiprovider.CompletionToken.In == "Header" {
+				s.log.Info("Backend based AI rate limit enabled using headers")
+				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(), s.matchedAPI.Aiprovider.PromptTokens.Value, s.matchedAPI.Aiprovider.CompletionToken.Value, s.matchedAPI.Aiprovider.CompletionToken.Value, s.matchedAPI.Aiprovider.Model.Value)
+				if err != nil {
+					s.log.Error(err, "failed to extract token count from response headers")
+				} else {
+					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.externalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
+				}
+			}
+
 			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
-			// s.log.Info(fmt.Sprint("response body \n"))
+			s.log.Info(fmt.Sprintf("attribute %+v\n", s.externalProcessingEnvoyAttributes))
+
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
@@ -196,6 +220,19 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				Response: &envoy_service_proc_v3.ProcessingResponse_ResponseBody{
 					ResponseBody: rbq,
 				},
+			}
+
+			if s.matchedAPI.Aiprovider != nil &&
+				s.matchedAPI.Aiprovider.CompletionToken != nil &&
+				s.externalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
+				s.matchedAPI.Aiprovider.CompletionToken.In == "Body" {
+				s.log.Info("Backend based AI rate limit enabled using body")
+				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body, s.matchedAPI.Aiprovider.PromptTokens.Value, s.matchedAPI.Aiprovider.CompletionToken.Value, s.matchedAPI.Aiprovider.CompletionToken.Value, s.matchedAPI.Aiprovider.Model.Value)
+				if err != nil {
+					s.log.Error(err, "failed to extract token count from response body")
+				} else {
+					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.externalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
+				}
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
@@ -218,6 +255,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 	}
 }
 
+// extractExternalProcessingAttributes extracts the external processing attributes from the given data.
 func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*ExternalProcessingEnvoyAttributes, error) {
 
 	// Get the fields from the map
@@ -234,39 +272,62 @@ func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*Ext
 	if field, ok := fields["xds.route_metadata"]; ok {
 
 		filterMetadata := field.GetStringValue()
+		var structData corev3.Metadata
+		err := prototext.Unmarshal([]byte(filterMetadata), &structData)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse Protobuf text: %v", err)
+		}
 
-		matches := re.FindAllStringSubmatch(filterMetadata, -1)
+		// Extract values for predefined keys
+		extractedValues := make(map[string]string)
 
-		// Iterate over the matches and assign values to the struct
-		for _, match := range matches {
-			key, value := match[1], match[2]
+		keysToExtract := []string{
+			pathAttribute,
+			vHostAttribute,
+			basePathAttribute,
+			methodAttribute,
+			apiVersionAttribute,
+			apiNameAttribute,
+			clusterNameAttribute,
+			enableBackendBasedAIRatelimitAttribute,
+			backendBasedAIRatelimitDescriptorValueAttribute,
+		}
 
-			switch key {
-			case enableBackendBasedAIRatelimitAttribute:
-				attributes.EnableBackendBasedAIRatelimit = value
-			case backendBasedAIRatelimitDescriptorValueAttribute:
-				attributes.BackendBasedAIRatelimitDescriptorValue = value
-			case pathAttribute:
-				attributes.Path = value
-			case vHostAttribute:
-				attributes.VHost = value
-			case basePathAttribute:
-				attributes.BasePath = value
-			case methodAttribute:
-				attributes.Method = value
-			case apiNameAttribute:
-				attributes.APIName = value
-			case apiVersionAttribute:
-				attributes.APIVersion = value
-			case clusterNameAttribute:
-				attributes.ClusterName = value
-			default:
+		for _, key := range keysToExtract {
+			if field, exists := structData.FilterMetadata["envoy.filters.http.ext_proc"]; exists {
+				extractedValues[key] = field.Fields[key].GetStringValue()
+				// case condition to populate ExternalProcessingEnvoyAttributes
+				switch key {
+				case pathAttribute:
+					attributes.Path = extractedValues[key]
+				case vHostAttribute:
+					attributes.VHost = extractedValues[key]
+				case basePathAttribute:
+					attributes.BasePath = extractedValues[key]
+				case methodAttribute:
+					attributes.Method = extractedValues[key]
+				case apiVersionAttribute:
+					attributes.APIVersion = extractedValues[key]
+				case apiNameAttribute:
+					attributes.APIName = extractedValues[key]
+				case clusterNameAttribute:
+					attributes.ClusterName = extractedValues[key]
+				case enableBackendBasedAIRatelimitAttribute:
+					attributes.EnableBackendBasedAIRatelimit = extractedValues[key]
+				case backendBasedAIRatelimitDescriptorValueAttribute:
+					attributes.BackendBasedAIRatelimitDescriptorValue = extractedValues[key]
+				}
 			}
 		}
-	} else {
-		fmt.Println("Key 'xds.route_metadata' not found in fields")
+
+		// Print extracted values
+		for key, value := range extractedValues {
+			fmt.Printf("%s: %s\n", key, value)
+		}
+		// Return the populated struct
+		return attributes, nil
 	}
 
-	// Return the populated struct
-	return attributes, nil
+	// Key not found
+	return nil, fmt.Errorf("key xds.route_metadata not found")
 }
