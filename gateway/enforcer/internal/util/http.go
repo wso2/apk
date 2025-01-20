@@ -23,18 +23,6 @@ import (
 	"net/http"
 )
 
-// MakeGETRequest HTTP client for making GET requests
-// func MakeGETRequest(url string) (*http.Response, error) {
-// 	client := &http.Client{}
-// 	req, err := http.NewRequest("GET", url, nil)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	req.Header.Set("Content-Type", "application/json")
-// 	log.Println("GET Request: ", req)
-// 	return client.Do(req)
-// }
-
 // MakeGETRequest HTTP client for making GET requests with custom TLS config
 func MakeGETRequest(url string, tlsConfig *tls.Config) (*http.Response, error) {
 	// Create a custom HTTP client with the provided TLS configuration
