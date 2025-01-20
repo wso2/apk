@@ -104,12 +104,13 @@ func (c *EventingGRPCClient) InitiateEventingGRPCConnection() {
 				return
 			}
 			c.log.Info(fmt.Sprintf("Received config: %v", resp))
+			c.HandleNotificationEvent(resp)
 		}
 	}()
 }
 
-// handleNotificationEvent translates the Java method to Go
-func (c *EventingGRPCClient) handleNotificationEvent(event *subscription_proto_model.Event) {
+// HandleNotificationEvent translates the Java method to Go
+func (c *EventingGRPCClient) HandleNotificationEvent(event *subscription_proto_model.Event) {
 	switch event.Type {
 	case "ALL_EVENTS":
 		log.Println("Received all events from the server")

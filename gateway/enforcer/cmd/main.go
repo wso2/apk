@@ -4,10 +4,11 @@ import (
 	"time"
 
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
+	"github.com/wso2/apk/gateway/enforcer/internal/extproc"
 	"github.com/wso2/apk/gateway/enforcer/internal/grpc"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"github.com/wso2/apk/gateway/enforcer/internal/xds"
-	"github.com/wso2/apk/gateway/enforcer/internal/extproc"
 )
 
 func main() {
@@ -27,13 +28,13 @@ func main() {
 
 	//Create the TLS configuration
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
-	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, nil)
+	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Second, tlsConfig, cfg, datastore.NewDataStore(cfg))
 	// Start the connection
 	client.InitiateEventingGRPCConnection()
 
 	// Create the XDS clients
-	apiStore, _,_ := xds.CreateXDSClients(cfg)
-	
+	apiStore, _, _ := xds.CreateXDSClients(cfg)
+
 	// Start the external processing server
 	go extproc.StartExternalProcessingServer(cfg, apiStore)
 
