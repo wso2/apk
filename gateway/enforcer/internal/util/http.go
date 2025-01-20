@@ -18,17 +18,30 @@
 package util
 
 import (
+	"crypto/tls"
+	"log"
 	"net/http"
 )
 
-// MakeGETRequest HTTP client for making GET requests
-func MakeGETRequest(url string) (*http.Response, error) {
-	client := &http.Client{}
+// MakeGETRequest HTTP client for making GET requests with custom TLS config
+func MakeGETRequest(url string, tlsConfig *tls.Config) (*http.Response, error) {
+	// Create a custom HTTP client with the provided TLS configuration
+	tr := &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+	client := &http.Client{Transport: tr}
+
+	// Create the HTTP request
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
+
+	// Set request headers
 	req.Header.Set("Content-Type", "application/json")
 
+	log.Println("GET Request: ", req)
+
+	// Execute the request
 	return client.Do(req)
 }

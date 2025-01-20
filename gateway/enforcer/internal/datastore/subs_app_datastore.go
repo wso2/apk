@@ -18,10 +18,12 @@
 package datastore
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"sync"
 
 	subscription_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
@@ -214,7 +216,12 @@ func (ds *SubscriptionApplicationDataStore) LoadStartupData() error {
 // Get all applications
 func (ds *SubscriptionApplicationDataStore) getAllApplications() (*subscription_model.ApplicationList, error) {
 	url := fmt.Sprintf("%s/applications", ds.commonControllerRestBaseURL)
-	resp, err := util.MakeGETRequest(url)
+	// Get the TLS configuration
+	tlsConfig, err := GetTLSConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get TLS config: %w", err)
+	}
+	resp, err := util.MakeGETRequest(url, tlsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -225,13 +232,20 @@ func (ds *SubscriptionApplicationDataStore) getAllApplications() (*subscription_
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
+	log.Println("Applications: ", result)
 	return &result, nil
 }
 
 // Get all subscriptions
 func (ds *SubscriptionApplicationDataStore) getAllSubscriptions() (*subscription_model.SubscriptionList, error) {
 	url := fmt.Sprintf("%s/subscriptions", ds.commonControllerRestBaseURL)
-	resp, err := util.MakeGETRequest(url)
+	// Get the TLS configuration
+	tlsConfig, err := GetTLSConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get TLS config: %w", err)
+	}
+	resp, err := util.MakeGETRequest(url, tlsConfig)
+	log.Println("Response: ", resp)
 	if err != nil {
 		return nil, err
 	}
@@ -242,13 +256,18 @@ func (ds *SubscriptionApplicationDataStore) getAllSubscriptions() (*subscription
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
+	log.Println("Subscription: ", result)
 	return &result, nil
 }
 
 // Get all application mappings
 func (ds *SubscriptionApplicationDataStore) getAllApplicationMappings() (*subscription_model.ApplicationMappingList, error) {
 	url := fmt.Sprintf("%s/applicationmappings", ds.commonControllerRestBaseURL)
-	resp, err := util.MakeGETRequest(url)
+	tlsConfig, err := GetTLSConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get TLS config: %w", err)
+	}
+	resp, err := util.MakeGETRequest(url, tlsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -265,7 +284,11 @@ func (ds *SubscriptionApplicationDataStore) getAllApplicationMappings() (*subscr
 // Get all application key mappings
 func (ds *SubscriptionApplicationDataStore) getAllApplicationKeyMappings() (*subscription_model.ApplicationKeyMappingList, error) {
 	url := fmt.Sprintf("%s/applicationkeymappings", ds.commonControllerRestBaseURL)
-	resp, err := util.MakeGETRequest(url)
+	tlsConfig, err := GetTLSConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get TLS config: %w", err)
+	}
+	resp, err := util.MakeGETRequest(url, tlsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -277,4 +300,25 @@ func (ds *SubscriptionApplicationDataStore) getAllApplicationKeyMappings() (*sub
 		return nil, err
 	}
 	return &result, nil
+}
+
+// GetTLSConfig loads and returns a TLS configuration
+func GetTLSConfig() (*tls.Config, error) {
+	cfg := config.GetConfig()
+
+	// Load the client certificate and private key
+	clientCert, err := util.LoadCertificates(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load client certificate and private key: %w", err)
+	}
+
+	// Load the trusted CA certificates
+	certPool, err := util.LoadCACertificates(cfg.TrustedAdapterCertsPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load trusted CA certificates: %w", err)
+	}
+
+	// Create and return the TLS configuration
+	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
+	return tlsConfig, nil
 }
