@@ -161,7 +161,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			s.externalProcessingEnvoyAttributes = attributes
 			s.matchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(s.externalProcessingEnvoyAttributes.VHost, s.externalProcessingEnvoyAttributes.BasePath, s.externalProcessingEnvoyAttributes.APIVersion))
-
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
@@ -185,7 +184,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
-			// s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
+			s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
@@ -195,7 +194,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				},
 			}
 			// s.log.Info(fmt.Sprintf("Matched api: %s", s.matchedAPI))
-			if s.matchedAPI.Aiprovider != nil &&
+			if s.matchedAPI != nil && s.matchedAPI.Aiprovider != nil &&
 				s.matchedAPI.Aiprovider.CompletionToken != nil &&
 				s.externalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
 				s.matchedAPI.Aiprovider.CompletionToken.In == "Header" {
