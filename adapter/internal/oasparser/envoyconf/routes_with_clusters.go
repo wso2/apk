@@ -830,6 +830,67 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	resourceMethods := resource.GetMethodList()
 	pathMatchType := resource.GetPathMatchType()
 
+	metaData := &corev3.Metadata{}
+	// if params.isAiAPI {
+	metaData = &corev3.Metadata{
+		FilterMetadata: map[string]*structpb.Struct{
+			"envoy.filters.http.ext_proc": &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					enableBackendBasedAIRatelimitAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: fmt.Sprintf("%t", resource.GetEnableBackendBasedAIRatelimit()),
+						},
+					},
+					backendBasedAIRatelimitDescriptorValueAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: resource.GetBackendBasedAIRatelimitDescriptorValue(),
+						},
+					},
+					pathAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: resourcePath,
+						},
+					},
+					vHostAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: vHost,
+						},
+					},
+					basePathAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: func() string {
+								if xWso2Basepath != "" {
+									return xWso2Basepath
+								}
+								return endpointBasepath
+							}(),
+						},
+					},
+					methodAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: strings.Join(resourceMethods, " "),
+						},
+					},
+					apiVersionAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: version,
+						},
+					},
+					apiNameAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: title,
+						},
+					},
+					clusterNameAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: clusterName,
+						},
+					},
+				},
+			},
+		},
+	}
+
 	contextExtensions := make(map[string]string)
 	contextExtensions[pathAttribute] = resourcePath
 	contextExtensions[vHostAttribute] = vHost
@@ -1037,66 +1098,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 	routeConfig := resource.GetEndpoints().Config
-	metaData := &corev3.Metadata{}
-	// if params.isAiAPI {
-	metaData = &corev3.Metadata{
-		FilterMetadata: map[string]*structpb.Struct{
-			"envoy.filters.http.ext_proc": &structpb.Struct{
-				Fields: map[string]*structpb.Value{
-					enableBackendBasedAIRatelimitAttribute: &structpb.Value{
-						Kind: &structpb.Value_StringValue{
-							StringValue: fmt.Sprintf("%t", resource.GetEnableBackendBasedAIRatelimit()),
-						},
-					},
-					backendBasedAIRatelimitDescriptorValueAttribute: &structpb.Value{
-						Kind: &structpb.Value_StringValue{
-							StringValue: resource.GetBackendBasedAIRatelimitDescriptorValue(),
-						},
-					},
-					pathAttribute: &structpb.Value{ // Use the variable here
-						Kind: &structpb.Value_StringValue{
-							StringValue: resourcePath,
-						},
-					},
-					vHostAttribute: &structpb.Value{ // Use the variable here
-						Kind: &structpb.Value_StringValue{
-							StringValue: vHost,
-						},
-					},
-					basePathAttribute: &structpb.Value{ // Use the variable here
-						Kind: &structpb.Value_StringValue{
-							StringValue: func() string {
-								if xWso2Basepath != "" {
-									return xWso2Basepath
-								}
-								return endpointBasepath
-							}(),
-						},
-					},
-					methodAttribute: &structpb.Value{ // Use the variable here
-						Kind: &structpb.Value_StringValue{
-							StringValue: strings.Join(resourceMethods, " "),
-						},
-					},
-					apiVersionAttribute: &structpb.Value{ // Use the variable here
-						Kind: &structpb.Value_StringValue{
-							StringValue: version,
-						},
-					},
-					apiNameAttribute: &structpb.Value{ // Use the variable here
-						Kind: &structpb.Value_StringValue{
-							StringValue: title,
-						},
-					},
-					clusterNameAttribute: &structpb.Value{ // Use the variable here
-						Kind: &structpb.Value_StringValue{
-							StringValue: clusterName,
-						},
-					},
-				},
-			},
-		},
-	}
+	
 	// } else {
 	// 	metaData = nil
 	// }
