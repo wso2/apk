@@ -28,7 +28,8 @@ func main() {
 
 	//Create the TLS configuration
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
-	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Second, tlsConfig, cfg, datastore.NewDataStore(cfg))
+	subAppDatastore := datastore.NewSubAppDataStore(cfg)
+	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Second, tlsConfig, cfg, subAppDatastore)
 	// Start the connection
 	client.InitiateEventingGRPCConnection()
 
@@ -36,7 +37,7 @@ func main() {
 	apiStore, _, _ := xds.CreateXDSClients(cfg)
 
 	// Start the external processing server
-	go extproc.StartExternalProcessingServer(cfg, apiStore)
+	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore)
 
 	// Wait forever
 	select {}
