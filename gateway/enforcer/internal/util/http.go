@@ -19,7 +19,6 @@ package util
 
 import (
 	"crypto/tls"
-	"log"
 	"net/http"
 )
 
@@ -39,9 +38,6 @@ func MakeGETRequest(url string, tlsConfig *tls.Config) (*http.Response, error) {
 
 	// Set request headers
 	req.Header.Set("Content-Type", "application/json")
-
-	log.Println("GET Request: ", req)
-
 	// Execute the request
 	return client.Do(req)
 }

@@ -48,10 +48,12 @@ import (
 // ExternalProcessingServer represents a server for handling external processing requests.
 // It contains a logger for logging purposes.
 type ExternalProcessingServer struct {
-	log                 logging.Logger
-	apiStore            *datastore.APIStore
-	ratelimitHelper     *ratelimit.AIRatelimitHelper
-	requestConfigHolder *requestconfig.Holder
+	log                              logging.Logger
+	apiStore                         *datastore.APIStore
+	subscriptionApplicationDatastore *datastore.SubscriptionApplicationDataStore
+	ratelimitHelper                  *ratelimit.AIRatelimitHelper
+	requestConfigHolder              *requestconfig.Holder
+	cfg                              *config.Server
 }
 
 const (
@@ -77,7 +79,7 @@ var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 //     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
-func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore) {
+func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore) {
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
@@ -92,7 +94,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 
 	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, ratelimitHelper, nil})
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, nil, cfg})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -164,7 +166,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
 
-			if immediateResponse := authorization.Validate(s.requestConfigHolder); immediateResponse != nil {
+			if immediateResponse := authorization.Validate(s.requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
 				resp = &envoy_service_proc_v3.ProcessingResponse{
 					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
 						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{

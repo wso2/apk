@@ -14,13 +14,15 @@
  *  limitations under the License.
  *
  */
- 
+
 package util
 
 import (
 	"fmt"
 	"strings"
 )
+
+const delimPeriod = ":"
 
 // PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
 func PrepareAPIKey(vhost, basePath, version string) string {
@@ -30,4 +32,9 @@ func PrepareAPIKey(vhost, basePath, version string) string {
 // NormalizePath normalizes the given path by removing backslashes.
 func NormalizePath(input string) string {
 	return strings.ReplaceAll(input, "\\", "")
+}
+
+// PrepareApplicationKeyMappingCacheKey generates a cache key for application key mapping.
+func PrepareApplicationKeyMappingCacheKey(applicationIdentifier, keyType, securityScheme, envID string) string {
+	return strings.Join([]string{securityScheme, envID, keyType, applicationIdentifier}, delimPeriod)
 }

@@ -125,13 +125,13 @@ func (c *EventingGRPCClient) HandleNotificationEvent(event *subscription_proto_m
 	case "APPLICATION_KEY_MAPPING_CREATED", "APPLICATION_KEY_MAPPING_UPDATED":
 		c.subAppDataStore.AddApplicationKeyMapping(convertProtoApplicationKeyMappingToRestApplicationKeyMapping(event.ApplicationKeyMapping))
 	case "SUBSCRIPTION_DELETED":
-		c.subAppDataStore.DeleteSubscription(event.Subscription.Uuid)
+		c.subAppDataStore.DeleteSubscription(convertProtoSubscriptionToRestSubscription(event.Subscription))
 	case "APPLICATION_MAPPING_DELETED":
-		c.subAppDataStore.DeleteApplicationMapping(event.ApplicationMapping.Uuid)
+		c.subAppDataStore.DeleteApplicationMapping(convertProtoApplicationMappingToRestApplicationMapping(event.ApplicationMapping))
 	case "APPLICATION_KEY_MAPPING_DELETED":
-		c.subAppDataStore.DeleteApplicationKeyMapping(event.ApplicationKeyMapping.ApplicationIdentifier)
+		c.subAppDataStore.DeleteApplicationKeyMapping(convertProtoApplicationKeyMappingToRestApplicationKeyMapping(event.ApplicationKeyMapping))
 	case "APPLICATION_DELETED":
-		c.subAppDataStore.DeleteApplication(event.Application.Uuid)
+		c.subAppDataStore.DeleteApplication(convertProtoApplicationToRestApplication(event.Application))
 	default:
 		log.Println("Unknown event type received from the server")
 	}
