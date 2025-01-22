@@ -15,19 +15,12 @@
  *
  */
  
-package util
+package requestconfig
 
-import (
-	"fmt"
-	"strings"
-)
-
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
-}
-
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// EndpointCluster represents the endpoint cluster configuration
+type EndpointCluster struct {
+	URLs                 []string `json:"urls"`                 // List of endpoint URLs
+	RetryConfig          *Retry   `json:"retry"`                // Retry configuration
+	RouteTimeoutInMillis *int     `json:"routeTimeoutInMillis"` // Route timeout in milliseconds
+	BasePath             string   `json:"basePath"`             // Base path for the endpoint cluster
 }

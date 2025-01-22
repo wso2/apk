@@ -15,19 +15,13 @@
  *
  */
  
-package util
+package requestconfig
 
-import (
-	"fmt"
-	"strings"
-)
-
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
-}
-
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// EndpointSecurity represents the endpoint security configuration
+type EndpointSecurity struct {
+	Password         string            `json:"password"`         // Password as a slice of runes
+	Username         string            `json:"username"`         // Username for the endpoint
+	Enabled          bool              `json:"enabled"`          // Whether security is enabled
+	SecurityType     string            `json:"securityType"`     // Type of security (e.g., basic, OAuth)
+	CustomParameters map[string]string `json:"customParameters"` // Custom parameters for security
 }

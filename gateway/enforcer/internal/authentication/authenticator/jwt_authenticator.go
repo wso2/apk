@@ -15,19 +15,26 @@
  *
  */
  
-package util
+package authenticator
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
+// JWTAuthenticator implements Authenticator for JWT tokens.
+type JWTAuthenticator struct{}
+
+// CanAuthenticate checks if the data contains a JWT token.
+func (j JWTAuthenticator) CanAuthenticate(data map[string]string) bool {
+	_, exists := data["jwtToken"]
+	return exists
 }
 
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// Authenticate validates the JWT token.
+func (j JWTAuthenticator) Authenticate(data map[string]string) (bool, error) {
+	token, exists := data["jwtToken"]
+	if !exists {
+		return false, fmt.Errorf("no JWT token found")
+	}
+	// Add actual JWT validation logic here.
+	fmt.Println("Validating JWT:", token)
+	return true, nil
 }

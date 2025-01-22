@@ -15,19 +15,11 @@
  *
  */
  
-package util
+package authconfig
 
-import (
-	"fmt"
-	"strings"
-)
-
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
-}
-
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// APIKeyAuthenticationConfig represents the configuration for API key authentication
+type APIKeyAuthenticationConfig struct {
+    In                 string `json:"in"`                 // The location of the API key (e.g., header, query)
+    Name               string `json:"name"`              // The name of the API key field
+    SendTokenToUpstream bool   `json:"sendTokenToUpstream"` // Whether to send the token to upstream
 }

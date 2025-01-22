@@ -15,19 +15,11 @@
  *
  */
  
-package util
+package requestconfig
 
-import (
-	"fmt"
-	"strings"
-)
-
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
+// Policy represents the policy configuration
+type Policy struct {
+	Action     string            `json:"action"`     // Action associated with the policy
+	Parameters map[string]string `json:"parameters"` // Map of parameters for the policy
 }
 
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
-}

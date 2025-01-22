@@ -52,7 +52,7 @@ func (r *client) start() {
 
 	// Create the TLS configuration
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
-	grpcConn := util.CreateGRPCConnectionWithRetryAndPanic(nil, r.cfg.RatelimiterHost, r.cfg.RatelimiterPort, tlsConfig, r.cfg.XdsMaxRetries, time.Duration(r.cfg.XdsRetryPeriod)*time.Millisecond)
+	grpcConn := util.CreateGRPCConnectionWithRetryAndPanic(context.TODO(), r.cfg.RatelimiterHost, r.cfg.RatelimiterPort, tlsConfig, r.cfg.XdsMaxRetries, time.Duration(r.cfg.XdsRetryPeriod)*time.Millisecond)
 	r.rlsClient = rls_svc.NewRateLimitServiceClient(grpcConn)
 	r.log.Info("Rate limit client started successfully")
 }

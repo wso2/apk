@@ -15,19 +15,10 @@
  *
  */
  
-package util
+package authconfig
 
-import (
-	"fmt"
-	"strings"
-)
-
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
-}
-
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// Oauth2AuthenticationConfig represents the configuration for OAuth2 authentication
+type Oauth2AuthenticationConfig struct {
+	Header              string `json:"header"`              // The header used for OAuth2
+	SendTokenToUpstream bool   `json:"sendTokenToUpstream"` // Whether to send the token to upstream
 }
