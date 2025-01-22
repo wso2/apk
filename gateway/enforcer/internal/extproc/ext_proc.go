@@ -212,7 +212,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				},
 			}
 
-			if s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+			if s.requestConfigHolder != nil &&
+				s.requestConfigHolder.MatchedAPI != nil && 
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == "Body" {
