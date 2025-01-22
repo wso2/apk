@@ -23,6 +23,8 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
+	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
+	"github.com/wso2/apk/gateway/enforcer/internal/authorization"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
@@ -62,8 +64,8 @@ const (
 	clusterNameAttribute                            string = "clusterName"
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
-	
 )
+
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 
 // StartExternalProcessingServer initializes and starts the external processing server.
@@ -144,12 +146,38 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			attributes, err := extractExternalProcessingAttributes(req.GetAttributes())
 			if err != nil {
 				s.log.Error(err, "failed to extract context attributes")
+				resp = &envoy_service_proc_v3.ProcessingResponse{
+					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+							Status: &v32.HttpStatus{
+								Code: v32.StatusCode_NotFound,
+							},
+							Body:    []byte("The requested resource is not available."),
+							Details: "Could not find the required attributes in the request.",
+						},
+					},
+				}
+				break
 			}
 			s.requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
 			s.requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
-			
+
+			if immediateResponse := authorization.Validate(s.requestConfigHolder); immediateResponse != nil {
+				resp = &envoy_service_proc_v3.ProcessingResponse{
+					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+							Status: &v32.HttpStatus{
+								Code: v32.StatusCode(immediateResponse.StatusCode),
+							},
+							Body: []byte(immediateResponse.Message),
+						},
+					},
+				}
+				break
+			}
+
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
@@ -184,7 +212,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			// s.log.Info(fmt.Sprintf("Matched api: %s", s.matchedAPI))
 			if s.requestConfigHolder != nil &&
-				s.requestConfigHolder.MatchedAPI != nil && 
+				s.requestConfigHolder.MatchedAPI != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
@@ -213,7 +241,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 			if s.requestConfigHolder != nil &&
-				s.requestConfigHolder.MatchedAPI != nil && 
+				s.requestConfigHolder.MatchedAPI != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&

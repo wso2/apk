@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package datastore
 
 import (
@@ -27,51 +27,46 @@ import (
 func buildResource(operation *api.Operation, path string, endpointSecurity []*requestconfig.EndpointSecurity) requestconfig.Resource {
 	authConfig := auth.AuthenticationConfig{
 		Disabled: operation.ApiAuthentication.Disabled,
-
 	}
 	if operation.ApiAuthentication != nil {
 		if operation.ApiAuthentication.GetOauth2() != nil {
 			authConfig.Oauth2AuthenticationConfig = &auth.Oauth2AuthenticationConfig{
-				Header: operation.ApiAuthentication.GetOauth2().GetHeader(),
+				Header:              operation.ApiAuthentication.GetOauth2().GetHeader(),
 				SendTokenToUpstream: operation.ApiAuthentication.GetOauth2().GetSendTokenToUpstream(),
 			}
 		}
 		if operation.ApiAuthentication.GetJwt() != nil {
 			authConfig.JWTAuthenticationConfig = &auth.JWTAuthenticationConfig{
-				Header: operation.ApiAuthentication.GetJwt().GetHeader(),
+				Header:              operation.ApiAuthentication.GetJwt().GetHeader(),
 				SendTokenToUpstream: operation.ApiAuthentication.GetJwt().GetSendTokenToUpstream(),
-				Audience: operation.ApiAuthentication.GetJwt().GetAudience(),
+				Audience:            operation.ApiAuthentication.GetJwt().GetAudience(),
 			}
 		}
 		apiKeyAuthConfigs := make([]*auth.APIKeyAuthenticationConfig, len(operation.ApiAuthentication.Apikey))
 		for i, apiKey := range operation.ApiAuthentication.Apikey {
 			apiKeyAuthConfigs[i] = &auth.APIKeyAuthenticationConfig{
-				In: apiKey.GetIn(),
-				Name: apiKey.GetName(),
+				In:                  apiKey.GetIn(),
+				Name:                apiKey.GetName(),
 				SendTokenToUpstream: apiKey.GetSendTokenToUpstream(),
 			}
 		}
 		authConfig.APIKeyAuthenticationConfigs = apiKeyAuthConfigs
 	}
-
-	
-	
 	return requestconfig.Resource{
-		MatchID:  operation.MatchID,
-		Path:    util.NormalizePath(path),
-		Method: requestconfig.HTTPMethods(operation.Method),
-		Tier:   operation.Tier,
-		EndpointSecurity: endpointSecurity,
+		MatchID:              operation.MatchID,
+		Path:                 util.NormalizePath(path),
+		Method:               requestconfig.HTTPMethods(operation.Method),
+		Tier:                 operation.Tier,
+		EndpointSecurity:     endpointSecurity,
 		AuthenticationConfig: authConfig,
-		Scopes: operation.Scopes,
+		Scopes:               operation.Scopes,
 	}
 }
 
 func buildPolicy(policies *api.OperationPolicies) requestconfig.PolicyConfig {
 	return requestconfig.PolicyConfig{
-		Request: policies.Request,
+		Request:  policies.Request,
 		Response: policies.Response,
-		Fault: policies.Fault,
-
+		Fault:    policies.Fault,
 	}
 }
