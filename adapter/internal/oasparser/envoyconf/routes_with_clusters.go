@@ -833,6 +833,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	contextExtensions := make(map[string]string)
 	contextExtensions[pathAttribute] = resourcePath
 	contextExtensions[vHostAttribute] = vHost
+	basePathForExternalProcessing := xWso2Basepath
 	if xWso2Basepath != "" {
 		contextExtensions[basePathAttribute] = xWso2Basepath
 	} else {
@@ -1066,8 +1067,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					basePathAttribute: &structpb.Value{ // Use the variable here
 						Kind: &structpb.Value_StringValue{
 							StringValue: func() string {
-								if xWso2Basepath != "" {
-									return xWso2Basepath
+								if basePathForExternalProcessing != "" {
+									return basePathForExternalProcessing
 								}
 								return endpointBasepath
 							}(),
