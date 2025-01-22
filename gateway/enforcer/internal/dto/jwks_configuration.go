@@ -15,19 +15,15 @@
  *
  */
  
-package util
+package dto
 
 import (
-	"fmt"
-	"strings"
+	"crypto/x509"
 )
 
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
-}
-
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// JWKSConfiguration represents the JWKS configuration
+type JWKSConfiguration struct {
+    URL        string       `json:"url"`        // URL for JWKS
+    Enabled    bool         `json:"enabled"`    // Whether JWKS is enabled
+    Certificate *x509.Certificate `json:"certificate"` // Certificate related to JWKS (optional)
 }

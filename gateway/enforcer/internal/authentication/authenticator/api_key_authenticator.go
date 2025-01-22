@@ -15,19 +15,26 @@
  *
  */
  
-package util
+package authenticator
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
+// APIKeyAuthenticator implements Authenticator for API keys.
+type APIKeyAuthenticator struct{}
+
+// CanAuthenticate checks if the data contains an API key.
+func (a APIKeyAuthenticator) CanAuthenticate(data map[string]string) bool {
+	_, exists := data["apiKey"]
+	return exists
 }
 
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// Authenticate validates the API key.
+func (a APIKeyAuthenticator) Authenticate(data map[string]string) (bool, error) {
+	key, exists := data["apiKey"]
+	if !exists {
+		return false, fmt.Errorf("no API key found")
+	}
+	// Add actual API key validation logic here.
+	fmt.Println("Validating API key:", key)
+	return true, nil
 }

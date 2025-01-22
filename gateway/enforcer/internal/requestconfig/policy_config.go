@@ -15,19 +15,15 @@
  *
  */
  
-package util
+package requestconfig
 
 import (
-	"fmt"
-	"strings"
+	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 )
 
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
-}
-
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// PolicyConfig represents the policy configuration
+type PolicyConfig struct {
+	Request  []*api.Policy `json:"request"`  // List of policies for the request
+	Response []*api.Policy `json:"response"` // List of policies for the response
+	Fault    []*api.Policy `json:"fault"`    // List of policies for the fault
 }

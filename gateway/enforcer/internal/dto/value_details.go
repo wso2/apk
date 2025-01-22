@@ -15,19 +15,10 @@
  *
  */
  
-package util
+package dto
 
-import (
-	"fmt"
-	"strings"
-)
-
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
-}
-
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// ValueDetails represents the value details
+type ValueDetails struct {
+    In    string `json:"in"`    // The input identifier
+    Value string `json:"value"` // The value associated with the input
 }

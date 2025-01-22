@@ -46,9 +46,9 @@ func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.Confi
 
 	// Create the TLS configuration
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
-	apiDatastore := datastore.NewAPIStore()
 	configDatastore := datastore.NewConfigStore()
 	jwtIssuerDatastore := datastore.NewJWTIssuerStore()
+	apiDatastore := datastore.NewAPIStore(configDatastore)
 	apiXDSClient := NewAPIXDSClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, apiDatastore)
 	configXDSClient := NewXDSConfigClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, configDatastore)
 	jwtIssuerXDSClient := NewJWTIssuerXDSClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, jwtIssuerDatastore)

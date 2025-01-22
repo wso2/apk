@@ -23,15 +23,16 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
-	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
+	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
+	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
+	"github.com/wso2/apk/gateway/enforcer/internal/requesthandler"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 
 	"net"
-	"regexp"
 	"time"
 
 	"google.golang.org/grpc"
@@ -45,24 +46,10 @@ import (
 // ExternalProcessingServer represents a server for handling external processing requests.
 // It contains a logger for logging purposes.
 type ExternalProcessingServer struct {
-	log                               logging.Logger
-	externalProcessingEnvoyAttributes *ExternalProcessingEnvoyAttributes
-	matchedAPI                        *api.Api
-	apiStore                          *datastore.APIStore
-	ratelimitHelper                   *ratelimit.AIRatelimitHelper
-}
-
-// ExternalProcessingEnvoyAttributes represents the attributes extracted from the external processing request.
-type ExternalProcessingEnvoyAttributes struct {
-	EnableBackendBasedAIRatelimit          string `json:"enableBackendBasedAIRatelimitAttribute"`
-	BackendBasedAIRatelimitDescriptorValue string `json:"backendBasedAIRatelimitDescriptorValueAttribute"`
-	Path                                   string `json:"pathAttribute"`
-	VHost                                  string `json:"vHostAttribute"`
-	BasePath                               string `json:"basePathAttribute"`
-	Method                                 string `json:"methodAttribute"`
-	APIVersion                             string `json:"apiVersionAttribute"`
-	APIName                                string `json:"apiNameAttribute"`
-	ClusterName                            string `json:"clusterNameAttribute"`
+	log                 logging.Logger
+	apiStore            *datastore.APIStore
+	ratelimitHelper     *ratelimit.AIRatelimitHelper
+	requestConfigHolder *requestconfig.Holder
 }
 
 const (
@@ -75,13 +62,9 @@ const (
 	clusterNameAttribute                            string = "clusterName"
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
+	
 )
-
-// Define the regular expression as a constant
-const keyValuePattern = `key: "([^.]*)" value { string_value: "(.*?)" }`
-
-// Pre-compile the regular expression
-var re = regexp.MustCompile(keyValuePattern)
+var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 
 // StartExternalProcessingServer initializes and starts the external processing server.
 // It creates a gRPC server using the provided configuration and registers the external
@@ -107,7 +90,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 
 	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, nil, nil, apiStore, ratelimitHelper})
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, ratelimitHelper, nil})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -153,14 +136,20 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		}
 
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
+		// log req.Attributes
+		s.log.Info(fmt.Sprintf("Attributes: %+v", req.Attributes))
+		s.requestConfigHolder = &requestconfig.Holder{}
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
 			attributes, err := extractExternalProcessingAttributes(req.GetAttributes())
 			if err != nil {
 				s.log.Error(err, "failed to extract context attributes")
 			}
-			s.externalProcessingEnvoyAttributes = attributes
-			s.matchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(s.externalProcessingEnvoyAttributes.VHost, s.externalProcessingEnvoyAttributes.BasePath, s.externalProcessingEnvoyAttributes.APIVersion))
+			s.requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
+			s.requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
+			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
+			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
+			
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
@@ -168,7 +157,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							{
 								Header: &corev3.HeaderValue{
 									Key:      "x-wso2-cluster-header",
-									RawValue: []byte(s.externalProcessingEnvoyAttributes.ClusterName),
+									RawValue: []byte(attributes.ClusterName),
 								},
 							},
 						},
@@ -184,7 +173,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
-			s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
+			// s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
@@ -194,23 +183,25 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				},
 			}
 			// s.log.Info(fmt.Sprintf("Matched api: %s", s.matchedAPI))
-			if s.matchedAPI != nil && s.matchedAPI.Aiprovider != nil &&
-				s.matchedAPI.Aiprovider.CompletionToken != nil &&
-				s.externalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				s.matchedAPI.Aiprovider.CompletionToken.In == "Header" {
+			if s.requestConfigHolder != nil &&
+				s.requestConfigHolder.MatchedAPI != nil && 
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
+				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == "Header" {
 				s.log.Info("Backend based AI rate limit enabled using headers")
-				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(), s.matchedAPI.Aiprovider.PromptTokens.Value, s.matchedAPI.Aiprovider.CompletionToken.Value, s.matchedAPI.Aiprovider.CompletionToken.Value, s.matchedAPI.Aiprovider.Model.Value)
+				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(), s.requestConfigHolder.MatchedAPI.AiProvider.PromptTokens.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response headers")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.externalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
+					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
 				}
 			}
 
 			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
-			s.log.Info(fmt.Sprintf("attribute %+v\n", s.externalProcessingEnvoyAttributes))
+			s.log.Info(fmt.Sprintf("attribute %+v\n", s.requestConfigHolder.ExternalProcessingEnvoyAttributes))
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -221,16 +212,16 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				},
 			}
 
-			if s.matchedAPI.Aiprovider != nil &&
-				s.matchedAPI.Aiprovider.CompletionToken != nil &&
-				s.externalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				s.matchedAPI.Aiprovider.CompletionToken.In == "Body" {
+			if s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
+				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == "Body" {
 				s.log.Info("Backend based AI rate limit enabled using body")
-				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body, s.matchedAPI.Aiprovider.PromptTokens.Value, s.matchedAPI.Aiprovider.CompletionToken.Value, s.matchedAPI.Aiprovider.CompletionToken.Value, s.matchedAPI.Aiprovider.Model.Value)
+				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body, s.requestConfigHolder.MatchedAPI.AiProvider.PromptTokens.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.externalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
+					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
 				}
 			}
 
@@ -255,7 +246,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 }
 
 // extractExternalProcessingAttributes extracts the external processing attributes from the given data.
-func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*ExternalProcessingEnvoyAttributes, error) {
+func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*dto.ExternalProcessingEnvoyAttributes, error) {
 
 	// Get the fields from the map
 	extProcData, exists := data["envoy.filters.http.ext_proc"]
@@ -264,8 +255,14 @@ func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*Ext
 	}
 
 	// Extract the "fields" and iterate over them
-	attributes := &ExternalProcessingEnvoyAttributes{}
+	attributes := &dto.ExternalProcessingEnvoyAttributes{}
 	fields := extProcData.Fields
+
+	if field, ok := fields["request.method"]; ok {
+		method := field.GetStringValue()
+		attributes.RequestMehod = method
+		fmt.Printf("*******   %s\n", method)
+	}
 
 	// We need to navigate through the nested fields to get the actual values
 	if field, ok := fields["xds.route_metadata"]; ok {

@@ -15,19 +15,10 @@
  *
  */
  
-package util
+package requestconfig
 
-import (
-	"fmt"
-	"strings"
-)
-
-// PrepareAPIKey prepares the API key using the given vhost, basePath, and version.
-func PrepareAPIKey(vhost, basePath, version string) string {
-	return fmt.Sprintf("%s:%s:%s", vhost, basePath, version)
-}
-
-// NormalizePath normalizes the given path by removing backslashes.
-func NormalizePath(input string) string {
-	return strings.ReplaceAll(input, "\\", "")
+// Header represents the header configuration
+type Header struct {
+	Name  string `json:"name"`  // Name of the header
+	Value string `json:"value"` // Value of the header
 }
