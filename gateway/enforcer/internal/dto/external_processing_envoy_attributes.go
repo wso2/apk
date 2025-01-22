@@ -14,19 +14,23 @@
  *  limitations under the License.
  *
  */
- 
+
 package dto
 
 // ExternalProcessingEnvoyAttributes represents the attributes extracted from the external processing request.
 type ExternalProcessingEnvoyAttributes struct {
-	EnableBackendBasedAIRatelimit          string `json:"enableBackendBasedAIRatelimitAttribute"`
-	BackendBasedAIRatelimitDescriptorValue string `json:"backendBasedAIRatelimitDescriptorValueAttribute"`
-	Path                                   string `json:"pathAttribute"`
-	VHost                                  string `json:"vHostAttribute"`
-	BasePath                               string `json:"basePathAttribute"`
-	Method                                 string `json:"methodAttribute"`
-	APIVersion                             string `json:"apiVersionAttribute"`
-	APIName                                string `json:"apiNameAttribute"`
-	ClusterName                            string `json:"clusterNameAttribute"`
-	RequestMehod                           string `json:"requestMehodAttribute"`
+	EnableBackendBasedAIRatelimit          string   `json:"enableBackendBasedAIRatelimitAttribute"`
+	BackendBasedAIRatelimitDescriptorValue string   `json:"backendBasedAIRatelimitDescriptorValueAttribute"`
+	Path                                   string   `json:"pathAttribute"`
+	VHost                                  string   `json:"vHostAttribute"`
+	BasePath                               string   `json:"basePathAttribute"`
+	Method                                 string   `json:"methodAttribute"`
+	APIVersion                             string   `json:"apiVersionAttribute"`
+	APIName                                string   `json:"apiNameAttribute"`
+	ClusterName                            string   `json:"clusterNameAttribute"`
+	RequestMehod                           string   `json:"requestMehodAttribute"`
+	Scopes                                 []string `json:"scopesAttribute"`
+	ConsumerKey                            string   `json:"consumerKeyAttribute"`
+	Organization                           string   `json:"organizationAttribute"`
+	ApplicationID                          string   `json:"applicationIdAttribute"`
 }
