@@ -24,8 +24,8 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 )
 
-// Do performs the authorization.
-func Do(rch *requestconfig.Holder) *dto.ImmediateResponse{
+// Validate performs the authorization.
+func Validate(rch *requestconfig.Holder) *dto.ImmediateResponse {
 	if immediateResponse := ValidateScopes(rch.ExternalProcessingEnvoyAttributes.Scopes, rch.MatchedResource.Scopes, rch.MatchedResource.Path); immediateResponse != nil {
 		return immediateResponse
 	}

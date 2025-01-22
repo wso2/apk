@@ -64,8 +64,8 @@ const (
 	clusterNameAttribute                            string = "clusterName"
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
-	
 )
+
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 
 // StartExternalProcessingServer initializes and starts the external processing server.
@@ -152,7 +152,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							Status: &v32.HttpStatus{
 								Code: v32.StatusCode_NotFound,
 							},
-							Body: []byte("The requested resource is not available."),
+							Body:    []byte("The requested resource is not available."),
 							Details: "Could not find the required attributes in the request.",
 						},
 					},
@@ -163,8 +163,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
-			
-			if immediateResponse := authorization.Do(s.requestConfigHolder); immediateResponse != nil {
+
+			if immediateResponse := authorization.Validate(s.requestConfigHolder); immediateResponse != nil {
 				resp = &envoy_service_proc_v3.ProcessingResponse{
 					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
 						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
@@ -212,7 +212,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			// s.log.Info(fmt.Sprintf("Matched api: %s", s.matchedAPI))
 			if s.requestConfigHolder != nil &&
-				s.requestConfigHolder.MatchedAPI != nil && 
+				s.requestConfigHolder.MatchedAPI != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
@@ -241,7 +241,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 			if s.requestConfigHolder != nil &&
-				s.requestConfigHolder.MatchedAPI != nil && 
+				s.requestConfigHolder.MatchedAPI != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
