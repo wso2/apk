@@ -66,6 +66,11 @@ const (
 	clusterNameAttribute                            string = "clusterName"
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
+	externalProessingMetadataContextKey             string = "envoy.filters.http.ext_proc"
+	subscriptionMetadataKey                         string = "ratelimit:subscription"
+	usagePolicyMetadataKey                          string = "ratelimit:usage-policy"
+	organizationMetadataKey                         string = "ratelimit:organization"
+	orgAndRLPolicyMetadataKey                       string = "ratelimit:organization-and-rlpolicy"
 )
 
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
@@ -142,9 +147,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
 		// log req.Attributes
 		s.log.Info(fmt.Sprintf("Attributes: %+v", req.Attributes))
-		s.requestConfigHolder = &requestconfig.Holder{}
+		
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
+			s.requestConfigHolder = &requestconfig.Holder{}
 			attributes, err := extractExternalProcessingAttributes(req.GetAttributes())
 			if err != nil {
 				s.log.Error(err, "failed to extract context attributes")
@@ -165,7 +171,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
-
+			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
 			if immediateResponse := authorization.Validate(s.requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
 				resp = &envoy_service_proc_v3.ProcessingResponse{
 					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
@@ -178,6 +184,22 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					},
 				}
 				break
+			}
+			resp = &envoy_service_proc_v3.ProcessingResponse{}
+			var dynamicMetadata *structpb.Struct
+			if s.requestConfigHolder.MatchedSubscription != nil && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
+				// Set dynamic metadata
+				dynamicMetadata, err = buildDynamicMetadata(&map[string]string{
+					subscriptionMetadataKey:   s.requestConfigHolder.MatchedSubscription.UUID,
+					usagePolicyMetadataKey:    s.requestConfigHolder.MatchedSubscription.RatelimitTier,
+					organizationMetadataKey:   s.requestConfigHolder.MatchedAPI.OrganizationID,
+					orgAndRLPolicyMetadataKey: fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier),
+				})
+				if err != nil {
+					s.log.Error(err, "failed to build dynamic metadata")
+				} else {
+					resp.DynamicMetadata = dynamicMetadata
+				}
 			}
 
 			rhq := &envoy_service_proc_v3.HeadersResponse{
@@ -196,12 +218,21 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ClearRouteCache: true,
 				},
 			}
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
+				RequestHeaders: rhq,
+			}
+
+		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
+			// httpBody := req.GetRequestBody()
+			// s.log.Info(fmt.Sprint("request body"))
+			rbq := &envoy_service_proc_v3.BodyResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{},
+			}
 			resp = &envoy_service_proc_v3.ProcessingResponse{
-				Response: &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
-					RequestHeaders: rhq,
+				Response: &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+					RequestBody: rbq,
 				},
 			}
-			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			// s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
@@ -218,20 +249,25 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == "Header" {
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
 				s.log.Info("Backend based AI rate limit enabled using headers")
-				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(), s.requestConfigHolder.MatchedAPI.AiProvider.PromptTokens.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.Model.Value)
+				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(),
+					s.requestConfigHolder.MatchedAPI.AiProvider.PromptTokens.Value,
+					s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value,
+					s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value,
+					s.requestConfigHolder.MatchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response headers")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
+					s.ratelimitHelper.DoAIRatelimit(tokenCount, true,
+						s.requestConfigHolder.MatchedAPI.DoSubscriptionAIRLInHeaderReponse,
+						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
+						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
 				}
 			}
-
-			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
-			s.log.Info(fmt.Sprintf("attribute %+v\n", s.requestConfigHolder.ExternalProcessingEnvoyAttributes))
+			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -247,26 +283,17 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == "Body" {
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
 				s.log.Info("Backend based AI rate limit enabled using body")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body, s.requestConfigHolder.MatchedAPI.AiProvider.PromptTokens.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
+					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, 
+						s.requestConfigHolder.MatchedAPI.DoSubscriptionAIRLInBodyReponse, 
+						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue, 
+						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
 				}
-			}
-
-		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
-			// httpBody := req.GetRequestBody()
-			// s.log.Info(fmt.Sprint("request body"))
-			rbq := &envoy_service_proc_v3.BodyResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{},
-			}
-			resp = &envoy_service_proc_v3.ProcessingResponse{
-				Response: &envoy_service_proc_v3.ProcessingResponse_RequestBody{
-					RequestBody: rbq,
-				},
 			}
 		default:
 			s.log.Info(fmt.Sprintf("Unknown Request type %v\n", v))
@@ -358,4 +385,37 @@ func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*dto
 
 	// Key not found
 	return nil, fmt.Errorf("key xds.route_metadata not found")
+}
+
+func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, error) {
+	// Create the structBuilder
+	structBuilder := &structpb.Struct{
+		Fields: map[string]*structpb.Value{},
+	}
+
+	// Helper function to add metadata
+	addMetadata := func(builder *structpb.Struct, key string, value interface{}) error {
+		val, err := structpb.NewValue(value)
+		if err != nil {
+			return err
+		}
+		builder.Fields[key] = val
+		return nil
+	}
+
+	for key, value := range *keyValuePairs {
+		// Add metadata fields
+		if err := addMetadata(structBuilder, key, value); err != nil {
+			return nil, err
+		}
+	}
+
+	// Create the root struct and add the nested struct
+	rootStruct := &structpb.Struct{
+		Fields: map[string]*structpb.Value{},
+	}
+	nestedValue := structpb.NewStructValue(structBuilder)
+	rootStruct.Fields[externalProessingMetadataContextKey] = nestedValue
+
+	return rootStruct, nil
 }

@@ -14,14 +14,19 @@
  *  limitations under the License.
  *
  */
- 
+
 package requestconfig
 
-import "github.com/wso2/apk/gateway/enforcer/internal/dto"
+import (
+	subscription_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
+	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+)
 
 // Holder is a struct that holds the request configuration.
 type Holder struct {
 	MatchedAPI                        *API
 	MatchedResource                   *Resource
 	ExternalProcessingEnvoyAttributes *dto.ExternalProcessingEnvoyAttributes
+	MatchedSubscription               *subscription_model.Subscription
+	MatchedApplication                *subscription_model.Application
 }

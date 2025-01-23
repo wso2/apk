@@ -17,6 +17,13 @@
  
 package dto
 
+const (
+    // InHeader represents the header input
+    InHeader = "Header"
+    // InBody represents the body input
+    InBody = "Body"
+)
+
 // ValueDetails represents the value details
 type ValueDetails struct {
     In    string `json:"in"`    // The input identifier

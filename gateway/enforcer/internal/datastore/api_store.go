@@ -74,8 +74,10 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			SubscriptionValidation: api.SubscriptionValidation,
 			// Endpoints:              api.Endpoints,
 			// EndpointSecurity:       convertSecurityInfoToEndpointSecurity(api.EndpointSecurity),
-			AiProvider:             convertAIProviderToDTO(api.Aiprovider),
-			AIModelBasedRoundRobin: convertAIModelBasedRoundRobinToDTO(api.AiModelBasedRoundRobin),
+			AiProvider:                        convertAIProviderToDTO(api.Aiprovider),
+			AIModelBasedRoundRobin:            convertAIModelBasedRoundRobinToDTO(api.AiModelBasedRoundRobin),
+			DoSubscriptionAIRLInHeaderReponse: api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InHeader,
+			DoSubscriptionAIRLInBodyReponse:   api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InBody,
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
