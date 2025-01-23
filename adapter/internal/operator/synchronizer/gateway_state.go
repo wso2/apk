@@ -21,6 +21,7 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -36,7 +37,7 @@ type GatewayState struct {
 // +k8s:deepcopy-gen=true
 type GatewayStateData struct {
 	GatewayResolvedListenerCerts     map[string]map[string][]byte
-	GatewayAPIPolicies               map[string]v1alpha3.APIPolicy
+	GatewayAPIPolicies               map[string]v1alpha4.APIPolicy
 	GatewayBackendMapping            map[string]*v1alpha2.ResolvedBackend
 	GatewayInterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	GatewayCustomRateLimitPolicies   map[string]*v1alpha3.RateLimitPolicy

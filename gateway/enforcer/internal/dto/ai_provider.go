@@ -14,17 +14,18 @@
  *  limitations under the License.
  *
  */
- 
+
 package dto
 
 // AIProvider represents the AI provider details.
 type AIProvider struct {
-    ProviderName        string       `json:"providerName"`        // Name of the AI provider
-    ProviderAPIVersion  string       `json:"providerAPIVersion"`  // API version of the AI provider
-    Organization        string       `json:"organization"`        // Organization associated with the provider
-    Enabled             bool         `json:"enabled"`             // Whether the provider is enabled
-    Model               *ValueDetails `json:"model"`               // Model details
-    PromptTokens        *ValueDetails `json:"promptTokens"`        // Prompt token details
-    CompletionToken     *ValueDetails `json:"completionToken"`     // Completion token details
-    TotalToken          *ValueDetails `json:"totalToken"`          // Total token details
+	ProviderName       string        `json:"providerName"`       // Name of the AI provider
+	ProviderAPIVersion string        `json:"providerAPIVersion"` // API version of the AI provider
+	Organization       string        `json:"organization"`       // Organization associated with the provider
+	Enabled            bool          `json:"enabled"`            // Whether the provider is enabled
+	SupportedModels    []string      `json:"supportedModels"`    // Supported models
+	Model              *ValueDetails `json:"model"`              // Model details
+	PromptTokens       *ValueDetails `json:"promptTokens"`       // Prompt token details
+	CompletionToken    *ValueDetails `json:"completionToken"`    // Completion token details
+	TotalToken         *ValueDetails `json:"totalToken"`         // Total token details
 }

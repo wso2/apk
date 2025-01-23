@@ -32,6 +32,7 @@ import (
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -186,6 +187,7 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 			ProviderName:       aiProviderFromInternalAPI.ProviderName,
 			ProviderAPIVersion: aiProviderFromInternalAPI.ProviderAPIVersion,
 			Organization:       aiProviderFromInternalAPI.Organization,
+			SupportedModels:    aiProviderFromInternalAPI.SupportedModels,
 			Model: &api.ValueDetails{
 				In:    aiProviderFromInternalAPI.Model.In,
 				Value: aiProviderFromInternalAPI.Model.Value,
@@ -206,6 +208,21 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 	}
 
 	logger.LoggerOasparser.Debugf("After Conversion AI Provider: %+v", aiProvider)
+
+	var modelBasedRoundRobin *api.AIModelBasedRoundRobin
+
+	modelBasedRoundRobinFromInternalAPI := adapterInternalAPI.GetModelBasedRoundRobin()
+	logger.LoggerOasparser.Debugf("Before Internal Model Based Round Robin: %+v", modelBasedRoundRobinFromInternalAPI)
+
+	if modelBasedRoundRobinFromInternalAPI.Models != nil {
+		modelBasedRoundRobin = &api.AIModelBasedRoundRobin{
+			Enabled:                      true,
+			OnQuotaExceedSuspendDuration: int32(modelBasedRoundRobinFromInternalAPI.OnQuotaExceedSuspendDuration),
+			Models:                       convertModelWeights(modelBasedRoundRobinFromInternalAPI.Models),
+		}
+	}
+
+	logger.LoggerOasparser.Debugf("After Conversion Model Based Round Robin: %+v", modelBasedRoundRobin)
 
 	return &api.Api{
 		Id:                     adapterInternalAPI.UUID,
@@ -242,6 +259,12 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 			return nil
 		}(),
 		HttpRouteIDs: adapterInternalAPI.HTTPRouteIDs,
+		AiModelBasedRoundRobin: func() *api.AIModelBasedRoundRobin {
+			if modelBasedRoundRobin != nil && modelBasedRoundRobin.Enabled {
+				return modelBasedRoundRobin
+			}
+			return nil
+		}(),
 	}
 }
 
@@ -375,6 +398,17 @@ func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) *ap
 		}
 	}
 	return endpoints
+}
+
+func convertModelWeights(inputModels []v1alpha4.ModelWeight) []*api.ModelWeight {
+	var outputModels []*api.ModelWeight
+	for _, model := range inputModels {
+		outputModels = append(outputModels, &api.ModelWeight{
+			Model:  model.Model,
+			Weight: int32(model.Weight),
+		})
+	}
+	return outputModels
 }
 
 func generateRPCEndpointSecurity(inputEndpointSecurity []*model.EndpointSecurity) []*api.SecurityInfo {

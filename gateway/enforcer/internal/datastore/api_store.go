@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
+	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
@@ -73,8 +74,8 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			SubscriptionValidation: api.SubscriptionValidation,
 			// Endpoints:              api.Endpoints,
 			// EndpointSecurity:       convertSecurityInfoToEndpointSecurity(api.EndpointSecurity),
-			// AiProvider:             api.Aiprovider,
-
+			AiProvider:             convertAIProviderToDTO(api.Aiprovider),
+			AIModelBasedRoundRobin: convertAIModelBasedRoundRobinToDTO(api.AiModelBasedRoundRobin),
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
@@ -107,6 +108,60 @@ func (s *APIStore) GetAPIs() map[string]*requestconfig.API {
 	return s.apis
 }
 
+// convertAIModelBasedRoundRobinToDTO converts AIModelBasedRoundRobin to DTO.
+func convertAIModelBasedRoundRobinToDTO(aiModelBasedRoundRobin *api.AIModelBasedRoundRobin) *dto.AIModelBasedRoundRobin {
+	if aiModelBasedRoundRobin == nil {
+		return nil
+	}
+	return &dto.AIModelBasedRoundRobin{
+		Enabled:                      aiModelBasedRoundRobin.Enabled,
+		OnQuotaExceedSuspendDuration: int(aiModelBasedRoundRobin.OnQuotaExceedSuspendDuration),
+		Models:                       convertModelWeights(aiModelBasedRoundRobin.Models),
+	}
+}
+
+// convertModelWeights converts []*api.ModelWeight to []dto.ModelWeight.
+func convertModelWeights(apiModelWeights []*api.ModelWeight) []dto.ModelWeight {
+	dtoModelWeights := make([]dto.ModelWeight, len(apiModelWeights))
+	for i, modelWeight := range apiModelWeights {
+		dtoModelWeights[i] = dto.ModelWeight{
+			Model:  modelWeight.Model,
+			Weight: int(modelWeight.Weight),
+		}
+	}
+	return dtoModelWeights
+}
+
+// convertAIProviderToDTO converts AIProvider to DTO.
+func convertAIProviderToDTO(aiProvider *api.AIProvider) *dto.AIProvider {
+	if aiProvider == nil {
+		return nil
+	}
+	return &dto.AIProvider{
+		ProviderName:       aiProvider.ProviderName,
+		ProviderAPIVersion: aiProvider.ProviderAPIVersion,
+		Organization:       aiProvider.Organization,
+		Enabled:            aiProvider.Enabled,
+		SupportedModels:    aiProvider.SupportedModels,
+		Model:              convertValueDetailsPtr(aiProvider.Model),
+		PromptTokens:       convertValueDetailsPtr(aiProvider.PromptTokens),
+		CompletionToken:    convertValueDetailsPtr(aiProvider.CompletionToken),
+		TotalToken:         convertValueDetailsPtr(aiProvider.TotalToken),
+	}
+}
+
+// convertValueDetailsPtr converts *api.ValueDetails to *dto.ValueDetails.
+func convertValueDetailsPtr(valueDetails *api.ValueDetails) *dto.ValueDetails {
+	if valueDetails == nil {
+		return nil
+	}
+	return &dto.ValueDetails{
+		In:    valueDetails.In,
+		Value: valueDetails.Value,
+	}
+}
+
+// GetMatchedAPI retrieves the API that matches the given API key.
 // GetMatchedAPI retrieves the API that matches the given API key.
 func (s *APIStore) GetMatchedAPI(apiKey string) *requestconfig.API {
 	s.mu.RLock()

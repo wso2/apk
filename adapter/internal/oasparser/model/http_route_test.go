@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 )
 
 func TestConcatRateLimitPolicies(t *testing.T) {
@@ -198,35 +199,35 @@ func TestConcatRateLimitPolicies(t *testing.T) {
 func TestConcatAPIPolicies(t *testing.T) {
 
 	type testItem struct {
-		schemeUpSpec   dpv1alpha3.APIPolicySpec
-		schemeDownSpec dpv1alpha3.APIPolicySpec
-		result         dpv1alpha3.APIPolicySpec
+		schemeUpSpec   dpv1alpha4.APIPolicySpec
+		schemeDownSpec dpv1alpha4.APIPolicySpec
+		result         dpv1alpha4.APIPolicySpec
 		message        string
 	}
 
-	schemeUp := &dpv1alpha3.APIPolicy{}
-	schemeDown := &dpv1alpha3.APIPolicy{}
-	resultScheme := &dpv1alpha3.APIPolicy{}
+	schemeUp := &dpv1alpha4.APIPolicy{}
+	schemeDown := &dpv1alpha4.APIPolicy{}
+	resultScheme := &dpv1alpha4.APIPolicy{}
 
 	dataItems := []testItem{
 		{
-			schemeUpSpec: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeUpSpec: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i1"},
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeDownSpec: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i2"},
 					},
 				},
 			},
-			result: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			result: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i1"},
 					},
 				},
@@ -234,23 +235,23 @@ func TestConcatAPIPolicies(t *testing.T) {
 			message: "only schemeUp override policies should be provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha3.APIPolicySpec{
-				Default: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeUpSpec: dpv1alpha4.APIPolicySpec{
+				Default: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i1"},
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeDownSpec: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i2"},
 					},
 				},
 			},
-			result: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			result: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i2"},
 					},
 				},
@@ -258,23 +259,23 @@ func TestConcatAPIPolicies(t *testing.T) {
 			message: "only schemeDown override policies should be provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha3.APIPolicySpec{
-				Default: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeUpSpec: dpv1alpha4.APIPolicySpec{
+				Default: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i1"},
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha3.APIPolicySpec{
-				Default: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeDownSpec: dpv1alpha4.APIPolicySpec{
+				Default: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i2"},
 					},
 				},
 			},
-			result: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			result: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i2"},
 					},
 				},
@@ -282,16 +283,16 @@ func TestConcatAPIPolicies(t *testing.T) {
 			message: "only schemeDown default policies should be provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeUpSpec: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i1"},
 					},
 				},
 			},
-			result: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			result: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i1"},
 					},
 				},
@@ -299,16 +300,16 @@ func TestConcatAPIPolicies(t *testing.T) {
 			message: "only schemeUp override policies is provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha3.APIPolicySpec{
-				Default: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeUpSpec: dpv1alpha4.APIPolicySpec{
+				Default: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i1"},
 					},
 				},
 			},
-			result: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			result: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{Name: "i1"},
 					},
 				},
@@ -316,39 +317,39 @@ func TestConcatAPIPolicies(t *testing.T) {
 			message: "only schemeUp default policies is provided",
 		},
 		{
-			schemeUpSpec: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeUpSpec: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{
 							Name: "up-request-interceptor",
 						},
 					},
 				},
 			},
-			schemeDownSpec: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			schemeDownSpec: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{
 							Name: "down-request-interceptor",
 						},
 					},
 				},
-				Default: &dpv1alpha3.PolicySpec{
-					ResponseInterceptors: []dpv1alpha3.InterceptorReference{
+				Default: &dpv1alpha4.PolicySpec{
+					ResponseInterceptors: []dpv1alpha4.InterceptorReference{
 						{
 							Name: "down-response-interceptor",
 						},
 					},
 				},
 			},
-			result: dpv1alpha3.APIPolicySpec{
-				Override: &dpv1alpha3.PolicySpec{
-					RequestInterceptors: []dpv1alpha3.InterceptorReference{
+			result: dpv1alpha4.APIPolicySpec{
+				Override: &dpv1alpha4.PolicySpec{
+					RequestInterceptors: []dpv1alpha4.InterceptorReference{
 						{
 							Name: "up-request-interceptor",
 						},
 					},
-					ResponseInterceptors: []dpv1alpha3.InterceptorReference{
+					ResponseInterceptors: []dpv1alpha4.InterceptorReference{
 						{
 							Name: "down-response-interceptor",
 						},
