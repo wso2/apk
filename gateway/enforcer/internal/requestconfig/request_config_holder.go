@@ -28,4 +28,5 @@ type Holder struct {
 	MatchedResource                   *Resource
 	ExternalProcessingEnvoyAttributes *dto.ExternalProcessingEnvoyAttributes
 	MatchedSubscription               *subscription_model.Subscription
+	MatchedApplication                *subscription_model.Application
 }

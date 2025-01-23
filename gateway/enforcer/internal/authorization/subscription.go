@@ -21,6 +21,7 @@ func validateSubscription(appID string, subAppDatastore *datastore.SubscriptionA
 			subscribedAPI := subscription.SubscribedAPI
 			if subscribedAPI.Name == api.Name && subscribedAPI.Version == api.Version {
 				rch.MatchedSubscription = subscription
+				rch.MatchedApplication = subAppDatastore.GetApplication(api.OrganizationID, appID)
 				return nil
 			}
 		}

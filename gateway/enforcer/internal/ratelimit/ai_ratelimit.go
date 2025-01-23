@@ -11,6 +11,7 @@ import (
 	v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
+	subscription_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
 )
 
 // AIRatelimitHelper is a helper struct for managing AI rate limiting.
@@ -33,6 +34,14 @@ const (
 	DescriptorKeyForAICompletionTokenCount = "airesponsetokencount"
 	// DescriptorKeyForAITotalTokenCount is the descriptor key for the AI total token count.
 	DescriptorKeyForAITotalTokenCount = "aitotaltokencount"
+	// DescriptorKeyForSubscriptionBasedAIRequestTokenCount is the descriptor key for the subscription-based AI request token count.
+	DescriptorKeyForSubscriptionBasedAIRequestTokenCount = "airequesttokencountsubs"
+	// DescriptorKeyForSubscriptionBasedAIResponseTokenCount is the descriptor key for the subscription-based AI response token count.
+	DescriptorKeyForSubscriptionBasedAIResponseTokenCount = "airesponsetokencountsubs"
+	// DescriptorKeyForSubscriptionBasedAITotalTokenCount is the descriptor key for the subscription-based AI total token count.
+	DescriptorKeyForSubscriptionBasedAITotalTokenCount = "aitotaltokencountsubs"
+	// DescriptorKeyForAISubscription is the descriptor key for the AI subscription.
+	DescriptorKeyForAISubscription = "subscription"
 )
 
 // NewAIRatelimitHelper creates a new instance of the AIRatelimitHelper.
@@ -45,7 +54,7 @@ func NewAIRatelimitHelper(cfg *config.Server) *AIRatelimitHelper {
 }
 
 // DoAIRatelimit performs AI rate limiting.
-func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount *TokenCountAndModel, doBackendBasedAIRatelimit bool, doSubscriptionBasedAIRatelimit bool, backendBasedAIRatelimitDescriptorValue string) {
+func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount *TokenCountAndModel, doBackendBasedAIRatelimit bool, doSubscriptionBasedAIRatelimit bool, backendBasedAIRatelimitDescriptorValue string, subscription subscription_model.Subscription, application subscription_model.Application) {
 	go func() {
 		configs := []*keyValueHitsAddend{}
 		if doBackendBasedAIRatelimit {
@@ -67,8 +76,40 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount *TokenCountAndModel, doB
 				Value:      backendBasedAIRatelimitDescriptorValue,
 				HitsAddend: tokenCount.total,
 			})
-			airl.rlClient.shouldRatelimit(configs)
 		}
+		if doSubscriptionBasedAIRatelimit {
+			// For promt token count
+			configs = append(configs, &keyValueHitsAddend{
+				Key:        DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
+				Value:      fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+				KeyValueHitsAddend: &keyValueHitsAddend{
+					Key: 	  DescriptorKeyForAISubscription,
+					Value: fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+					HitsAddend: tokenCount.promt,
+				},
+			})
+			// For completion token count
+			configs = append(configs, &keyValueHitsAddend{
+				Key:        DescriptorKeyForSubscriptionBasedAIResponseTokenCount,
+				Value:      fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+				KeyValueHitsAddend: &keyValueHitsAddend{
+					Key: 	  DescriptorKeyForAISubscription,
+					Value: fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+					HitsAddend: tokenCount.completion,
+				},
+			})
+			// For total token count
+			configs = append(configs, &keyValueHitsAddend{
+				Key:        DescriptorKeyForSubscriptionBasedAITotalTokenCount,
+				Value:      fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+				KeyValueHitsAddend: &keyValueHitsAddend{
+					Key: 	  DescriptorKeyForAISubscription,
+					Value: fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+					HitsAddend: tokenCount.total,
+				},
+			})
+		}
+		airl.rlClient.shouldRatelimit(configs)
 	}()
 }
 
