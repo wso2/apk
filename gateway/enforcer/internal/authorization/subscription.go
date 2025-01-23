@@ -12,13 +12,15 @@ const (
 )
 
 // validateSubscription validates the subscription.
-func validateSubscription(appID string, subAppDatastore *datastore.SubscriptionApplicationDataStore, api *requestconfig.API) *dto.ImmediateResponse{
+func validateSubscription(appID string, subAppDatastore *datastore.SubscriptionApplicationDataStore, rch *requestconfig.Holder) *dto.ImmediateResponse{
+	api := rch.MatchedAPI
 	appMaps := subAppDatastore.GetApplicationMappings(api.OrganizationID, appID)
 	for _, appMap := range appMaps {
 		subscriptions := subAppDatastore.GetSubscriptions(api.OrganizationID, appMap.SubscriptionRef)
 		for _, subscription := range subscriptions {
 			subscribedAPI := subscription.SubscribedAPI
 			if subscribedAPI.Name == api.Name && subscribedAPI.Version == api.Version {
+				rch.MatchedSubscription = subscription
 				return nil
 			}
 		}

@@ -201,7 +201,17 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					RequestHeaders: rhq,
 				},
 			}
-			break
+		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
+			// httpBody := req.GetRequestBody()
+			// s.log.Info(fmt.Sprint("request body"))
+			rbq := &envoy_service_proc_v3.BodyResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{},
+			}
+			resp = &envoy_service_proc_v3.ProcessingResponse{
+				Response: &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+					RequestBody: rbq,
+				},
+			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			// s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
@@ -227,8 +237,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
 				}
 			}
-
-			break
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
 			s.log.Info(fmt.Sprintf("attribute %+v\n", s.requestConfigHolder.ExternalProcessingEnvoyAttributes))
@@ -255,18 +263,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				} else {
 					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue)
 				}
-			}
-
-		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
-			// httpBody := req.GetRequestBody()
-			// s.log.Info(fmt.Sprint("request body"))
-			rbq := &envoy_service_proc_v3.BodyResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{},
-			}
-			resp = &envoy_service_proc_v3.ProcessingResponse{
-				Response: &envoy_service_proc_v3.ProcessingResponse_RequestBody{
-					RequestBody: rbq,
-				},
 			}
 		default:
 			s.log.Info(fmt.Sprintf("Unknown Request type %v\n", v))

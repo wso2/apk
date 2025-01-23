@@ -42,7 +42,7 @@ func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.Subscription
 				Message:    "Application ID not found",
 			}
 		}
-		return validateSubscription(appID, subAppDataStore, rch.MatchedAPI)
+		return validateSubscription(appID, subAppDataStore, rch)
 	}
 	return nil
 }
