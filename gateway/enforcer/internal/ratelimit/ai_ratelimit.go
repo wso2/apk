@@ -54,7 +54,7 @@ func NewAIRatelimitHelper(cfg *config.Server) *AIRatelimitHelper {
 }
 
 // DoAIRatelimit performs AI rate limiting.
-func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount *TokenCountAndModel, doBackendBasedAIRatelimit bool, doSubscriptionBasedAIRatelimit bool, backendBasedAIRatelimitDescriptorValue string, subscription subscription_model.Subscription, application subscription_model.Application) {
+func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount *TokenCountAndModel, doBackendBasedAIRatelimit bool, doSubscriptionBasedAIRatelimit bool, backendBasedAIRatelimitDescriptorValue string, subscription *subscription_model.Subscription, application *subscription_model.Application) {
 	go func() {
 		configs := []*keyValueHitsAddend{}
 		if doBackendBasedAIRatelimit {
@@ -77,7 +77,7 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount *TokenCountAndModel, doB
 				HitsAddend: tokenCount.total,
 			})
 		}
-		if doSubscriptionBasedAIRatelimit {
+		if doSubscriptionBasedAIRatelimit && subscription != nil && application != nil {
 			// For promt token count
 			configs = append(configs, &keyValueHitsAddend{
 				Key:        DescriptorKeyForSubscriptionBasedAIRequestTokenCount,

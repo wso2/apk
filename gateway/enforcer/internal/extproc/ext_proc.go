@@ -147,9 +147,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
 		// log req.Attributes
 		s.log.Info(fmt.Sprintf("Attributes: %+v", req.Attributes))
-		s.requestConfigHolder = &requestconfig.Holder{}
+		
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
+			s.requestConfigHolder = &requestconfig.Holder{}
 			attributes, err := extractExternalProcessingAttributes(req.GetAttributes())
 			if err != nil {
 				s.log.Error(err, "failed to extract context attributes")
@@ -170,7 +171,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
-
+			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
 			if immediateResponse := authorization.Validate(s.requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
 				resp = &envoy_service_proc_v3.ProcessingResponse{
 					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
@@ -258,16 +259,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response headers")
 				} else {
-					matchedAPI := s.requestConfigHolder.MatchedAPI
 					s.ratelimitHelper.DoAIRatelimit(tokenCount, true,
-						matchedAPI.DoSubscriptionAIRLInHeaderReponse,
+						s.requestConfigHolder.MatchedAPI.DoSubscriptionAIRLInHeaderReponse,
 						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
-						*s.requestConfigHolder.MatchedSubscription, *s.requestConfigHolder.MatchedApplication)
+						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
 				}
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
-			s.log.Info(fmt.Sprintf("attribute %+v\n", s.requestConfigHolder.ExternalProcessingEnvoyAttributes))
+			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -289,7 +289,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, false, s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue, *s.requestConfigHolder.MatchedSubscription, *s.requestConfigHolder.MatchedApplication)
+					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, 
+						s.requestConfigHolder.MatchedAPI.DoSubscriptionAIRLInBodyReponse, 
+						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue, 
+						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
 				}
 			}
 		default:
