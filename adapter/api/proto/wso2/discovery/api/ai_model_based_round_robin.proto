@@ -1,4 +1,4 @@
-//  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+//  Copyright (c) 2025, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
 //
 //  WSO2 LLC. licenses this file to you under the Apache License,
 //  Version 2.0 (the "License"); you may not use this file except
@@ -18,29 +18,22 @@ syntax = "proto3";
 
 package wso2.discovery.api;
 
-
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/api;api";
 option java_package = "org.wso2.apk.enforcer.discovery.api";
-option java_outer_classname = "AIProviderProto";
+option java_outer_classname = "AIModelBasedRoundRobinProto";
 option java_multiple_files = true;
 
-// [#protodoc-title: AIProvider]
+// [#protodoc-title: AIModelBasedRoundRobin]
 
-// Holds AIProvider configs
-message AIProvider {
-    string providerName = 1;
-	string providerAPIVersion = 2;
-    string organization = 3;
-    repeated string supportedModels = 4;
-    ValueDetails model = 5;
-    ValueDetails promptTokens = 6;
-    ValueDetails completionToken = 7;
-    ValueDetails totalToken = 8;
-    bool enabled = 9;
+// Holds AIModelBasedRoundRobin configs
+message AIModelBasedRoundRobin {
+    int32 onQuotaExceedSuspendDuration = 1;
+	repeated ModelWeight models = 2;
+    bool enabled = 3;
 }
 
-// Holds ValueDetails configs
-message ValueDetails {
-    string in = 1;
-    string value = 2;
+// Holds ModelWeight configs
+message ModelWeight {
+    string model = 1;
+    int32 weight = 2;
 }

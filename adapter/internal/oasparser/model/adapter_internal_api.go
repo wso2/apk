@@ -76,13 +76,14 @@ type AdapterInternalAPI struct {
 	APIProperties            []dpv1alpha3.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
-	IsSystemAPI      bool
-	RateLimitPolicy  *RateLimitPolicy
-	environment      string
-	Endpoints        *EndpointCluster
-	EndpointSecurity []*EndpointSecurity
-	AIProvider       InternalAIProvider
-	HTTPRouteIDs     []string
+	IsSystemAPI            bool
+	RateLimitPolicy        *RateLimitPolicy
+	environment            string
+	Endpoints              *EndpointCluster
+	EndpointSecurity       []*EndpointSecurity
+	AIProvider             InternalAIProvider
+	AIModelBasedRoundRobin dpv1alpha4.ModelBasedRoundRobin
+	HTTPRouteIDs           []string
 }
 
 // BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator
@@ -482,6 +483,16 @@ func (adapterInternalAPI *AdapterInternalAPI) SetAIProvider(aiProvider dpv1alpha
 // GetAIProvider returns the AIProvider of the API
 func (adapterInternalAPI *AdapterInternalAPI) GetAIProvider() InternalAIProvider {
 	return adapterInternalAPI.AIProvider
+}
+
+// SetModelBasedRoundRobin sets the ModelBasedRoundRobin of the API.
+func (adapterInternalAPI *AdapterInternalAPI) SetModelBasedRoundRobin(modelBasedRoundRobin dpv1alpha4.ModelBasedRoundRobin) {
+	adapterInternalAPI.AIModelBasedRoundRobin = modelBasedRoundRobin
+}
+
+// GetModelBasedRoundRobin returns the ModelBasedRoundRobin of the API
+func (adapterInternalAPI *AdapterInternalAPI) GetModelBasedRoundRobin() dpv1alpha4.ModelBasedRoundRobin {
+	return adapterInternalAPI.AIModelBasedRoundRobin
 }
 
 // Validate method confirms that the adapterInternalAPI has all required fields in the required format.
