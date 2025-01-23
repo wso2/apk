@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	subscription_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
-	subscription_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
 )
 
 // AIRatelimitHelper is a helper struct for managing AI rate limiting.
@@ -21,10 +21,10 @@ type AIRatelimitHelper struct {
 
 // TokenCountAndModel is a struct that holds the prompt, completion, and total token counts.
 type TokenCountAndModel struct {
-	promt      int
-	completion int
-	total      int
-	model      string
+	Prompt     int
+	Completion int
+	Total      int
+	Model      string
 }
 
 const (
@@ -62,50 +62,50 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount *TokenCountAndModel, doB
 			configs = append(configs, &keyValueHitsAddend{
 				Key:        DescriptorKeyForAIPromtTokenCount,
 				Value:      backendBasedAIRatelimitDescriptorValue,
-				HitsAddend: tokenCount.promt,
+				HitsAddend: tokenCount.Prompt,
 			})
 			// For completion token count
 			configs = append(configs, &keyValueHitsAddend{
 				Key:        DescriptorKeyForAICompletionTokenCount,
 				Value:      backendBasedAIRatelimitDescriptorValue,
-				HitsAddend: tokenCount.completion,
+				HitsAddend: tokenCount.Completion,
 			})
 			// For total token count
 			configs = append(configs, &keyValueHitsAddend{
 				Key:        DescriptorKeyForAITotalTokenCount,
 				Value:      backendBasedAIRatelimitDescriptorValue,
-				HitsAddend: tokenCount.total,
+				HitsAddend: tokenCount.Total,
 			})
 		}
 		if doSubscriptionBasedAIRatelimit && subscription != nil && application != nil {
 			// For promt token count
 			configs = append(configs, &keyValueHitsAddend{
-				Key:        DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
-				Value:      fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+				Key:   DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
+				Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
 				KeyValueHitsAddend: &keyValueHitsAddend{
-					Key: 	  DescriptorKeyForAISubscription,
-					Value: fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
-					HitsAddend: tokenCount.promt,
+					Key:        DescriptorKeyForAISubscription,
+					Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+					HitsAddend: tokenCount.Prompt,
 				},
 			})
 			// For completion token count
 			configs = append(configs, &keyValueHitsAddend{
-				Key:        DescriptorKeyForSubscriptionBasedAIResponseTokenCount,
-				Value:      fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+				Key:   DescriptorKeyForSubscriptionBasedAIResponseTokenCount,
+				Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
 				KeyValueHitsAddend: &keyValueHitsAddend{
-					Key: 	  DescriptorKeyForAISubscription,
-					Value: fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
-					HitsAddend: tokenCount.completion,
+					Key:        DescriptorKeyForAISubscription,
+					Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+					HitsAddend: tokenCount.Completion,
 				},
 			})
 			// For total token count
 			configs = append(configs, &keyValueHitsAddend{
-				Key:        DescriptorKeyForSubscriptionBasedAITotalTokenCount,
-				Value:      fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+				Key:   DescriptorKeyForSubscriptionBasedAITotalTokenCount,
+				Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
 				KeyValueHitsAddend: &keyValueHitsAddend{
-					Key: 	  DescriptorKeyForAISubscription,
-					Value: fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
-					HitsAddend: tokenCount.total,
+					Key:        DescriptorKeyForAISubscription,
+					Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+					HitsAddend: tokenCount.Total,
 				},
 			})
 		}
@@ -122,7 +122,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 			if headerValue.Value != "" {
 				value, err := util.ConvertStringToInt(headerValue.Value)
 				if err != nil {
-					tokenCount.promt = value
+					tokenCount.Prompt = value
 					promtFlag = true
 				} else {
 					return nil, err
@@ -130,7 +130,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
-					tokenCount.promt = value
+					tokenCount.Prompt = value
 					promtFlag = true
 				} else {
 					return nil, err
@@ -141,7 +141,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 			if headerValue.Value != "" {
 				value, err := strconv.Atoi(headerValue.Value)
 				if err != nil {
-					tokenCount.completion = value
+					tokenCount.Completion = value
 					completionFlag = true
 				} else {
 					return nil, err
@@ -149,7 +149,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
-					tokenCount.completion = value
+					tokenCount.Completion = value
 					completionFlag = true
 				} else {
 					return nil, err
@@ -159,7 +159,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 			if headerValue.Value != "" {
 				value, err := strconv.Atoi(headerValue.Value)
 				if err != nil {
-					tokenCount.total = value
+					tokenCount.Total = value
 					totalFlag = true
 				} else {
 					return nil, err
@@ -167,7 +167,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
-					tokenCount.total = value
+					tokenCount.Total = value
 					totalFlag = true
 				} else {
 					return nil, err
@@ -175,9 +175,9 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 			}
 		} else if headerValue.Key == modelHeader {
 			if headerValue.Value != "" {
-				tokenCount.model = headerValue.Value
+				tokenCount.Model = headerValue.Value
 			} else if len(headerValue.RawValue) != 0 {
-				tokenCount.model = string(headerValue.RawValue)
+				tokenCount.Model = string(headerValue.RawValue)
 			}
 		}
 	}
@@ -244,7 +244,7 @@ func extractUsageFromBody(body, completionTokenPath, promptTokenPath, totalToken
 		return nil, fmt.Errorf("failed to extract prompt tokens: %w", err)
 	}
 	if pt, ok := promt.(float64); ok { // JSON numbers are decoded as float64
-		usage.promt = int(pt)
+		usage.Prompt = int(pt)
 	} else {
 		return nil, errors.New("invalid type for prompt tokens")
 	}
@@ -255,7 +255,7 @@ func extractUsageFromBody(body, completionTokenPath, promptTokenPath, totalToken
 		return nil, fmt.Errorf("failed to extract completion tokens: %w", err)
 	}
 	if ct, ok := completion.(float64); ok {
-		usage.completion = int(ct)
+		usage.Completion = int(ct)
 	} else {
 		return nil, errors.New("invalid type for completion tokens")
 	}
@@ -266,7 +266,7 @@ func extractUsageFromBody(body, completionTokenPath, promptTokenPath, totalToken
 		return nil, fmt.Errorf("failed to extract total tokens: %w", err)
 	}
 	if tt, ok := total.(float64); ok {
-		usage.total = int(tt)
+		usage.Total = int(tt)
 	} else {
 		return nil, errors.New("invalid type for total tokens")
 	}
