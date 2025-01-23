@@ -20,6 +20,7 @@ package extproc
 import (
 	"fmt"
 	"io"
+	"strconv"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
@@ -71,6 +72,17 @@ const (
 	usagePolicyMetadataKey                          string = "ratelimit:usage-policy"
 	organizationMetadataKey                         string = "ratelimit:organization"
 	orgAndRLPolicyMetadataKey                       string = "ratelimit:organization-and-rlpolicy"
+	extractTokenFromMetadataKey                     string = "aitoken:extracttokenfrom"
+	promptTokenIDMetadataKey                        string = "aitoken:prompttokenid"
+	completionTokenIDMetadataKey                    string = "aitoken:completiontokenid"
+	totalTokenIDMetadataKey                         string = "aitoken:totaltokenid"
+	promptTokenCountMetadataKey                     string = "aitoken:prompttokencount"
+	completionTokenCountMetadataKey                 string = "aitoken:completiontokencount"
+	totalTokenCountMetadataKey                      string = "aitoken:totaltokencount"
+	modelIDMetadataKey                              string = "aitoken:modelid"
+	modelMetadataKey                                string = "aitoken:model"
+	aiProviderNameMetadataKey                       string = "ai:providername"
+	aiProviderAPIVersionMetadataKey                 string = "ai:providerversion"
 )
 
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
@@ -147,7 +159,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
 		// log req.Attributes
 		s.log.Info(fmt.Sprintf("Attributes: %+v", req.Attributes))
-		
+
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
 			s.requestConfigHolder = &requestconfig.Holder{}
@@ -243,26 +255,38 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ResponseHeaders: rhq,
 				},
 			}
-			// s.log.Info(fmt.Sprintf("Matched api: %s", s.matchedAPI))
+			matchedAPI := s.requestConfigHolder.MatchedAPI
 			if s.requestConfigHolder != nil &&
-				s.requestConfigHolder.MatchedAPI != nil &&
-				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
+				matchedAPI != nil &&
+				matchedAPI.AiProvider != nil &&
+				matchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
+				matchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
 				s.log.Info("Backend based AI rate limit enabled using headers")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(),
-					s.requestConfigHolder.MatchedAPI.AiProvider.PromptTokens.Value,
-					s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value,
-					s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value,
-					s.requestConfigHolder.MatchedAPI.AiProvider.Model.Value)
+					matchedAPI.AiProvider.PromptTokens.Value,
+					matchedAPI.AiProvider.CompletionToken.Value,
+					matchedAPI.AiProvider.CompletionToken.Value,
+					matchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response headers")
 				} else {
 					s.ratelimitHelper.DoAIRatelimit(tokenCount, true,
-						s.requestConfigHolder.MatchedAPI.DoSubscriptionAIRLInHeaderReponse,
+						matchedAPI.DoSubscriptionAIRLInHeaderReponse,
 						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
 						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
+					aiProvider := matchedAPI.AiProvider
+					dynamicMetadata, err := buildDynamicMetadata(&map[string]string{
+						aiProviderAPIVersionMetadataKey: aiProvider.ProviderAPIVersion,
+						aiProviderNameMetadataKey:       aiProvider.ProviderName,
+						modelIDMetadataKey:              tokenCount.Model,
+						completionTokenCountMetadataKey: strconv.Itoa(tokenCount.Completion),
+						totalTokenCountMetadataKey:      strconv.Itoa(tokenCount.Total),
+						promptTokenCountMetadataKey:     strconv.Itoa(tokenCount.Prompt),
+					})
+					if err != nil {
+						resp.DynamicMetadata = dynamicMetadata
+					}
 				}
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
@@ -277,23 +301,40 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ResponseBody: rbq,
 				},
 			}
-
+			matchedAPI := s.requestConfigHolder.MatchedAPI
 			if s.requestConfigHolder != nil &&
-				s.requestConfigHolder.MatchedAPI != nil &&
-				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
+				matchedAPI != nil &&
+				matchedAPI.AiProvider != nil &&
+				matchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
+				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
 				s.log.Info("Backend based AI rate limit enabled using body")
-				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body, s.requestConfigHolder.MatchedAPI.AiProvider.PromptTokens.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.Value, s.requestConfigHolder.MatchedAPI.AiProvider.Model.Value)
+				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body, 
+					matchedAPI.AiProvider.PromptTokens.Value, 
+					matchedAPI.AiProvider.CompletionToken.Value, 
+					matchedAPI.AiProvider.CompletionToken.Value, 
+					matchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(tokenCount, true, 
-						s.requestConfigHolder.MatchedAPI.DoSubscriptionAIRLInBodyReponse, 
-						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue, 
+					s.ratelimitHelper.DoAIRatelimit(tokenCount, true,
+						matchedAPI.DoSubscriptionAIRLInBodyReponse,
+						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
 						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
+					aiProvider := matchedAPI.AiProvider
+					dynamicMetadata, err := buildDynamicMetadata(&map[string]string{
+						aiProviderAPIVersionMetadataKey: aiProvider.ProviderAPIVersion,
+						aiProviderNameMetadataKey:       aiProvider.ProviderName,
+						modelIDMetadataKey:              tokenCount.Model,
+						completionTokenCountMetadataKey: strconv.Itoa(tokenCount.Completion),
+						totalTokenCountMetadataKey:      strconv.Itoa(tokenCount.Total),
+						promptTokenCountMetadataKey:     strconv.Itoa(tokenCount.Prompt),
+					})
+					if err != nil {
+						resp.DynamicMetadata = dynamicMetadata
+					}
 				}
+
 			}
 		default:
 			s.log.Info(fmt.Sprintf("Unknown Request type %v\n", v))
