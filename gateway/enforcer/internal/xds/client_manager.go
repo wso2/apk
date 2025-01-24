@@ -32,7 +32,7 @@ import (
 // CreateXDSClients initializes and establishes connections for multiple XDS clients,
 // including API XDS, Config XDS, and JWT Issuer XDS clients.
 // It handles TLS configuration, certificate loading, and connection setup.
-func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.ConfigStore, *datastore.JWTIssuerStore) {
+func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.ConfigStore, *datastore.JWTIssuerStore, *datastore.ModelBasedRoundRobinTracker) {
 	clientCert, err := util.LoadCertificates(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
 	if err != nil {
 		panic(err)
@@ -49,6 +49,10 @@ func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.Confi
 	configDatastore := datastore.NewConfigStore()
 	jwtIssuerDatastore := datastore.NewJWTIssuerStore()
 	apiDatastore := datastore.NewAPIStore(configDatastore)
+	// Initialize the tracker
+	modelBasedRoundRobinTracker := datastore.NewModelBasedRoundRobinTracker()
+	// Start the reactivation task
+	go modelBasedRoundRobinTracker.ReactivateSuspendedModels()
 	apiXDSClient := NewAPIXDSClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, apiDatastore)
 	configXDSClient := NewXDSConfigClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, configDatastore)
 	jwtIssuerXDSClient := NewJWTIssuerXDSClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, jwtIssuerDatastore)
@@ -57,7 +61,7 @@ func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.Confi
 	configXDSClient.InitiateConfigXDSConnection()
 	jwtIssuerXDSClient.InitiateSubscriptionXDSConnection()
 	cfg.Logger.Info("XDS clients initiated successfully")
-	return apiDatastore, configDatastore, jwtIssuerDatastore
+	return apiDatastore, configDatastore, jwtIssuerDatastore, modelBasedRoundRobinTracker
 }
 
 // CreateNode creates a new Node object with the given node ID and instance identifier.

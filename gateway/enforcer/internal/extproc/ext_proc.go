@@ -18,6 +18,7 @@
 package extproc
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strconv"
@@ -55,6 +56,7 @@ type ExternalProcessingServer struct {
 	ratelimitHelper                  *ratelimit.AIRatelimitHelper
 	requestConfigHolder              *requestconfig.Holder
 	cfg                              *config.Server
+	modelBasedRoundRobinTracker      *datastore.ModelBasedRoundRobinTracker
 }
 
 const (
@@ -67,6 +69,7 @@ const (
 	clusterNameAttribute                            string = "clusterName"
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
+	suspendAIModelValueAttribute                    string = "ai:suspendmodel"
 	externalProessingMetadataContextKey             string = "envoy.filters.http.ext_proc"
 	subscriptionMetadataKey                         string = "ratelimit:subscription"
 	usagePolicyMetadataKey                          string = "ratelimit:usage-policy"
@@ -96,7 +99,7 @@ var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 //     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
-func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore) {
+func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker) {
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
@@ -111,7 +114,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 
 	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, nil, cfg})
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, nil, cfg, modelBasedRoundRobinTracker})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -197,7 +200,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 				break
 			}
-			resp = &envoy_service_proc_v3.ProcessingResponse{}
 			var dynamicMetadata *structpb.Struct
 			if s.requestConfigHolder.MatchedSubscription != nil && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
 				// Set dynamic metadata
@@ -236,14 +238,89 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
-			// s.log.Info(fmt.Sprint("request body"))
-			rbq := &envoy_service_proc_v3.BodyResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{},
-			}
-			resp = &envoy_service_proc_v3.ProcessingResponse{
-				Response: &envoy_service_proc_v3.ProcessingResponse_RequestBody{
-					RequestBody: rbq,
-				},
+			s.log.Info("Request Body Flow")
+
+			s.log.Info(fmt.Sprintf("Matched api: %v", s.requestConfigHolder.MatchedAPI))
+			if s.requestConfigHolder != nil &&
+				s.requestConfigHolder.MatchedAPI != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
+				s.log.Info("Model Based Round Robin enabled")
+				supportedModels := s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels
+				onQuotaExceedSuspendDuration := s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
+				modelWeight := s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Models
+				// convert to datastore.ModelWeight
+				var modelWeights []datastore.ModelWeight
+				for _, model := range modelWeight {
+					modelWeights = append(modelWeights, datastore.ModelWeight{
+						Name:   model.Model,
+						Weight: model.Weight,
+					})
+				}
+				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
+				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
+				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
+				selectedModel := s.modelBasedRoundRobinTracker.GetNextModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, modelWeights)
+				s.log.Info(fmt.Sprintf("Selected Model: %v", selectedModel))
+				if selectedModel == "" {
+					s.log.Info("Unable to select a model since all models are suspended. Continue with the user provided model")
+				} else {
+					// change request body to model to selected model
+					httpBody := req.GetRequestBody().Body
+					s.log.Info(fmt.Sprintf("request body before %+v\n", httpBody))
+					// Define a map to hold the JSON data
+					var jsonData map[string]interface{}
+					// Unmarshal the JSON data into the map
+					err := json.Unmarshal(httpBody, &jsonData)
+					if err != nil {
+						s.log.Error(err, "Error unmarshaling JSON Reuqest Body")
+					}
+					s.log.Info(fmt.Sprintf("jsonData %+v\n", jsonData))
+					// Change the model to the selected model
+					jsonData["model"] = selectedModel
+					// Convert the JSON object to a []byte
+					newHTTPBody, err := json.Marshal(jsonData)
+					if err != nil {
+						s.log.Error(err, "Error marshaling JSON")
+					}
+
+					// Calculate the new body length
+					newBodyLength := len(newHTTPBody)
+					s.log.Info(fmt.Sprintf("new body length: %d\n", newBodyLength))
+
+					// Update the Content-Length header
+					headers := &envoy_service_proc_v3.HeaderMutation{
+						SetHeaders: []*corev3.HeaderValueOption{
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "Content-Length",
+									RawValue: []byte(fmt.Sprintf("%d", newBodyLength)), // Set the new Content-Length
+								},
+							},
+						},
+					}
+
+					rbq := &envoy_service_proc_v3.BodyResponse{
+						Response: &envoy_service_proc_v3.CommonResponse{
+							Status:         envoy_service_proc_v3.CommonResponse_CONTINUE_AND_REPLACE,
+							HeaderMutation: headers, // Add header mutation here
+							BodyMutation: &envoy_service_proc_v3.BodyMutation{
+								Mutation: &envoy_service_proc_v3.BodyMutation_Body{
+									Body: newHTTPBody,
+								},
+							},
+						},
+					}
+					s.log.Info(fmt.Sprintf("rbq %+v\n", rbq))
+					resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+						RequestBody: rbq,
+					}
+					s.log.Info(fmt.Sprintf("resp %+v\n", resp))
+					//req.GetRequestBody().Body = newHTTPBody
+					s.log.Info(fmt.Sprintf("request body after %+v\n", newHTTPBody))
+				}
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			// s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
@@ -255,6 +332,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ResponseHeaders: rhq,
 				},
 			}
+			s.log.Info("Response Header Flow")
 			matchedAPI := s.requestConfigHolder.MatchedAPI
 			if s.requestConfigHolder != nil &&
 				matchedAPI != nil &&
@@ -289,9 +367,42 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					}
 				}
 			}
+			if s.requestConfigHolder != nil &&
+				s.requestConfigHolder.MatchedAPI != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
+				s.log.Info("Model Based Round Robin enabled")
+				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
+				s.log.Info(fmt.Sprintf("Header Values: %v", headerValues))
+				remainingTokenCount := 100
+				remainingRequestCount := 100
+				for _, headerValue := range headerValues {
+					if headerValue.Key == "x-ratelimit-remaining-tokens" {
+						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve remaining token count by header")
+						}
+						remainingTokenCount = value
+					}
+					if headerValue.Key == "x-ratelimit-remaining-requests" {
+						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve remaining request count by header")
+						}
+						remainingRequestCount = value
+					}
+				}
+				if remainingTokenCount <= 50 || remainingRequestCount <= 50 { // Suspend model if token/request count reaches 0
+					s.log.Info("Token/request are exhausted. Suspending the model")
+					s.requestConfigHolder.ExternalProcessingEnvoyAttributes.SuspendAIModel = "true"
+				}
+			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
 			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
+			s.log.Info("Response Body Flow")
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -309,10 +420,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
 				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
 				s.log.Info("Backend based AI rate limit enabled using body")
-				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body, 
-					matchedAPI.AiProvider.PromptTokens.Value, 
-					matchedAPI.AiProvider.CompletionToken.Value, 
-					matchedAPI.AiProvider.CompletionToken.Value, 
+				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
+					matchedAPI.AiProvider.PromptTokens.Value,
+					matchedAPI.AiProvider.CompletionToken.Value,
+					matchedAPI.AiProvider.CompletionToken.Value,
 					matchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
@@ -334,7 +445,35 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						resp.DynamicMetadata = dynamicMetadata
 					}
 				}
+			}
 
+			if s.requestConfigHolder != nil &&
+				s.requestConfigHolder.MatchedAPI != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled &&
+				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.SuspendAIModel == "true" {
+				s.log.Info("Model Based Round Robin enabled")
+				httpBody := req.GetResponseBody().Body
+				// Define a map to hold the JSON data
+				var jsonData map[string]interface{}
+				// Unmarshal the JSON data into the map
+				err := json.Unmarshal(httpBody, &jsonData)
+				if err != nil {
+					s.log.Error(err, "Error unmarshaling JSON Response Body")
+				}
+				s.log.Info(fmt.Sprintf("jsonData %+v\n", jsonData))
+				// Retrieve Model from the JSON data
+				model := ""
+				if modelValue, ok := jsonData["model"].(string); ok {
+					model = modelValue
+				} else {
+					s.log.Error(fmt.Errorf("model is not a string"), "failed to extract model from JSON data")
+				}
+				s.log.Info("Suspending model: " + model)
+				duration := s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
+				s.modelBasedRoundRobinTracker.SuspendModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 			}
 		default:
 			s.log.Info(fmt.Sprintf("Unknown Request type %v\n", v))
@@ -387,6 +526,7 @@ func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*dto
 			clusterNameAttribute,
 			enableBackendBasedAIRatelimitAttribute,
 			backendBasedAIRatelimitDescriptorValueAttribute,
+			suspendAIModelValueAttribute,
 		}
 
 		for _, key := range keysToExtract {
@@ -412,6 +552,8 @@ func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*dto
 					attributes.EnableBackendBasedAIRatelimit = extractedValues[key]
 				case backendBasedAIRatelimitDescriptorValueAttribute:
 					attributes.BackendBasedAIRatelimitDescriptorValue = extractedValues[key]
+				case suspendAIModelValueAttribute:
+					attributes.SuspendAIModel = extractedValues[key]
 				}
 			}
 		}
