@@ -47,6 +47,8 @@ type GatewayEvent struct {
 	Event     GatewayState
 }
 
+const HeaderName = "x-apk-authorization"
+
 // HandleGatewayLifeCycleEvents handles the Gateway events generated from OperatorDataStore
 func HandleGatewayLifeCycleEvents(ch *chan GatewayEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for Gateway lifecycle events...")
@@ -102,6 +104,8 @@ func AddOrUpdateGateway(gatewayState GatewayState, state string) (string, error)
 
 	gwLuaScript, gwReqICluster, gwReqIAddresses, gwResICluster, gwResIAddresses :=
 		generateGlobalInterceptorResource(gatewayAPIPolicies, gatewayInterceptorServiceMapping, gatewayBackendMapping)
+
+	xds.GenerateJWTProviders(gateway.Name, gatewayState.GatewayStateData.TokenIssuers)
 
 	if state == constants.Create {
 		xds.GenerateGlobalClusters(gateway.Name)
