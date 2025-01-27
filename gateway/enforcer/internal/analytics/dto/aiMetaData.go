@@ -15,7 +15,7 @@
  *
  */
  
- ackage dto
+package dto
 
 // AIMetadata represents AI metadata in an analytics event.
 type AIMetadata struct {
