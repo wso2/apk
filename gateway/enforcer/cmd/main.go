@@ -39,6 +39,9 @@ func main() {
 	// Start the external processing server
 	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, modelBasedRoundRobinTracker)
 
+	// Start the access log service server
+	go grpc.StartAccessLogServiceServer(cfg)
+
 	// Wait forever
 	select {}
 }

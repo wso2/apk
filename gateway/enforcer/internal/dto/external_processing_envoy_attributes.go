@@ -34,4 +34,5 @@ type ExternalProcessingEnvoyAttributes struct {
 	ConsumerKey                            string   `json:"consumerKeyAttribute"`
 	Organization                           string   `json:"organizationAttribute"`
 	ApplicationID                          string   `json:"applicationIdAttribute"`
+	CorrelationID						  string   `json:"correlationIdAttribute"`
 }
