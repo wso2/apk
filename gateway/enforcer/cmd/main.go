@@ -34,10 +34,10 @@ func main() {
 	client.InitiateEventingGRPCConnection()
 
 	// Create the XDS clients
-	apiStore, _, _ := xds.CreateXDSClients(cfg)
+	apiStore, _, _, modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
 
 	// Start the external processing server
-	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore)
+	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, modelBasedRoundRobinTracker)
 
 	// Wait forever
 	select {}
