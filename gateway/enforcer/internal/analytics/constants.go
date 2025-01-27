@@ -131,6 +131,7 @@ const (
 
 	// DestinationKey is the key for the destination.
 	DestinationKey         = Wso2MetadataPrefix + "destination"
+	// DefaultForUnknown is the default value used for unassigned properties.
 	DefaultForUnknown = "UNKNOWN"
 
 	// UserAgentKey is the key for the user agent.
