@@ -256,7 +256,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 				Untyped: []string{"envoy.filters.http.ext_proc"},
 			},
 		},
-		RequestAttributes:  []string{"xds.route_metadata", "request.method"},
+		RequestAttributes:  []string{"xds.route_metadata", "request.method", "request.id"},
 		ResponseAttributes: []string{"xds.route_metadata"},
 		MessageTimeout:     durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
 	}

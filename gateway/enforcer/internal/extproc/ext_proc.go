@@ -26,6 +26,7 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
+	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/authorization"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
@@ -162,7 +163,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
 		// log req.Attributes
 		s.log.Info(fmt.Sprintf("Attributes: %+v", req.Attributes))
-
+		dynamicMetadataKeyValuePairs := make(map[string]string)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
 			s.requestConfigHolder = &requestconfig.Holder{}
@@ -187,6 +188,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
 			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
+
 			if immediateResponse := authorization.Validate(s.requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
 				resp = &envoy_service_proc_v3.ProcessingResponse{
 					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
@@ -200,20 +202,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 				break
 			}
-			var dynamicMetadata *structpb.Struct
+			resp = &envoy_service_proc_v3.ProcessingResponse{}
 			if s.requestConfigHolder.MatchedSubscription != nil && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
-				// Set dynamic metadata
-				dynamicMetadata, err = buildDynamicMetadata(&map[string]string{
-					subscriptionMetadataKey:   s.requestConfigHolder.MatchedSubscription.UUID,
-					usagePolicyMetadataKey:    s.requestConfigHolder.MatchedSubscription.RatelimitTier,
-					organizationMetadataKey:   s.requestConfigHolder.MatchedAPI.OrganizationID,
-					orgAndRLPolicyMetadataKey: fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier),
-				})
-				if err != nil {
-					s.log.Error(err, "failed to build dynamic metadata")
-				} else {
-					resp.DynamicMetadata = dynamicMetadata
-				}
+				dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = s.requestConfigHolder.MatchedSubscription.UUID
+				dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = s.requestConfigHolder.MatchedSubscription.RatelimitTier
+				dynamicMetadataKeyValuePairs[organizationMetadataKey] = s.requestConfigHolder.MatchedAPI.OrganizationID
+				dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier)
 			}
 
 			rhq := &envoy_service_proc_v3.HeadersResponse{
@@ -354,17 +348,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
 						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
 					aiProvider := matchedAPI.AiProvider
-					dynamicMetadata, err := buildDynamicMetadata(&map[string]string{
-						aiProviderAPIVersionMetadataKey: aiProvider.ProviderAPIVersion,
-						aiProviderNameMetadataKey:       aiProvider.ProviderName,
-						modelIDMetadataKey:              tokenCount.Model,
-						completionTokenCountMetadataKey: strconv.Itoa(tokenCount.Completion),
-						totalTokenCountMetadataKey:      strconv.Itoa(tokenCount.Total),
-						promptTokenCountMetadataKey:     strconv.Itoa(tokenCount.Prompt),
-					})
-					if err != nil {
-						resp.DynamicMetadata = dynamicMetadata
-					}
+					dynamicMetadataKeyValuePairs[aiProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
+					dynamicMetadataKeyValuePairs[aiProviderNameMetadataKey] = aiProvider.ProviderName
+					dynamicMetadataKeyValuePairs[modelIDMetadataKey] = tokenCount.Model
+					dynamicMetadataKeyValuePairs[completionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
+					dynamicMetadataKeyValuePairs[totalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
+					dynamicMetadataKeyValuePairs[promptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
 				}
 			}
 			if s.requestConfigHolder != nil &&
@@ -433,17 +422,13 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
 						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
 					aiProvider := matchedAPI.AiProvider
-					dynamicMetadata, err := buildDynamicMetadata(&map[string]string{
-						aiProviderAPIVersionMetadataKey: aiProvider.ProviderAPIVersion,
-						aiProviderNameMetadataKey:       aiProvider.ProviderName,
-						modelIDMetadataKey:              tokenCount.Model,
-						completionTokenCountMetadataKey: strconv.Itoa(tokenCount.Completion),
-						totalTokenCountMetadataKey:      strconv.Itoa(tokenCount.Total),
-						promptTokenCountMetadataKey:     strconv.Itoa(tokenCount.Prompt),
-					})
-					if err != nil {
-						resp.DynamicMetadata = dynamicMetadata
-					}
+					dynamicMetadataKeyValuePairs[aiProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
+					dynamicMetadataKeyValuePairs[aiProviderNameMetadataKey] = aiProvider.ProviderName
+					dynamicMetadataKeyValuePairs[modelIDMetadataKey] = tokenCount.Model
+					dynamicMetadataKeyValuePairs[completionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
+					dynamicMetadataKeyValuePairs[totalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
+					dynamicMetadataKeyValuePairs[promptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
+
 				}
 			}
 
@@ -477,6 +462,13 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 		default:
 			s.log.Info(fmt.Sprintf("Unknown Request type %v\n", v))
+		}
+		// Set dynamic metadata
+		dynamicMetadata, err := buildDynamicMetadata(s.prepareMetadataKeyValuePairAndAddTo(dynamicMetadataKeyValuePairs))
+		if err != nil {
+			s.log.Error(err, "failed to build dynamic metadata")
+		} else {
+			resp.DynamicMetadata = dynamicMetadata
 		}
 		if err := srv.Send(resp); err != nil {
 			s.log.Info(fmt.Sprintf("send error %v", err))
@@ -601,4 +593,35 @@ func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, e
 	rootStruct.Fields[externalProessingMetadataContextKey] = nestedValue
 
 	return rootStruct, nil
+}
+
+func (s *ExternalProcessingServer) prepareMetadataKeyValuePairAndAddTo(metadataKeyValuePair map[string]string) *map[string]string {
+	if s.requestConfigHolder.MatchedAPI != nil {
+		metadataKeyValuePair[analytics.APIIDKey] = s.requestConfigHolder.MatchedAPI.UUID
+		metadataKeyValuePair[analytics.APIContextKey] = s.requestConfigHolder.MatchedAPI.BasePath
+		metadataKeyValuePair[organizationMetadataKey] = s.requestConfigHolder.MatchedAPI.OrganizationID
+		metadataKeyValuePair[analytics.APINameKey] = s.requestConfigHolder.MatchedAPI.Name
+		metadataKeyValuePair[analytics.APIVersionKey] = s.requestConfigHolder.MatchedAPI.Version
+		metadataKeyValuePair[analytics.APITypeKey] = s.requestConfigHolder.MatchedAPI.APIType
+		// metadataKeyValuePair[analytics.ApiCreatorKey] = s.requestConfigHolder.MatchedAPI.Creator
+		// metadataKeyValuePair[analytics.ApiCreatorTenantDomainKey] = s.requestConfigHolder.MatchedAPI.CreatorTenant
+		metadataKeyValuePair[analytics.APIOrganizationID] = s.requestConfigHolder.MatchedAPI.OrganizationID
+		
+		metadataKeyValuePair[analytics.CorrelationIDKey] = s.requestConfigHolder.ExternalProcessingEnvoyAttributes.CorrelationID
+		metadataKeyValuePair[analytics.RegionKey] = s.cfg.EnforcerRegionID
+		// metadataKeyValuePair[analytics.UserAgentKey] = s.requestConfigHolder.Metadata.UserAgent
+		// metadataKeyValuePair[analytics.ClientIpKey] = s.requestConfigHolder.Metadata.ClientIP
+		// metadataKeyValuePair[analytics.ApiResourceTemplateKey] = s.requestConfigHolder.ApiResourceTemplate
+		// metadataKeyValuePair[analytics.Destination] = s.requestConfigHolder.Metadata.Destination
+		metadataKeyValuePair[analytics.APIEnvironment] = s.requestConfigHolder.MatchedAPI.Environment
+
+		if s.requestConfigHolder.MatchedApplication != nil {
+			metadataKeyValuePair[analytics.AppIDKey] = s.requestConfigHolder.MatchedApplication.UUID
+			metadataKeyValuePair[analytics.AppUUIDKey] = s.requestConfigHolder.MatchedApplication.UUID
+			metadataKeyValuePair[analytics.AppKeyTypeKey] = s.requestConfigHolder.MatchedAPI.EnvType
+			metadataKeyValuePair[analytics.AppNameKey] = s.requestConfigHolder.MatchedApplication.Name
+			metadataKeyValuePair[analytics.AppOwnerKey] = s.requestConfigHolder.MatchedApplication.Owner
+		}
+	}
+	return &metadataKeyValuePair
 }

@@ -63,6 +63,7 @@ type Server struct {
 	MoesifToken                      string `envconfig:"MOESIF_TOKEN" default:""`
 	LogLevel                         string `envconfig:"LOG_LEVEL" default:"INFO"`
 	ExternalProcessingPort           string `envconfig:"EXTERNAL_PROCESSING_PORT" default:"8081"`
+	AccessLogServiceServerPort       string    `envconfig:"ACCESS_LOG_SERVICE_SERVER_PORT" default:"18090"`
 	ExternalProcessingKeepAliveTime  int    `envconfig:"EXTERNAL_PROCESSING_KEEP_ALIVE_TIME" default:"600"`
 	ExternalProcessingMaxMessageSize int    `envconfig:"EXTERNAL_PROCESSING_MAX_MESSAGE_SIZE" default:"1000000000"`
 	ExternalProcessingMaxHeaderLimit int    `envconfig:"EXTERNAL_PROCESSING_MAX_HEADER_LIMIT" default:"8192"`
