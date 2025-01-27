@@ -175,6 +175,6 @@ const (
 	AiProviderAPIVersion = "ai:providerversion"
 	//anonymousValye is the value for anonymous
 	anonymousValye = "anonymous"
-
+	// Unknown is the default value used for unassigned properties.
 	Unknown = "UNKNOWN"
 )
