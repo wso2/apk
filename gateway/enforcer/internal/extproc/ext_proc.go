@@ -605,15 +605,15 @@ func (s *ExternalProcessingServer) prepareMetadataKeyValuePairAndAddTo(metadataK
 		metadataKeyValuePair[analytics.APITypeKey] = s.requestConfigHolder.MatchedAPI.APIType
 		// metadataKeyValuePair[analytics.ApiCreatorKey] = s.requestConfigHolder.MatchedAPI.Creator
 		// metadataKeyValuePair[analytics.ApiCreatorTenantDomainKey] = s.requestConfigHolder.MatchedAPI.CreatorTenant
-		metadataKeyValuePair[analytics.APIOrganizationID] = s.requestConfigHolder.MatchedAPI.OrganizationID
-		
+		metadataKeyValuePair[analytics.APIOrganizationIDKey] = s.requestConfigHolder.MatchedAPI.OrganizationID
+
 		metadataKeyValuePair[analytics.CorrelationIDKey] = s.requestConfigHolder.ExternalProcessingEnvoyAttributes.CorrelationID
 		metadataKeyValuePair[analytics.RegionKey] = s.cfg.EnforcerRegionID
 		// metadataKeyValuePair[analytics.UserAgentKey] = s.requestConfigHolder.Metadata.UserAgent
 		// metadataKeyValuePair[analytics.ClientIpKey] = s.requestConfigHolder.Metadata.ClientIP
 		// metadataKeyValuePair[analytics.ApiResourceTemplateKey] = s.requestConfigHolder.ApiResourceTemplate
 		// metadataKeyValuePair[analytics.Destination] = s.requestConfigHolder.Metadata.Destination
-		metadataKeyValuePair[analytics.APIEnvironment] = s.requestConfigHolder.MatchedAPI.Environment
+		metadataKeyValuePair[analytics.APIEnvironmentKey] = s.requestConfigHolder.MatchedAPI.Environment
 
 		if s.requestConfigHolder.MatchedApplication != nil {
 			metadataKeyValuePair[analytics.AppIDKey] = s.requestConfigHolder.MatchedApplication.UUID

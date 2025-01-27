@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package dto
 
 // MetaInfo represents meta information attributes in an analytics event.

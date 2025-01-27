@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package analytics
 
 const (
@@ -107,8 +107,8 @@ const (
 	IsMockAPI = Wso2MetadataPrefix + "is-mock-api"
 	// APICreatorTenantDomainKey is the key for the API creator tenant domain.
 	APICreatorTenantDomainKey = Wso2MetadataPrefix + "api-creator-tenant-domain"
-	// APIOrganizationID is the key for the API organization ID.
-	APIOrganizationID = Wso2MetadataPrefix + "api-organization-id"
+	// APIOrganizationIDKey is the key for the API organization ID.
+	APIOrganizationIDKey = Wso2MetadataPrefix + "api-organization-id"
 
 	// AppIDKey is the key for the application ID.
 	AppIDKey = Wso2MetadataPrefix + "application-id"
@@ -129,8 +129,9 @@ const (
 	// APIResourceTemplateKey is the key for the API resource template.
 	APIResourceTemplateKey = Wso2MetadataPrefix + "api-resource-template"
 
-	// Destination is the key for the destination.
-	Destination = Wso2MetadataPrefix + "destination"
+	// DestinationKey is the key for the destination.
+	DestinationKey         = Wso2MetadataPrefix + "destination"
+	DEFAULT_FOR_UNASSIGNED = "UNKNOWN"
 
 	// UserAgentKey is the key for the user agent.
 	UserAgentKey = Wso2MetadataPrefix + "user-agent"
@@ -143,8 +144,8 @@ const (
 	ApkEnforcerReply = "apk-enforcer-reply"
 	// RatelimitWso2OrgPrefix is the prefix for WSO2 organization rate limit.
 	RatelimitWso2OrgPrefix = "customorg"
-	// APIEnvironment is the key for the API environment.
-	APIEnvironment = Wso2MetadataPrefix + "api-environment"
+	// APIEnvironmentKey is the key for the API environment.
+	APIEnvironmentKey = Wso2MetadataPrefix + "api-environment"
 	// OrganizationAndAirlPolicy is the key for the organization and rate limit policy.
 	OrganizationAndAirlPolicy = "ratelimit:organization-and-rlpolicy"
 	// Subscription is the key for the subscription.
@@ -171,4 +172,8 @@ const (
 	AiProviderName = "ai:providername"
 	// AiProviderAPIVersion is the key for the AI provider API version.
 	AiProviderAPIVersion = "ai:providerversion"
+	//anonymousValye is the value for anonymous
+	anonymousValye = "anonymous"
+
+	Unknown = "UNKNOWN"
 )

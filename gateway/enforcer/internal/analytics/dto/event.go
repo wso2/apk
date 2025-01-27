@@ -19,7 +19,7 @@ package dto
 
 // Event represents analytics event data.
 type Event struct {
-	API               *API                   `json:"api,omitempty" bson:"api"`
+	API               *ExtendedAPI                   `json:"api,omitempty" bson:"api"`
 	Operation         *Operation             `json:"operation,omitempty" bson:"operation"`
 	Target            *Target                `json:"target,omitempty" bson:"target"`
 	Application       *Application           `json:"application,omitempty" bson:"application"`
@@ -38,12 +38,12 @@ type Event struct {
 // Getters and Setters (optional in Go)
 
 // GetAPI returns the API.
-func (e *Event) GetAPI() *API {
+func (e *Event) GetAPI() *ExtendedAPI {
 	return e.API
 }
 
 // SetAPI sets the API.
-func (e *Event) SetAPI(api *API) {
+func (e *Event) SetAPI(api *ExtendedAPI) {
 	e.API = api
 }
 

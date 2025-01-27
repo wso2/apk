@@ -14,13 +14,14 @@
  *  limitations under the License.
  *
  */
- 
+
 package analytics
 
 import (
 	"fmt"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
+	"github.com/wso2/apk/gateway/enforcer/internal/analytics/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 )
 
@@ -37,7 +38,7 @@ func (c *ChoreoAnalytics) Process(event *v3.HTTPAccessLogEntry) {
 	}
 
 	// Add logic to publish the event
-	c.extractDataFromEvent(event)
+	_ = c.extractDataFromEvent(event)
 }
 
 // GetEventCategory returns the event category.
@@ -66,6 +67,111 @@ func (c *ChoreoAnalytics) isTargetFaultRequest() bool {
 	return false
 }
 
-func (c *ChoreoAnalytics) extractDataFromEvent(logEntry *v3.HTTPAccessLogEntry) {
+func (c *ChoreoAnalytics) extractDataFromEvent(logEntry *v3.HTTPAccessLogEntry) *map[string]string {
+	keyValuePairsFromMetadata := make(map[string]string)
 	c.Cfg.Logger.Info(fmt.Sprintf("log entry metadata, %+v", logEntry.CommonProperties))
+	if logEntry.CommonProperties != nil && logEntry.CommonProperties.Metadata != nil && logEntry.CommonProperties.Metadata.FilterMetadata != nil {
+		if sv, exists := logEntry.CommonProperties.Metadata.FilterMetadata[ExtProcMetadataContextKey]; exists {
+			if sv.Fields != nil {
+				for key, value := range sv.Fields {
+					if value != nil {
+						keyValuePairsFromMetadata[key] = value.GetStringValue()
+					}
+				}
+			}
+		}
+	}
+	// Prepare extended API
+	extendedAPI := dto.ExtendedAPI{}
+	extendedAPI.APIType = keyValuePairsFromMetadata[APITypeKey]
+	extendedAPI.APIID = keyValuePairsFromMetadata[APIIDKey]
+	extendedAPI.APICreator = keyValuePairsFromMetadata[APICreatorKey]
+	extendedAPI.APIName = keyValuePairsFromMetadata[APINameKey]
+	extendedAPI.APIVersion = keyValuePairsFromMetadata[APIVersionKey]
+	extendedAPI.APICreatorTenantDomain = keyValuePairsFromMetadata[APICreatorTenantDomainKey]
+	extendedAPI.OrganizationID = keyValuePairsFromMetadata[APIOrganizationIDKey]
+	extendedAPI.APIContext = keyValuePairsFromMetadata[APIContextKey]
+	extendedAPI.EnvironmentID = keyValuePairsFromMetadata[APIEnvironmentKey]
+
+	// Prepare operation
+	operation := dto.Operation{}
+	operation.APIResourceTemplate = keyValuePairsFromMetadata[APIResourceTemplateKey]
+	operation.APIMethod = keyValuePairsFromMetadata[logEntry.Request.GetRequestMethod().String()]
+
+	// Prepare target
+	target := dto.Target{}
+	target.ResponseCacheHit = false
+	target.TargetResponseCode = int(logEntry.GetResponse().GetResponseCode().Value)
+	target.Destination = keyValuePairsFromMetadata[DestinationKey]
+
+	// Prepare Application
+	application := &dto.Application{}
+	if keyValuePairsFromMetadata[AppIDKey] == Unknown {
+		application = c.getAnonymousApp()
+	} else {
+		application.ApplicationID = keyValuePairsFromMetadata[AppIDKey]
+		application.KeyType = keyValuePairsFromMetadata[AppKeyTypeKey]
+		application.ApplicationName = keyValuePairsFromMetadata[AppNameKey]
+		application.ApplicationOwner = keyValuePairsFromMetadata[AppOwnerKey]
+	}
+
+	properties := logEntry.GetCommonProperties()
+	backendResponseRecvTimestamp :=
+		(properties.TimeToLastUpstreamRxByte.Seconds * 1000) +
+			(int64(properties.TimeToLastUpstreamRxByte.Nanos) / 1_000_000)
+
+	backendRequestSendTimestamp :=
+		(properties.TimeToFirstUpstreamTxByte.Seconds * 1000) +
+			(int64(properties.TimeToFirstUpstreamTxByte.Nanos) / 1_000_000)
+
+	downstreamResponseSendTimestamp :=
+		(properties.TimeToLastDownstreamTxByte.Seconds * 1000) +
+			(int64(properties.TimeToLastDownstreamTxByte.Nanos) / 1_000_000)
+
+	// Prepare Latencies
+	latencies := dto.Latencies{}
+	latencies.BackendLatency = backendResponseRecvTimestamp - backendRequestSendTimestamp
+	latencies.RequestMediationLatency = backendRequestSendTimestamp
+	latencies.ResponseLatency = downstreamResponseSendTimestamp
+	latencies.ResponseMediationLatency = downstreamResponseSendTimestamp - backendResponseRecvTimestamp
+
+	// prepare metaInfo
+	metaInfo := dto.MetaInfo{}
+	metaInfo.CorrelationID = keyValuePairsFromMetadata[CorrelationIDKey]
+	metaInfo.RegionID = keyValuePairsFromMetadata[RegionKey]
+
+	userAgent := logEntry.GetRequest().GetUserAgent()
+	userName := keyValuePairsFromMetadata[APIUserNameKey]
+	userIP := logEntry.GetCommonProperties().GetDownstreamRemoteAddress().GetSocketAddress().GetAddress()
+	if userIP == "" {
+		userIP = Unknown
+	}
+	if userAgent == "" {
+		userAgent = Unknown
+	}
+
+	event := dto.Event{}
+	event.MetaInfo = &metaInfo
+	event.API = &extendedAPI
+	event.Operation = &operation
+	event.Target = &target
+	event.Application = application
+	event.Latencies = &latencies
+	event.UserAgentHeader = userAgent
+	event.UserName = userName
+	event.UserIP = userIP
+	event.ProxyResponseCode = int(logEntry.GetResponse().GetResponseCode().Value)
+	event.RequestTimestamp = logEntry.GetCommonProperties().GetStartTime().String()
+
+
+	return &keyValuePairsFromMetadata
+}
+
+func (c *ChoreoAnalytics) getAnonymousApp() *dto.Application {
+	application := &dto.Application{}
+	application.ApplicationID = anonymousValye
+	application.ApplicationName = anonymousValye
+	application.KeyType = anonymousValye
+	application.ApplicationOwner = anonymousValye
+	return application
 }
