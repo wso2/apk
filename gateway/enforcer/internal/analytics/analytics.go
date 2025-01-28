@@ -19,9 +19,11 @@ package analytics
 
 import (
 	"fmt"
+	"strings"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics/dto"
+	analytics_publisher "github.com/wso2/apk/gateway/enforcer/internal/analytics/publishers"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 )
@@ -43,14 +45,51 @@ const (
 	FaultCategoryTargetConnectivity FaultCategory = "TARGET_CONNECTIVITY"
 	// FaultCategoryOther represents other faults.
 	FaultCategoryOther FaultCategory = "OTHER"
+	// DefaultAnalyticsPublisher represents the default analytics publisher.
+	DefaultAnalyticsPublisher = "default"
+	// MoesifAnalyticsPublisher represents the Moesif analytics publisher.
+	MoesifAnalyticsPublisher = "moesif"
+	// ELKAnalyticsPublisher represents the ELK analytics publisher.
+	ELKAnalyticsPublisher = "elk"
 )
 
 // Analytics represents Choreo analytics.
 type Analytics struct {
-	// Cfg represents the server configuration.
-	Cfg         *config.Server
-	// ConfigStore represents the configuration store.
-	ConfigStore *datastore.ConfigStore
+	// cfg represents the server configuration.
+	cfg *config.Server
+	// configStore represents the configuration store.
+	configStore *datastore.ConfigStore
+	// publishers represents the publishers.
+	publishers []analytics_publisher.Publisher
+}
+
+// NewAnalytics creates a new instance of Analytics.
+func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analytics {
+	publishers := make([]analytics_publisher.Publisher, 0)
+	if len(configStore.GetConfigs()) == 0 {
+		config := configStore.GetConfigs()[0]
+		if config.Analytics.Enabled {
+			for _, pub := range config.Analytics.AnalyticsPublisher {
+				switch strings.ToLower(pub.Type) {
+				case strings.ToLower(ELKAnalyticsPublisher):
+					logLevel := "INFO"
+					if level, exists := pub.ConfigProperties["logLevel"]; exists {
+						logLevel = level
+					}
+					publishers = append(publishers, analytics_publisher.NewELK(cfg, logLevel))
+				case strings.ToLower(MoesifAnalyticsPublisher):
+					// publisher := publishers.NewMoesif(cfg, pub.LogLevel)
+				case strings.ToLower(DefaultAnalyticsPublisher):
+					// publisher := publishers.NewDefault(cfg, pub.LogLevel)
+				}
+			}
+		}
+	}
+	return &Analytics{
+		cfg:         cfg,
+		configStore: configStore,
+		publishers:  publishers,
+	}
 }
 
 // Process processes event and publishes the data
@@ -60,7 +99,12 @@ func (c *Analytics) Process(event *v3.HTTPAccessLogEntry) {
 	}
 
 	// Add logic to publish the event
-	_ = c.prepareAnalyticEvent(event)
+	analyticEvent := c.prepareAnalyticEvent(event)
+	for _, publisher := range c.publishers {
+		publisher.Publish(analyticEvent)
+	}
+	
+
 }
 
 // GetEventCategory returns the event category.
@@ -91,7 +135,7 @@ func (c *Analytics) isTargetFaultRequest() bool {
 
 func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.Event {
 	keyValuePairsFromMetadata := make(map[string]string)
-	c.Cfg.Logger.Info(fmt.Sprintf("log entry metadata, %+v", logEntry.CommonProperties))
+	c.cfg.Logger.Info(fmt.Sprintf("log entry metadata, %+v", logEntry.CommonProperties))
 	if logEntry.CommonProperties != nil && logEntry.CommonProperties.Metadata != nil && logEntry.CommonProperties.Metadata.FilterMetadata != nil {
 		if sv, exists := logEntry.CommonProperties.Metadata.FilterMetadata[ExtProcMetadataContextKey]; exists {
 			if sv.Fields != nil {

@@ -41,12 +41,10 @@ type AccessLogServiceServer struct {
 
 // newAccessLogServiceServer creates a new instance of the Access Log Service Server.
 func newAccessLogServiceServer(cfg *config.Server, configStore *datastore.ConfigStore) *AccessLogServiceServer {
+	analytics := analytics.NewAnalytics(cfg, configStore)
 	return &AccessLogServiceServer{
 		cfg: cfg,
-		analytics: &analytics.Analytics{
-			Cfg: cfg,
-			ConfigStore: configStore,
-		},
+		analytics: analytics,
 		configStore: configStore,
 	}
 }
