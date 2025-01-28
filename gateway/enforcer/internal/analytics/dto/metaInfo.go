@@ -23,33 +23,3 @@ type MetaInfo struct {
 	RegionID      string `json:"regionId"`
 	GatewayType   string `json:"gatewayType"`
 }
-
-// GetCorrelationID returns the correlation ID.
-func (m *MetaInfo) GetCorrelationID() string {
-	return m.CorrelationID
-}
-
-// SetCorrelationID sets the correlation ID.
-func (m *MetaInfo) SetCorrelationID(correlationID string) {
-	m.CorrelationID = correlationID
-}
-
-// GetRegionID returns the region ID.
-func (m *MetaInfo) GetRegionID() string {
-	return m.RegionID
-}
-
-// SetRegionID sets the region ID.
-func (m *MetaInfo) SetRegionID(regionID string) {
-	m.RegionID = regionID
-}
-
-// GetGatewayType returns the gateway type.
-func (m *MetaInfo) GetGatewayType() string {
-	return m.GatewayType
-}
-
-// SetGatewayType sets the gateway type.
-func (m *MetaInfo) SetGatewayType(gatewayType string) {
-	m.GatewayType = gatewayType
-}
