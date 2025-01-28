@@ -22,23 +22,3 @@ type Error struct {
 	ErrorCode    int              `json:"errorCode"`
 	ErrorMessage FaultSubCategory `json:"errorMessage"`
 }
-
-// GetErrorCode returns the error code.
-func (e *Error) GetErrorCode() int {
-	return e.ErrorCode
-}
-
-// SetErrorCode sets the error code.
-func (e *Error) SetErrorCode(errorCode int) {
-	e.ErrorCode = errorCode
-}
-
-// GetErrorMessage returns the error message.
-func (e *Error) GetErrorMessage() FaultSubCategory {
-	return e.ErrorMessage
-}
-
-// SetErrorMessage sets the error message.
-func (e *Error) SetErrorMessage(errorMessage FaultSubCategory) {
-	e.ErrorMessage = errorMessage
-}

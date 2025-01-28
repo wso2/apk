@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package dto
 
 // Target represents target attributes in an analytics event.
@@ -22,6 +22,7 @@ type Target struct {
 	TargetResponseCode int    `json:"targetResponseCode"`
 	ResponseCacheHit   bool   `json:"responseCacheHit"`
 	Destination        string `json:"destination"`
+	ResponseCodeDetail string `json:"responseCodeDetail"`
 }
 
 // GetTargetResponseCode returns the target response code.

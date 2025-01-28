@@ -28,12 +28,16 @@ import (
 type ConfigStore struct {
 	configs []*config.EnforcerConfig
 	mu      sync.RWMutex
+	Notify  chan struct{}
+	notified bool
 }
 
 // NewConfigStore creates a new instance of ConfigStore.
 func NewConfigStore() *ConfigStore {
 	return &ConfigStore{
 		configs: make([]*config.EnforcerConfig, 0),
+		Notify:  make(chan struct{}),
+		notified: false,
 	}
 }
 
@@ -43,6 +47,10 @@ func (s *ConfigStore) AddConfigs(configs []*config_from_adapter.Config) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.configs = parseConfig(configs)
+	if !s.notified {
+		s.notified = true
+		s.Notify <- struct{}{}
+	}
 }
 
 // GetConfigs retrieves the list of Config from the store.
@@ -54,5 +62,11 @@ func (s *ConfigStore) GetConfigs() []*config.EnforcerConfig {
 }
 
 func parseConfig(conf []*config_from_adapter.Config) []*config.EnforcerConfig {
-	return make([]*config.EnforcerConfig, 0)
+	enforcerConfigs := make([]*config.EnforcerConfig, 0)
+	for _, c := range conf {
+		enforcerConfigs = append(enforcerConfigs, &config.EnforcerConfig{
+			Analytics: c.Analytics,
+		})
+	}
+	return enforcerConfigs
 }

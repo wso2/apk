@@ -34,13 +34,19 @@ func main() {
 	client.InitiateEventingGRPCConnection()
 
 	// Create the XDS clients
-	apiStore, _, _, modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
+	apiStore, configStore, _, modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
 
 	// Start the external processing server
 	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, modelBasedRoundRobinTracker)
 
-	// Start the access log service server
-	go grpc.StartAccessLogServiceServer(cfg)
+	// Wait for the config to be loaded
+	cfg.Logger.Info("Waiting for the config to be loaded")
+	<- configStore.Notify
+	cfg.Logger.Info("Config loaded successfully")
+	if len(configStore.GetConfigs()) > 0 && configStore.GetConfigs()[0].Analytics != nil && configStore.GetConfigs()[0].Analytics.Enabled {
+		// Start the access log service server
+		go grpc.StartAccessLogServiceServer(cfg, configStore)
+	}
 
 	// Wait forever
 	select {}
