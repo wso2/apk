@@ -80,7 +80,7 @@ type Analytics struct {
 // NewAnalytics creates a new instance of Analytics.
 func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analytics {
 	publishers := make([]analytics_publisher.Publisher, 0)
-	if len(configStore.GetConfigs()) == 0 {
+	if len(configStore.GetConfigs()) != 0 {
 		config := configStore.GetConfigs()[0]
 		if config.Analytics.Enabled {
 			for _, pub := range config.Analytics.AnalyticsPublisher {
@@ -91,6 +91,7 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 						logLevel = level
 					}
 					publishers = append(publishers, analytics_publisher.NewELK(cfg, logLevel))
+					cfg.Logger.Info(fmt.Sprintf("ELK publisher added with log level: %s", logLevel))
 				case strings.ToLower(MoesifAnalyticsPublisher):
 					// publisher := publishers.NewMoesif(cfg, pub.LogLevel)
 				case strings.ToLower(DefaultAnalyticsPublisher):
@@ -98,6 +99,9 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 				}
 			}
 		}
+	}
+	if len(publishers) == 0 {
+		cfg.Logger.Info("No analytics publishers found. Analytics will not be published.")
 	}
 	return &Analytics{
 		cfg:         cfg,
@@ -183,7 +187,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	}
 
 	properties := logEntry.GetCommonProperties()
-	if properties == nil && properties.TimeToLastUpstreamRxByte != nil && properties.TimeToFirstUpstreamTxByte != nil && properties.TimeToLastDownstreamTxByte != nil {
+	if properties != nil && properties.TimeToLastUpstreamRxByte != nil && properties.TimeToFirstUpstreamTxByte != nil && properties.TimeToLastDownstreamTxByte != nil {
 		backendResponseRecvTimestamp :=
 			(properties.TimeToLastUpstreamRxByte.Seconds * 1000) +
 				(int64(properties.TimeToLastUpstreamRxByte.Nanos) / 1_000_000)
@@ -207,7 +211,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 
 	// prepare metaInfo
 	metaInfo := dto.MetaInfo{}
-	metaInfo.CorrelationID = keyValuePairsFromMetadata[CorrelationIDKey]
+	metaInfo.CorrelationID = logEntry.GetRequest().RequestId
 	metaInfo.RegionID = keyValuePairsFromMetadata[RegionKey]
 
 	userAgent := logEntry.GetRequest().GetUserAgent()
@@ -242,7 +246,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	aiTokenUsage.PromptToken = keyValuePairsFromMetadata[PromptTokenCountMetadataKey]
 	aiTokenUsage.CompletionToken = keyValuePairsFromMetadata[CompletionTokenCountMetadataKey]
 	aiTokenUsage.TotalToken = keyValuePairsFromMetadata[TotalTokenCountMetadataKey]
-
+	event.Properties["aiTokenUsage"] = aiTokenUsage
 	return event
 }
 

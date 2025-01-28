@@ -31,7 +31,6 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
-	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
