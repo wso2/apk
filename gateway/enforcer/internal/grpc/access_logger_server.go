@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package grpc
 
 import (
@@ -26,6 +26,7 @@ import (
 	v3 "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -33,17 +34,20 @@ import (
 
 // AccessLogServiceServer is the gRPC server for the Access Log Service.
 type AccessLogServiceServer struct {
-	cfg             *config.Server
-	choreoAnalytics *analytics.ChoreoAnalytics
+	cfg         *config.Server
+	analytics   *analytics.Analytics
+	configStore *datastore.ConfigStore
 }
 
 // newAccessLogServiceServer creates a new instance of the Access Log Service Server.
-func newAccessLogServiceServer(cfg *config.Server) *AccessLogServiceServer {
+func newAccessLogServiceServer(cfg *config.Server, configStore *datastore.ConfigStore) *AccessLogServiceServer {
 	return &AccessLogServiceServer{
 		cfg: cfg,
-		choreoAnalytics: &analytics.ChoreoAnalytics{
+		analytics: &analytics.Analytics{
 			Cfg: cfg,
+			ConfigStore: configStore,
 		},
+		configStore: configStore,
 	}
 }
 
@@ -59,15 +63,15 @@ func (s *AccessLogServiceServer) StreamAccessLogs(stream v3.AccessLogService_Str
 			return err
 		}
 		for _, logEntry := range in.GetHttpLogs().LogEntry {
-			s.choreoAnalytics.Process(logEntry)
+			s.analytics.Process(logEntry)
 		}
 	}
 }
 
 // StartAccessLogServiceServer starts the Access Log Service Server.
-func StartAccessLogServiceServer(cfg *config.Server) {
+func StartAccessLogServiceServer(cfg *config.Server, configStore *datastore.ConfigStore) {
 	// Create a new instance of the Access Log Service Server
-	accessLogServiceServer := newAccessLogServiceServer(cfg)
+	accessLogServiceServer := newAccessLogServiceServer(cfg, configStore)
 
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours

@@ -19,9 +19,11 @@ package config
 
 import (
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+	config_from_adapter "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/config/enforcer"
 )
 
 // EnforcerConfig is a struct that holds the enforcer configuration.
 type EnforcerConfig struct {
 	JWTConfiguration *dto.JWTConfiguration
+	Analytics                     *config_from_adapter.Analytics
 }

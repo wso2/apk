@@ -54,5 +54,13 @@ func (s *ConfigStore) GetConfigs() []*config.EnforcerConfig {
 }
 
 func parseConfig(conf []*config_from_adapter.Config) []*config.EnforcerConfig {
-	return make([]*config.EnforcerConfig, 0)
+	enforcerConfigs := make([]*config.EnforcerConfig, 0)
+	for _, c := range conf {
+		enforcerConfigs = append(enforcerConfigs, &config.EnforcerConfig{
+			Analytics: &config_from_adapter.Analytics{
+				Enabled: c.Analytics.Enabled,
+			},
+		})
+	}
+	return enforcerConfigs
 }
