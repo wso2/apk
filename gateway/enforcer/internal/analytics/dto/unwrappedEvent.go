@@ -6,15 +6,15 @@ type ELKResponseEvent struct {
 	APIType                  string                 `json:"apiType"`
 	APIName                  string                 `json:"apiName"`
 	APIVersion               string                 `json:"apiVersion"`
-	APICreation              string                 `json:"apiCreation"`              // Added
+	APICreator               string                 `json:"apiCreation"` // Added
 	APICreatorTenantDomain   string                 `json:"apiCreatorTenantDomain"`
 	APIMethod                string                 `json:"apiMethod"`
-	APIContext               string                 `json:"apiContext"`               // Added
+	APIContext               string                 `json:"apiContext"` // Added
 	APIResourceTemplate      string                 `json:"apiResourceTemplate"`
 	OrganizationID           string                 `json:"organizationID"`
 	EnvironmentID            string                 `json:"environmentID"`
 	TargetResponseCode       int                    `json:"targetResponseCode"`
-	ProxyResponseCode        int                    `json:"proxyResponseCode"`        // Added
+	ProxyResponseCode        int                    `json:"proxyResponseCode"` // Added
 	ResponseCacheHit         bool                   `json:"responseCacheHit"`
 	Destination              string                 `json:"destination"`
 	CorrelationID            string                 `json:"correlationID"`
@@ -28,9 +28,9 @@ type ELKResponseEvent struct {
 	ApplicationID            string                 `json:"applicationID"`
 	ApplicationName          string                 `json:"applicationName"`
 	ApplicationOwner         string                 `json:"applicationOwner"`
-	UserAgentHeader          string                 `json:"userAgentHeader"`          // Added
-	UserName                 string                 `json:"userName"`                 // Added
-	UserIP                   string                 `json:"userIP"`                   // Added
+	UserAgentHeader          string                 `json:"userAgentHeader"` // Added
+	UserName                 string                 `json:"userName"`        // Added
+	UserIP                   string                 `json:"userIP"`          // Added
 	RequestTimestamp         string                 `json:"requestTimestamp"`
 	Properties               map[string]interface{} `json:"properties"`
 }

@@ -51,6 +51,20 @@ const (
 	MoesifAnalyticsPublisher = "moesif"
 	// ELKAnalyticsPublisher represents the ELK analytics publisher.
 	ELKAnalyticsPublisher = "elk"
+
+	// PromptTokenCountMetadataKey represents the prompt token count metadata key.
+	PromptTokenCountMetadataKey     string = "aitoken:prompttokencount"
+	// CompletionTokenCountMetadataKey represents the completion token count metadata key.
+	CompletionTokenCountMetadataKey string = "aitoken:completiontokencount"
+	// TotalTokenCountMetadataKey represents the total token count metadata key.
+	TotalTokenCountMetadataKey      string = "aitoken:totaltokencount"
+	// ModelIDMetadataKey represents the model name metadata key.
+	ModelIDMetadataKey              string = "aitoken:modelid"
+
+	// AIProviderNameMetadataKey represents the AI provider metadata key.
+	AIProviderNameMetadataKey       string = "ai:providername"
+	// AIProviderAPIVersionMetadataKey represents the AI provider API version metadata key.
+	AIProviderAPIVersionMetadataKey string = "ai:providerversion"
 )
 
 // Analytics represents Choreo analytics.
@@ -104,7 +118,6 @@ func (c *Analytics) Process(event *v3.HTTPAccessLogEntry) {
 	for _, publisher := range c.publishers {
 		publisher.Publish(analyticEvent)
 	}
-
 
 }
 
@@ -168,7 +181,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 		application.ApplicationName = keyValuePairsFromMetadata[AppNameKey]
 		application.ApplicationOwner = keyValuePairsFromMetadata[AppOwnerKey]
 	}
-	
+
 	properties := logEntry.GetCommonProperties()
 	if properties == nil && properties.TimeToLastUpstreamRxByte != nil && properties.TimeToFirstUpstreamTxByte != nil && properties.TimeToLastDownstreamTxByte != nil {
 		backendResponseRecvTimestamp :=
@@ -207,7 +220,6 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 		userAgent = Unknown
 	}
 
-	
 	event.MetaInfo = &metaInfo
 	event.API = &extendedAPI
 	event.Operation = &operation
@@ -218,6 +230,18 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	event.UserIP = userIP
 	event.ProxyResponseCode = int(logEntry.GetResponse().GetResponseCode().Value)
 	event.RequestTimestamp = logEntry.GetCommonProperties().GetStartTime().String()
+	event.Properties = make(map[string]interface{}, 0)
+
+	aiMetadata := dto.AIMetadata{}
+	aiMetadata.VendorName = keyValuePairsFromMetadata[AIProviderNameMetadataKey]
+	aiMetadata.VendorVersion = keyValuePairsFromMetadata[AIProviderAPIVersionMetadataKey]
+	aiMetadata.Model = keyValuePairsFromMetadata[ModelIDMetadataKey]
+	event.Properties["aiMetadata"] = aiMetadata
+
+	aiTokenUsage := dto.AITokenUsage{}
+	aiTokenUsage.PromptToken = keyValuePairsFromMetadata[PromptTokenCountMetadataKey]
+	aiTokenUsage.CompletionToken = keyValuePairsFromMetadata[CompletionTokenCountMetadataKey]
+	aiTokenUsage.TotalToken = keyValuePairsFromMetadata[TotalTokenCountMetadataKey]
 
 	return event
 }

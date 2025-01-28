@@ -1,6 +1,8 @@
 package publishers
 
 import (
+	"fmt"
+
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 )
@@ -21,6 +23,11 @@ func NewELK(cfg *config.Server, logLevel string) *ELK {
 
 // Publish publishes the event to ELK
 func (e *ELK) Publish(event *dto.Event) {
+	defer func() {
+		if r := recover(); r != nil {
+			e.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic: %v", r))
+		}
+	}()
 	// Implement the ELK publish logic
 	if e.isFault(event) {
 		e.publishFault(event)
@@ -30,7 +37,39 @@ func (e *ELK) Publish(event *dto.Event) {
 }
 
 func (e *ELK) publishEvent(event *dto.Event) {
-	// Implement the ELK publish event logic
+	elkResponseEvent := &dto.ELKResponseEvent{
+		APIName: event.API.APIName,
+		APIID:   event.API.APIID,
+		APIType: event.API.APIType,
+		APIVersion: event.API.APIVersion,
+		OrganizationID: event.API.OrganizationID,
+		EnvironmentID: event.API.EnvironmentID,
+		APICreator: event.API.APICreator,
+		APICreatorTenantDomain: event.API.APICreatorTenantDomain,
+		APIContext: event.API.APIContext,
+		APIMethod: event.Operation.APIMethod,
+		APIResourceTemplate: event.Operation.APIResourceTemplate,
+		TargetResponseCode: event.Target.TargetResponseCode,
+		ProxyResponseCode: event.ProxyResponseCode,
+		ResponseCacheHit: event.Target.ResponseCacheHit,
+		Destination: event.Target.Destination,
+		CorrelationID: event.MetaInfo.CorrelationID,
+		RegionID: event.MetaInfo.RegionID,
+		GatewayType: event.MetaInfo.GatewayType,
+		ResponseLatency: event.Latencies.ResponseLatency,
+		BackendLatency: event.Latencies.BackendLatency,
+		RequestMediationLatency: event.Latencies.RequestMediationLatency,
+		ResponseMediationLatency: event.Latencies.ResponseMediationLatency,
+		KeyType: event.Application.KeyType,
+		ApplicationID: event.Application.ApplicationID,
+		ApplicationName: event.Application.ApplicationName,
+		ApplicationOwner: event.Application.ApplicationOwner,
+		UserAgentHeader: event.UserAgentHeader,
+		UserName: event.UserName,
+		UserIP: event.UserIP,
+		RequestTimestamp: event.RequestTimestamp,
+		Properties: event.Properties,
+	}
 }
 
 func (e *ELK) publishFault(event *dto.Event) {

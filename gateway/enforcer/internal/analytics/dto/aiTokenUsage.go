@@ -19,48 +19,8 @@ package dto
 
 // AITokenUsage represents AI token usage in an analytics event.
 type AITokenUsage struct {
-	TotalTokens      *int `json:"totalTokens"`
-	PromptTokens     *int `json:"promptTokens"`
-	CompletionTokens *int `json:"completionTokens"`
+	TotalToken      string `json:"totalTokens"`
+	PromptToken     string `json:"promptTokens"`
+	CompletionToken string `json:"completionTokens"`
 	Hour             *int `json:"hour"`
-}
-
-// GetTotalTokens returns the total tokens.
-func (a *AITokenUsage) GetTotalTokens() *int {
-	return a.TotalTokens
-}
-
-// SetTotalTokens sets the total tokens.
-func (a *AITokenUsage) SetTotalTokens(totalTokens *int) {
-	a.TotalTokens = totalTokens
-}
-
-// GetPromptTokens returns the prompt tokens.
-func (a *AITokenUsage) GetPromptTokens() *int {
-	return a.PromptTokens
-}
-
-// SetPromptTokens sets the prompt tokens.
-func (a *AITokenUsage) SetPromptTokens(promptTokens *int) {
-	a.PromptTokens = promptTokens
-}
-
-// GetCompletionTokens returns the completion tokens.
-func (a *AITokenUsage) GetCompletionTokens() *int {
-	return a.CompletionTokens
-}
-
-// SetCompletionTokens sets the completion tokens.
-func (a *AITokenUsage) SetCompletionTokens(completionTokens *int) {
-	a.CompletionTokens = completionTokens
-}
-
-// GetHour returns the hour.
-func (a *AITokenUsage) GetHour() *int {
-	return a.Hour
-}
-
-// SetHour sets the hour.
-func (a *AITokenUsage) SetHour(hour *int) {
-	a.Hour = hour
 }

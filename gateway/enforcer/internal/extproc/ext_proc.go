@@ -31,6 +31,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
@@ -80,13 +81,8 @@ const (
 	promptTokenIDMetadataKey                        string = "aitoken:prompttokenid"
 	completionTokenIDMetadataKey                    string = "aitoken:completiontokenid"
 	totalTokenIDMetadataKey                         string = "aitoken:totaltokenid"
-	promptTokenCountMetadataKey                     string = "aitoken:prompttokencount"
-	completionTokenCountMetadataKey                 string = "aitoken:completiontokencount"
-	totalTokenCountMetadataKey                      string = "aitoken:totaltokencount"
-	modelIDMetadataKey                              string = "aitoken:modelid"
+	
 	modelMetadataKey                                string = "aitoken:model"
-	aiProviderNameMetadataKey                       string = "ai:providername"
-	aiProviderAPIVersionMetadataKey                 string = "ai:providerversion"
 )
 
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
@@ -348,12 +344,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
 						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
 					aiProvider := matchedAPI.AiProvider
-					dynamicMetadataKeyValuePairs[aiProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
-					dynamicMetadataKeyValuePairs[aiProviderNameMetadataKey] = aiProvider.ProviderName
-					dynamicMetadataKeyValuePairs[modelIDMetadataKey] = tokenCount.Model
-					dynamicMetadataKeyValuePairs[completionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
-					dynamicMetadataKeyValuePairs[totalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
-					dynamicMetadataKeyValuePairs[promptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
+					dynamicMetadataKeyValuePairs[analytics.AIProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
+					dynamicMetadataKeyValuePairs[analytics.AIProviderNameMetadataKey] = aiProvider.ProviderName
+					dynamicMetadataKeyValuePairs[analytics.ModelIDMetadataKey] = tokenCount.Model
+					dynamicMetadataKeyValuePairs[analytics.CompletionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
+					dynamicMetadataKeyValuePairs[analytics.TotalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
+					dynamicMetadataKeyValuePairs[analytics.PromptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
 				}
 			}
 			if s.requestConfigHolder != nil &&
@@ -422,12 +418,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
 						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
 					aiProvider := matchedAPI.AiProvider
-					dynamicMetadataKeyValuePairs[aiProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
-					dynamicMetadataKeyValuePairs[aiProviderNameMetadataKey] = aiProvider.ProviderName
-					dynamicMetadataKeyValuePairs[modelIDMetadataKey] = tokenCount.Model
-					dynamicMetadataKeyValuePairs[completionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
-					dynamicMetadataKeyValuePairs[totalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
-					dynamicMetadataKeyValuePairs[promptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
+					dynamicMetadataKeyValuePairs[analytics.AIProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
+					dynamicMetadataKeyValuePairs[analytics.AIProviderNameMetadataKey] = aiProvider.ProviderName
+					dynamicMetadataKeyValuePairs[analytics.ModelIDMetadataKey] = tokenCount.Model
+					dynamicMetadataKeyValuePairs[analytics.CompletionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
+					dynamicMetadataKeyValuePairs[analytics.TotalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
+					dynamicMetadataKeyValuePairs[analytics.PromptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
 
 				}
 			}
