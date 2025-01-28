@@ -94,7 +94,8 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 
 // Process processes event and publishes the data
 func (c *Analytics) Process(event *v3.HTTPAccessLogEntry) {
-	if c.GetEventCategory(event) == EventCategoryFault && c.GetFaultType() == FaultCategoryOther {
+	if c.isInvalid(event) {
+		c.cfg.Logger.Error(nil, "Invalid event received from the access log service")
 		return
 	}
 
@@ -103,39 +104,23 @@ func (c *Analytics) Process(event *v3.HTTPAccessLogEntry) {
 	for _, publisher := range c.publishers {
 		publisher.Publish(analyticEvent)
 	}
-	
+
 
 }
 
 // GetEventCategory returns the event category.
-func (c *Analytics) GetEventCategory(logEntry *v3.HTTPAccessLogEntry) EventCategory {
-	if logEntry.GetResponse() != nil && logEntry.GetResponse().GetResponseCodeDetails() == UpstreamSuccessResponseDetail {
-		return EventCategorySuccess
-	} else if logEntry.GetResponse() != nil &&
-		logEntry.GetResponse().GetResponseCode().GetValue() != 200 &&
-		logEntry.GetResponse().GetResponseCode().GetValue() != 204 {
-		return EventCategoryFault
-	}
-	return EventCategoryInvalid
+func (c *Analytics) isInvalid(logEntry *v3.HTTPAccessLogEntry) bool {
+	return logEntry.GetResponse() == nil
 }
 
 // GetFaultType returns the fault type.
 func (c *Analytics) GetFaultType() FaultCategory {
-	if c.isTargetFaultRequest() {
-		return FaultCategoryTargetConnectivity
-	}
 	return FaultCategoryOther
-}
-
-// isTargetFaultRequest checks if the request is a target fault request.
-func (c *Analytics) isTargetFaultRequest() bool {
-	// Implement the logic to determine if the request is a target fault request.
-	return false
 }
 
 func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.Event {
 	keyValuePairsFromMetadata := make(map[string]string)
-	c.cfg.Logger.Info(fmt.Sprintf("log entry metadata, %+v", logEntry.CommonProperties))
+	c.cfg.Logger.Info(fmt.Sprintf("log entry, %+v", logEntry))
 	if logEntry.CommonProperties != nil && logEntry.CommonProperties.Metadata != nil && logEntry.CommonProperties.Metadata.FilterMetadata != nil {
 		if sv, exists := logEntry.CommonProperties.Metadata.FilterMetadata[ExtProcMetadataContextKey]; exists {
 			if sv.Fields != nil {
@@ -147,6 +132,8 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 			}
 		}
 	}
+	event := &dto.Event{}
+
 	// Prepare extended API
 	extendedAPI := dto.ExtendedAPI{}
 	extendedAPI.APIType = keyValuePairsFromMetadata[APITypeKey]
@@ -169,6 +156,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	target.ResponseCacheHit = false
 	target.TargetResponseCode = int(logEntry.GetResponse().GetResponseCode().Value)
 	target.Destination = keyValuePairsFromMetadata[DestinationKey]
+	target.ResponseCodeDetail = logEntry.GetResponse().GetResponseCodeDetails()
 
 	// Prepare Application
 	application := &dto.Application{}
@@ -180,26 +168,29 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 		application.ApplicationName = keyValuePairsFromMetadata[AppNameKey]
 		application.ApplicationOwner = keyValuePairsFromMetadata[AppOwnerKey]
 	}
-
+	
 	properties := logEntry.GetCommonProperties()
-	backendResponseRecvTimestamp :=
-		(properties.TimeToLastUpstreamRxByte.Seconds * 1000) +
-			(int64(properties.TimeToLastUpstreamRxByte.Nanos) / 1_000_000)
+	if properties == nil && properties.TimeToLastUpstreamRxByte != nil && properties.TimeToFirstUpstreamTxByte != nil && properties.TimeToLastDownstreamTxByte != nil {
+		backendResponseRecvTimestamp :=
+			(properties.TimeToLastUpstreamRxByte.Seconds * 1000) +
+				(int64(properties.TimeToLastUpstreamRxByte.Nanos) / 1_000_000)
 
-	backendRequestSendTimestamp :=
-		(properties.TimeToFirstUpstreamTxByte.Seconds * 1000) +
-			(int64(properties.TimeToFirstUpstreamTxByte.Nanos) / 1_000_000)
+		backendRequestSendTimestamp :=
+			(properties.TimeToFirstUpstreamTxByte.Seconds * 1000) +
+				(int64(properties.TimeToFirstUpstreamTxByte.Nanos) / 1_000_000)
 
-	downstreamResponseSendTimestamp :=
-		(properties.TimeToLastDownstreamTxByte.Seconds * 1000) +
-			(int64(properties.TimeToLastDownstreamTxByte.Nanos) / 1_000_000)
+		downstreamResponseSendTimestamp :=
+			(properties.TimeToLastDownstreamTxByte.Seconds * 1000) +
+				(int64(properties.TimeToLastDownstreamTxByte.Nanos) / 1_000_000)
 
-	// Prepare Latencies
-	latencies := dto.Latencies{}
-	latencies.BackendLatency = backendResponseRecvTimestamp - backendRequestSendTimestamp
-	latencies.RequestMediationLatency = backendRequestSendTimestamp
-	latencies.ResponseLatency = downstreamResponseSendTimestamp
-	latencies.ResponseMediationLatency = downstreamResponseSendTimestamp - backendResponseRecvTimestamp
+		// Prepare Latencies
+		latencies := dto.Latencies{}
+		latencies.BackendLatency = backendResponseRecvTimestamp - backendRequestSendTimestamp
+		latencies.RequestMediationLatency = backendRequestSendTimestamp
+		latencies.ResponseLatency = downstreamResponseSendTimestamp
+		latencies.ResponseMediationLatency = downstreamResponseSendTimestamp - backendResponseRecvTimestamp
+		event.Latencies = &latencies
+	}
 
 	// prepare metaInfo
 	metaInfo := dto.MetaInfo{}
@@ -216,13 +207,12 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 		userAgent = Unknown
 	}
 
-	event := &dto.Event{}
+	
 	event.MetaInfo = &metaInfo
 	event.API = &extendedAPI
 	event.Operation = &operation
 	event.Target = &target
 	event.Application = application
-	event.Latencies = &latencies
 	event.UserAgentHeader = userAgent
 	event.UserName = userName
 	event.UserIP = userIP

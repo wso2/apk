@@ -177,7 +177,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 								Code: v32.StatusCode_NotFound,
 							},
 							Body:    []byte("The requested resource is not available."),
-							Details: "Could not find the required attributes in the request.",
+							Details: "Resource not found",
 						},
 					},
 				}
