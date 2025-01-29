@@ -20,11 +20,12 @@ package datastore
 import (
 	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	auth "github.com/wso2/apk/gateway/enforcer/internal/authentication/authconfig"
+	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
-func buildResource(operation *api.Operation, path string, endpointSecurity []*requestconfig.EndpointSecurity) requestconfig.Resource {
+func buildResource(operation *api.Operation, path string, aiModelBasedRoundRobin *dto.AIModelBasedRoundRobin, endpointSecurity []*requestconfig.EndpointSecurity) requestconfig.Resource {
 	authConfig := auth.AuthenticationConfig{
 		Disabled: operation.ApiAuthentication.Disabled,
 	}
@@ -53,13 +54,14 @@ func buildResource(operation *api.Operation, path string, endpointSecurity []*re
 		authConfig.APIKeyAuthenticationConfigs = apiKeyAuthConfigs
 	}
 	return requestconfig.Resource{
-		MatchID:              operation.MatchID,
-		Path:                 util.NormalizePath(path),
-		Method:               requestconfig.HTTPMethods(operation.Method),
-		Tier:                 operation.Tier,
-		EndpointSecurity:     endpointSecurity,
-		AuthenticationConfig: authConfig,
-		Scopes:               operation.Scopes,
+		MatchID:                operation.MatchID,
+		Path:                   util.NormalizePath(path),
+		Method:                 requestconfig.HTTPMethods(operation.Method),
+		Tier:                   operation.Tier,
+		EndpointSecurity:       endpointSecurity,
+		AuthenticationConfig:   authConfig,
+		Scopes:                 operation.Scopes,
+		AIModelBasedRoundRobin: aiModelBasedRoundRobin,
 	}
 }
 

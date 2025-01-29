@@ -953,10 +953,6 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					aiProvider = aiProviderPtr
 				}
 			}
-			if apiPolicy.Spec.Default.ModelBasedRoundRobin != nil {
-				loggers.LoggerAPKOperator.Debugf("ModelBasedRoundRobin Default found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
-				modelBasedRoundRobin = apiPolicy.Spec.Default.ModelBasedRoundRobin
-			}
 		}
 		if apiPolicy.Spec.Override != nil {
 			if len(apiPolicy.Spec.Override.RequestInterceptors) > 0 {
@@ -988,6 +984,17 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					aiProvider = aiProviderPtr
 				}
 			}
+
+		}
+	}
+	for _, apiPolicy := range apiPolicies {
+		if apiPolicy.Spec.Default != nil {
+			if apiPolicy.Spec.Default.ModelBasedRoundRobin != nil {
+				loggers.LoggerAPKOperator.Debugf("ModelBasedRoundRobin Default found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
+				modelBasedRoundRobin = apiPolicy.Spec.Default.ModelBasedRoundRobin
+			}
+		}
+		if apiPolicy.Spec.Override != nil {
 			if apiPolicy.Spec.Override.ModelBasedRoundRobin != nil {
 				loggers.LoggerAPKOperator.Debugf("ModelBasedRoundRobin override found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Override.ModelBasedRoundRobin)
 				modelBasedRoundRobin = apiPolicy.Spec.Override.ModelBasedRoundRobin

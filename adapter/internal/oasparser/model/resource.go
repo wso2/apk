@@ -24,6 +24,7 @@ import (
 	"sort"
 
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -42,6 +43,7 @@ type Resource struct {
 	iD                                     string
 	endpoints                              *EndpointCluster
 	endpointSecurity                       []*EndpointSecurity
+	AIModelBasedRoundRobin                 *dpv1alpha4.ModelBasedRoundRobin
 	vendorExtensions                       map[string]interface{}
 	hasPolicies                            bool
 	hasRequestRedirectFilter               bool
@@ -107,6 +109,11 @@ func (resource *Resource) GetOperations() []*Operation {
 // HasPolicies returns whether the resource has operations that includes policies.
 func (resource *Resource) HasPolicies() bool {
 	return resource.hasPolicies
+}
+
+// GetAIModelBasedRoundRobin returns the AIModelBasedRoundRobin object of a given resource.
+func (resource *Resource) GetAIModelBasedRoundRobin() *dpv1alpha4.ModelBasedRoundRobin {
+	return resource.AIModelBasedRoundRobin
 }
 
 // CreateMinimalDummyResourceForTests create a resource object with minimal required set of values

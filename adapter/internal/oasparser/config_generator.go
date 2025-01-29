@@ -143,6 +143,16 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 		if res.GetEndpointSecurity() != nil {
 			resource.EndpointSecurity = generateRPCEndpointSecurity(res.GetEndpointSecurity())
 		}
+		modelBasedRoundRobin := res.GetAIModelBasedRoundRobin()
+		logger.LoggerOasparser.Debugf("Get AI Model Based Round Robin: %+v", modelBasedRoundRobin)
+		if modelBasedRoundRobin != nil && modelBasedRoundRobin.Models != nil {
+			resource.AiModelBasedRoundRobin = &api.AIModelBasedRoundRobin{
+				Enabled:                      true,
+				OnQuotaExceedSuspendDuration: int32(modelBasedRoundRobin.OnQuotaExceedSuspendDuration),
+				Models:                       convertModelWeights(modelBasedRoundRobin.Models),
+			}
+		}
+		logger.LoggerOasparser.Infof("Resource AI Model Based Round Robin: %+v", resource.AiModelBasedRoundRobin)
 		resources = append(resources, resource)
 	}
 
