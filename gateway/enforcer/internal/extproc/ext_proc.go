@@ -80,8 +80,8 @@ const (
 	promptTokenIDMetadataKey                        string = "aitoken:prompttokenid"
 	completionTokenIDMetadataKey                    string = "aitoken:completiontokenid"
 	totalTokenIDMetadataKey                         string = "aitoken:totaltokenid"
-	
-	modelMetadataKey                                string = "aitoken:model"
+
+	modelMetadataKey string = "aitoken:model"
 )
 
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
@@ -228,18 +228,100 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
 			s.log.Info("Request Body Flow")
-
-			s.log.Info(fmt.Sprintf("Matched api: %v", s.requestConfigHolder.MatchedAPI))
+			s.log.Info(fmt.Sprintf("Matched Resource Round Robin :%+v", s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin))
+			s.log.Info(fmt.Sprintf("Matched api Round Robin: %v", s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin))
 			if s.requestConfigHolder != nil &&
 				s.requestConfigHolder.MatchedAPI != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
 				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
 				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
-				s.log.Info("Model Based Round Robin enabled")
+				s.log.Info("API Level Model Based Round Robin enabled")
 				supportedModels := s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels
 				onQuotaExceedSuspendDuration := s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
 				modelWeight := s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Models
+				// convert to datastore.ModelWeight
+				var modelWeights []datastore.ModelWeight
+				for _, model := range modelWeight {
+					modelWeights = append(modelWeights, datastore.ModelWeight{
+						Name:   model.Model,
+						Weight: model.Weight,
+					})
+				}
+				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
+				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
+				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
+				selectedModel := s.modelBasedRoundRobinTracker.GetNextModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, modelWeights)
+				s.log.Info(fmt.Sprintf("Selected Model: %v", selectedModel))
+				if selectedModel == "" {
+					s.log.Info("Unable to select a model since all models are suspended. Continue with the user provided model")
+				} else {
+					// change request body to model to selected model
+					httpBody := req.GetRequestBody().Body
+					s.log.Info(fmt.Sprintf("request body before %+v\n", httpBody))
+					// Define a map to hold the JSON data
+					var jsonData map[string]interface{}
+					// Unmarshal the JSON data into the map
+					err := json.Unmarshal(httpBody, &jsonData)
+					if err != nil {
+						s.log.Error(err, "Error unmarshaling JSON Reuqest Body")
+					}
+					s.log.Info(fmt.Sprintf("jsonData %+v\n", jsonData))
+					// Change the model to the selected model
+					jsonData["model"] = selectedModel
+					// Convert the JSON object to a []byte
+					newHTTPBody, err := json.Marshal(jsonData)
+					if err != nil {
+						s.log.Error(err, "Error marshaling JSON")
+					}
+
+					// Calculate the new body length
+					newBodyLength := len(newHTTPBody)
+					s.log.Info(fmt.Sprintf("new body length: %d\n", newBodyLength))
+
+					// Update the Content-Length header
+					headers := &envoy_service_proc_v3.HeaderMutation{
+						SetHeaders: []*corev3.HeaderValueOption{
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "Content-Length",
+									RawValue: []byte(fmt.Sprintf("%d", newBodyLength)), // Set the new Content-Length
+								},
+							},
+						},
+					}
+
+					rbq := &envoy_service_proc_v3.BodyResponse{
+						Response: &envoy_service_proc_v3.CommonResponse{
+							Status:         envoy_service_proc_v3.CommonResponse_CONTINUE_AND_REPLACE,
+							HeaderMutation: headers, // Add header mutation here
+							BodyMutation: &envoy_service_proc_v3.BodyMutation{
+								Mutation: &envoy_service_proc_v3.BodyMutation_Body{
+									Body: newHTTPBody,
+								},
+							},
+						},
+					}
+					s.log.Info(fmt.Sprintf("rbq %+v\n", rbq))
+					resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+						RequestBody: rbq,
+					}
+					s.log.Info(fmt.Sprintf("resp %+v\n", resp))
+					//req.GetRequestBody().Body = newHTTPBody
+					s.log.Info(fmt.Sprintf("request body after %+v\n", newHTTPBody))
+				}
+			}
+			if s.requestConfigHolder != nil &&
+				s.requestConfigHolder.MatchedAPI != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin == nil &&
+				s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin != nil &&
+				s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.Enabled {
+				s.log.Info("Resource Level Model Based Round Robin enabled")
+				supportedModels := s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels
+				onQuotaExceedSuspendDuration := s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
+				modelWeight := s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.Models
 				// convert to datastore.ModelWeight
 				var modelWeights []datastore.ModelWeight
 				for _, model := range modelWeight {
@@ -357,7 +439,40 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
 				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
 				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
-				s.log.Info("Model Based Round Robin enabled")
+				s.log.Info("API Level Model Based Round Robin enabled")
+				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
+				s.log.Info(fmt.Sprintf("Header Values: %v", headerValues))
+				remainingTokenCount := 100
+				remainingRequestCount := 100
+				for _, headerValue := range headerValues {
+					if headerValue.Key == "x-ratelimit-remaining-tokens" {
+						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve remaining token count by header")
+						}
+						remainingTokenCount = value
+					}
+					if headerValue.Key == "x-ratelimit-remaining-requests" {
+						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve remaining request count by header")
+						}
+						remainingRequestCount = value
+					}
+				}
+				if remainingTokenCount <= 50 || remainingRequestCount <= 50 { // Suspend model if token/request count reaches 0
+					s.log.Info("Token/request are exhausted. Suspending the model")
+					s.requestConfigHolder.ExternalProcessingEnvoyAttributes.SuspendAIModel = "true"
+				}
+			}
+			if s.requestConfigHolder != nil &&
+				s.requestConfigHolder.MatchedAPI != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin == nil &&
+				s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin != nil &&
+				s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.Enabled {
+				s.log.Info("Resource Level Model Based Round Robin enabled")
 				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
 				s.log.Info(fmt.Sprintf("Header Values: %v", headerValues))
 				remainingTokenCount := 100
@@ -434,7 +549,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
 				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.SuspendAIModel == "true" {
-				s.log.Info("Model Based Round Robin enabled")
+				s.log.Info("API Level Model Based Round Robin enabled")
 				httpBody := req.GetResponseBody().Body
 				// Define a map to hold the JSON data
 				var jsonData map[string]interface{}
@@ -453,6 +568,35 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 				s.log.Info("Suspending model: " + model)
 				duration := s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
+				s.modelBasedRoundRobinTracker.SuspendModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
+			}
+			if s.requestConfigHolder != nil &&
+				s.requestConfigHolder.MatchedAPI != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
+				s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin == nil &&
+				s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin != nil &&
+				s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.Enabled &&
+				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.SuspendAIModel == "true" {
+				s.log.Info("Resource Level Model Based Round Robin enabled")
+				httpBody := req.GetResponseBody().Body
+				// Define a map to hold the JSON data
+				var jsonData map[string]interface{}
+				// Unmarshal the JSON data into the map
+				err := json.Unmarshal(httpBody, &jsonData)
+				if err != nil {
+					s.log.Error(err, "Error unmarshaling JSON Response Body")
+				}
+				s.log.Info(fmt.Sprintf("jsonData %+v\n", jsonData))
+				// Retrieve Model from the JSON data
+				model := ""
+				if modelValue, ok := jsonData["model"].(string); ok {
+					model = modelValue
+				} else {
+					s.log.Error(fmt.Errorf("model is not a string"), "failed to extract model from JSON data")
+				}
+				s.log.Info("Suspending model: " + model)
+				duration := s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
 				s.modelBasedRoundRobinTracker.SuspendModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 			}
 		default:

@@ -948,6 +948,12 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 			operations := getAllowedOperations(matchID, match.Method, policies, apiAuth,
 				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
 
+			var modelBasedRoundRobin *dpv1alpha4.ModelBasedRoundRobin
+			if extracted := extractModelBasedRoundRobinFromPolicy(resourceAPIPolicy); extracted != nil {
+				loggers.LoggerAPI.Infof("ModelBasedRoundRobin extracted %v", extracted)
+				modelBasedRoundRobin = extracted
+			}
+
 			resource := &Resource{
 				path:                                   resourcePath,
 				methods:                                operations,
@@ -958,6 +964,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				enableBackendBasedAIRatelimit:          enableBackendBasedAIRatelimit,
 				backendBasedAIRatelimitDescriptorValue: descriptorValue,
 				extractTokenFrom:                       extractTokenFrom,
+				AIModelBasedRoundRobin:                 modelBasedRoundRobin,
 			}
 
 			resource.endpoints = &EndpointCluster{
@@ -1039,6 +1046,28 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		adapterInternalAPI.backendJWTTokenInfo = parseBackendJWTTokenToInternal(backendJWTPolicy)
 	}
 
+	return nil
+}
+
+// ExtractModelBasedRoundRobinFromPolicy extracts the ModelBasedRoundRobin from the API Policy
+func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy) *dpv1alpha4.ModelBasedRoundRobin {
+	if apiPolicy == nil {
+		return nil
+	}
+
+	// Safely access Override section
+	if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ModelBasedRoundRobin != nil {
+		loggers.LoggerAPI.Infof("ModelBasedRoundRobin Override section  %v", apiPolicy.Spec.Override.ModelBasedRoundRobin)
+		return apiPolicy.Spec.Override.ModelBasedRoundRobin
+	}
+
+	// Safely access Default section
+	if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ModelBasedRoundRobin != nil {
+		loggers.LoggerAPI.Infof("ModelBasedRoundRobin Default section  %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
+		return apiPolicy.Spec.Default.ModelBasedRoundRobin
+	}
+
+	// Return nil if nothing matches
 	return nil
 }
 

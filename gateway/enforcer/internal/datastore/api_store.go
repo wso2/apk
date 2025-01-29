@@ -81,7 +81,7 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
-				resource := buildResource(operation, resource.Path, func() []*requestconfig.EndpointSecurity {
+				resource := buildResource(operation, resource.Path, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), func() []*requestconfig.EndpointSecurity {
 					endpointSecurity := make([]*requestconfig.EndpointSecurity, len(resource.EndpointSecurity))
 					for i, es := range resource.EndpointSecurity {
 						endpointSecurity[i] = &requestconfig.EndpointSecurity{
