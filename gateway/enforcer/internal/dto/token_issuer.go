@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package dto
 
 import (
@@ -23,12 +23,12 @@ import (
 
 // TokenIssuer represents the token issuer
 type TokenIssuer struct {
-    Issuer                string                 `json:"issuer"`                // Issuer of the token
-    DisableDefaultClaimMapping bool               `json:"disableDefaultClaimMapping"` // Whether to disable default claim mapping
-    ClaimConfigurations   map[string]*ClaimMapping `json:"claimConfigurations"` // Claim mappings
-    JwksConfigurationDTO  JWKSConfiguration   `json:"jwksConfigurationDTO"`  // JWKS configuration
-    Certificate           *x509.Certificate            `json:"certificate"`            // Optional certificate
-    ConsumerKeyClaim      string                 `json:"consumerKeyClaim"`      // Claim for the consumer key
-    ScopesClaim           string                 `json:"scopesClaim"`           // Claim for scopes
-    Audience              string                 `json:"audience"`              // Audience of the token
+	Issuer                     string                   `json:"issuer"`                     // Issuer of the token
+	DisableDefaultClaimMapping bool                     `json:"disableDefaultClaimMapping"` // Whether to disable default claim mapping
+	ClaimConfigurations        map[string]*ClaimMapping `json:"claimConfigurations"`        // Claim mappings
+	JwksConfigurationDTO       JWKSConfiguration        `json:"jwksConfigurationDTO"`       // JWKS configuration
+	Certificate                *x509.Certificate        `json:"certificate"`                // Optional certificate
+	ConsumerKeyClaim           string                   `json:"consumerKeyClaim"`           // Claim for the consumer key
+	ScopesClaim                string                   `json:"scopesClaim"`                // Claim for scopes
+	Audience                   string                   `json:"audience"`                   // Audience of the token
 }

@@ -27,6 +27,8 @@ type Holder struct {
 	MatchedAPI                        *API
 	MatchedResource                   *Resource
 	ExternalProcessingEnvoyAttributes *dto.ExternalProcessingEnvoyAttributes
+	ExternalProcessingEnvoyMetadata   *dto.ExternalProcessingEnvoyMetadata
+	JWTValidationInfo                 *dto.JWTValidationInfo
 	MatchedSubscription               *subscription_model.Subscription
 	MatchedApplication                *subscription_model.Application
 }

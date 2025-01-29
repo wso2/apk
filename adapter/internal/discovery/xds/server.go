@@ -23,6 +23,7 @@ import (
 	crand "crypto/rand"
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"math/rand"
@@ -39,10 +40,10 @@ import (
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	envoy_resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/dataholder"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
+	"github.com/wso2/apk/adapter/internal/loggers"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
@@ -54,6 +55,7 @@ import (
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	semantic_version "github.com/wso2/apk/adapter/pkg/semanticversion"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -397,6 +399,7 @@ func GenerateGlobalClusters(label string) {
 
 // GenerateJWTProviders generates the JWT providers for the given label
 func GenerateJWTProviders(label string, jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) {
+	loggers.LoggerAPKOperator.Infof("Gateway Name: %v", label)
 
 	if _, ok := gatewayLabelConfigMap[label]; ok {
 		jwtProviderMap := make(map[string]map[string]*v1alpha1.ResolvedJWTIssuer)
@@ -407,6 +410,7 @@ func GenerateJWTProviders(label string, jwtIssuers map[string]*v1alpha1.Resolved
 			orgwizeMap := jwtProviderMap[jwtIssuer.Organization]
 			orgwizeMap[name] = jwtIssuer
 		}
+		loggers.LoggerAPKOperator.Infof("JWT Providers: %v", jwtProviderMap)
 		gatewayLabelConfigMap[label].jwtProviders = jwtProviderMap
 	}
 }
@@ -502,11 +506,45 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 
 }
 
+func marshalJWTIssuerList(jwtIssuerMapping map[string]*v1alpha1.ResolvedJWTIssuer) *subscription.JWTIssuerList {
+	jwtIssuers := []*subscription.JWTIssuer{}
+	for _, internalJWTIssuer := range jwtIssuerMapping {
+		certificate := &subscription.Certificate{}
+		jwtIssuer := &subscription.JWTIssuer{
+			Name:             internalJWTIssuer.Name,
+			Organization:     internalJWTIssuer.Organization,
+			Issuer:           internalJWTIssuer.Issuer,
+			ConsumerKeyClaim: internalJWTIssuer.ConsumerKeyClaim,
+			ScopesClaim:      internalJWTIssuer.ScopesClaim,
+		}
+		if internalJWTIssuer.SignatureValidation.Certificate != nil && internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate != "" {
+			certificate.Certificate = internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate
+		}
+		if internalJWTIssuer.SignatureValidation.JWKS != nil {
+			jwks := &subscription.JWKS{}
+			jwks.Url = internalJWTIssuer.SignatureValidation.JWKS.URL
+			if internalJWTIssuer.SignatureValidation.JWKS.TLS != nil && internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate != "" {
+				jwks.Tls = internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate
+			}
+			certificate.Jwks = jwks
+		}
+		jwtIssuer.ClaimMapping = internalJWTIssuer.ClaimMappings
+		jwtIssuer.Certificate = certificate
+		jwtIssuer.Environments = internalJWTIssuer.Environments
+		jwtIssuers = append(jwtIssuers, jwtIssuer)
+
+	}
+	jwtIssuersJSON, _ := json.Marshal(jwtIssuers)
+	loggers.LoggerAPKOperator.Debugf("JwtIssuer Data: %v", string(jwtIssuersJSON))
+	return &subscription.JWTIssuerList{List: jwtIssuers}
+}
+
 // UpdateEnforcerJWTIssuers sets new update to the enforcer's Applications
-func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
+func UpdateEnforcerJWTIssuers(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) {
+	resolvedJWTIssuerList := marshalJWTIssuerList(jwtIssuers)
 	logger.LoggerXds.Debug("Updating Enforcer JWT Issuer Cache")
 	label := commonEnforcerLabel
-	jwtIssuerList := append(enforcerLabelMap[label].jwtIssuers, jwtIssuers)
+	jwtIssuerList := append(enforcerLabelMap[label].jwtIssuers, resolvedJWTIssuerList)
 
 	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -767,40 +805,42 @@ func GetEnvoyInternalAPICount() int {
 
 // patchListenerWithJWTFilter patches the given Envoy listener with a JWT filter
 func patchListenerWithJWTFilter(listener *listenerv3.Listener, jwtFilter *hcmv3.HttpFilter) error {
-	for _, filterChain := range listener.FilterChains {
-		for _, filter := range filterChain.Filters {
-			if filter.Name == "envoy.filters.network.http_connection_manager" {
-				var httpConnectionManager hcmv3.HttpConnectionManager
-				if err := ptypes.UnmarshalAny(filter.GetTypedConfig(), &httpConnectionManager); err != nil {
-					return fmt.Errorf("failed to unmarshal HttpConnectionManager: %v", err)
-				}
-				if httpConnectionManager.HttpFilters == nil {
-					httpConnectionManager.HttpFilters = []*hcmv3.HttpFilter{}
-				}
-
-				// Flag to check if jwt_authn filter exists
-				jwtFilterExists := false
-
-				// Iterate over HttpFilters and replace any existing jwt_authn filter
-				for i, httpFilter := range httpConnectionManager.HttpFilters {
-					if httpFilter.Name == envoyconf.EnvoyJWT {
-						httpConnectionManager.HttpFilters[i] = jwtFilter
-						jwtFilterExists = true
-						break
+	if jwtFilter != nil {
+		for _, filterChain := range listener.FilterChains {
+			for _, filter := range filterChain.Filters {
+				if filter.Name == "envoy.filters.network.http_connection_manager" {
+					var httpConnectionManager hcmv3.HttpConnectionManager
+					if err := anypb.UnmarshalTo(filter.GetTypedConfig(), &httpConnectionManager, proto.UnmarshalOptions{}); err != nil {
+						return fmt.Errorf("failed to unmarshal HttpConnectionManager: %v", err)
 					}
-				}
+					if httpConnectionManager.HttpFilters == nil {
+						httpConnectionManager.HttpFilters = []*hcmv3.HttpFilter{}
+					}
 
-				// If no existing jwt_authn filter was found, prepend the new one
-				if !jwtFilterExists {
-					httpConnectionManager.HttpFilters = append([]*hcmv3.HttpFilter{jwtFilter}, httpConnectionManager.HttpFilters...)
-				}
+					// Flag to check if jwt_authn filter exists
+					jwtFilterExists := false
 
-				// Marshal the updated HttpConnectionManager back into the filter
-				typedConfig, err := anypb.New(&httpConnectionManager)
-				if err != nil {
-					return fmt.Errorf("failed to marshal HttpConnectionManager: %v", err)
+					// Iterate over HttpFilters and replace any existing jwt_authn filter
+					for i, httpFilter := range httpConnectionManager.HttpFilters {
+						if httpFilter.Name == envoyconf.EnvoyJWT {
+							httpConnectionManager.HttpFilters[i] = jwtFilter
+							jwtFilterExists = true
+							break
+						}
+					}
+
+					// If no existing jwt_authn filter was found, prepend the new one
+					if !jwtFilterExists {
+						httpConnectionManager.HttpFilters = append([]*hcmv3.HttpFilter{jwtFilter}, httpConnectionManager.HttpFilters...)
+					}
+
+					// Marshal the updated HttpConnectionManager back into the filter
+					typedConfig, err := anypb.New(&httpConnectionManager)
+					if err != nil {
+						return fmt.Errorf("failed to marshal HttpConnectionManager: %v", err)
+					}
+					filter.ConfigType = &listenerv3.Filter_TypedConfig{TypedConfig: typedConfig}
 				}
-				filter.ConfigType = &listenerv3.Filter_TypedConfig{TypedConfig: typedConfig}
 			}
 		}
 	}

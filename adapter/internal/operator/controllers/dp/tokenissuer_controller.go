@@ -22,7 +22,6 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
-	"log"
 	"strings"
 
 	"github.com/lestrrat-go/jwx/v2/jwk"
@@ -35,41 +34,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
-	"sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
-
-// func marshalJWTIssuerList(jwtIssuerMapping dpv1alpha1.JWTIssuerMapping) *subscription.JWTIssuerList {
-// 	jwtIssuers := []*subscription.JWTIssuer{}
-// 	for _, internalJWTIssuer := range jwtIssuerMapping {
-// 		certificate := &subscription.Certificate{}
-// 		jwtIssuer := &subscription.JWTIssuer{
-// 			Name:             internalJWTIssuer.Name,
-// 			Organization:     internalJWTIssuer.Organization,
-// 			Issuer:           internalJWTIssuer.Issuer,
-// 			ConsumerKeyClaim: internalJWTIssuer.ConsumerKeyClaim,
-// 			ScopesClaim:      internalJWTIssuer.ScopesClaim,
-// 		}
-// 		if internalJWTIssuer.SignatureValidation.Certificate != nil && internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate != "" {
-// 			certificate.Certificate = internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate
-// 		}
-// 		if internalJWTIssuer.SignatureValidation.JWKS != nil {
-// 			jwks := &subscription.JWKS{}
-// 			jwks.Url = internalJWTIssuer.SignatureValidation.JWKS.URL
-// 			if internalJWTIssuer.SignatureValidation.JWKS.TLS != nil && internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate != "" {
-// 				jwks.Tls = internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate
-// 			}
-// 			certificate.Jwks = jwks
-// 		}
-// 		jwtIssuer.ClaimMapping = internalJWTIssuer.ClaimMappings
-// 		jwtIssuer.Certificate = certificate
-// 		jwtIssuer.Environments = internalJWTIssuer.Environments
-// 		jwtIssuers = append(jwtIssuers, jwtIssuer)
-
-// 	}
-// 	jwtIssuersJSON, _ := json.Marshal(jwtIssuers)
-// 	loggers.LoggerAPKOperator.Debugf("JwtIssuer Data: %v", string(jwtIssuersJSON))
-// 	return &subscription.JWTIssuerList{List: jwtIssuers}
-// }
 
 // // GetJWTIssuers returns the JWTIssuers for the given JWTIssuerMapping
 func GetJWTIssuers(ctx context.Context, client k8client.Client, gateway gwapiv1.Gateway) (map[string]*v1alpha1.ResolvedJWTIssuer, error) {
@@ -78,10 +43,9 @@ func GetJWTIssuers(ctx context.Context, client k8client.Client, gateway gwapiv1.
 	if err := client.List(ctx, jwtIssuerList); err != nil {
 		return nil, err
 	}
+	loggers.LoggerAPKOperator.Infof("JWTIssuerList: %v", jwtIssuerList)
 	for _, jwtIssuer := range jwtIssuerList.Items {
-		if jwtIssuer.Spec.TargetRef.Kind == constants.KindGateway &&
-			jwtIssuer.Spec.TargetRef.Name == v1alpha2.ObjectName(gateway.ObjectMeta.Name) &&
-			jwtIssuer.Spec.TargetRef.Namespace == (*v1alpha2.Namespace)(&gateway.Namespace) {
+		if jwtIssuer.Spec.TargetRef.Kind == constants.KindGateway && jwtIssuer.Spec.TargetRef.Name == gwapiv1.ObjectName(gateway.Name) {
 			resolvedJwtIssuer := dpv1alpha1.ResolvedJWTIssuer{}
 			resolvedJwtIssuer.Issuer = jwtIssuer.Spec.Issuer
 			resolvedJwtIssuer.ConsumerKeyClaim = jwtIssuer.Spec.ConsumerKeyClaim
@@ -154,13 +118,13 @@ func convertPemCertificatetoJWK(cert string) string {
 	// Decode the PEM data
 	block, _ := pem.Decode([]byte(cert))
 	if block == nil || block.Type != "CERTIFICATE" {
-		log.Fatalf("failed to decode PEM block containing certificate")
+		loggers.LoggerAPKOperator.Errorf("failed to decode PEM block containing certificate")
 	}
 
 	// Parse the certificate
 	parsedCert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		log.Fatalf("failed to parse certificate: %s", err)
+		loggers.LoggerAPKOperator.Errorf("failed to parse certificate: %s", err)
 	}
 
 	// Extract the public key from the certificate
@@ -169,13 +133,15 @@ func convertPemCertificatetoJWK(cert string) string {
 	// Convert the public key to a JWK
 	jwkKey, err := jwk.FromRaw(pubKey)
 	if err != nil {
-		log.Fatalf("failed to create JWK: %s", err)
+		loggers.LoggerAPKOperator.Errorf("failed to create JWK: %s", err)
 	}
-
+	jwks := jwk.NewSet()
+	jwks.AddKey(jwkKey)
 	// Marshal the JWK to JSON
-	jwkJSON, err := json.Marshal(jwkKey)
+	jwkJSON, err := json.MarshalIndent(jwks, "", "  ")
 	if err != nil {
-		log.Fatalf("failed to marshal JWK to JSON: %s", err)
+		loggers.LoggerAPKOperator.Errorf("failed to marshal JWK to JSON: %s", err)
 	}
+	loggers.LoggerAPKOperator.Infof("JWK: %s", string(jwkJSON))
 	return string(jwkJSON)
 }

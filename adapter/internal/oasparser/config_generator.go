@@ -517,11 +517,13 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 	jwksClusters := make([]*clusterv3.Cluster, 0)
 	jwksAddresses := make([]*corev3.Address, 0)
 	jwtProvider := &jwt.JwtProvider{
-		Issuer:            tokenIssuer.Issuer,
-		Forward:           false,
-		PayloadInMetadata: envoyconf.EnvoyJWT,
+		Issuer:                 tokenIssuer.Issuer,
+		Forward:                true,
+		FailedStatusInMetadata: "failed_status",
+		PayloadInMetadata:      "payload_in_metadata",
 	}
 	if tokenIssuer.SignatureValidation.JWKS != nil {
+		logger.LoggerOasparser.Infof("JWKS URL: %s", tokenIssuer.SignatureValidation.JWKS.URL)
 		jwksCluster, jwksAddress, err := getRemoteJWKSCluster(*tokenIssuer.SignatureValidation.JWKS, issuerName)
 		if err != nil {
 			logger.LoggerOasparser.Error(err)
@@ -542,6 +544,7 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 			},
 		}
 	} else if tokenIssuer.SignatureValidation.Certificate != nil {
+		logger.LoggerOasparser.Infof("ResolvedCertificate: %s", tokenIssuer.SignatureValidation.Certificate.ResolvedCertificate)
 		jwtProvider.JwksSourceSpecifier = &jwt.JwtProvider_LocalJwks{
 			LocalJwks: &corev3.DataSource{
 				Specifier: &corev3.DataSource_InlineString{InlineString: tokenIssuer.SignatureValidation.Certificate.ResolvedCertificate},
@@ -571,6 +574,9 @@ func getRemoteJWKSCluster(jwksInfo v1alpha1.ResolvedJWKS, clusterName string) (*
 
 // GetJWTFilter
 func GetJWTFilter(jwtRequirement map[string]*jwt.JwtRequirement, jwtProviders map[string]*jwt.JwtProvider) (*hcmv3.HttpFilter, error) {
+	if len(jwtProviders) == 0 {
+		return nil, nil
+	}
 	jwtAuthentication := &jwt.JwtAuthentication{
 		Providers:      jwtProviders,
 		RequirementMap: jwtRequirement,

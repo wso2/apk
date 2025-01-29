@@ -122,8 +122,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-adapter:1.2.0
+          imagePullPolicy: IfNotPresent
+          image: apk-adapter:1.2.0-SNAPSHOT
           security:
             sslHostname: "adapter"
           logging:
@@ -244,8 +244,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: Always
-            image: wso2/apk-enforcer:1.2.0
+            imagePullPolicy: IfNotPresent
+            image: apk-enforcer:1.2.0-SNAPSHOT
             security:
               sslHostname: "enforcer"
 #            logging:

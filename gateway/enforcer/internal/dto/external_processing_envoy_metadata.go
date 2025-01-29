@@ -14,27 +14,22 @@
  *  limitations under the License.
  *
  */
- 
-package authenticator
+package dto
 
-import "fmt"
-
-// JWTAuthenticator implements Authenticator for JWT tokens.
-type JWTAuthenticator struct{}
-
-// CanAuthenticate checks if the data contains a JWT token.
-func (j JWTAuthenticator) CanAuthenticate(data map[string]string) bool {
-	_, exists := data["jwtToken"]
-	return exists
+// ExternalProcessingEnvoyMetadata represents the metadata extracted from the external processing request.
+type ExternalProcessingEnvoyMetadata struct {
+	JwtAuthenticationData *JwtAuthenticationData `json:"jwtAuthenticationData"`
 }
 
-// Authenticate validates the JWT token.
-func (j JWTAuthenticator) Authenticate(data map[string]string) (bool, error) {
-	token, exists := data["jwtToken"]
-	if !exists {
-		return false, fmt.Errorf("no JWT token found")
-	}
-	// Add actual JWT validation logic here.
-	fmt.Println("Validating JWT:", token)
-	return true, nil
+// JwtAuthenticationData represents the JWT authentication data.
+type JwtAuthenticationData struct {
+	Status *Status                `json:"status"`
+	Issuer string                 `json:"issuer"`
+	Claims map[string]interface{} `json:"claims"`
+}
+
+// Status represents the status of the JWT authentication.
+type Status struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }

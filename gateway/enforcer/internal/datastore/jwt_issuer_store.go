@@ -18,6 +18,7 @@
 package datastore
 
 import (
+	"fmt"
 	"sync"
 
 	subscription "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
@@ -25,14 +26,14 @@ import (
 
 // JWTIssuerStore is a thread-safe store for APIs.
 type JWTIssuerStore struct {
-	jwtIssuers []*subscription.JWTIssuer
+	jwtIssuers map[string]map[string]*subscription.JWTIssuer
 	mu         sync.RWMutex
 }
 
 // NewJWTIssuerStore creates a new instance of JWTIssuerStore.
 func NewJWTIssuerStore() *JWTIssuerStore {
 	return &JWTIssuerStore{
-		jwtIssuers: make([]*subscription.JWTIssuer, 0),
+		jwtIssuers: make(map[string]map[string]*subscription.JWTIssuer),
 	}
 }
 
@@ -41,13 +42,27 @@ func NewJWTIssuerStore() *JWTIssuerStore {
 func (s *JWTIssuerStore) AddJWTIssuers(apis []*subscription.JWTIssuer) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.jwtIssuers = apis
+	orgWizeJWTIssuers := make(map[string]map[string]*subscription.JWTIssuer)
+	for _, api := range apis {
+		fmt.Printf("Adding JWT Issuer: %v\n", api)
+		if _, ok := orgWizeJWTIssuers[api.Organization]; !ok {
+			orgWizeJWTIssuers[api.Organization] = make(map[string]*subscription.JWTIssuer)
+		}
+		orgWizeJWTIssuers[api.Organization][api.Issuer] = api
+	}
+	fmt.Printf("JWT Issuers: %v\n", orgWizeJWTIssuers)
+	s.jwtIssuers = orgWizeJWTIssuers
 }
 
-// GetJWTIssuers retrieves the list of Config from the store.
+// GetJWTIssuerByOrganizationAndIssuer returns the JWTIssuer for the given organization and issuer.
 // This method is thread-safe.
-func (s *JWTIssuerStore) GetJWTIssuers() []*subscription.JWTIssuer {
+func (s *JWTIssuerStore) GetJWTIssuerByOrganizationAndIssuer(organization, issuer string) *subscription.JWTIssuer {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	return s.jwtIssuers
+	if orgWiseJWTIssuers, ok := s.jwtIssuers[organization]; ok {
+		if jwtIssuer, ok := orgWiseJWTIssuers[issuer]; ok {
+			return jwtIssuer
+		}
+	}
+	return nil
 }
