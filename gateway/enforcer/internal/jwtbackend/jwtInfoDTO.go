@@ -1,31 +1,33 @@
 package jwtbackend
 
+import "github.com/wso2/apk/gateway/enforcer/internal/dto"
+
 // JWTInfoDto holds information related to JWT tokens.
 type JWTInfoDto struct {
-	ApplicationTier   string                    `json:"applicationTier"`
-	KeyType           string                    `json:"keyType"`
-	Version           string                    `json:"version"`
-	ApplicationName   string                    `json:"applicationName"`
-	EndUser           string                    `json:"endUser"`
-	EndUserTenantID   int                       `json:"endUserTenantId"`
-	ApplicationUUID   string                    `json:"applicationUUId"`
-	Subscriber        string                    `json:"subscriber"`
-	SubscriptionTier  string                    `json:"subscriptionTier"`
-	ApplicationID     string                    `json:"applicationId"`
-	APIContext        string                    `json:"apiContext"`
-	APIName           string                    `json:"apiName"`
-	JwtValidationInfo *JWTValidationInfo        `json:"jwtValidationInfo"`
-	AppAttributes     map[string]string         `json:"appAttributes"`
-	Sub               string                    `json:"sub"`
-	Organizations     []string                  `json:"organizations"`
-	Claims            map[string]*ClaimValueDTO `json:"claims"`
+	ApplicationTier   string                     `json:"applicationTier"`
+	KeyType           string                     `json:"keyType"`
+	Version           string                     `json:"version"`
+	ApplicationName   string                     `json:"applicationName"`
+	EndUser           string                     `json:"endUser"`
+	EndUserTenantID   int                        `json:"endUserTenantId"`
+	ApplicationUUID   string                     `json:"applicationUUId"`
+	Subscriber        string                     `json:"subscriber"`
+	SubscriptionTier  string                     `json:"subscriptionTier"`
+	ApplicationID     string                     `json:"applicationId"`
+	APIContext        string                     `json:"apiContext"`
+	APIName           string                     `json:"apiName"`
+	JwtValidationInfo *JWTValidationInfo         `json:"jwtValidationInfo"`
+	AppAttributes     map[string]string          `json:"appAttributes"`
+	Sub               string                     `json:"sub"`
+	Organizations     []string                   `json:"organizations"`
+	Claims            map[string]*dto.ClaimValue `json:"claims"`
 }
 
 // NewJWTInfoDto creates a new JWTInfoDto instance.
 func NewJWTInfoDto() *JWTInfoDto {
 	return &JWTInfoDto{
 		AppAttributes: make(map[string]string),
-		Claims:        make(map[string]*ClaimValueDTO),
+		Claims:        make(map[string]*dto.ClaimValue),
 		Organizations: make([]string, 0),
 	}
 }
@@ -52,8 +54,8 @@ func CloneStringMap(original map[string]string) map[string]string {
 }
 
 // CloneClaimsMap creates a deep copy of a map with ClaimValueDTO pointers.
-func CloneClaimsMap(original map[string]*ClaimValueDTO) map[string]*ClaimValueDTO {
-	clonedMap := make(map[string]*ClaimValueDTO)
+func CloneClaimsMap(original map[string]*dto.ClaimValue) map[string]*dto.ClaimValue {
+	clonedMap := make(map[string]*dto.ClaimValue)
 	for k, v := range original {
 		if v != nil {
 			valueCopy := *v // Create a copy of the struct value

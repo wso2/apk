@@ -75,10 +75,10 @@ func (g *AbstractAPIMgtGatewayJWTGenerator) GenerateToken(jwtInfoDto *JWTInfoDto
 	return base64UrlEncodedHeader + "." + base64UrlEncodedBody + ".", nil
 }
 
-func (g *AbstractAPIMgtGatewayJWTGenerator) populateStandardClaims(jwtInfoDto *JWTInfoDto) map[string]ClaimValueDTO {
-	claims := make(map[string]ClaimValueDTO)
+func (g *AbstractAPIMgtGatewayJWTGenerator) populateStandardClaims(jwtInfoDto *JWTInfoDto) map[string]dto.ClaimValue {
+	claims := make(map[string]dto.ClaimValue)
 	for key, value := range jwtInfoDto.Claims {
-		claims[key] = ClaimValueDTO{
+		claims[key] = dto.ClaimValue{
 			Value: value.Value,
 			Type:  value.Type, // Ensure `Type` is also assigned if it exists in `ClaimValueDTO`.
 		}
@@ -86,10 +86,10 @@ func (g *AbstractAPIMgtGatewayJWTGenerator) populateStandardClaims(jwtInfoDto *J
 	return claims
 }
 
-func (g *AbstractAPIMgtGatewayJWTGenerator) populateCustomClaims(jwtInfoDto *JWTInfoDto) map[string]ClaimValueDTO {
-	claims := make(map[string]ClaimValueDTO)
+func (g *AbstractAPIMgtGatewayJWTGenerator) populateCustomClaims(jwtInfoDto *JWTInfoDto) map[string]dto.ClaimValue {
+	claims := make(map[string]dto.ClaimValue)
 	for key, value := range jwtInfoDto.Claims {
-		claims[key] = ClaimValueDTO{
+		claims[key] = dto.ClaimValue{
 			Value: value.Value,
 			Type:  value.Type, // Ensure `Type` is also assigned if it exists in `ClaimValueDTO`.
 		}
