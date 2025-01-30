@@ -47,10 +47,10 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, exter
 				switch audienceClaim.(type) {
 				case string:
 					audiences := []string{remoteClaims["aud"].(string)}
-					jwtValidationInfo.Audiences = &audiences
+					jwtValidationInfo.Audiences = audiences
 				case []string:
 					audiences := remoteClaims["aud"].([]string)
-					jwtValidationInfo.Audiences = &audiences
+					jwtValidationInfo.Audiences = audiences
 				}
 			}
 			remoteScopes := remoteClaims[tokenIssuer.ScopesClaim]
@@ -59,10 +59,10 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, exter
 				switch remoteScopes := remoteScopes.(type) {
 				case string:
 					scopes := []string{remoteScopes}
-					jwtValidationInfo.Scopes = &scopes
+					jwtValidationInfo.Scopes = scopes
 				case []string:
 					scopes := remoteScopes
-					jwtValidationInfo.Scopes = &scopes
+					jwtValidationInfo.Scopes = scopes
 				}
 			}
 			remoteClientID := remoteClaims[tokenIssuer.ConsumerKeyClaim]
