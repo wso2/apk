@@ -415,13 +415,13 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				},
 			}
 			s.log.Info("Response Header Flow")
-			matchedAPI := s.requestConfigHolder.MatchedAPI
 			if s.requestConfigHolder != nil &&
-				matchedAPI != nil &&
-				matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.CompletionToken != nil &&
+				s.requestConfigHolder.MatchedAPI != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				matchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
+				matchedAPI := s.requestConfigHolder.MatchedAPI
 				s.log.Info("Backend based AI rate limit enabled using headers")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(),
 					matchedAPI.AiProvider.PromptTokens.Value,
@@ -522,13 +522,13 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ResponseBody: rbq,
 				},
 			}
-			matchedAPI := s.requestConfigHolder.MatchedAPI
 			if s.requestConfigHolder != nil &&
-				matchedAPI != nil &&
-				matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.CompletionToken != nil &&
+				s.requestConfigHolder.MatchedAPI != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
 				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
+				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
+				matchedAPI := s.requestConfigHolder.MatchedAPI
 				s.log.Info("Backend based AI rate limit enabled using body")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
 					matchedAPI.AiProvider.PromptTokens.Value,
