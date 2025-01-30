@@ -42,7 +42,7 @@ func updateInternalMapsFromGRPCRoute(apiState APIState, grpcRoute *GRPCRouteStat
 
 	vHosts := getVhostsForGRPCAPI(grpcRoute.GRPCRouteCombined)
 	labels := getLabelsForGRPCAPI(grpcRoute.GRPCRouteCombined)
-	listeners, relativeSectionNames := getListenersForGRPCAPI(grpcRoute.GRPCRouteCombined, adapterInternalAPI.UUID)
+	listeners, relativeSectionNames := getListenersForGRPCAPI(grpcRoute.GRPCRouteCombined)
 	// We dont have a use case where a perticular API's two different grpc routes refer to two different gateway. Hence get the first listener name for the list for processing.
 	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for grpc route: %v. ",
@@ -130,7 +130,7 @@ func getLabelsForGRPCAPI(grpcRoute *gwapiv1.GRPCRoute) map[string]struct{} {
 }
 
 // getListenersForGRPCAPI returns the listeners related to an API.
-func getListenersForGRPCAPI(grpcRoute *gwapiv1.GRPCRoute, apiUUID string) ([]string, []string) {
+func getListenersForGRPCAPI(grpcRoute *gwapiv1.GRPCRoute) ([]string, []string) {
 	var listeners []string
 	var sectionNames []string
 	for _, parentRef := range grpcRoute.Spec.ParentRefs {
@@ -145,10 +145,7 @@ func getListenersForGRPCAPI(grpcRoute *gwapiv1.GRPCRoute, apiUUID string) ([]str
 		if found {
 			// find the matching listener
 			matchedListener, listenerFound := common.FindElement(gateway.Spec.Listeners, func(listener gwapiv1b1.Listener) bool {
-				if string(listener.Name) == string(*parentRef.SectionName) {
-					return true
-				}
-				return false
+				return string(listener.Name) == string(*parentRef.SectionName)
 			})
 			if listenerFound {
 				sectionNames = append(sectionNames, string(matchedListener.Name))

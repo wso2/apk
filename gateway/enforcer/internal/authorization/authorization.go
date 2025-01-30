@@ -28,14 +28,14 @@ import (
 
 // Validate performs the authorization.
 func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server) *dto.ImmediateResponse {
-	if immediateResponse := ValidateScopes(rch.ExternalProcessingEnvoyAttributes.Scopes, rch.MatchedResource.Scopes, rch.MatchedResource.Path); immediateResponse != nil {
+	if immediateResponse := ValidateScopes(*rch.JWTValidationInfo.Scopes, rch.MatchedResource.Scopes, rch.MatchedResource.Path); immediateResponse != nil {
 		return immediateResponse
 	}
 	cfg.Logger.Info(fmt.Sprintf("Scope validation successful for the request: %s", rch.MatchedResource.Path))
 	if rch.MatchedAPI.SubscriptionValidation {
 		appID := rch.ExternalProcessingEnvoyAttributes.ApplicationID
-		if appID == "" && rch.ExternalProcessingEnvoyAttributes.ConsumerKey != "" {
-			appID = getAppIDUsingConsumerKey(rch.ExternalProcessingEnvoyAttributes.ConsumerKey, subAppDataStore, rch.MatchedAPI, "")
+		if appID == "" && rch.JWTValidationInfo.ClientID != "" {
+			appID = getAppIDUsingConsumerKey(rch.JWTValidationInfo.ClientID, subAppDataStore, rch.MatchedAPI, "")
 		} else {
 			return &dto.ImmediateResponse{
 				StatusCode: 403,

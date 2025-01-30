@@ -42,7 +42,7 @@ func updateInternalMapsFromGQLRoute(apiState APIState, gqlRoute *GQLRouteState, 
 
 	vHosts := getVhostsForGQLAPI(gqlRoute.GQLRouteCombined)
 	labels := getLabelsForGQLAPI(gqlRoute.GQLRouteCombined)
-	listeners, relativeSectionNames := getListenersForGQLAPI(gqlRoute.GQLRouteCombined, adapterInternalAPI.UUID)
+	listeners, relativeSectionNames := getListenersForGQLAPI(gqlRoute.GQLRouteCombined)
 	// We dont have a use case where a perticular API's two different gql routes refer to two different gateway. Hence get the first listener name for the list for processing.
 	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for gql route: %v. ",
@@ -135,7 +135,7 @@ func getLabelsForGQLAPI(gqlRoute *v1alpha2.GQLRoute) map[string]struct{} {
 }
 
 // getListenersForGQLAPI returns the listeners related to an API.
-func getListenersForGQLAPI(gqlRoute *v1alpha2.GQLRoute, apiUUID string) ([]string, []string) {
+func getListenersForGQLAPI(gqlRoute *v1alpha2.GQLRoute) ([]string, []string) {
 	var listeners []string
 	var sectionNames []string
 	for _, parentRef := range gqlRoute.Spec.ParentRefs {

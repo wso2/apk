@@ -35,6 +35,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/requesthandler"
+	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 
 	"net"
@@ -57,6 +58,7 @@ type ExternalProcessingServer struct {
 	ratelimitHelper                  *ratelimit.AIRatelimitHelper
 	requestConfigHolder              *requestconfig.Holder
 	cfg                              *config.Server
+	jwtTransformer                   *transformer.JWTTransformer
 	modelBasedRoundRobinTracker      *datastore.ModelBasedRoundRobinTracker
 }
 
@@ -95,7 +97,7 @@ var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 //     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
-func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker) {
+func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, jwtTransformer *transformer.JWTTransformer,, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker) {
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
@@ -110,7 +112,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 
 	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, nil, cfg, modelBasedRoundRobinTracker})
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, nil, cfg, jwtTransformer,modelBasedRoundRobinTracker})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -180,10 +182,19 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			s.requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
 			s.requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
+			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
+			if err != nil {
+				s.log.Error(err, "failed to extract context metadata")
+				return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
+			}
+			s.requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
 			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
 			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
-
+			if !s.requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !s.requestConfigHolder.MatchedAPI.DisableAuthentication {
+				jwtValidationInfo := s.jwtTransformer.TransformJWTClaims(s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.ExternalProcessingEnvoyMetadata)
+				s.requestConfigHolder.JWTValidationInfo = &jwtValidationInfo
+				s.log.Sugar().Infof("jwtValidation==%v", jwtValidationInfo)
 			if immediateResponse := authorization.Validate(s.requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
 				resp = &envoy_service_proc_v3.ProcessingResponse{
 					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
@@ -204,7 +215,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				dynamicMetadataKeyValuePairs[organizationMetadataKey] = s.requestConfigHolder.MatchedAPI.OrganizationID
 				dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier)
 			}
-
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
@@ -613,6 +623,56 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.log.Info(fmt.Sprintf("send error %v", err))
 		}
 	}
+}
+
+// extractExternalProcessingMetadata extracts the external processing metadata from the given data.
+func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProcessingEnvoyMetadata, error) {
+	filterMatadata := data.GetFilterMetadata()
+	if filterMatadata != nil {
+		externalProcessingEnvoyMetadata := &dto.ExternalProcessingEnvoyMetadata{}
+		jwtFilterdata := filterMatadata["envoy.filters.http.jwt_authn"]
+		if jwtFilterdata != nil {
+			jwtFields, exists := jwtFilterdata.Fields["payload_in_metadata"]
+			authenticationData := &dto.JwtAuthenticationData{}
+			if exists {
+				jwtPayload := jwtFields.GetStructValue()
+				if jwtPayload != nil {
+					claims := make(map[string]interface{})
+					for key, value := range jwtPayload.GetFields() {
+						if value != nil {
+							if key == "iss" {
+								authenticationData.Issuer = value.GetStringValue()
+							}
+							switch value.Kind.(type) {
+							case *structpb.Value_StringValue:
+								claims[key] = value.GetStringValue()
+							case *structpb.Value_NumberValue:
+								claims[key] = value.GetNumberValue()
+							case *structpb.Value_BoolValue:
+								claims[key] = value.GetBoolValue()
+							case *structpb.Value_ListValue:
+								claims[key] = value.GetListValue()
+							}
+						}
+					}
+					authenticationData.Claims = claims
+					fmt.Printf("claims: %v\n", claims)
+				}
+			}
+			failureStatusFields, exists := jwtFilterdata.Fields["failed_status"]
+			if exists {
+				failureStatusStruct := failureStatusFields.GetStructValue()
+				if failureStatusStruct != nil {
+					code := failureStatusStruct.Fields["code"].GetNumberValue()
+					message := failureStatusStruct.Fields["message"].GetStringValue()
+					authenticationData.Status = &dto.Status{Code: int(code), Message: message}
+				}
+			}
+			externalProcessingEnvoyMetadata.JwtAuthenticationData = authenticationData
+		}
+		return externalProcessingEnvoyMetadata, nil
+	}
+	return nil, nil
 }
 
 // extractExternalProcessingAttributes extracts the external processing attributes from the given data.

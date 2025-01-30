@@ -23,6 +23,7 @@ import (
 	crand "crypto/rand"
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"math/rand"
@@ -34,13 +35,15 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	listenerv3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	jwt "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/jwt_authn/v3"
+	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	envoy_cachev3 "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
-
 	envoy_resource "github.com/envoyproxy/go-control-plane/pkg/resource/v3"
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/dataholder"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
+	"github.com/wso2/apk/adapter/internal/loggers"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	oasParser "github.com/wso2/apk/adapter/internal/oasparser"
@@ -51,6 +54,9 @@ import (
 	wso2_resource "github.com/wso2/apk/adapter/pkg/discovery/protocol/resource/v3"
 	eventhubTypes "github.com/wso2/apk/adapter/pkg/eventhub/types"
 	semantic_version "github.com/wso2/apk/adapter/pkg/semanticversion"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -71,6 +77,7 @@ type EnvoyGatewayConfig struct {
 	clusters                []*clusterv3.Cluster
 	endpoints               []*corev3.Address
 	customRateLimitPolicies []*model.CustomRateLimitPolicy
+	jwtProviders            map[string]map[string]*v1alpha1.ResolvedJWTIssuer
 }
 
 // EnforcerInternalAPI struct use to hold enforcer resources
@@ -259,12 +266,21 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	var vhostToRouteArrayMap = make(map[string][]*routev3.Route)
 	var endpointArray []*corev3.Address
 	var apis []types.Resource
-
+	envoyGatewayConfig, gwFound := gatewayLabelConfigMap[gatewayName]
+	// gwFound means that the gateway is configured in the envoy config.
+	if !gwFound {
+		return nil, nil, nil, nil, nil
+	}
+	orgwizeJWTProviders := envoyGatewayConfig.jwtProviders
+	jwtRequirementMap := make(map[string]*jwt.JwtRequirement)
 	for organizationID, entityMap := range orgAPIMap {
 		for apiKey, envoyInternalAPI := range entityMap {
 			if _, exists := envoyInternalAPI.envoyLabels[gatewayName]; !exists {
 				// do nothing if the gateway is not found in the envoyInternalAPI
 				continue
+			}
+			if !envoyInternalAPI.adapterInternalAPI.GetDisableAuthentications() {
+				jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = oasParser.GetJWTRequirements(envoyInternalAPI.adapterInternalAPI, orgwizeJWTProviders[organizationID])
 			}
 			vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 			if err != nil {
@@ -301,12 +317,13 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 		readynessEndpoint := envoyconf.CreateReadyEndpoint()
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], readynessEndpoint)
 	}
-
-	envoyGatewayConfig, gwFound := gatewayLabelConfigMap[gatewayName]
-	// gwFound means that the gateway is configured in the envoy config.
-	if !gwFound {
-		return nil, nil, nil, nil, nil
+	jwtProviders, jwtclusters, jwtaddress, err := oasParser.GenerateJWTPRoviders(orgwizeJWTProviders)
+	if err != nil {
+		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1100, logging.MAJOR, "Error generating JWT Providers: %v", err))
 	}
+	clusterArray = append(clusterArray, jwtclusters...)
+	endpointArray = append(endpointArray, jwtaddress...)
+	jwtFilter, err := oasParser.GetJWTFilter(jwtRequirementMap, jwtProviders)
 	listeners := envoyGatewayConfig.listeners
 	if !config.ReadConfigs().Adapter.EnableGatewayClassController && len(listeners) < 1 {
 		return nil, nil, nil, nil, nil
@@ -333,6 +350,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 					return false
 				})
 			if found {
+				patchListenerWithJWTFilter(listener, jwtFilter)
 				// Prepare the route config name based on the gateway listener section name.
 				routeConfigName := common.GetEnvoyRouteConfigName(listener.Name, string(listenerSection.Name))
 				routesConfig := oasParser.GetRouteConfigs(map[string][]*routev3.Route{vhost: routes}, routeConfigName, envoyGatewayConfig.customRateLimitPolicies, vHostToSubscriptionBasedAIRLMap, vHostToSubscriptionBasedRLMap)
@@ -376,6 +394,24 @@ func GenerateGlobalClusters(label string) {
 	gatewayLabelConfigMap[label] = &EnvoyGatewayConfig{
 		clusters:  clusters,
 		endpoints: endpoints,
+	}
+}
+
+// GenerateJWTProviders generates the JWT providers for the given label
+func GenerateJWTProviders(label string, jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) {
+	loggers.LoggerAPKOperator.Infof("Gateway Name: %v", label)
+
+	if _, ok := gatewayLabelConfigMap[label]; ok {
+		jwtProviderMap := make(map[string]map[string]*v1alpha1.ResolvedJWTIssuer)
+		for name, jwtIssuer := range jwtIssuers {
+			if jwtProviderMap[jwtIssuer.Organization] == nil {
+				jwtProviderMap[jwtIssuer.Organization] = map[string]*v1alpha1.ResolvedJWTIssuer{}
+			}
+			orgwizeMap := jwtProviderMap[jwtIssuer.Organization]
+			orgwizeMap[name] = jwtIssuer
+		}
+		loggers.LoggerAPKOperator.Infof("JWT Providers: %v", jwtProviderMap)
+		gatewayLabelConfigMap[label].jwtProviders = jwtProviderMap
 	}
 }
 
@@ -470,11 +506,45 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 
 }
 
+func marshalJWTIssuerList(jwtIssuerMapping map[string]*v1alpha1.ResolvedJWTIssuer) *subscription.JWTIssuerList {
+	jwtIssuers := []*subscription.JWTIssuer{}
+	for _, internalJWTIssuer := range jwtIssuerMapping {
+		certificate := &subscription.Certificate{}
+		jwtIssuer := &subscription.JWTIssuer{
+			Name:             internalJWTIssuer.Name,
+			Organization:     internalJWTIssuer.Organization,
+			Issuer:           internalJWTIssuer.Issuer,
+			ConsumerKeyClaim: internalJWTIssuer.ConsumerKeyClaim,
+			ScopesClaim:      internalJWTIssuer.ScopesClaim,
+		}
+		if internalJWTIssuer.SignatureValidation.Certificate != nil && internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate != "" {
+			certificate.Certificate = internalJWTIssuer.SignatureValidation.Certificate.ResolvedCertificate
+		}
+		if internalJWTIssuer.SignatureValidation.JWKS != nil {
+			jwks := &subscription.JWKS{}
+			jwks.Url = internalJWTIssuer.SignatureValidation.JWKS.URL
+			if internalJWTIssuer.SignatureValidation.JWKS.TLS != nil && internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate != "" {
+				jwks.Tls = internalJWTIssuer.SignatureValidation.JWKS.TLS.ResolvedCertificate
+			}
+			certificate.Jwks = jwks
+		}
+		jwtIssuer.ClaimMapping = internalJWTIssuer.ClaimMappings
+		jwtIssuer.Certificate = certificate
+		jwtIssuer.Environments = internalJWTIssuer.Environments
+		jwtIssuers = append(jwtIssuers, jwtIssuer)
+
+	}
+	jwtIssuersJSON, _ := json.Marshal(jwtIssuers)
+	loggers.LoggerAPKOperator.Debugf("JwtIssuer Data: %v", string(jwtIssuersJSON))
+	return &subscription.JWTIssuerList{List: jwtIssuers}
+}
+
 // UpdateEnforcerJWTIssuers sets new update to the enforcer's Applications
-func UpdateEnforcerJWTIssuers(jwtIssuers *subscription.JWTIssuerList) {
+func UpdateEnforcerJWTIssuers(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) {
+	resolvedJWTIssuerList := marshalJWTIssuerList(jwtIssuers)
 	logger.LoggerXds.Debug("Updating Enforcer JWT Issuer Cache")
 	label := commonEnforcerLabel
-	jwtIssuerList := append(enforcerLabelMap[label].jwtIssuers, jwtIssuers)
+	jwtIssuerList := append(enforcerLabelMap[label].jwtIssuers, resolvedJWTIssuerList)
 
 	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -731,4 +801,48 @@ func GetEnvoyInternalAPICount() int {
 		}
 	}
 	return totalCount
+}
+
+// patchListenerWithJWTFilter patches the given Envoy listener with a JWT filter
+func patchListenerWithJWTFilter(listener *listenerv3.Listener, jwtFilter *hcmv3.HttpFilter) error {
+	if jwtFilter != nil {
+		for _, filterChain := range listener.FilterChains {
+			for _, filter := range filterChain.Filters {
+				if filter.Name == "envoy.filters.network.http_connection_manager" {
+					var httpConnectionManager hcmv3.HttpConnectionManager
+					if err := anypb.UnmarshalTo(filter.GetTypedConfig(), &httpConnectionManager, proto.UnmarshalOptions{}); err != nil {
+						return fmt.Errorf("failed to unmarshal HttpConnectionManager: %v", err)
+					}
+					if httpConnectionManager.HttpFilters == nil {
+						httpConnectionManager.HttpFilters = []*hcmv3.HttpFilter{}
+					}
+
+					// Flag to check if jwt_authn filter exists
+					jwtFilterExists := false
+
+					// Iterate over HttpFilters and replace any existing jwt_authn filter
+					for i, httpFilter := range httpConnectionManager.HttpFilters {
+						if httpFilter.Name == envoyconf.EnvoyJWT {
+							httpConnectionManager.HttpFilters[i] = jwtFilter
+							jwtFilterExists = true
+							break
+						}
+					}
+
+					// If no existing jwt_authn filter was found, prepend the new one
+					if !jwtFilterExists {
+						httpConnectionManager.HttpFilters = append([]*hcmv3.HttpFilter{jwtFilter}, httpConnectionManager.HttpFilters...)
+					}
+
+					// Marshal the updated HttpConnectionManager back into the filter
+					typedConfig, err := anypb.New(&httpConnectionManager)
+					if err != nil {
+						return fmt.Errorf("failed to marshal HttpConnectionManager: %v", err)
+					}
+					filter.ConfigType = &listenerv3.Filter_TypedConfig{TypedConfig: typedConfig}
+				}
+			}
+		}
+	}
+	return nil
 }

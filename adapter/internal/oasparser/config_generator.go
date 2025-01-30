@@ -20,19 +20,26 @@ package oasparser
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	clusterv3 "github.com/envoyproxy/go-control-plane/envoy/config/cluster/v3"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	listenerv3 "github.com/envoyproxy/go-control-plane/envoy/config/listener/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	jwt "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/jwt_authn/v3"
+	hcmv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/network/http_connection_manager/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/cache/types"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/logging"
+	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -436,4 +443,153 @@ func generateRPCEndpointSecurity(inputEndpointSecurity []*model.EndpointSecurity
 		})
 	}
 	return securityConfig
+}
+
+// GetJWTRequirements returns the jwt requirements for the resource
+
+func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) *jwt.JwtRequirement {
+	var selectedIssuers []string
+	for issuserName, jwtIssuer := range jwtIssuers {
+		if contains(jwtIssuer.Environments, "*") {
+			selectedIssuers = append(selectedIssuers, issuserName)
+		} else if contains(jwtIssuer.Environments, adapterAPI.GetEnvironment()) {
+			selectedIssuers = append(selectedIssuers, issuserName)
+		}
+	}
+	if len(selectedIssuers) == 1 {
+		return &jwt.JwtRequirement{
+			RequiresType: &jwt.JwtRequirement_ProviderName{
+				ProviderName: selectedIssuers[0],
+			},
+		}
+	} else if len(selectedIssuers) > 1 {
+		return &jwt.JwtRequirement{
+			RequiresType: &jwt.JwtRequirement_RequiresAny{
+				RequiresAny: &jwt.JwtRequirementOrList{
+					Requirements: func() []*jwt.JwtRequirement {
+						var requirements []*jwt.JwtRequirement
+						for _, issuer := range selectedIssuers {
+							requirements = append(requirements, &jwt.JwtRequirement{
+								RequiresType: &jwt.JwtRequirement_ProviderName{
+									ProviderName: issuer,
+								},
+							})
+						}
+						return requirements
+					}(),
+				},
+			},
+		}
+	}
+	return nil
+}
+
+// GenerateJWTPRoviderv3 generates the jwt provider for the resource
+func GenerateJWTPRoviders(jwtProviderMap map[string]map[string]*v1alpha1.ResolvedJWTIssuer) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, error) {
+	jwtProviders := map[string]*jwt.JwtProvider{}
+	var clusters []*clusterv3.Cluster
+	var addresses []*corev3.Address
+
+	for _, orgwizeJWTProviders := range jwtProviderMap {
+		for issuerMappingName, jwtIssuer := range orgwizeJWTProviders {
+			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, issuerMappingName)
+			if err != nil {
+				return nil, nil, nil, err
+			}
+			jwtProviders[issuerMappingName] = provider
+			clusters = append(clusters, cluster...)
+			addresses = append(addresses, address...)
+		}
+	}
+	return jwtProviders, clusters, addresses, nil
+}
+
+// Function to check if a string array contains a specific string
+func contains(arr []string, str string) bool {
+	for _, v := range arr {
+		if v == str {
+			return true
+		}
+	}
+	return false
+}
+func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName string) (*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, error) {
+	jwksClusters := make([]*clusterv3.Cluster, 0)
+	jwksAddresses := make([]*corev3.Address, 0)
+	jwtProvider := &jwt.JwtProvider{
+		Issuer:                 tokenIssuer.Issuer,
+		Forward:                true,
+		FailedStatusInMetadata: "failed_status",
+		PayloadInMetadata:      "payload_in_metadata",
+	}
+	if tokenIssuer.SignatureValidation.JWKS != nil {
+		logger.LoggerOasparser.Infof("JWKS URL: %s", tokenIssuer.SignatureValidation.JWKS.URL)
+		jwksCluster, jwksAddress, err := getRemoteJWKSCluster(*tokenIssuer.SignatureValidation.JWKS, issuerName)
+		if err != nil {
+			logger.LoggerOasparser.Error(err)
+			return nil, nil, nil, err
+		}
+		jwksClusters = append(jwksClusters, jwksCluster)
+		jwksAddresses = append(jwksAddresses, jwksAddress...)
+		jwtProvider.JwksSourceSpecifier = &jwt.JwtProvider_RemoteJwks{
+			RemoteJwks: &jwt.RemoteJwks{
+				HttpUri: &corev3.HttpUri{
+					Uri: tokenIssuer.SignatureValidation.JWKS.URL,
+					HttpUpstreamType: &corev3.HttpUri_Cluster{
+						Cluster: issuerName,
+					},
+					Timeout: durationpb.New(2 * time.Second),
+				},
+				CacheDuration: durationpb.New(2 * time.Hour),
+			},
+		}
+	} else if tokenIssuer.SignatureValidation.Certificate != nil {
+		logger.LoggerOasparser.Infof("ResolvedCertificate: %s", tokenIssuer.SignatureValidation.Certificate.ResolvedCertificate)
+		jwtProvider.JwksSourceSpecifier = &jwt.JwtProvider_LocalJwks{
+			LocalJwks: &corev3.DataSource{
+				Specifier: &corev3.DataSource_InlineString{InlineString: tokenIssuer.SignatureValidation.Certificate.ResolvedCertificate},
+			},
+		}
+	}
+
+	return jwtProvider, jwksClusters, jwksAddresses, nil
+}
+func getRemoteJWKSCluster(jwksInfo v1alpha1.ResolvedJWKS, clusterName string) (*clusterv3.Cluster, []*corev3.Address, error) {
+	endpoint, err := model.GETHTTPEndpoint(jwksInfo.URL)
+	if err != nil {
+		return nil, nil, err
+	}
+	if jwksInfo.TLS != nil {
+		endpoint.AllowedSANs = jwksInfo.TLS.AllowedSANs
+		endpoint.Certificate = []byte(jwksInfo.TLS.ResolvedCertificate)
+	}
+	endpoints := make([]model.Endpoint, 0)
+	endpoints = append(endpoints, *endpoint)
+	endpointCluster := &model.EndpointCluster{
+		Endpoints: endpoints,
+	}
+
+	return envoy.ProcessEndpoints(clusterName, endpointCluster, 0, "")
+}
+
+// GetJWTFilter
+func GetJWTFilter(jwtRequirement map[string]*jwt.JwtRequirement, jwtProviders map[string]*jwt.JwtProvider) (*hcmv3.HttpFilter, error) {
+	if len(jwtProviders) == 0 {
+		return nil, nil
+	}
+	jwtAuthentication := &jwt.JwtAuthentication{
+		Providers:      jwtProviders,
+		RequirementMap: jwtRequirement,
+	}
+	// Assuming jwtAuthentication is already defined and initialized
+	typedConfig, err := anypb.New(jwtAuthentication)
+	if err != nil {
+		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2250, logging.CRITICAL, "Failed to parse JWTAuthentication %v", err.Error()))
+	}
+	return &hcmv3.HttpFilter{
+		Name: envoyconf.EnvoyJWT,
+		ConfigType: &hcmv3.HttpFilter_TypedConfig{
+			TypedConfig: typedConfig,
+		},
+	}, nil
 }

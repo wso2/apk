@@ -151,3 +151,6 @@ const LuaGlobal = "envoy.filters.http.lua.global"
 
 // LuaLocal is the lua filter name for local lua filter
 const LuaLocal = "envoy.filters.http.lua.local"
+
+// EnvoyJWT is the jwt filter name
+const EnvoyJWT = "envoy.filters.http.jwt_authn"

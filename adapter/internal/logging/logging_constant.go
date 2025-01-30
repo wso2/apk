@@ -122,6 +122,7 @@ const (
 	Error2247 = 2247
 	Error2248 = 2248
 	Error2249 = 2249
+	Error2250 = 2250
 )
 
 // Error Log RateLimiter callbacks(2300-2399) Config Constants
@@ -404,6 +405,10 @@ var Mapper = map[int]logging.ErrorDetails{
 	Error2249: {
 		ErrorCode: Error2249,
 		Message:   "Failed to initialize tracer's cluster. Router tracing will be disabled.",
+	},
+	Error2250: {
+		ErrorCode: Error2250,
+		Message:   "Failed to parse JWTAuthentication",
 	},
 	Error2700: {
 		ErrorCode: Error2700,
