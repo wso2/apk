@@ -12,7 +12,22 @@ const (
 )
 
 // validateSubscription validates the subscription.
-func validateSubscription(appID string, subAppDatastore *datastore.SubscriptionApplicationDataStore, rch *requestconfig.Holder) *dto.ImmediateResponse{
+func validateSubscription(subAppDatastore *datastore.SubscriptionApplicationDataStore, rch *requestconfig.Holder) *dto.ImmediateResponse{
+	if rch.JWTValidationInfo == nil {
+		return &dto.ImmediateResponse{
+			StatusCode: 403,
+			Message:    "JWT validation info not found",
+		}
+	}
+	appID := rch.ExternalProcessingEnvoyAttributes.ApplicationID
+	if appID == "" && rch.JWTValidationInfo.ClientID != "" {
+		appID = getAppIDUsingConsumerKey(rch.JWTValidationInfo.ClientID, subAppDatastore, rch.MatchedAPI, "")
+	} else {
+		return &dto.ImmediateResponse{
+			StatusCode: 403,
+			Message:    "Application ID not found",
+		}
+	}
 	api := rch.MatchedAPI
 	appMaps := subAppDatastore.GetApplicationMappings(api.OrganizationID, appID)
 	for _, appMap := range appMaps {
