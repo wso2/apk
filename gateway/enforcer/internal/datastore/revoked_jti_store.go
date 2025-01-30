@@ -1,9 +1,14 @@
 package datastore
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type RevokedJTIStore struct {
 	revokedJTIs map[string]time.Time // JTI -> expiry time
+
+	mutex sync.RWMutex
 }
 
 // NewRevokedJTIStore creates a new instance of RevokedJTIStore.
@@ -15,17 +20,23 @@ func NewRevokedJTIStore() *RevokedJTIStore {
 
 // AddJTI adds a JTI to the store with the given expiry time.
 func (r *RevokedJTIStore) AddJTI(jti string, expiry time.Time) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
 	r.revokedJTIs[jti] = expiry
 }
 
 // IsJTIRevoked checks if the given JTI is revoked.
 func (r *RevokedJTIStore) IsJTIRevoked(jti string) bool {
+	r.mutex.RLock()
+	defer r.mutex.RUnlock()
 	_, ok := r.revokedJTIs[jti]
 	return ok
 }
 
 // removeExpiredJTIs removes all expired JTIs from the store.
 func (r *RevokedJTIStore) removeExpiredJTIs() {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
 	for jti, expiry := range r.revokedJTIs {
 		if time.Now().After(expiry) {
 			delete(r.revokedJTIs, jti)
@@ -42,4 +53,3 @@ func (r *RevokedJTIStore) StartRevokedJTIStoreCleanup(interval time.Duration) {
 		}
 	}()
 }
-
