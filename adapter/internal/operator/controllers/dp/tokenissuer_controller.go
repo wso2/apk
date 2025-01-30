@@ -47,6 +47,7 @@ func GetJWTIssuers(ctx context.Context, client k8client.Client, gateway gwapiv1.
 	for _, jwtIssuer := range jwtIssuerList.Items {
 		if jwtIssuer.Spec.TargetRef.Kind == constants.KindGateway && jwtIssuer.Spec.TargetRef.Name == gwapiv1.ObjectName(gateway.Name) {
 			resolvedJwtIssuer := dpv1alpha1.ResolvedJWTIssuer{}
+
 			resolvedJwtIssuer.Issuer = jwtIssuer.Spec.Issuer
 			resolvedJwtIssuer.ConsumerKeyClaim = jwtIssuer.Spec.ConsumerKeyClaim
 			resolvedJwtIssuer.ScopesClaim = jwtIssuer.Spec.ScopesClaim
@@ -88,7 +89,7 @@ func GetJWTIssuers(ctx context.Context, client k8client.Client, gateway gwapiv1.
 			} else {
 				resolvedJwtIssuer.ClaimMappings = make(map[string]string)
 			}
-			jwtIssuerMappingName := strings.Join([]string{gateway.Namespace, gateway.Name}, "-")
+			jwtIssuerMappingName := strings.Join([]string{jwtIssuer.ObjectMeta.Namespace, jwtIssuer.ObjectMeta.Name}, "-")
 			jwtIssuerMapping[jwtIssuerMappingName] = &resolvedJwtIssuer
 		}
 	}
