@@ -63,11 +63,19 @@ type Server struct {
 	MoesifToken                      string `envconfig:"MOESIF_TOKEN" default:""`
 	LogLevel                         string `envconfig:"LOG_LEVEL" default:"INFO"`
 	ExternalProcessingPort           string `envconfig:"EXTERNAL_PROCESSING_PORT" default:"8081"`
-	AccessLogServiceServerPort       string    `envconfig:"ACCESS_LOG_SERVICE_SERVER_PORT" default:"18090"`
+	AccessLogServiceServerPort       string `envconfig:"ACCESS_LOG_SERVICE_SERVER_PORT" default:"18090"`
 	ExternalProcessingKeepAliveTime  int    `envconfig:"EXTERNAL_PROCESSING_KEEP_ALIVE_TIME" default:"600"`
 	ExternalProcessingMaxMessageSize int    `envconfig:"EXTERNAL_PROCESSING_MAX_MESSAGE_SIZE" default:"1000000000"`
 	ExternalProcessingMaxHeaderLimit int    `envconfig:"EXTERNAL_PROCESSING_MAX_HEADER_LIMIT" default:"8192"`
 	Logger                           logging.Logger
+	Metrics                          metrics
+}
+
+type metrics struct {
+	Enabled            bool   `envconfig:"METRICS_ENABLED" default:"false"`
+	Type               string `envconfig:"METRICS_TYPE" default:"prometheus"`
+	Port               int32  `envconfig:"METRICS_PORT" default:"18006"`
+	CollectionInterval int32  `envconfig:"METRICS_COLLECTION_INTERVAL" default:"15"`
 }
 
 // package-level variable and mutex for thread safety

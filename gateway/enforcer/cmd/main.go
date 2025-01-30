@@ -3,10 +3,13 @@ package main
 import (
 	"time"
 
+	"strings"
+
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/extproc"
 	"github.com/wso2/apk/gateway/enforcer/internal/grpc"
+	metrics "github.com/wso2/apk/gateway/enforcer/internal/metrics"
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"github.com/wso2/apk/gateway/enforcer/internal/xds"
@@ -35,19 +38,23 @@ func main() {
 	client.InitiateEventingGRPCConnection()
 
 	// Create the XDS clients
-	apiStore, configStore, jwtIssuerDatastore,modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
+	apiStore, configStore, jwtIssuerDatastore, modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
 	// NewJWTTransformer creates a new instance of JWTTransformer.
 	jwtTransformer := transformer.NewJWTTransformer(jwtIssuerDatastore)
 	// Start the external processing server
-	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer,modelBasedRoundRobinTracker)
+	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker)
 
 	// Wait for the config to be loaded
 	cfg.Logger.Info("Waiting for the config to be loaded")
-	<- configStore.Notify
+	<-configStore.Notify
 	cfg.Logger.Info("Config loaded successfully")
 	if len(configStore.GetConfigs()) > 0 && configStore.GetConfigs()[0].Analytics != nil && configStore.GetConfigs()[0].Analytics.Enabled {
 		// Start the access log service server
 		go grpc.StartAccessLogServiceServer(cfg, configStore)
+	}
+	// Start the metrics server
+	if cfg.Metrics.Enabled && strings.EqualFold(cfg.Metrics.Type, "prometheus") {
+		go metrics.StartPrometheusMetricsServer(cfg.Metrics.Port)
 	}
 
 	// Wait forever
