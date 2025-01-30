@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// RevokedJTIStore stores revoked JTIs.
 type RevokedJTIStore struct {
 	revokedJTIs map[string]time.Time // JTI -> expiry time
 

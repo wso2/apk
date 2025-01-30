@@ -11,6 +11,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/grpc"
 	metrics "github.com/wso2/apk/gateway/enforcer/internal/metrics"
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
+	"github.com/wso2/apk/gateway/enforcer/internal/tokenrevocation"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"github.com/wso2/apk/gateway/enforcer/internal/xds"
 )
@@ -56,6 +57,10 @@ func main() {
 	if cfg.Metrics.Enabled && strings.EqualFold(cfg.Metrics.Type, "prometheus") {
 		go metrics.StartPrometheusMetricsServer(cfg.Metrics.Port)
 	}
+
+
+	revokedJTIStore := datastore.NewRevokedJTIStore()
+	tokenrevocation.NewRevokedTokenFetcher(cfg, revokedJTIStore, tlsConfig).Start()
 
 	// Wait forever
 	select {}
