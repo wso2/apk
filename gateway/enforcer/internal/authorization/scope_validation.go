@@ -19,26 +19,40 @@ package authorization
 
 import (
 	"fmt"
+
+	"github.com/wso2/apk/gateway/enforcer/internal/config"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 )
 
 // ValidateScopes validates the scopes of the user against the required scopes.
-func ValidateScopes(scopes []string, requiredScopes []string, path string) *dto.ImmediateResponse {
-	for _, requiredScope := range requiredScopes {
-		found := false
-		for _, scope := range scopes {
+func ValidateScopes(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server) *dto.ImmediateResponse {
+	requiredScopes := rch.MatchedResource.Scopes
+	scopes := rch.JWTValidationInfo.Scopes
+	if len(requiredScopes) == 0 {
+		return nil
+	}
+	if len(scopes) == 0 {
+		return &dto.ImmediateResponse{
+			StatusCode: 403,
+			Message:    fmt.Sprintf("User is NOT authorized to access the Resource: %s. Scope validation failed.", rch.MatchedResource.Path),
+		}
+	}
+	found := false
+	for requiredScope := range requiredScopes {
+		for scope := range scopes {
 			if requiredScope == scope {
 				found = true
 				break
 			}
 		}
-		if !found {
-			return &dto.ImmediateResponse{
-				StatusCode: 403,
-				Message:    fmt.Sprintf("User is NOT authorized to access the Resource: %s. Scope validation failed.", path),
-			}
+	}
+	if !found {
+		return &dto.ImmediateResponse{
+			StatusCode: 403,
+			Message:    fmt.Sprintf("User is NOT authorized to access the Resource: %s. Scope validation failed.", rch.MatchedResource.Path),
 		}
 	}
 	return nil
 }
-
