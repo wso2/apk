@@ -97,7 +97,7 @@ var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 //     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
-func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, jwtTransformer *transformer.JWTTransformer,, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker) {
+func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, jwtTransformer *transformer.JWTTransformer, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker) {
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
@@ -112,7 +112,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 
 	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, nil, cfg, jwtTransformer,modelBasedRoundRobinTracker})
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, nil, cfg, jwtTransformer, modelBasedRoundRobinTracker})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -195,44 +195,45 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				jwtValidationInfo := s.jwtTransformer.TransformJWTClaims(s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.ExternalProcessingEnvoyMetadata)
 				s.requestConfigHolder.JWTValidationInfo = &jwtValidationInfo
 				s.log.Sugar().Infof("jwtValidation==%v", jwtValidationInfo)
-			if immediateResponse := authorization.Validate(s.requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
-				resp = &envoy_service_proc_v3.ProcessingResponse{
-					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
-						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
-							Status: &v32.HttpStatus{
-								Code: v32.StatusCode(immediateResponse.StatusCode),
+				if immediateResponse := authorization.Validate(s.requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
+					resp = &envoy_service_proc_v3.ProcessingResponse{
+						Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+							ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+								Status: &v32.HttpStatus{
+									Code: v32.StatusCode(immediateResponse.StatusCode),
+								},
+								Body: []byte(immediateResponse.Message),
 							},
-							Body: []byte(immediateResponse.Message),
 						},
-					},
+					}
+					break
 				}
-				break
-			}
-			resp = &envoy_service_proc_v3.ProcessingResponse{}
-			if s.requestConfigHolder.MatchedSubscription != nil && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
-				dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = s.requestConfigHolder.MatchedSubscription.UUID
-				dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = s.requestConfigHolder.MatchedSubscription.RatelimitTier
-				dynamicMetadataKeyValuePairs[organizationMetadataKey] = s.requestConfigHolder.MatchedAPI.OrganizationID
-				dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier)
-			}
-			rhq := &envoy_service_proc_v3.HeadersResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{
-					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
-						SetHeaders: []*corev3.HeaderValueOption{
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "x-wso2-cluster-header",
-									RawValue: []byte(attributes.ClusterName),
+				resp = &envoy_service_proc_v3.ProcessingResponse{}
+				if s.requestConfigHolder.MatchedSubscription != nil && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
+					dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = s.requestConfigHolder.MatchedSubscription.UUID
+					dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = s.requestConfigHolder.MatchedSubscription.RatelimitTier
+					dynamicMetadataKeyValuePairs[organizationMetadataKey] = s.requestConfigHolder.MatchedAPI.OrganizationID
+					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier)
+				}
+				rhq := &envoy_service_proc_v3.HeadersResponse{
+					Response: &envoy_service_proc_v3.CommonResponse{
+						HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
+							SetHeaders: []*corev3.HeaderValueOption{
+								{
+									Header: &corev3.HeaderValue{
+										Key:      "x-wso2-cluster-header",
+										RawValue: []byte(attributes.ClusterName),
+									},
 								},
 							},
 						},
+						// This is necessary if the remote server modified headers that are used to calculate the route.
+						ClearRouteCache: true,
 					},
-					// This is necessary if the remote server modified headers that are used to calculate the route.
-					ClearRouteCache: true,
-				},
-			}
-			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
-				RequestHeaders: rhq,
+				}
+				resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
+					RequestHeaders: rhq,
+				}
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
