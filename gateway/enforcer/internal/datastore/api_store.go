@@ -195,7 +195,6 @@ func convertBackendJWTTokenInfoToJWTConfig(info *api.BackendJWTTokenInfo) *dto.J
 		ConsumerDialectURI:      "", // Add a default value or fetch if needed
 		SignatureAlgorithm:      info.SigningAlgorithm,
 		Encoding:                info.Encoding,
-		GatewayJWTGeneratorImpl: "",                               // Add a default value or fetch if needed
 		TokenIssuerDtoMap:       make(map[string]dto.TokenIssuer), // Populate if required
 		JwtExcludedClaims:       make(map[string]bool),            // Populate if required
 		PublicCert:              nil,                              // Add conversion logic if needed
