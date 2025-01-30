@@ -18,6 +18,7 @@
 package datastore
 
 import (
+	"log"
 	"sync"
 
 	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
@@ -49,25 +50,25 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 	s.apis = make(map[string]*requestconfig.API, len(apis))
 	for _, api := range apis {
 		customAPI := requestconfig.API{
-			Name:                  api.Title,
-			Version:               api.Version,
-			Vhost:                 api.Vhost,
-			BasePath:              api.BasePath,
-			APIType:               api.ApiType,
-			EnvType:               api.EnvType,
-			APILifeCycleState:     api.ApiLifeCycleState,
-			AuthorizationHeader:   "", // You might want to set this field if applicable
-			OrganizationID:        api.OrganizationId,
-			UUID:                  api.Id,
-			Tier:                  api.Tier,
-			DisableAuthentication: api.DisableAuthentications,
-			DisableScopes:         api.DisableScopes,
-			Resources:             make([]requestconfig.Resource, 0),
-			IsMockedAPI:           false, // You can add logic to determine if the API is mocked
-			MutualSSL:             api.MutualSSL,
-			TransportSecurity:     api.TransportSecurity,
-			ApplicationSecurity:   api.ApplicationSecurity,
-			// JwtConfigurationDto:    convertBackendJWTTokenInfoToJWTConfig(api.BackendJWTTokenInfo),
+			Name:                   api.Title,
+			Version:                api.Version,
+			Vhost:                  api.Vhost,
+			BasePath:               api.BasePath,
+			APIType:                api.ApiType,
+			EnvType:                api.EnvType,
+			APILifeCycleState:      api.ApiLifeCycleState,
+			AuthorizationHeader:    "", // You might want to set this field if applicable
+			OrganizationID:         api.OrganizationId,
+			UUID:                   api.Id,
+			Tier:                   api.Tier,
+			DisableAuthentication:  api.DisableAuthentications,
+			DisableScopes:          api.DisableScopes,
+			Resources:              make([]requestconfig.Resource, 0),
+			IsMockedAPI:            false, // You can add logic to determine if the API is mocked
+			MutualSSL:              api.MutualSSL,
+			TransportSecurity:      api.TransportSecurity,
+			ApplicationSecurity:    api.ApplicationSecurity,
+			JwtConfigurationDto:    convertBackendJWTTokenInfoToJWTConfig(api.BackendJWTTokenInfo),
 			SystemAPI:              api.SystemAPI,
 			APIDefinition:          api.ApiDefinitionFile,
 			Environment:            api.Environment,
@@ -97,7 +98,7 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 				customAPI.Resources = append(customAPI.Resources, resource)
 			}
 		}
-
+		log.Printf("Adding API: %+v", customAPI.JwtConfigurationDto)
 		s.apis[util.PrepareAPIKey(api.Vhost, api.BasePath, api.Version)] = &customAPI
 	}
 }
@@ -169,4 +170,37 @@ func (s *APIStore) GetMatchedAPI(apiKey string) *requestconfig.API {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.apis[apiKey]
+}
+
+// ConvertBackendJWTTokenInfoToJWTConfig converts BackendJWTTokenInfo to JWTConfiguration.
+func convertBackendJWTTokenInfoToJWTConfig(info *api.BackendJWTTokenInfo) *dto.JWTConfiguration {
+	if info == nil {
+		return nil
+	}
+
+	// Convert CustomClaims from map[string]*Claim to map[string]ClaimValue
+	customClaims := make(map[string]dto.ClaimValue)
+	for key, claim := range info.CustomClaims {
+		if claim != nil {
+			customClaims[key] = dto.ClaimValue{
+				Value: claim.Value,
+				Type:  claim.Type,
+			}
+		}
+	}
+
+	return &dto.JWTConfiguration{
+		Enabled:                 info.Enabled,
+		JWTHeader:               info.Header,
+		ConsumerDialectURI:      "", // Add a default value or fetch if needed
+		SignatureAlgorithm:      info.SigningAlgorithm,
+		Encoding:                info.Encoding,
+		GatewayJWTGeneratorImpl: "",                               // Add a default value or fetch if needed
+		TokenIssuerDtoMap:       make(map[string]dto.TokenIssuer), // Populate if required
+		JwtExcludedClaims:       make(map[string]bool),            // Populate if required
+		PublicCert:              nil,                              // Add conversion logic if needed
+		PrivateKey:              nil,                              // Add conversion logic if needed
+		TTL:                     int64(info.TokenTTL),             // Convert int32 to int64
+		CustomClaims:            customClaims,
+	}
 }
