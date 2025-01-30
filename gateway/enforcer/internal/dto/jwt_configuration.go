@@ -35,4 +35,5 @@ type JWTConfiguration struct {
 	PrivateKey         *ecdsa.PrivateKey      `json:"privateKey"`         // Private key for signing JWT
 	TTL                int64                  `json:"ttl"`                // Time to live for the JWT
 	CustomClaims       map[string]ClaimValue  `json:"customClaims"`       // Custom claims
+  UseKid             bool                   `json:"useKid"`             // Whether to use kid
 }
