@@ -215,25 +215,25 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					dynamicMetadataKeyValuePairs[organizationMetadataKey] = s.requestConfigHolder.MatchedAPI.OrganizationID
 					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier)
 				}
-				rhq := &envoy_service_proc_v3.HeadersResponse{
-					Response: &envoy_service_proc_v3.CommonResponse{
-						HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
-							SetHeaders: []*corev3.HeaderValueOption{
-								{
-									Header: &corev3.HeaderValue{
-										Key:      "x-wso2-cluster-header",
-										RawValue: []byte(attributes.ClusterName),
-									},
+			}
+			rhq := &envoy_service_proc_v3.HeadersResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{
+					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
+						SetHeaders: []*corev3.HeaderValueOption{
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "x-wso2-cluster-header",
+									RawValue: []byte(attributes.ClusterName),
 								},
 							},
 						},
-						// This is necessary if the remote server modified headers that are used to calculate the route.
-						ClearRouteCache: true,
 					},
-				}
-				resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
-					RequestHeaders: rhq,
-				}
+					// This is necessary if the remote server modified headers that are used to calculate the route.
+					ClearRouteCache: true,
+				},
+			}
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
+				RequestHeaders: rhq,
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
