@@ -24,17 +24,16 @@ import (
 
 // JWTConfiguration represents the JWT configuration
 type JWTConfiguration struct {
-	Enabled                 bool                   `json:"enabled"`                 // Whether JWT is enabled
-	JWTHeader               string                 `json:"jwtHeader"`               // JWT header name
-	ConsumerDialectURI      string                 `json:"consumerDialectUri"`      // URI for the consumer dialect
-	SignatureAlgorithm      string                 `json:"signatureAlgorithm"`      // Algorithm for signature
-	Encoding                string                 `json:"encoding"`                // Encoding type
-	GatewayJWTGeneratorImpl string                 `json:"gatewayJWTGeneratorImpl"` // Custom implementation for JWT generator
-	TokenIssuerDtoMap       map[string]TokenIssuer `json:"tokenIssuerDtoMap"`       // Map of token issuers
-	JwtExcludedClaims       map[string]bool        `json:"jwtExcludedClaims"`       // Excluded claims in JWT
-	PublicCert              *x509.Certificate      `json:"publicCert"`              // Public certificate
-	PrivateKey              *ecdsa.PrivateKey      `json:"privateKey"`              // Private key for signing JWT
-	TTL                     int64                  `json:"ttl"`                     // Time to live for the JWT
-	CustomClaims            map[string]ClaimValue  `json:"customClaims"`            // Custom claims
-	UseKid                  bool                   `json:"useKid"`                  // Whether to use kid
+	Enabled            bool                   `json:"enabled"`            // Whether JWT is enabled
+	JWTHeader          string                 `json:"jwtHeader"`          // JWT header name
+	ConsumerDialectURI string                 `json:"consumerDialectUri"` // URI for the consumer dialect
+	SignatureAlgorithm string                 `json:"signatureAlgorithm"` // Algorithm for signature
+	Encoding           string                 `json:"encoding"`           // Encoding type
+	TokenIssuerDtoMap  map[string]TokenIssuer `json:"tokenIssuerDtoMap"`  // Map of token issuers
+	JwtExcludedClaims  map[string]bool        `json:"jwtExcludedClaims"`  // Excluded claims in JWT
+	PublicCert         *x509.Certificate      `json:"publicCert"`         // Public certificate
+	PrivateKey         *ecdsa.PrivateKey      `json:"privateKey"`         // Private key for signing JWT
+	TTL                int64                  `json:"ttl"`                // Time to live for the JWT
+	CustomClaims       map[string]ClaimValue  `json:"customClaims"`       // Custom claims
+  UseKid             bool                   `json:"useKid"`             // Whether to use kid
 }

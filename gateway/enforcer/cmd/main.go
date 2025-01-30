@@ -7,6 +7,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/extproc"
 	"github.com/wso2/apk/gateway/enforcer/internal/grpc"
+	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"github.com/wso2/apk/gateway/enforcer/internal/xds"
 )
@@ -34,10 +35,11 @@ func main() {
 	client.InitiateEventingGRPCConnection()
 
 	// Create the XDS clients
-	apiStore, configStore, _, modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
-
+	apiStore, configStore, jwtIssuerDatastore,modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
+	// NewJWTTransformer creates a new instance of JWTTransformer.
+	jwtTransformer := transformer.NewJWTTransformer(jwtIssuerDatastore)
 	// Start the external processing server
-	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, modelBasedRoundRobinTracker)
+	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer,modelBasedRoundRobinTracker)
 
 	// Wait for the config to be loaded
 	cfg.Logger.Info("Waiting for the config to be loaded")

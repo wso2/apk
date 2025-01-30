@@ -40,6 +40,7 @@ import (
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	extProcessorv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	jwt_authnv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/jwt_authn/v3"
 	lua "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	ratelimitv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
@@ -526,6 +527,14 @@ func CreateTracingCluster(conf *config.Config) (*clusterv3.Cluster, []*corev3.Ad
 	return processEndpoints(tracingClusterName, epCluster, epTimeout, epPath)
 }
 
+// ProcessEndpoints creates cluster configuration. AddressConfiguration, cluster name and
+// urlType (http or https) is required to be provided.
+// timeout cluster timeout
+func ProcessEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
+	timeout time.Duration, basePath string) (*clusterv3.Cluster, []*corev3.Address, error) {
+	return processEndpoints(clusterName, clusterDetails, timeout, basePath)
+}
+
 // processEndpoints creates cluster configuration. AddressConfiguration, cluster name and
 // urlType (http or https) is required to be provided.
 // timeout cluster timeout
@@ -992,10 +1001,16 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		TypeUrl: luaPerRouteName,
 		Value:   data,
 	}
+	jwtPerFilterConfig := jwt_authnv3.PerRouteConfig{
+		RequirementSpecifier: &jwt_authnv3.PerRouteConfig_RequirementName{RequirementName: params.apiID},
+	}
 
 	corsFilter, _ := anypb.New(corsPolicy)
+	jwtFilter, _ := anypb.New(&jwtPerFilterConfig)
 	perRouteFilterConfigs := map[string]*any.Any{
+
 		// wellknown.HTTPExternalAuthorization: extAuthzFilter,
+		EnvoyJWT:       jwtFilter,
 		LuaLocal:       luaFilter,
 		wellknown.CORS: corsFilter,
 	}
@@ -1098,7 +1113,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 	routeConfig := resource.GetEndpoints().Config
-	
+
 	// } else {
 	// 	metaData = nil
 	// }
@@ -1248,7 +1263,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
 				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
-					nil, requestHeadersToRemove, nil, nil)
+					nil, requestHeadersToRemove, nil, nil, operation.GetAuthentication())
 
 				// Create route2 for new method.
 				// Add all policies to route config. Do not send via enforcer.
@@ -1259,7 +1274,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
 				route2 := generateRouteConfig(xWso2Basepath, match2, action2, requestRedirectAction, metaData, decorator, configToSkipEnforcer,
-					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
+					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove, operation.GetAuthentication())
 
 				routes = append(routes, route1)
 				routes = append(routes, route2)
@@ -1279,7 +1294,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				route := generateRouteConfig(xWso2Basepath, match, action, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
-					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
+					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove, operation.GetAuthentication())
 				routes = append(routes, route)
 			}
 		}
@@ -1307,7 +1322,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			// action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
 		}
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, metaData, decorator, perRouteFilterConfigs,
-			nil, requestHeadersToRemove, nil, nil) // general headers to add and remove are included in this methods
+			nil, requestHeadersToRemove, nil, nil, nil) // general headers to add and remove are included in this methods
 		routes = append(routes, route)
 	}
 	return routes, nil
@@ -1835,6 +1850,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 	mirrorClusterNames map[string][]string) *routeCreateParams {
 
 	params := &routeCreateParams{
+		apiID:                        swagger.UUID,
 		organizationID:               organizationID,
 		title:                        swagger.GetTitle(),
 		apiType:                      swagger.GetAPIType(),

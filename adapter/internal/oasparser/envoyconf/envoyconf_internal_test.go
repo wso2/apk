@@ -27,6 +27,7 @@ import (
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
+
 	// extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
 	envoy_type_matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
@@ -607,6 +608,7 @@ func TestGetCorsPolicy(t *testing.T) {
 func generateRouteCreateParamsForUnitTests(title string, apiType string, vhost string, xWso2Basepath string, version string, endpointBasepath string,
 	resource *model.Resource, clusterName string, corsConfig *model.CorsConfig, isDefaultVersion bool) *routeCreateParams {
 	return &routeCreateParams{
+		apiID:            "api_id",
 		title:            title,
 		apiType:          apiType,
 		version:          version,

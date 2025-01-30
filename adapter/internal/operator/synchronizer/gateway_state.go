@@ -41,4 +41,5 @@ type GatewayStateData struct {
 	GatewayBackendMapping            map[string]*v1alpha2.ResolvedBackend
 	GatewayInterceptorServiceMapping map[string]v1alpha1.InterceptorService
 	GatewayCustomRateLimitPolicies   map[string]*v1alpha3.RateLimitPolicy
+	TokenIssuers                     map[string]*v1alpha1.ResolvedJWTIssuer
 }

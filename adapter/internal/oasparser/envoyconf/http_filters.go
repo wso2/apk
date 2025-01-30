@@ -246,11 +246,11 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 			ResponseHeaderMode: ext_process.ProcessingMode_SEND,
 			// RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
 			// ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
-			RequestBodyMode:   ext_process.ProcessingMode_BUFFERED,
+			RequestBodyMode: ext_process.ProcessingMode_BUFFERED,
 		},
 		MetadataOptions: &ext_process.MetadataOptions{
 			ForwardingNamespaces: &ext_process.MetadataOptions_MetadataNamespaces{
-				Untyped: []string{"envoy.filters.http.ext_authz", "envoy.filters.http.ext_proc"},
+				Untyped: []string{"envoy.filters.http.ext_authz", "envoy.filters.http.ext_proc", "envoy.filters.http.jwt_authn"},
 			},
 			ReceivingNamespaces: &ext_process.MetadataOptions_MetadataNamespaces{
 				Untyped: []string{"envoy.filters.http.ext_proc"},
