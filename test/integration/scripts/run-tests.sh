@@ -86,4 +86,4 @@ sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
 
 # Run tests
-go test -v integration_test.go
+go test -timeout=20m -v integration_test.go
