@@ -24,7 +24,8 @@ type AIProvider struct {
 	Organization       string        `json:"organization"`       // Organization associated with the provider
 	Enabled            bool          `json:"enabled"`            // Whether the provider is enabled
 	SupportedModels    []string      `json:"supportedModels"`    // Supported models
-	Model              *ValueDetails `json:"model"`              // Model details
+	RequestModel       *ValueDetails `json:"requestModel"`       // Request model details
+	ResponseModel      *ValueDetails `json:"responseModel"`      // Response model details
 	PromptTokens       *ValueDetails `json:"promptTokens"`       // Prompt token details
 	CompletionToken    *ValueDetails `json:"completionToken"`    // Completion token details
 	TotalToken         *ValueDetails `json:"totalToken"`         // Total token details

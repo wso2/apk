@@ -40,12 +40,13 @@ func NewModelBasedRoundRobinTracker() *ModelBasedRoundRobinTracker {
 
 // ModelWeight represents a model with its associated weight
 type ModelWeight struct {
-	Name   string
-	Weight int
+	Name     string
+	Endpoint string
+	Weight   int
 }
 
 // GetNextModel handles weighted round-robin logic and returns the next model for the given API and resource
-func (r *ModelBasedRoundRobinTracker) GetNextModel(api, resource string, models []ModelWeight) string {
+func (r *ModelBasedRoundRobinTracker) GetNextModel(api, resource string, models []ModelWeight) (string, string) {
 	r.Lock()
 	defer r.Unlock()
 
@@ -75,12 +76,13 @@ func (r *ModelBasedRoundRobinTracker) GetNextModel(api, resource string, models 
 
 	// If no active models are available, return an empty string
 	if len(activeModels) == 0 {
-		return ""
+		return "", ""
 	}
 
 	// Perform weighted round-robin on active models
 	totalWeight := 0
 	var selectedModel string
+	var selectedEndpoint string
 	minEffectiveWeight := int(^uint(0) >> 1) // Initialize with max int value
 
 	for _, model := range activeModels {
@@ -88,13 +90,14 @@ func (r *ModelBasedRoundRobinTracker) GetNextModel(api, resource string, models 
 		effectiveWeight := r.counts[api][resource][model.Name] / model.Weight
 		if effectiveWeight < minEffectiveWeight {
 			selectedModel = model.Name
+			selectedEndpoint = model.Endpoint
 			minEffectiveWeight = effectiveWeight
 		}
 	}
 
 	// Increment the count for the selected model
 	r.counts[api][resource][selectedModel]++
-	return selectedModel
+	return selectedModel, selectedEndpoint
 }
 
 // SuspendModel suspends a model for the given API and resource

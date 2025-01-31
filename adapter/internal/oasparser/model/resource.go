@@ -24,7 +24,6 @@ import (
 	"sort"
 
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
-	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -43,7 +42,7 @@ type Resource struct {
 	iD                                     string
 	endpoints                              *EndpointCluster
 	endpointSecurity                       []*EndpointSecurity
-	AIModelBasedRoundRobin                 *dpv1alpha4.ModelBasedRoundRobin
+	AIModelBasedRoundRobin                 *InternalModelBasedRoundRobin
 	vendorExtensions                       map[string]interface{}
 	hasPolicies                            bool
 	hasRequestRedirectFilter               bool
@@ -112,7 +111,7 @@ func (resource *Resource) HasPolicies() bool {
 }
 
 // GetAIModelBasedRoundRobin returns the AIModelBasedRoundRobin object of a given resource.
-func (resource *Resource) GetAIModelBasedRoundRobin() *dpv1alpha4.ModelBasedRoundRobin {
+func (resource *Resource) GetAIModelBasedRoundRobin() *InternalModelBasedRoundRobin {
 	return resource.AIModelBasedRoundRobin
 }
 

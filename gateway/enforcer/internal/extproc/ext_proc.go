@@ -253,7 +253,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				backendJWT = jwtbackend.CreateBackendJWT(requestConfigHolder, s.cfg)
 				s.log.Sugar().Infof("generated backendJWT==%v", backendJWT)
 			}
-			
+
 			if backendJWT != "" {
 				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
 					Header: &corev3.HeaderValue{
@@ -275,8 +275,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.log.Info("Request Body Flow")
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
 				RequestBody: &envoy_service_proc_v3.BodyResponse{
-					Response: &envoy_service_proc_v3.CommonResponse{
-					},
+					Response: &envoy_service_proc_v3.CommonResponse{},
 				},
 			}
 			// s.log.Info(fmt.Sprintf("Matched Resource Round Robin :%+v", s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin))
@@ -290,21 +289,29 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Info("API Level Model Based Round Robin enabled")
 				supportedModels := s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels
 				onQuotaExceedSuspendDuration := s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
-				modelWeight := s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Models
+				s.log.Info(fmt.Sprintf("EnvType :%+v", s.requestConfigHolder.MatchedAPI.EnvType))
+				var modelWeight []dto.ModelWeight
+				if s.requestConfigHolder.MatchedAPI.EnvType != "" && s.requestConfigHolder.MatchedAPI.EnvType == "PRODUCTION" {
+					modelWeight = s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.ProductionModels
+				} else if s.requestConfigHolder.MatchedAPI.EnvType != "" && s.requestConfigHolder.MatchedAPI.EnvType == "SANDBOX" {
+					modelWeight = s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.SandboxModels
+				}
 				// convert to datastore.ModelWeight
 				var modelWeights []datastore.ModelWeight
 				for _, model := range modelWeight {
 					modelWeights = append(modelWeights, datastore.ModelWeight{
-						Name:   model.Model,
-						Weight: model.Weight,
+						Name:     model.Model,
+						Endpoint: model.Endpoint,
+						Weight:   model.Weight,
 					})
 				}
 				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
 				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
 				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
-				selectedModel := s.modelBasedRoundRobinTracker.GetNextModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, modelWeights)
+				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, modelWeights)
 				s.log.Info(fmt.Sprintf("Selected Model: %v", selectedModel))
-				if selectedModel == "" {
+				s.log.Info(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
+				if selectedModel == "" || selectedEndpoint == "" {
 					s.log.Info("Unable to select a model since all models are suspended. Continue with the user provided model")
 				} else {
 					// change request body to model to selected model
@@ -337,6 +344,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 								Header: &corev3.HeaderValue{
 									Key:      "Content-Length",
 									RawValue: []byte(fmt.Sprintf("%d", newBodyLength)), // Set the new Content-Length
+								},
+							},
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "x-wso2-cluster-header",
+									RawValue: []byte(selectedEndpoint),
 								},
 							},
 						},
@@ -372,21 +385,29 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Info("Resource Level Model Based Round Robin enabled")
 				supportedModels := s.requestConfigHolder.MatchedAPI.AiProvider.SupportedModels
 				onQuotaExceedSuspendDuration := s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
-				modelWeight := s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.Models
+				s.log.Info(fmt.Sprintf("EnvType :%+v", s.requestConfigHolder.MatchedAPI.EnvType))
+				var modelWeight []dto.ModelWeight
+				if s.requestConfigHolder.MatchedAPI.EnvType != "" && s.requestConfigHolder.MatchedAPI.EnvType == "PRODUCTION" {
+					modelWeight = s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.ProductionModels
+				} else if s.requestConfigHolder.MatchedAPI.EnvType != "" && s.requestConfigHolder.MatchedAPI.EnvType == "SANDBOX" {
+					modelWeight = s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin.SandboxModels
+				}
 				// convert to datastore.ModelWeight
 				var modelWeights []datastore.ModelWeight
 				for _, model := range modelWeight {
 					modelWeights = append(modelWeights, datastore.ModelWeight{
-						Name:   model.Model,
-						Weight: model.Weight,
+						Name:     model.Model,
+						Endpoint: model.Endpoint,
+						Weight:   model.Weight,
 					})
 				}
 				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
 				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
 				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
-				selectedModel := s.modelBasedRoundRobinTracker.GetNextModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, modelWeights)
+				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(s.requestConfigHolder.MatchedAPI.UUID, s.requestConfigHolder.MatchedResource.Path, modelWeights)
 				s.log.Info(fmt.Sprintf("Selected Model: %v", selectedModel))
-				if selectedModel == "" {
+				s.log.Info(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
+				if selectedModel == "" || selectedEndpoint == "" {
 					s.log.Info("Unable to select a model since all models are suspended. Continue with the user provided model")
 				} else {
 					// change request body to model to selected model
@@ -419,6 +440,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 								Header: &corev3.HeaderValue{
 									Key:      "Content-Length",
 									RawValue: []byte(fmt.Sprintf("%d", newBodyLength)), // Set the new Content-Length
+								},
+							},
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "x-wso2-cluster-header",
+									RawValue: []byte(selectedEndpoint),
 								},
 							},
 						},
@@ -485,7 +512,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
 					matchedAPI.AiProvider.TotalToken.Value,
-					matchedAPI.AiProvider.Model.Value)
+					matchedAPI.AiProvider.ResponseModel.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response headers")
 				} else {
@@ -612,7 +639,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
 					matchedAPI.AiProvider.TotalToken.Value,
-					matchedAPI.AiProvider.Model.Value)
+					matchedAPI.AiProvider.ResponseModel.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {

@@ -28,12 +28,14 @@ option java_multiple_files = true;
 // Holds AIModelBasedRoundRobin configs
 message AIModelBasedRoundRobin {
     int32 onQuotaExceedSuspendDuration = 1;
-	repeated ModelWeight models = 2;
-    bool enabled = 3;
+	repeated ModelWeight productionModels = 2;
+    repeated ModelWeight sandboxModels = 3;
+    bool enabled = 4;
 }
 
 // Holds ModelWeight configs
 message ModelWeight {
     string model = 1;
-    int32 weight = 2;
+    string endpoint = 2;
+    int32 weight = 3;
 }

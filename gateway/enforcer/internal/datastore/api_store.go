@@ -124,7 +124,8 @@ func convertAIModelBasedRoundRobinToDTO(aiModelBasedRoundRobin *api.AIModelBased
 	return &dto.AIModelBasedRoundRobin{
 		Enabled:                      aiModelBasedRoundRobin.Enabled,
 		OnQuotaExceedSuspendDuration: int(aiModelBasedRoundRobin.OnQuotaExceedSuspendDuration),
-		Models:                       convertModelWeights(aiModelBasedRoundRobin.Models),
+		ProductionModels:             convertModelWeights(aiModelBasedRoundRobin.ProductionModels),
+		SandboxModels:                convertModelWeights(aiModelBasedRoundRobin.SandboxModels),
 	}
 }
 
@@ -133,8 +134,9 @@ func convertModelWeights(apiModelWeights []*api.ModelWeight) []dto.ModelWeight {
 	dtoModelWeights := make([]dto.ModelWeight, len(apiModelWeights))
 	for i, modelWeight := range apiModelWeights {
 		dtoModelWeights[i] = dto.ModelWeight{
-			Model:  modelWeight.Model,
-			Weight: int(modelWeight.Weight),
+			Model:    modelWeight.Model,
+			Endpoint: modelWeight.Endpoint,
+			Weight:   int(modelWeight.Weight),
 		}
 	}
 	return dtoModelWeights
@@ -151,7 +153,8 @@ func convertAIProviderToDTO(aiProvider *api.AIProvider) *dto.AIProvider {
 		Organization:       aiProvider.Organization,
 		Enabled:            aiProvider.Enabled,
 		SupportedModels:    aiProvider.SupportedModels,
-		Model:              convertValueDetailsPtr(aiProvider.Model),
+		RequestModel:       convertValueDetailsPtr(aiProvider.RequestModel),
+		ResponseModel:      convertValueDetailsPtr(aiProvider.ResponseModel),
 		PromptTokens:       convertValueDetailsPtr(aiProvider.PromptTokens),
 		CompletionToken:    convertValueDetailsPtr(aiProvider.CompletionToken),
 		TotalToken:         convertValueDetailsPtr(aiProvider.TotalToken),

@@ -33,7 +33,8 @@ type AIProviderSpec struct {
 	ProviderAPIVersion string          `json:"providerAPIVersion"`
 	Organization       string          `json:"organization"`
 	SupportedModels    []string        `json:"supportedModels,omitempty"`
-	Model              ValueDetails    `json:"model"`
+	RequestModel       ValueDetails    `json:"requestModel"`
+	ResponseModel      ValueDetails    `json:"responseModel"`
 	RateLimitFields    RateLimitFields `json:"rateLimitFields"`
 }
 

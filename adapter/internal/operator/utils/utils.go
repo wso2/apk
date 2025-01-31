@@ -853,6 +853,22 @@ func GetAIProvider(ctx context.Context, client k8client.Client, namespace string
 	return aiProvider
 }
 
+// GetBackend reads Backend when backendReference is given
+func GetBackend(ctx context.Context, client k8client.Client, namespace string,
+	backendReference string, api *dpv1alpha3.API) *dpv1alpha2.Backend {
+	backend := &dpv1alpha2.Backend{}
+	backendRef := types.NamespacedName{
+		Namespace: namespace,
+		Name:      backendReference,
+	}
+	if err := ResolveRef(ctx, client, api, backendRef, false, backend); err != nil {
+		if !apierrors.IsNotFound(err) {
+			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2664, logging.CRITICAL, "Error while getting backend %s, error: %v", backendRef, err.Error()))
+		}
+	}
+	return backend
+}
+
 // RetrieveAPIList retrieves API list from the given kubernetes client
 func RetrieveAPIList(k8sclient k8client.Client) ([]dpv1alpha3.API, error) {
 	ctx := context.Background()

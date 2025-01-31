@@ -19,6 +19,7 @@ package synchronizer
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/wso2/apk/adapter/config"
 	"github.com/wso2/apk/adapter/internal/dataholder"
@@ -130,15 +131,66 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 		adapterInternalAPI.SetAIProvider(*apiState.AIProvider)
 	}
 
-	if apiState.ModelBasedRoundRobin != nil && len(apiState.ModelBasedRoundRobin.Models) > 0 {
-		loggers.LoggerAPKOperator.Debugf("Model Based Round Robin: %+v", *apiState.ModelBasedRoundRobin)
-		adapterInternalAPI.SetModelBasedRoundRobin(*apiState.ModelBasedRoundRobin)
+	if apiState.ResolvedModelBasedRoundRobin != nil && (len(apiState.ResolvedModelBasedRoundRobin.ProductionModels) > 0 || len(apiState.ResolvedModelBasedRoundRobin.SandboxModels) > 0) {
+		loggers.LoggerAPKOperator.Infof("API State Model Based Round Robin: %+v", *apiState.ResolvedModelBasedRoundRobin)
+		resolvedModelBasedRoundRobin := *apiState.ResolvedModelBasedRoundRobin
+		var productionModels []model.InternalModelWeight
+		var sandboxModels []model.InternalModelWeight
+		for _, aiModel := range resolvedModelBasedRoundRobin.ProductionModels {
+			endpoints := model.GetEndpointsByResolvedBackend(aiModel.ResolvedBackend)
+			endpointCluster := model.EndpointCluster{
+				Endpoints: endpoints,
+			}
+			vhost := ""
+			for _, hostName := range httpRouteState.HTTPRouteCombined.Spec.Hostnames {
+				vhost = string(hostName)
+			}
+			clusternName := getClusterName(endpointCluster.EndpointPrefix, adapterInternalAPI.GetOrganizationID(), vhost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+			productionModels = append(productionModels, model.InternalModelWeight{
+				Model:               aiModel.Model,
+				EndpointClusterName: clusternName,
+				Weight:              aiModel.Weight,
+			})
+		}
+		for _, aiModel := range resolvedModelBasedRoundRobin.SandboxModels {
+			endpoints := model.GetEndpointsByResolvedBackend(aiModel.ResolvedBackend)
+			endpointCluster := model.EndpointCluster{
+				Endpoints: endpoints,
+			}
+			vhost := ""
+			for _, hostName := range httpRouteState.HTTPRouteCombined.Spec.Hostnames {
+				vhost = string(hostName)
+			}
+			clusternName := getClusterName(endpointCluster.EndpointPrefix, adapterInternalAPI.GetOrganizationID(), vhost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+			sandboxModels = append(sandboxModels, model.InternalModelWeight{
+				Model:               aiModel.Model,
+				EndpointClusterName: clusternName,
+				Weight:              aiModel.Weight,
+			})
+		}
+		aiModelBasedRoundRobin := model.InternalModelBasedRoundRobin{
+			OnQuotaExceedSuspendDuration: resolvedModelBasedRoundRobin.OnQuotaExceedSuspendDuration,
+			ProductionModels:             productionModels,
+			SandboxModels:                sandboxModels,
+		}
+		adapterInternalAPI.SetModelBasedRoundRobin(aiModelBasedRoundRobin)
 	}
 
 	loggers.LoggerAPKOperator.Infof("AdapterInternalAPI AI Provider: %+v", adapterInternalAPI.GetAIProvider())
 	loggers.LoggerAPKOperator.Infof("AdapterInternalAPI Model Based Round Robin: %+v", adapterInternalAPI.GetModelBasedRoundRobin())
 
 	return &adapterInternalAPI, nil
+}
+
+// getClusterName returns the cluster name for the API.
+func getClusterName(epPrefix string, organizationID string, vHost string, swaggerTitle string, swaggerVersion string,
+	hostname string) string {
+	if hostname != "" {
+		return strings.TrimSpace(organizationID+"_"+epPrefix+"_"+vHost+"_"+strings.Replace(swaggerTitle, " ", "", -1)+swaggerVersion) +
+			"_" + strings.Replace(hostname, " ", "", -1) + "0"
+	}
+	return strings.TrimSpace(organizationID + "_" + epPrefix + "_" + vHost + "_" + strings.Replace(swaggerTitle, " ", "", -1) +
+		swaggerVersion)
 }
 
 // getVhostForAPI returns the vHosts related to an API.

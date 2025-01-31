@@ -1371,7 +1371,10 @@ spec:
   providerName : "AzureAI"
   providerAPIVersion : "2024-06-01"
   organization : "default"
-  model:
+  requestModel:
+    in: "Body"
+    value: "model"
+  responseModel:
     in: "Body"
     value: "model"
   rateLimitFields:
@@ -1575,7 +1578,10 @@ spec:
   providerName : "AzureAI"
   providerAPIVersion : "2024-06-01"
   organization : "default"
-  model:
+  requestModel:
+    in: "Header"
+    value: "model"
+  responseModel:
     in: "Header"
     value: "model"
   rateLimitFields:
@@ -1739,7 +1745,10 @@ spec:
   providerName : "AzureAI"
   providerAPIVersion : "2024-06-01"
   organization : "default"
-  model:
+  responseModel:
+    in: "Body"
+    value: "model"
+  requestModel:
     in: "Body"
     value: "model"
   rateLimitFields:
@@ -1800,7 +1809,10 @@ spec:
   providerName : "AzureAI"
   providerAPIVersion : "2024-06-01"
   organization : "default"
-  model:
+  requestModel:
+    in: "Body"
+    value: "model"
+  responseModel:
     in: "Body"
     value: "model"
   rateLimitFields:

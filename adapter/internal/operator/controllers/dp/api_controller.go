@@ -407,7 +407,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace : %s with API UUID : %v, %s",
 			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
-	if apiState.InterceptorServiceMapping, apiState.BackendJWTMapping, apiState.SubscriptionValidation, apiState.AIProvider, apiState.ModelBasedRoundRobin, err =
+	if apiState.InterceptorServiceMapping, apiState.BackendJWTMapping, apiState.SubscriptionValidation, apiState.AIProvider, apiState.ResolvedModelBasedRoundRobin, err =
 		apiReconciler.getAPIPolicyChildrenRefs(ctx, apiState.APIPolicies, apiState.ResourceAPIPolicies, api); err != nil {
 		return nil, fmt.Errorf("error while getting referenced policies in apipolicy %s in namespace : %s with API UUID : %v, %s",
 			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
@@ -907,12 +907,13 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 // - subscription validation
 func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context,
 	apiPolicies, resourceAPIPolicies map[string]dpv1alpha4.APIPolicy,
-	api dpv1alpha3.API) (map[string]dpv1alpha1.InterceptorService, map[string]dpv1alpha1.BackendJWT, bool, *dpv1alpha4.AIProvider, *dpv1alpha4.ModelBasedRoundRobin, error) {
+	api dpv1alpha3.API) (map[string]dpv1alpha1.InterceptorService, map[string]dpv1alpha1.BackendJWT, bool, *dpv1alpha4.AIProvider, *synchronizer.ResolvedModelBasedRoundRobin, error) {
 	allAPIPolicies := append(maps.Values(apiPolicies), maps.Values(resourceAPIPolicies)...)
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	backendJWTs := make(map[string]dpv1alpha1.BackendJWT)
 	aiProvider := &dpv1alpha4.AIProvider{}
 	modelBasedRoundRobin := &dpv1alpha4.ModelBasedRoundRobin{}
+	resolvedModelBasedRoundRobin := &synchronizer.ResolvedModelBasedRoundRobin{}
 	subscriptionValidation := false
 	for _, apiPolicy := range allAPIPolicies {
 		if apiPolicy.Spec.Default != nil {
@@ -988,20 +989,143 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 		}
 	}
 	for _, apiPolicy := range apiPolicies {
+		backendMapping := make(map[string]*dpv1alpha2.ResolvedBackend)
 		if apiPolicy.Spec.Default != nil {
 			if apiPolicy.Spec.Default.ModelBasedRoundRobin != nil {
-				loggers.LoggerAPKOperator.Debugf("ModelBasedRoundRobin Default found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
+				loggers.LoggerAPKOperator.Infof("ModelBasedRoundRobin Default found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
 				modelBasedRoundRobin = apiPolicy.Spec.Default.ModelBasedRoundRobin
+				resolvedModelBasedRoundRobin = &synchronizer.ResolvedModelBasedRoundRobin{
+					OnQuotaExceedSuspendDuration: modelBasedRoundRobin.OnQuotaExceedSuspendDuration,
+				}
+				if modelBasedRoundRobin.ProductionModels != nil {
+					loggers.LoggerAPKOperator.Infof("ProductionModels Default found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.ProductionModels)
+					productionModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.ProductionModels
+					for _, model := range productionModels {
+						resolvedBackend := &dpv1alpha2.ResolvedBackend{}
+						if model.BackendRef.Name != "" {
+							backendNamespacedName := types.NamespacedName{
+								Name:      string(model.BackendRef.Name),
+								Namespace: utils.GetNamespace(model.BackendRef.Namespace, apiPolicy.Namespace),
+							}
+							if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+								if resolvedBackend != nil {
+									backendMapping[backendNamespacedName.String()] = resolvedBackend
+								} else {
+									return nil, nil, false, nil, nil, fmt.Errorf("unable to find backend %s", backendNamespacedName.String())
+								}
+							} else {
+								resolvedBackend = backendMapping[backendNamespacedName.String()]
+							}
+						}
+						resolvedModelWeight := synchronizer.ResolvedModelWeight{
+							Model:           model.Model,
+							Weight:          model.Weight,
+							ResolvedBackend: resolvedBackend,
+						}
+						resolvedModelBasedRoundRobin.ProductionModels = append(resolvedModelBasedRoundRobin.ProductionModels, resolvedModelWeight)
+					}
+				}
+				if modelBasedRoundRobin.SandboxModels != nil {
+					loggers.LoggerAPKOperator.Infof("SandboxModels Default found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.SandboxModels)
+					sandboxModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.SandboxModels
+					for _, model := range sandboxModels {
+						resolvedBackend := &dpv1alpha2.ResolvedBackend{}
+						if model.BackendRef.Name != "" {
+							backendNamespacedName := types.NamespacedName{
+								Name:      string(model.BackendRef.Name),
+								Namespace: utils.GetNamespace(model.BackendRef.Namespace, apiPolicy.Namespace),
+							}
+							if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+								if resolvedBackend != nil {
+									backendMapping[backendNamespacedName.String()] = resolvedBackend
+								} else {
+									return nil, nil, false, nil, nil, fmt.Errorf("unable to find backend %s", backendNamespacedName.String())
+								}
+							} else {
+								resolvedBackend = backendMapping[backendNamespacedName.String()]
+							}
+						}
+						resolvedModelWeight := synchronizer.ResolvedModelWeight{
+							Model:           model.Model,
+							Weight:          model.Weight,
+							ResolvedBackend: resolvedBackend,
+						}
+						resolvedModelBasedRoundRobin.SandboxModels = append(resolvedModelBasedRoundRobin.SandboxModels, resolvedModelWeight)
+					}
+				}
 			}
 		}
 		if apiPolicy.Spec.Override != nil {
 			if apiPolicy.Spec.Override.ModelBasedRoundRobin != nil {
-				loggers.LoggerAPKOperator.Debugf("ModelBasedRoundRobin override found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Override.ModelBasedRoundRobin)
+				loggers.LoggerAPKOperator.Infof("ModelBasedRoundRobin override found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Override.ModelBasedRoundRobin)
 				modelBasedRoundRobin = apiPolicy.Spec.Override.ModelBasedRoundRobin
+				resolvedModelBasedRoundRobin = &synchronizer.ResolvedModelBasedRoundRobin{
+					OnQuotaExceedSuspendDuration: modelBasedRoundRobin.OnQuotaExceedSuspendDuration,
+				}
+				if modelBasedRoundRobin.ProductionModels != nil {
+					loggers.LoggerAPKOperator.Infof("ProductionModels override found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.ProductionModels)
+					productionModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.ProductionModels
+					for _, model := range productionModels {
+						resolvedBackend := &dpv1alpha2.ResolvedBackend{}
+						if model.BackendRef.Name != "" {
+							backendNamespacedName := types.NamespacedName{
+								Name:      string(model.BackendRef.Name),
+								Namespace: utils.GetNamespace(model.BackendRef.Namespace, apiPolicy.Namespace),
+							}
+							if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+								if resolvedBackend != nil {
+									backendMapping[backendNamespacedName.String()] = resolvedBackend
+								} else {
+									return nil, nil, false, nil, nil, fmt.Errorf("unable to find backend %s", backendNamespacedName.String())
+								}
+							} else {
+								resolvedBackend = backendMapping[backendNamespacedName.String()]
+							}
+						}
+						resolvedModelWeight := synchronizer.ResolvedModelWeight{
+							Model:           model.Model,
+							Weight:          model.Weight,
+							ResolvedBackend: resolvedBackend,
+						}
+						resolvedModelBasedRoundRobin.ProductionModels = append(resolvedModelBasedRoundRobin.ProductionModels, resolvedModelWeight)
+					}
+				}
+				if modelBasedRoundRobin.SandboxModels != nil {
+					loggers.LoggerAPKOperator.Infof("SandboxModels override found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.SandboxModels)
+					sandboxModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.SandboxModels
+					for _, model := range sandboxModels {
+						resolvedBackend := &dpv1alpha2.ResolvedBackend{}
+						if model.BackendRef.Name != "" {
+							backendNamespacedName := types.NamespacedName{
+								Name:      string(model.BackendRef.Name),
+								Namespace: utils.GetNamespace(model.BackendRef.Namespace, apiPolicy.Namespace),
+							}
+							if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+								if resolvedBackend != nil {
+									backendMapping[backendNamespacedName.String()] = resolvedBackend
+								} else {
+									return nil, nil, false, nil, nil, fmt.Errorf("unable to find backend %s", backendNamespacedName.String())
+								}
+							} else {
+								resolvedBackend = backendMapping[backendNamespacedName.String()]
+							}
+						}
+						resolvedModelWeight := synchronizer.ResolvedModelWeight{
+							Model:           model.Model,
+							Weight:          model.Weight,
+							ResolvedBackend: resolvedBackend,
+						}
+						resolvedModelBasedRoundRobin.SandboxModels = append(resolvedModelBasedRoundRobin.SandboxModels, resolvedModelWeight)
+					}
+				}
 			}
 		}
 	}
-	return interceptorServices, backendJWTs, subscriptionValidation, aiProvider, modelBasedRoundRobin, nil
+	return interceptorServices, backendJWTs, subscriptionValidation, aiProvider, resolvedModelBasedRoundRobin, nil
 }
 
 func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
