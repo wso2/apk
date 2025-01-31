@@ -524,6 +524,7 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 	}
 	if tokenIssuer.SignatureValidation.JWKS != nil {
 		logger.LoggerOasparser.Infof("JWKS URL: %s", tokenIssuer.SignatureValidation.JWKS.URL)
+		logger.LoggerOasparser.Infof("JWKS name sss: %v", tokenIssuer)
 		jwksCluster, jwksAddress, err := getRemoteJWKSCluster(*tokenIssuer.SignatureValidation.JWKS, issuerName)
 		if err != nil {
 			logger.LoggerOasparser.Error(err)
@@ -568,8 +569,9 @@ func getRemoteJWKSCluster(jwksInfo v1alpha1.ResolvedJWKS, clusterName string) (*
 	endpointCluster := &model.EndpointCluster{
 		Endpoints: endpoints,
 	}
-
-	return envoy.ProcessEndpoints(clusterName, endpointCluster, 0, "")
+	logger.LoggerAPKOperator.Infof("JWKS Cluster endpoint: %v", endpoint)
+	logger.LoggerAPKOperator.Infof("JWKS Cluster endpointCluster base path: %v", endpoint.Basepath)
+	return envoy.ProcessEndpoints(clusterName, endpointCluster, 20, endpoint.Basepath)
 }
 
 // GetJWTFilter
