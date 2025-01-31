@@ -93,6 +93,10 @@ func ResolveDisableSecurity(vendorExtensions map[string]interface{}) bool {
 	return disableSecurity
 }
 
+// GETHTTPEndpoint returns the endpoint object for the given rawURL
+func GETHTTPEndpoint(rawURL string) (*Endpoint, error) {
+	return getHTTPEndpoint(rawURL)
+}
 func getHTTPEndpoint(rawURL string) (*Endpoint, error) {
 	return getHostandBasepathandPort(constants.REST, rawURL)
 }

@@ -18,25 +18,25 @@
 package v1alpha2
 
 import (
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
-// ConvertTo converts this API CR to the Hub version (v1alpha3).
-// src is v1alpha2.API and dst is v1alpha3.API.
+// ConvertTo converts this API CR to the Hub version (v1alpha4).
+// src is v1alpha2.API and dst is v1alpha4.API.
 func (src *APIPolicy) ConvertTo(dstRaw conversion.Hub) error {
 
-	dst := dstRaw.(*v1alpha3.APIPolicy)
+	dst := dstRaw.(*v1alpha4.APIPolicy)
 	dst.ObjectMeta = src.ObjectMeta
 	if src.Spec.Default != nil {
-		var convertedSpec = v1alpha3.PolicySpec{}
+		var convertedSpec = v1alpha4.PolicySpec{}
 		if src.Spec.Default.BackendJWTPolicy != nil {
-			convertedSpec.BackendJWTPolicy = &v1alpha3.BackendJWTToken{
+			convertedSpec.BackendJWTPolicy = &v1alpha4.BackendJWTToken{
 				Name: src.Spec.Default.BackendJWTPolicy.Name}
 		}
 		if src.Spec.Default.CORSPolicy != nil {
-			convertedSpec.CORSPolicy = &v1alpha3.CORSPolicy{
+			convertedSpec.CORSPolicy = &v1alpha4.CORSPolicy{
 				Enabled:                       true,
 				AccessControlAllowCredentials: src.Spec.Default.CORSPolicy.AccessControlAllowCredentials,
 				AccessControlAllowHeaders:     src.Spec.Default.CORSPolicy.AccessControlAllowHeaders,
@@ -46,16 +46,16 @@ func (src *APIPolicy) ConvertTo(dstRaw conversion.Hub) error {
 				AccessControlMaxAge:           src.Spec.Default.CORSPolicy.AccessControlMaxAge}
 		}
 		if src.Spec.Default.RequestInterceptors != nil {
-			convertedSpec.RequestInterceptors = []v1alpha3.InterceptorReference{}
+			convertedSpec.RequestInterceptors = []v1alpha4.InterceptorReference{}
 			for _, interceptor := range src.Spec.Default.RequestInterceptors {
-				convertedSpec.RequestInterceptors = append(convertedSpec.RequestInterceptors, v1alpha3.InterceptorReference{
+				convertedSpec.RequestInterceptors = append(convertedSpec.RequestInterceptors, v1alpha4.InterceptorReference{
 					Name: interceptor.Name})
 			}
 		}
 		if src.Spec.Default.ResponseInterceptors != nil {
-			convertedSpec.ResponseInterceptors = []v1alpha3.InterceptorReference{}
+			convertedSpec.ResponseInterceptors = []v1alpha4.InterceptorReference{}
 			for _, interceptor := range src.Spec.Default.ResponseInterceptors {
-				convertedSpec.ResponseInterceptors = append(convertedSpec.ResponseInterceptors, v1alpha3.InterceptorReference{
+				convertedSpec.ResponseInterceptors = append(convertedSpec.ResponseInterceptors, v1alpha4.InterceptorReference{
 					Name: interceptor.Name})
 			}
 		}
@@ -64,13 +64,13 @@ func (src *APIPolicy) ConvertTo(dstRaw conversion.Hub) error {
 	}
 
 	if src.Spec.Override != nil {
-		var convertedSpec = v1alpha3.PolicySpec{}
+		var convertedSpec = v1alpha4.PolicySpec{}
 		if src.Spec.Override.BackendJWTPolicy != nil {
-			convertedSpec.BackendJWTPolicy = &v1alpha3.BackendJWTToken{
+			convertedSpec.BackendJWTPolicy = &v1alpha4.BackendJWTToken{
 				Name: src.Spec.Override.BackendJWTPolicy.Name}
 		}
 		if src.Spec.Override.CORSPolicy != nil {
-			convertedSpec.CORSPolicy = &v1alpha3.CORSPolicy{
+			convertedSpec.CORSPolicy = &v1alpha4.CORSPolicy{
 				Enabled:                       true,
 				AccessControlAllowCredentials: src.Spec.Override.CORSPolicy.AccessControlAllowCredentials,
 				AccessControlAllowHeaders:     src.Spec.Override.CORSPolicy.AccessControlAllowHeaders,
@@ -80,16 +80,16 @@ func (src *APIPolicy) ConvertTo(dstRaw conversion.Hub) error {
 				AccessControlMaxAge:           src.Spec.Override.CORSPolicy.AccessControlMaxAge}
 		}
 		if src.Spec.Override.RequestInterceptors != nil {
-			convertedSpec.RequestInterceptors = []v1alpha3.InterceptorReference{}
+			convertedSpec.RequestInterceptors = []v1alpha4.InterceptorReference{}
 			for _, interceptor := range src.Spec.Override.RequestInterceptors {
-				convertedSpec.RequestInterceptors = append(convertedSpec.RequestInterceptors, v1alpha3.InterceptorReference{
+				convertedSpec.RequestInterceptors = append(convertedSpec.RequestInterceptors, v1alpha4.InterceptorReference{
 					Name: interceptor.Name})
 			}
 		}
 		if src.Spec.Override.ResponseInterceptors != nil {
-			convertedSpec.ResponseInterceptors = []v1alpha3.InterceptorReference{}
+			convertedSpec.ResponseInterceptors = []v1alpha4.InterceptorReference{}
 			for _, interceptor := range src.Spec.Override.ResponseInterceptors {
-				convertedSpec.ResponseInterceptors = append(convertedSpec.ResponseInterceptors, v1alpha3.InterceptorReference{
+				convertedSpec.ResponseInterceptors = append(convertedSpec.ResponseInterceptors, v1alpha4.InterceptorReference{
 					Name: interceptor.Name})
 			}
 		}
@@ -105,11 +105,11 @@ func (src *APIPolicy) ConvertTo(dstRaw conversion.Hub) error {
 	return nil
 }
 
-// ConvertFrom converts from the Hub version (v1alpha3) to this version.
-// src is v1alpha2.API and dst is v1alpha3.API.
+// ConvertFrom converts from the Hub version (v1alpha4) to this version.
+// src is v1alpha2.API and dst is v1alpha4.API.
 func (src *APIPolicy) ConvertFrom(srcRaw conversion.Hub) error {
 
-	dst := srcRaw.(*v1alpha3.APIPolicy)
+	dst := srcRaw.(*v1alpha4.APIPolicy)
 	src.ObjectMeta = dst.ObjectMeta
 	// Spec
 	if dst.Spec.Default != nil {

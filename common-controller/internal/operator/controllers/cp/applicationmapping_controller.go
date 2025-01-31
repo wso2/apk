@@ -25,6 +25,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/config"
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	"github.com/wso2/apk/common-controller/internal/server"
+	"github.com/wso2/apk/common-go-libs/pkg/server/model"
 	k8error "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -158,8 +159,8 @@ func sendUpdates(applicationMapping *cpv1alpha2.ApplicationMapping, application 
 	server.AddApplicationMapping(appMapping)
 }
 
-func marshalApplicationMapping(applicationMapping *cpv1alpha2.ApplicationMapping, application server.Application) server.ApplicationMapping {
-	return server.ApplicationMapping{
+func marshalApplicationMapping(applicationMapping *cpv1alpha2.ApplicationMapping, application model.Application) model.ApplicationMapping {
+	return model.ApplicationMapping{
 		UUID:            applicationMapping.Name,
 		ApplicationRef:  applicationMapping.Spec.ApplicationRef,
 		SubscriptionRef: applicationMapping.Spec.SubscriptionRef,

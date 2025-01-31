@@ -57,7 +57,7 @@ const RatelimitFilterName = "envoy.filters.http.ratelimit"
 
 // getHTTPFilters generates httpFilter configuration
 func getHTTPFilters(globalLuaScript string) []*hcmv3.HttpFilter {
-	extAuth := getExtAuthzHTTPFilter()
+	// extAuth := getExtAuthzHTTPFilter()
 	extProcessor := getExtProcessHTTPFilter()
 	router := getRouterHTTPFilter()
 	luaLocal := getLuaFilter(LuaLocal, `
@@ -70,7 +70,7 @@ end`)
 
 	httpFilters := []*hcmv3.HttpFilter{
 		cors,
-		extAuth,
+		// extAuth,
 		luaLocal,
 		luaGlobal,
 		extProcessor,
@@ -159,13 +159,13 @@ func getUpgradeFilters() []*hcmv3.HttpFilter {
 
 	cors := getCorsHTTPFilter()
 	grpcStats := getGRPCStatsHTTPFilter()
-	extAauth := getExtAuthzHTTPFilter()
+	// extAauth := getExtAuthzHTTPFilter()
 	apkWebSocketWASM := getAPKWebSocketWASMFilter()
 	router := getRouterHTTPFilter()
 	upgradeFilters := []*hcmv3.HttpFilter{
 		cors,
 		grpcStats,
-		extAauth,
+		// extAauth,
 		apkWebSocketWASM,
 		router,
 	}
@@ -242,20 +242,23 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 		FailureModeAllow: true,
 		ProcessingMode: &ext_process.ProcessingMode{
 			ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
-			RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
-			ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
+			RequestHeaderMode:  ext_process.ProcessingMode_SEND,
+			ResponseHeaderMode: ext_process.ProcessingMode_SEND,
+			// RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
+			// ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
+			RequestBodyMode: ext_process.ProcessingMode_BUFFERED,
 		},
 		MetadataOptions: &ext_process.MetadataOptions{
 			ForwardingNamespaces: &ext_process.MetadataOptions_MetadataNamespaces{
-				Untyped: []string{"envoy.filters.http.ext_authz", "envoy.filters.http.ext_proc"},
+				Untyped: []string{"envoy.filters.http.ext_authz", "envoy.filters.http.ext_proc", "envoy.filters.http.jwt_authn"},
 			},
 			ReceivingNamespaces: &ext_process.MetadataOptions_MetadataNamespaces{
 				Untyped: []string{"envoy.filters.http.ext_proc"},
 			},
 		},
-		RequestAttributes:  []string{"xds.route_metadata"},
+		RequestAttributes:  []string{"xds.route_metadata", "request.method", "request.id"},
 		ResponseAttributes: []string{"xds.route_metadata"},
-		MessageTimeout: durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
+		MessageTimeout:     durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
 	}
 	ext, err2 := anypb.New(externalProcessor)
 	if err2 != nil {

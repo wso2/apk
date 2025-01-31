@@ -176,7 +176,7 @@ func (cache *snapshotCache) sendHeartbeats(ctx context.Context, node string) {
 			if len(resourcesWithTTL) == 0 {
 				continue
 			}
-			cache.log.Debugf("respond open watch %d%v with heartbeat for version %q", id, watch.Request.ResourceNames, version)
+			cache.log.Warnf("respond open watch %d%v with heartbeat for version %q", id, watch.Request.ResourceNames, version)
 			err := cache.respond(ctx, watch.Request, watch.Response, resourcesWithTTL, version, true)
 			if err != nil {
 				cache.log.Errorf("received error when attempting to respond to watches: %v", err)
@@ -204,7 +204,7 @@ func (cache *snapshotCache) SetSnapshot(ctx context.Context, node string, snapsh
 		for id, watch := range info.watches {
 			version := snapshot.GetVersion(watch.Request.TypeUrl)
 			if version != watch.Request.VersionInfo {
-				cache.log.Debugf("respond open watch %d%v with new version %q", id, watch.Request.ResourceNames, version)
+				cache.log.Warnf("respond open watch %d%v with new version %q", id, watch.Request.ResourceNames, version)
 
 				resources := snapshot.GetResourcesAndTTL(watch.Request.TypeUrl)
 				err := cache.respond(ctx, watch.Request, watch.Response, resources, version, false)
@@ -320,7 +320,7 @@ func (cache *snapshotCache) CreateWatch(request *envoy_cache.Request, streamStat
 			}
 		}
 
-		cache.log.Debugf("nodeID %q requested %s%v and known %v. Diff %v", nodeID,
+		cache.log.Warnf("nodeID %q requested %s%v and known %v. Diff %v", nodeID,
 			request.TypeUrl, request.ResourceNames, knownResourceNames, diff)
 
 		if len(diff) > 0 {
@@ -340,7 +340,7 @@ func (cache *snapshotCache) CreateWatch(request *envoy_cache.Request, streamStat
 	// if the requested version is up-to-date or missing a response, leave an open watch
 	if !exists || request.VersionInfo == version {
 		watchID := cache.nextWatchID()
-		cache.log.Debugf("open watch %d for %s%v from nodeID %q, version %q", watchID, request.TypeUrl, request.ResourceNames, nodeID, request.VersionInfo)
+		cache.log.Warnf("open watch %d for %s%v from nodeID %q, version %q", watchID, request.TypeUrl, request.ResourceNames, nodeID, request.VersionInfo)
 
 		info.mu.Lock()
 		info.watches[watchID] = envoy_cache.ResponseWatch{Request: request, Response: value}
@@ -388,7 +388,7 @@ func (cache *snapshotCache) respond(ctx context.Context, request *envoy_cache.Re
 		}
 	}
 
-	cache.log.Debugf("respond %s%v version %q with version %q", request.TypeUrl, request.ResourceNames, request.VersionInfo, version)
+	cache.log.Warnf("respond %s%v version %q with version %q", request.TypeUrl, request.ResourceNames, request.VersionInfo, version)
 
 	select {
 	case value <- createResponse(ctx, request, resources, version, heartbeat):
@@ -446,7 +446,11 @@ func (cache *snapshotCache) Fetch(ctx context.Context, request *envoy_cache.Requ
 
 	cache.mu.RLock()
 	defer cache.mu.RUnlock()
-
+	// print all the keys of cache.snapshots
+	for k := range cache.snapshots {
+		cache.log.Warnf("key: %s", k)
+		fmt.Printf("key: %s", k)
+	}
 	if snapshot, exists := cache.snapshots[nodeID]; exists {
 		// Respond only if the request version is distinct from the current snapshot state.
 		// It might be beneficial to hold the request since Envoy will re-attempt the refresh.

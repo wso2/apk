@@ -25,6 +25,7 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	"sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -96,21 +97,21 @@ func (in *APIState) DeepCopyInto(out *APIState) {
 	}
 	if in.ResourceAPIPolicies != nil {
 		in, out := &in.ResourceAPIPolicies, &out.ResourceAPIPolicies
-		*out = make(map[string]v1alpha3.APIPolicy, len(*in))
+		*out = make(map[string]v1alpha4.APIPolicy, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}
 	}
 	if in.APIPolicies != nil {
 		in, out := &in.APIPolicies, &out.APIPolicies
-		*out = make(map[string]v1alpha3.APIPolicy, len(*in))
+		*out = make(map[string]v1alpha4.APIPolicy, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}
 	}
 	if in.AIProvider != nil {
 		in, out := &in.AIProvider, &out.AIProvider
-		*out = new(v1alpha3.AIProvider)
+		*out = new(v1alpha4.AIProvider)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.InterceptorServiceMapping != nil {
@@ -324,7 +325,7 @@ func (in *GatewayStateData) DeepCopyInto(out *GatewayStateData) {
 	}
 	if in.GatewayAPIPolicies != nil {
 		in, out := &in.GatewayAPIPolicies, &out.GatewayAPIPolicies
-		*out = make(map[string]v1alpha3.APIPolicy, len(*in))
+		*out = make(map[string]v1alpha4.APIPolicy, len(*in))
 		for key, val := range *in {
 			(*out)[key] = *val.DeepCopy()
 		}

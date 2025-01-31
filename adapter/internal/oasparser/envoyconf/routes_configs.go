@@ -56,37 +56,42 @@ const (
 	descriptorMetadataKeyForBurstCtrlUsagePolicy  = "burstCtrl:usage-policy"
 	descriptorMetadataKeyForBurstCtrlOrganization = "burstCtrl:organization"
 	// DescriptorKeyForAIRequestTokenCount is the descriptor key for AI request token count ratelimit
-	DescriptorKeyForAIRequestTokenCount  = "airequesttokencount"
+	DescriptorKeyForAIRequestTokenCount = "airequesttokencount"
 	// DescriptorKeyForAIResponseTokenCount is the descriptor key for AI response token count ratelimit
 	DescriptorKeyForAIResponseTokenCount = "airesponsetokencount"
 	// DescriptorKeyForAITotalTokenCount is the descriptor key for AI total token count ratelimit
-	DescriptorKeyForAITotalTokenCount    = "aitotaltokencount"
+	DescriptorKeyForAITotalTokenCount = "aitotaltokencount"
 	// DescriptorKeyForAIRequestCount is the descriptor key for AI request count ratelimit
-	DescriptorKeyForAIRequestCount       = "airequestcount"
+	DescriptorKeyForAIRequestCount = "airequestcount"
 	// DescriptorKeyForAIRequestTokenCountForSubscriptionBasedAIRL is the descriptor key for AI request token count ratelimit
-	DescriptorKeyForAIRequestTokenCountForSubscriptionBasedAIRL  = "airequesttokencountsubs"
+	DescriptorKeyForAIRequestTokenCountForSubscriptionBasedAIRL = "airequesttokencountsubs"
 	// DescriptorKeyForAIResponseTokenCountForSubscriptionBasedAIRL is the descriptor key for AI response token count ratelimit
 	DescriptorKeyForAIResponseTokenCountForSubscriptionBasedAIRL = "airesponsetokencountsubs"
 	// DescriptorKeyForAITotalTokenCountForSubscriptionBasedAIRL is the descriptor key for AI total token count ratelimit
-	DescriptorKeyForAITotalTokenCountForSubscriptionBasedAIRL    = "aitotaltokencountsubs"
+	DescriptorKeyForAITotalTokenCountForSubscriptionBasedAIRL = "aitotaltokencountsubs"
 	// DescriptorKeyForAIRequestCountForSubscriptionBasedAIRL is the descriptor key for AI request count ratelimit
-	DescriptorKeyForAIRequestCountForSubscriptionBasedAIRL       = "airequestcountsubs"
-	DynamicMetadataKeyForOrganizationAndAIRLPolicy = "ratelimit:organization-and-rlpolicy"
-	DynamicMetadataKeyForSubscription = "ratelimit:subscription"
-	DescriptorKeyForAISubscription = "subscription"
+	DescriptorKeyForAIRequestCountForSubscriptionBasedAIRL = "airequestcountsubs"
+	DynamicMetadataKeyForOrganizationAndAIRLPolicy         = "ratelimit:organization-and-rlpolicy"
+	DynamicMetadataKeyForSubscription                      = "ratelimit:subscription"
+	DescriptorKeyForAISubscription                         = "subscription"
 )
 
 func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *routev3.Route_Route, redirectAction *routev3.Route_Redirect,
 	metadata *corev3.Metadata, decorator *routev3.Decorator, typedPerFilterConfig map[string]*anypb.Any,
 	requestHeadersToAdd []*corev3.HeaderValueOption, requestHeadersToRemove []string,
-	responseHeadersToAdd []*corev3.HeaderValueOption, responseHeadersToRemove []string) *routev3.Route {
-
+	responseHeadersToAdd []*corev3.HeaderValueOption, responseHeadersToRemove []string, authentication *model.Authentication) *routev3.Route {
+	cloneTypedPerFilterConfig := cloneTypedPerFilterConfig(typedPerFilterConfig)
+	if authentication != nil {
+		if authentication.Disabled {
+			delete(cloneTypedPerFilterConfig, EnvoyJWT)
+		}
+	}
 	route := &routev3.Route{
 		Name:                 routeName,
 		Match:                match,
 		Metadata:             metadata,
 		Decorator:            decorator,
-		TypedPerFilterConfig: typedPerFilterConfig,
+		TypedPerFilterConfig: cloneTypedPerFilterConfig,
 
 		// headers common to all routes are removed at the Route Configuration level in listener.go
 		// x-envoy headers are removed using the SuppressEnvoyHeaders param in http_filters.go
@@ -257,9 +262,6 @@ func generateBackendBasedAIRatelimit(descValue string) []*routev3.RateLimit {
 	return []*routev3.RateLimit{&rateLimitForRequestTokenCount, &rateLimitForResponseTokenCount, &rateLimitForRequestCount, &rateLimitForTotalTokenCount}
 }
 
-
-
-
 func generateRateLimitPolicy(ratelimitCriteria *ratelimitCriteria) []*routev3.RateLimit {
 	environmentValue := ratelimitCriteria.environment
 	if ratelimitCriteria.level != RateLimitPolicyAPILevel && ratelimitCriteria.envType == opConstants.Sandbox {
@@ -356,7 +358,6 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 	}
 	return headerMatcherArray
 }
-
 
 func generateRegexMatchAndSubstitute(routePath, endpointResourcePath string,
 	pathMatchType gwapiv1.PathMatchType) *envoy_type_matcherv3.RegexMatchAndSubstitute {
@@ -484,7 +485,7 @@ func generateFilterConfigToSkipEnforcer() map[string]*anypb.Any {
 
 	return map[string]*any.Any{
 		wellknown.HTTPExternalAuthorization: filter,
-		HTTPExternalProcessor : filterExtProc,
+		HTTPExternalProcessor:               filterExtProc,
 	}
 }
 
@@ -573,4 +574,17 @@ func getPathParamToIndexMap(pathTemplate string) map[string]int {
 		indexMap[paramMatches[1]] = i + 1
 	}
 	return indexMap
+}
+
+// cloneTypedPerFilterConfig clones a map[string]*anypb.Any
+func cloneTypedPerFilterConfig(original map[string]*anypb.Any) map[string]*anypb.Any {
+	clone := make(map[string]*anypb.Any)
+	for key, value := range original {
+		// Deep copy the value
+		clone[key] = &anypb.Any{
+			TypeUrl: value.TypeUrl,
+			Value:   value.Value,
+		}
+	}
+	return clone
 }

@@ -31,11 +31,12 @@ message AIProvider {
     string providerName = 1;
 	string providerAPIVersion = 2;
     string organization = 3;
-    ValueDetails model = 4;
-    ValueDetails promptTokens = 5;
-    ValueDetails completionToken = 6;
-    ValueDetails totalToken = 7;
-    bool enabled = 8;
+    repeated string supportedModels = 4;
+    ValueDetails model = 5;
+    ValueDetails promptTokens = 6;
+    ValueDetails completionToken = 7;
+    ValueDetails totalToken = 8;
+    bool enabled = 9;
 }
 
 // Holds ValueDetails configs

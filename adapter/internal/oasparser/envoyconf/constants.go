@@ -29,7 +29,7 @@ const (
 	httpConManagerStartPrefix  string = "ingress_http"
 	extAuthzPerRouteName       string = "type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute"
 	extProcPerRouteName        string = "type.googleapis.com/envoy.extensions.filters.http.ext_proc.v3.ExtProcPerRoute"
-	ratelimitPerRouteName          string = "type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimitPerRoute"
+	ratelimitPerRouteName      string = "type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimitPerRoute"
 	luaPerRouteName            string = "type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute"
 	corsFilterName             string = "type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors"
 	localRateLimitPerRouteName string = "type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit"
@@ -52,14 +52,16 @@ const (
 // These values are shared between the adapter and enforcer, hence if it is required to change
 // these values, modifications should be done in the both adapter and enforcer.
 const (
-	pathContextExtension            string = "path"
-	vHostContextExtension           string = "vHost"
-	basePathContextExtension        string = "basePath"
-	methodContextExtension          string = "method"
-	apiVersionContextExtension      string = "version"
-	apiNameContextExtension         string = "name"
-	clusterNameContextExtension     string = "clusterName"
-	retryPolicyRetriableStatusCodes string = "retriable-status-codes"
+	pathAttribute                                   string = "path"
+	vHostAttribute                                  string = "vHost"
+	basePathAttribute                               string = "basePath"
+	methodAttribute                                 string = "method"
+	apiVersionAttribute                             string = "version"
+	apiNameAttribute                                string = "name"
+	clusterNameAttribute                            string = "clusterName"
+	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
+	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
+	retryPolicyRetriableStatusCodes                 string = "retriable-status-codes"
 )
 
 const (
@@ -149,3 +151,6 @@ const LuaGlobal = "envoy.filters.http.lua.global"
 
 // LuaLocal is the lua filter name for local lua filter
 const LuaLocal = "envoy.filters.http.lua.local"
+
+// EnvoyJWT is the jwt filter name
+const EnvoyJWT = "envoy.filters.http.jwt_authn"

@@ -1,6 +1,6 @@
 #!/bin/bash
 # --------------------------------------------------------------------
-# Copyright (c) 2021, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+# Copyright (c) 2023, WSO2 LLC. (http://wso2.com) All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-ENFORCER_PORT="${ENFORCER_PORT:-8081}"
-ENFORCER_SERVER_NAME="${ENFORCER_SERVER_NAME:-enforcer}"
-grpc_health_probe -addr "127.0.0.1:${ENFORCER_PORT}" \
+ADAPTER_XDS_PORT="${ADAPTER_XDS_PORT:-18000}"
+ADAPTER_SERVER_NAME="${ADAPTER_SERVER_NAME:-adapter}"
+grpc_health_probe -addr "127.0.0.1:${ADAPTER_XDS_PORT}" \
     -tls \
-    -tls-ca-cert "${ENFORCER_PUBLIC_CERT_PATH}" \
-    -tls-client-cert "${ENFORCER_PUBLIC_CERT_PATH}" \
-    -tls-client-key "${ENFORCER_PRIVATE_KEY_PATH}" \
-    -tls-server-name ${ENFORCER_SERVER_NAME} \
+    -tls-ca-cert "${ADAPTER_PUBLIC_CERT_PATH}" \
+    -tls-client-cert "${ADAPTER_PUBLIC_CERT_PATH}" \
+    -tls-client-key "${ADAPTER_PRIVATE_KEY_PATH}" \
+    -tls-server-name ${ADAPTER_SERVER_NAME} \
     -connect-timeout=3s

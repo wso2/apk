@@ -60,6 +60,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -207,8 +208,8 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	predicateAPIPolicy := []predicate.TypedPredicate[*dpv1alpha3.APIPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.APIPolicy](utils.FilterAPIPolicyByNamespaces(conf.Adapter.Operator.Namespaces))}
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.APIPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAPIPolicy),
+	predicateAPIPolicy := []predicate.TypedPredicate[*dpv1alpha4.APIPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha4.APIPolicy](utils.FilterAPIPolicyByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha4.APIPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAPIPolicy),
 		predicateAPIPolicy...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2617, logging.BLOCKER, "Error watching APIPolicy resources: %v", err))
 		return err
@@ -242,8 +243,8 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	predicateAIProvider := []predicate.TypedPredicate[*dpv1alpha3.AIProvider]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.AIProvider](utils.FilterAIProviderByNamespaces(conf.Adapter.Operator.Namespaces))}
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.AIProvider{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAIProvider),
+	predicateAIProvider := []predicate.TypedPredicate[*dpv1alpha4.AIProvider]{predicate.NewTypedPredicateFuncs[*dpv1alpha4.AIProvider](utils.FilterAIProviderByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha4.AIProvider{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForAIProvider),
 		predicateAIProvider...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching AIPolicy resources: %v", err))
 		return err
@@ -406,7 +407,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		return nil, fmt.Errorf("error while getting httproute resource apipolicy %s in namespace : %s with API UUID : %v, %s",
 			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
 	}
-	if apiState.InterceptorServiceMapping, apiState.BackendJWTMapping, apiState.SubscriptionValidation, apiState.AIProvider, err =
+	if apiState.InterceptorServiceMapping, apiState.BackendJWTMapping, apiState.SubscriptionValidation, apiState.AIProvider, apiState.ModelBasedRoundRobin, err =
 		apiReconciler.getAPIPolicyChildrenRefs(ctx, apiState.APIPolicies, apiState.ResourceAPIPolicies, api); err != nil {
 		return nil, fmt.Errorf("error while getting referenced policies in apipolicy %s in namespace : %s with API UUID : %v, %s",
 			apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
@@ -849,10 +850,10 @@ func (apiReconciler *APIReconciler) getRatelimitPoliciesForResources(ctx context
 	return ratelimitpolicies, nil
 }
 
-func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context, api dpv1alpha3.API) (map[string]dpv1alpha3.APIPolicy, error) {
+func (apiReconciler *APIReconciler) getAPIPoliciesForAPI(ctx context.Context, api dpv1alpha3.API) (map[string]dpv1alpha4.APIPolicy, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
-	apiPolicies := make(map[string]dpv1alpha3.APIPolicy)
-	apiPolicyList := &dpv1alpha3.APIPolicyList{}
+	apiPolicies := make(map[string]dpv1alpha4.APIPolicy)
+	apiPolicyList := &dpv1alpha4.APIPolicyList{}
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiAPIPolicyIndex, nameSpacedName),
 	}); err != nil {
@@ -884,10 +885,10 @@ func (apiReconciler *APIReconciler) getAPIDefinitionForAPI(ctx context.Context,
 }
 
 func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Context,
-	api dpv1alpha3.API) (map[string]dpv1alpha3.APIPolicy, error) {
+	api dpv1alpha3.API) (map[string]dpv1alpha4.APIPolicy, error) {
 	nameSpacedName := utils.NamespacedName(&api).String()
-	apiPolicies := make(map[string]dpv1alpha3.APIPolicy)
-	apiPolicyList := &dpv1alpha3.APIPolicyList{}
+	apiPolicies := make(map[string]dpv1alpha4.APIPolicy)
+	apiPolicyList := &dpv1alpha4.APIPolicyList{}
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(apiAPIPolicyResourceIndex, nameSpacedName),
 	}); err != nil {
@@ -905,12 +906,13 @@ func (apiReconciler *APIReconciler) getAPIPoliciesForResources(ctx context.Conte
 // - backend JWTs
 // - subscription validation
 func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context,
-	apiPolicies, resourceAPIPolicies map[string]dpv1alpha3.APIPolicy,
-	api dpv1alpha3.API) (map[string]dpv1alpha1.InterceptorService, map[string]dpv1alpha1.BackendJWT, bool, *dpv1alpha3.AIProvider, error) {
+	apiPolicies, resourceAPIPolicies map[string]dpv1alpha4.APIPolicy,
+	api dpv1alpha3.API) (map[string]dpv1alpha1.InterceptorService, map[string]dpv1alpha1.BackendJWT, bool, *dpv1alpha4.AIProvider, *dpv1alpha4.ModelBasedRoundRobin, error) {
 	allAPIPolicies := append(maps.Values(apiPolicies), maps.Values(resourceAPIPolicies)...)
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	backendJWTs := make(map[string]dpv1alpha1.BackendJWT)
-	aiProvider := &dpv1alpha3.AIProvider{}
+	aiProvider := &dpv1alpha4.AIProvider{}
+	modelBasedRoundRobin := &dpv1alpha4.ModelBasedRoundRobin{}
 	subscriptionValidation := false
 	for _, apiPolicy := range allAPIPolicies {
 		if apiPolicy.Spec.Default != nil {
@@ -982,9 +984,24 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					aiProvider = aiProviderPtr
 				}
 			}
+
 		}
 	}
-	return interceptorServices, backendJWTs, subscriptionValidation, aiProvider, nil
+	for _, apiPolicy := range apiPolicies {
+		if apiPolicy.Spec.Default != nil {
+			if apiPolicy.Spec.Default.ModelBasedRoundRobin != nil {
+				loggers.LoggerAPKOperator.Debugf("ModelBasedRoundRobin Default found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
+				modelBasedRoundRobin = apiPolicy.Spec.Default.ModelBasedRoundRobin
+			}
+		}
+		if apiPolicy.Spec.Override != nil {
+			if apiPolicy.Spec.Override.ModelBasedRoundRobin != nil {
+				loggers.LoggerAPKOperator.Debugf("ModelBasedRoundRobin override found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Override.ModelBasedRoundRobin)
+				modelBasedRoundRobin = apiPolicy.Spec.Override.ModelBasedRoundRobin
+			}
+		}
+	}
+	return interceptorServices, backendJWTs, subscriptionValidation, aiProvider, modelBasedRoundRobin, nil
 }
 
 func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
@@ -1173,7 +1190,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAuthenticatio
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAPIPolicy(ctx context.Context, obj *dpv1alpha3.APIPolicy) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAPIPolicy(ctx context.Context, obj *dpv1alpha4.APIPolicy) []reconcile.Request {
 	requests := apiReconciler.getAPIsForAPIPolicy(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1221,7 +1238,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx c
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIProvider(ctx context.Context, obj *dpv1alpha3.AIProvider) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForAIProvider(ctx context.Context, obj *dpv1alpha4.AIProvider) []reconcile.Request {
 	requests := apiReconciler.getAPIsForAIProvider(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1396,8 +1413,8 @@ func (apiReconciler *APIReconciler) retrieveParentAPIsAndUpdateOwnerReference(ct
 		}
 		requests = apiReconciler.getAPIsForInterceptorService(ctx, &interceptorService)
 		apiReconciler.handleOwnerReference(ctx, &interceptorService, &requests)
-	case *dpv1alpha3.APIPolicy:
-		var apiPolicy dpv1alpha3.APIPolicy
+	case *dpv1alpha4.APIPolicy:
+		var apiPolicy dpv1alpha4.APIPolicy
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
 			Namespace: string(obj.GetNamespace()),
@@ -1468,8 +1485,8 @@ func (apiReconciler *APIReconciler) retrieveParentAPIsAndUpdateOwnerReference(ct
 		}
 		requests = apiReconciler.getAPIForGQLRoute(ctx, &gqlRoute)
 		apiReconciler.handleOwnerReference(ctx, &gqlRoute, &requests)
-	case *dpv1alpha3.AIProvider:
-		var aiProvider dpv1alpha3.AIProvider
+	case *dpv1alpha4.AIProvider:
+		var aiProvider dpv1alpha4.AIProvider
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
 			Namespace: string(obj.GetNamespace()),
@@ -1740,7 +1757,7 @@ func (apiReconciler *APIReconciler) getAPIsForAuthentication(ctx context.Context
 // from APIPolicy objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	apiPolicy, ok := obj.(*dpv1alpha3.APIPolicy)
+	apiPolicy, ok := obj.(*dpv1alpha4.APIPolicy)
 	requests := []reconcile.Request{}
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", apiPolicy))
@@ -1775,13 +1792,13 @@ func (apiReconciler *APIReconciler) getAPIsForAPIPolicy(ctx context.Context, obj
 // from AIProvider objects. If the changes are done for an API stored in the Operator Data store,
 // a new reconcile event will be created and added to the reconcile event queue.
 func (apiReconciler *APIReconciler) getAPIsForAIProvider(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	aiProvider, ok := obj.(*dpv1alpha3.AIProvider)
+	aiProvider, ok := obj.(*dpv1alpha4.AIProvider)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", aiProvider))
 		return []reconcile.Request{}
 	}
 
-	apiPolicyList := &dpv1alpha3.APIPolicyList{}
+	apiPolicyList := &dpv1alpha4.APIPolicyList{}
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(aiProviderAPIPolicyIndex, utils.NamespacedName(aiProvider).String()),
 	}); err != nil {
@@ -1806,7 +1823,7 @@ func (apiReconciler *APIReconciler) getAPIsForInterceptorService(ctx context.Con
 		return []reconcile.Request{}
 	}
 
-	apiPolicyList := &dpv1alpha3.APIPolicyList{}
+	apiPolicyList := &dpv1alpha4.APIPolicyList{}
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
@@ -1831,7 +1848,7 @@ func (apiReconciler *APIReconciler) getAPIsForBackendJWT(ctx context.Context, ob
 		return []reconcile.Request{}
 	}
 
-	apiPolicyList := &dpv1alpha3.APIPolicyList{}
+	apiPolicyList := &dpv1alpha4.APIPolicyList{}
 	if err := apiReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendJWTAPIPolicyIndex, utils.NamespacedName(backendJWT).String()),
 	}); err != nil {
@@ -2541,9 +2558,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// AIProvider to APIPolicy indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.APIPolicy{}, aiProviderAPIPolicyIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha4.APIPolicy{}, aiProviderAPIPolicyIndex,
 		func(rawObj k8client.Object) []string {
-			apiPolicy := rawObj.(*dpv1alpha3.APIPolicy)
+			apiPolicy := rawObj.(*dpv1alpha4.APIPolicy)
 			var aiProviders []string
 			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.AIProvider != nil {
 				aiProviders = append(aiProviders,
@@ -2609,9 +2626,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// interceptorService to APIPolicy indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.APIPolicy{}, interceptorServiceAPIPolicyIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha4.APIPolicy{}, interceptorServiceAPIPolicyIndex,
 		func(rawObj k8client.Object) []string {
-			apiPolicy := rawObj.(*dpv1alpha3.APIPolicy)
+			apiPolicy := rawObj.(*dpv1alpha4.APIPolicy)
 			var interceptorServices []string
 			if apiPolicy.Spec.Default != nil && len(apiPolicy.Spec.Default.RequestInterceptors) > 0 {
 				interceptorServices = append(interceptorServices,
@@ -2647,9 +2664,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// backendjwt to APIPolicy indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.APIPolicy{}, backendJWTAPIPolicyIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha4.APIPolicy{}, backendJWTAPIPolicyIndex,
 		func(rawObj k8client.Object) []string {
-			apiPolicy := rawObj.(*dpv1alpha3.APIPolicy)
+			apiPolicy := rawObj.(*dpv1alpha4.APIPolicy)
 			var backendJWTs []string
 			if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.BackendJWTPolicy != nil {
 				backendJWTs = append(backendJWTs,
@@ -2671,9 +2688,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// httpRoute to APIPolicy indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.APIPolicy{}, apiAPIPolicyIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha4.APIPolicy{}, apiAPIPolicyIndex,
 		func(rawObj k8client.Object) []string {
-			apiPolicy := rawObj.(*dpv1alpha3.APIPolicy)
+			apiPolicy := rawObj.(*dpv1alpha4.APIPolicy)
 			var apis []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindAPI {
 
@@ -2701,9 +2718,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	// https://gateway-api.sigs.k8s.io/geps/gep-713/?h=multiple+targetrefs#apply-policies-to-sections-of-a-resource-future-extension
 	// we will use a temporary kindName called Resource for policy attachments
 	// TODO(amali) Fix after the official support is available
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.APIPolicy{}, apiAPIPolicyResourceIndex,
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha4.APIPolicy{}, apiAPIPolicyResourceIndex,
 		func(rawObj k8client.Object) []string {
-			apiPolicy := rawObj.(*dpv1alpha3.APIPolicy)
+			apiPolicy := rawObj.(*dpv1alpha4.APIPolicy)
 			var apis []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindResource {
 
@@ -3317,7 +3334,7 @@ func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, str
 }
 
 func pickOneCorsForCP(apiState *synchronizer.APIState) *controlplane.CORSPolicy {
-	apiPolicies := []dpv1alpha3.APIPolicy{}
+	apiPolicies := []dpv1alpha4.APIPolicy{}
 	for _, apiPolicy := range apiState.APIPolicies {
 		apiPolicies = append(apiPolicies, apiPolicy)
 	}
@@ -3325,7 +3342,7 @@ func pickOneCorsForCP(apiState *synchronizer.APIState) *controlplane.CORSPolicy 
 		apiPolicies = append(apiPolicies, apiPolicy)
 	}
 	for _, apiPolicy := range apiPolicies {
-		corsPolicy := dpv1alpha3.CORSPolicy{}
+		corsPolicy := dpv1alpha4.CORSPolicy{}
 		found := false
 		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.CORSPolicy != nil {
 			corsPolicy = *apiPolicy.Spec.Override.CORSPolicy

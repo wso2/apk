@@ -40,6 +40,7 @@ import (
 	cors_filter_v3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/cors/v3"
 	extAuthService "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_authz/v3"
 	extProcessorv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	jwt_authnv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/jwt_authn/v3"
 	lua "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/lua/v3"
 	ratelimitv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ratelimit/v3"
 	tlsv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/transport_sockets/tls/v3"
@@ -526,6 +527,14 @@ func CreateTracingCluster(conf *config.Config) (*clusterv3.Cluster, []*corev3.Ad
 	return processEndpoints(tracingClusterName, epCluster, epTimeout, epPath)
 }
 
+// ProcessEndpoints creates cluster configuration. AddressConfiguration, cluster name and
+// urlType (http or https) is required to be provided.
+// timeout cluster timeout
+func ProcessEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
+	timeout time.Duration, basePath string) (*clusterv3.Cluster, []*corev3.Address, error) {
+	return processEndpoints(clusterName, clusterDetails, timeout, basePath)
+}
+
 // processEndpoints creates cluster configuration. AddressConfiguration, cluster name and
 // urlType (http or https) is required to be provided.
 // timeout cluster timeout
@@ -830,39 +839,100 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	resourceMethods := resource.GetMethodList()
 	pathMatchType := resource.GetPathMatchType()
 
-	contextExtensions := make(map[string]string)
-	contextExtensions[pathContextExtension] = resourcePath
-	contextExtensions[vHostContextExtension] = vHost
-	if xWso2Basepath != "" {
-		contextExtensions[basePathContextExtension] = xWso2Basepath
-	} else {
-		contextExtensions[basePathContextExtension] = endpointBasepath
-	}
-	contextExtensions[methodContextExtension] = strings.Join(resourceMethods, " ")
-	contextExtensions[apiVersionContextExtension] = version
-	contextExtensions[apiNameContextExtension] = title
-	// One of these values will be selected and added as the cluster-header http header
-	// from enhancer
-	// Even if the routing is based on direct cluster, these properties needs to be populated
-	// to validate the key type component in the token.
-	contextExtensions[clusterNameContextExtension] = clusterName
-
-	extAuthPerFilterConfig := extAuthService.ExtAuthzPerRoute{
-		Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
-			CheckSettings: &extAuthService.CheckSettings{
-				ContextExtensions: contextExtensions,
-				// negation is performing to match the envoy config name (disable_request_body_buffering)
-				DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
+	metaData := &corev3.Metadata{}
+	// if params.isAiAPI {
+	metaData = &corev3.Metadata{
+		FilterMetadata: map[string]*structpb.Struct{
+			"envoy.filters.http.ext_proc": &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					enableBackendBasedAIRatelimitAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: fmt.Sprintf("%t", resource.GetEnableBackendBasedAIRatelimit()),
+						},
+					},
+					backendBasedAIRatelimitDescriptorValueAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: resource.GetBackendBasedAIRatelimitDescriptorValue(),
+						},
+					},
+					pathAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: resourcePath,
+						},
+					},
+					vHostAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: vHost,
+						},
+					},
+					basePathAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: func() string {
+								if xWso2Basepath != "" {
+									return xWso2Basepath
+								}
+								return endpointBasepath
+							}(),
+						},
+					},
+					methodAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: strings.Join(resourceMethods, " "),
+						},
+					},
+					apiVersionAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: version,
+						},
+					},
+					apiNameAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: title,
+						},
+					},
+					clusterNameAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: clusterName,
+						},
+					},
+				},
 			},
 		},
 	}
 
-	data, _ := proto.Marshal(&extAuthPerFilterConfig)
-
-	extAuthzFilter := &any.Any{
-		TypeUrl: extAuthzPerRouteName,
-		Value:   data,
+	contextExtensions := make(map[string]string)
+	contextExtensions[pathAttribute] = resourcePath
+	contextExtensions[vHostAttribute] = vHost
+	if xWso2Basepath != "" {
+		contextExtensions[basePathAttribute] = xWso2Basepath
+	} else {
+		contextExtensions[basePathAttribute] = endpointBasepath
 	}
+	contextExtensions[methodAttribute] = strings.Join(resourceMethods, " ")
+	contextExtensions[apiVersionAttribute] = version
+	contextExtensions[apiNameAttribute] = title
+	// One of these values will be selected and added as the cluster-header http header
+	// from enhancer
+	// Even if the routing is based on direct cluster, these properties needs to be populated
+	// to validate the key type component in the token.
+	contextExtensions[clusterNameAttribute] = clusterName
+
+	// extAuthPerFilterConfig := extAuthService.ExtAuthzPerRoute{
+	// 	Override: &extAuthService.ExtAuthzPerRoute_CheckSettings{
+	// 		CheckSettings: &extAuthService.CheckSettings{
+	// 			ContextExtensions: contextExtensions,
+	// 			// negation is performing to match the envoy config name (disable_request_body_buffering)
+	// 			DisableRequestBodyBuffering: !params.passRequestPayloadToEnforcer,
+	// 		},
+	// 	},
+	// }
+
+	// data, _ := proto.Marshal(&extAuthPerFilterConfig)
+
+	// extAuthzFilter := &any.Any{
+	// 	TypeUrl: extAuthzPerRouteName,
+	// 	Value:   data,
+	// }
 
 	var luaPerFilterConfig lua.LuaPerRoute
 	if len(requestInterceptor) < 1 && len(responseInterceptor) < 1 {
@@ -904,13 +974,13 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		// so, no need to change two places
 		iInvCtx := &interceptor.InvocationContext{
 			OrganizationID:   params.organizationID,
-			BasePath:         contextExtensions[basePathContextExtension],
-			SupportedMethods: contextExtensions[methodContextExtension],
-			APIName:          contextExtensions[apiNameContextExtension],
-			APIVersion:       contextExtensions[apiVersionContextExtension],
-			PathTemplate:     contextExtensions[pathContextExtension],
-			Vhost:            contextExtensions[vHostContextExtension],
-			ClusterName:      contextExtensions[clusterNameContextExtension],
+			BasePath:         contextExtensions[basePathAttribute],
+			SupportedMethods: contextExtensions[methodAttribute],
+			APIName:          contextExtensions[apiNameAttribute],
+			APIVersion:       contextExtensions[apiVersionAttribute],
+			PathTemplate:     contextExtensions[pathAttribute],
+			Vhost:            contextExtensions[vHostAttribute],
+			ClusterName:      contextExtensions[clusterNameAttribute],
 			APIProperties:    getAPIProperties(params.apiProperties),
 			Environment:      params.environment,
 		}
@@ -925,52 +995,58 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 
-	data, _ = proto.Marshal(&luaPerFilterConfig)
+	data, _ := proto.Marshal(&luaPerFilterConfig)
 
 	luaFilter := &any.Any{
 		TypeUrl: luaPerRouteName,
 		Value:   data,
 	}
+	jwtPerFilterConfig := jwt_authnv3.PerRouteConfig{
+		RequirementSpecifier: &jwt_authnv3.PerRouteConfig_RequirementName{RequirementName: params.apiID},
+	}
 
 	corsFilter, _ := anypb.New(corsPolicy)
+	jwtFilter, _ := anypb.New(&jwtPerFilterConfig)
 	perRouteFilterConfigs := map[string]*any.Any{
-		wellknown.HTTPExternalAuthorization: extAuthzFilter,
-		LuaLocal:                            luaFilter,
-		wellknown.CORS:                      corsFilter,
+
+		// wellknown.HTTPExternalAuthorization: extAuthzFilter,
+		EnvoyJWT:       jwtFilter,
+		LuaLocal:       luaFilter,
+		wellknown.CORS: corsFilter,
 	}
-	if !params.isAiAPI {
-		perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
-			Override: &extProcessorv3.ExtProcPerRoute_Disabled{
-				Disabled: true,
-			},
-		}
-		dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
-		filterExtProc := &any.Any{
-			TypeUrl: extProcPerRouteName,
-			Value:   dataExtProc,
-		}
-		perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
-	} else {
-		if strings.ToUpper(resource.GetExtractTokenFromValue()) == "HEADER" {
-			perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
-				Override: &extProcessorv3.ExtProcPerRoute_Overrides{
-					Overrides: &extProcessorv3.ExtProcOverrides{
-						ProcessingMode: &extProcessorv3.ProcessingMode{
-							RequestHeaderMode:  extProcessorv3.ProcessingMode_SKIP,
-							ResponseHeaderMode: extProcessorv3.ProcessingMode_SEND,
-							ResponseBodyMode:   extProcessorv3.ProcessingMode_NONE,
-						},
-					},
-				},
-			}
-			dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
-			filterExtProc := &any.Any{
-				TypeUrl: extProcPerRouteName,
-				Value:   dataExtProc,
-			}
-			perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
-		}
-	}
+	// if !params.isAiAPI {
+	// 	perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+	// 		Override: &extProcessorv3.ExtProcPerRoute_Disabled{
+	// 			Disabled: true,
+	// 		},
+	// 	}
+	// 	dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+	// 	filterExtProc := &any.Any{
+	// 		TypeUrl: extProcPerRouteName,
+	// 		Value:   dataExtProc,
+	// 	}
+	// 	perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
+	// } else {
+	// 	if strings.ToUpper(resource.GetExtractTokenFromValue()) == "HEADER" {
+	// 		perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
+	// 			Override: &extProcessorv3.ExtProcPerRoute_Overrides{
+	// 				Overrides: &extProcessorv3.ExtProcOverrides{
+	// 					ProcessingMode: &extProcessorv3.ProcessingMode{
+	// 						RequestHeaderMode:  extProcessorv3.ProcessingMode_SKIP,
+	// 						ResponseHeaderMode: extProcessorv3.ProcessingMode_SEND,
+	// 						ResponseBodyMode:   extProcessorv3.ProcessingMode_NONE,
+	// 					},
+	// 				},
+	// 			},
+	// 		}
+	// 		dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
+	// 		filterExtProc := &any.Any{
+	// 			TypeUrl: extProcPerRouteName,
+	// 			Value:   dataExtProc,
+	// 		}
+	// 		perRouteFilterConfigs[HTTPExternalProcessor] = filterExtProc
+	// 	}
+	// }
 	perFilterConfigRL := ratelimitv3.RateLimitPerRoute{
 		VhRateLimits: ratelimitv3.RateLimitPerRoute_INCLUDE,
 	}
@@ -1037,29 +1113,10 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 	routeConfig := resource.GetEndpoints().Config
-	metaData := &corev3.Metadata{}
-	if params.isAiAPI {
-		metaData = &corev3.Metadata{
-			FilterMetadata: map[string]*structpb.Struct{
-				"envoy.filters.http.ext_proc": &structpb.Struct{
-					Fields: map[string]*structpb.Value{
-						"EnableBackendBasedAIRatelimit": &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: fmt.Sprintf("%t", resource.GetEnableBackendBasedAIRatelimit()),
-							},
-						},
-						"BackendBasedAIRatelimitDescriptorValue": &structpb.Value{
-							Kind: &structpb.Value_StringValue{
-								StringValue: resource.GetBackendBasedAIRatelimitDescriptorValue(),
-							},
-						},
-					},
-				},
-			},
-		}
-	} else {
-		metaData = nil
-	}
+
+	// } else {
+	// 	metaData = nil
+	// }
 	if resource.HasPolicies() {
 		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
 		operations := resource.GetOperations()
@@ -1206,7 +1263,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
 				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
-					nil, requestHeadersToRemove, nil, nil)
+					nil, requestHeadersToRemove, nil, nil, operation.GetAuthentication())
 
 				// Create route2 for new method.
 				// Add all policies to route config. Do not send via enforcer.
@@ -1217,7 +1274,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
 				route2 := generateRouteConfig(xWso2Basepath, match2, action2, requestRedirectAction, metaData, decorator, configToSkipEnforcer,
-					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
+					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove, operation.GetAuthentication())
 
 				routes = append(routes, route1)
 				routes = append(routes, route2)
@@ -1237,7 +1294,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				route := generateRouteConfig(xWso2Basepath, match, action, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
-					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove)
+					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove, operation.GetAuthentication())
 				routes = append(routes, route)
 			}
 		}
@@ -1265,7 +1322,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			// action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
 		}
 		route := generateRouteConfig(xWso2Basepath, match, action, nil, metaData, decorator, perRouteFilterConfigs,
-			nil, requestHeadersToRemove, nil, nil) // general headers to add and remove are included in this methods
+			nil, requestHeadersToRemove, nil, nil, nil) // general headers to add and remove are included in this methods
 		routes = append(routes, route)
 	}
 	return routes, nil
@@ -1793,6 +1850,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 	mirrorClusterNames map[string][]string) *routeCreateParams {
 
 	params := &routeCreateParams{
+		apiID:                        swagger.UUID,
 		organizationID:               organizationID,
 		title:                        swagger.GetTitle(),
 		apiType:                      swagger.GetAPIType(),

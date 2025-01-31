@@ -40,6 +40,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -54,6 +55,10 @@ import (
 const (
 	gatewayRateLimitPolicyIndex = "gatewayRateLimitPolicyIndex"
 	gatewayAPIPolicyIndex       = "gatewayAPIPolicyIndex"
+	tokenIssuerIndex            = "tokenIssuerIndex"
+	secretTokenIssuerIndex      = "secretTokenIssuerIndex"
+	configmapIssuerIndex        = "configmapIssuerIndex"
+	defaultAllEnvironments      = "*"
 )
 
 var (
@@ -107,8 +112,8 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
-	predicateAPIPolicy := []predicate.TypedPredicate[*dpv1alpha3.APIPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha3.APIPolicy](utils.FilterAPIPolicyByNamespaces(conf.Adapter.Operator.Namespaces))}
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha3.APIPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
+	predicateAPIPolicy := []predicate.TypedPredicate[*dpv1alpha4.APIPolicy]{predicate.NewTypedPredicateFuncs[*dpv1alpha4.APIPolicy](utils.FilterAPIPolicyByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha4.APIPolicy{}, handler.TypedEnqueueRequestsFromMapFunc(r.getGatewaysForAPIPolicy),
 		predicateAPIPolicy...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2617, logging.BLOCKER, "Error watching APIPolicy resources: %v", err))
 		return err
@@ -146,6 +151,12 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.Secret{}, handler.TypedEnqueueRequestsFromMapFunc(r.getGatewaysForSecret),
 		predicateSecret...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2645, logging.BLOCKER, "Error watching Secret resources: %v", err))
+		return err
+	}
+	predicateTokenIssuer := []predicate.TypedPredicate[*dpv1alpha1.TokenIssuer]{predicate.NewTypedPredicateFuncs[*dpv1alpha1.TokenIssuer](utils.FilterTokenIssuerByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha1.TokenIssuer{}, handler.TypedEnqueueRequestsFromMapFunc(r.getGatewaysForTokenIssuer),
+		predicateTokenIssuer...)); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2646, logging.BLOCKER, "Error watching TokenIssuer resources: %v", err))
 		return err
 	}
 
@@ -253,15 +264,20 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3124, logging.MAJOR, "Error while getting custom rate limit policies: %s", err))
 	}
+	tokenIssuers, err := GetJWTIssuers(ctx, gatewayReconciler.client, gateway)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3126, logging.MAJOR, "Error while getting token issuers: %s", err))
+	}
+	gatewayState.TokenIssuers = tokenIssuers
 	gatewayState.GatewayCustomRateLimitPolicies = customRateLimitPolicies
 	gatewayState.GatewayBackendMapping = gatewayReconciler.getResolvedBackendsMapping(ctx, gatewayState)
 	return gatewayState, nil
 }
 
 func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context.Context,
-	gateway *gwapiv1.Gateway) (map[string]dpv1alpha3.APIPolicy, error) {
-	apiPolicies := make(map[string]dpv1alpha3.APIPolicy)
-	apiPolicyList := &dpv1alpha3.APIPolicyList{}
+	gateway *gwapiv1.Gateway) (map[string]dpv1alpha4.APIPolicy, error) {
+	apiPolicies := make(map[string]dpv1alpha4.APIPolicy)
+	apiPolicyList := &dpv1alpha4.APIPolicyList{}
 	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayAPIPolicyIndex, utils.NamespacedName(gateway).String()),
 	}); err != nil {
@@ -276,7 +292,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIPoliciesForGateway(ctx context
 
 // getInterceptorServicesForGateway returns the list of interceptor services for the given gateway
 func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx context.Context,
-	gatewayAPIPolicies map[string]dpv1alpha3.APIPolicy) (map[string]dpv1alpha1.InterceptorService, error) {
+	gatewayAPIPolicies map[string]dpv1alpha4.APIPolicy) (map[string]dpv1alpha1.InterceptorService, error) {
 	allGatewayAPIPolicies := maps.Values(gatewayAPIPolicies)
 	interceptorServices := make(map[string]dpv1alpha1.InterceptorService)
 	for _, apiPolicy := range allGatewayAPIPolicies {
@@ -355,7 +371,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForInterceptorService(ctx con
 
 	requests := []reconcile.Request{}
 
-	apiPolicyList := &dpv1alpha3.APIPolicyList{}
+	apiPolicyList := &dpv1alpha4.APIPolicyList{}
 	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(interceptorServiceAPIPolicyIndex, utils.NamespacedName(interceptorService).String()),
 	}); err != nil {
@@ -377,7 +393,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(ctx context.Con
 	backendJWT := obj
 	requests := []reconcile.Request{}
 
-	apiPolicyList := &dpv1alpha3.APIPolicyList{}
+	apiPolicyList := &dpv1alpha4.APIPolicyList{}
 	if err := gatewayReconciler.client.List(ctx, apiPolicyList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(backendJWTAPIPolicyIndex, utils.NamespacedName(backendJWT).String()),
 	}); err != nil {
@@ -411,6 +427,19 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(ctx context.Con
 		backend := backendList.Items[item]
 		requests = append(requests, gatewayReconciler.getGatewaysForBackend(ctx, &backend)...)
 	}
+	tokenissuerList := &dpv1alpha1.TokenIssuerList{}
+	if err := gatewayReconciler.client.List(ctx, tokenissuerList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(secretTokenIssuerIndex, utils.NamespacedName(secret).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.CRITICAL, "Unable to find associated TokenIssuers for Secret: %s", utils.NamespacedName(secret).String()))
+		return []reconcile.Request{}
+	}
+	for item := range tokenissuerList.Items {
+		tokenissuer := tokenissuerList.Items[item]
+		if tokenissuer.Spec.TargetRef.Kind == constants.KindGateway {
+			requests = append(requests, gatewayReconciler.getGatewaysForTokenIssuer(ctx, &tokenissuer)...)
+		}
+	}
 	return requests
 }
 
@@ -431,6 +460,19 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(ctx context.
 	for item := range backendList.Items {
 		backend := backendList.Items[item]
 		requests = append(requests, gatewayReconciler.getGatewaysForBackend(ctx, &backend)...)
+	}
+	tokenissuerList := &dpv1alpha1.TokenIssuerList{}
+	if err := gatewayReconciler.client.List(ctx, tokenissuerList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(configmapIssuerIndex, utils.NamespacedName(configMap).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3107, logging.CRITICAL, "Unable to find associated TokenIssuers for ConfigMap: %s", utils.NamespacedName(configMap).String()))
+		return []reconcile.Request{}
+	}
+	for item := range tokenissuerList.Items {
+		tokenissuer := tokenissuerList.Items[item]
+		if tokenissuer.Spec.TargetRef.Kind == constants.KindGateway {
+			requests = append(requests, gatewayReconciler.getGatewaysForTokenIssuer(ctx, &tokenissuer)...)
+		}
 	}
 	return requests
 }
@@ -522,7 +564,7 @@ func (gatewayReconciler *GatewayReconciler) getCustomRateLimitPoliciesForGateway
 
 // getGatewaysForAPIPolicy triggers the Gateway controller reconcile method
 // based on the changes detected from APIPolicy objects.
-func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(ctx context.Context, obj *dpv1alpha3.APIPolicy) []reconcile.Request {
+func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(ctx context.Context, obj *dpv1alpha4.APIPolicy) []reconcile.Request {
 	apiPolicy := obj
 
 	if !(apiPolicy.Spec.TargetRef.Kind == constants.KindGateway) {
@@ -540,6 +582,31 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForAPIPolicy(ctx context.
 	return []reconcile.Request{{
 		NamespacedName: types.NamespacedName{
 			Name:      string(apiPolicy.Spec.TargetRef.Name),
+			Namespace: namespace,
+		},
+	}}
+}
+
+// getGatewaysForTokenIssuer triggers the Gateway controller reconcile method
+// based on the changes detected from TokenIssuer objects.
+func (gatewayReconciler *GatewayReconciler) getGatewaysForTokenIssuer(ctx context.Context, obj *dpv1alpha1.TokenIssuer) []reconcile.Request {
+	tokenIssuer := obj
+
+	if !(tokenIssuer.Spec.TargetRef.Kind == constants.KindGateway) {
+		return nil
+	}
+
+	namespace, err := utils.ValidateAndRetrieveNamespace((*gwapiv1.Namespace)(tokenIssuer.Spec.TargetRef.Namespace), tokenIssuer.Namespace)
+
+	if err != nil {
+		loggers.LoggerAPKOperator.Errorf("Namespace mismatch. TargetRef %s needs to be in the same namespace as the TokenIssuer %s. Expected: %s, Actual: %s",
+			string(tokenIssuer.Spec.TargetRef.Name), tokenIssuer.Name, tokenIssuer.Namespace, string(*tokenIssuer.Spec.TargetRef.Namespace))
+		return nil
+	}
+
+	return []reconcile.Request{{
+		NamespacedName: types.NamespacedName{
+			Name:      string(tokenIssuer.Spec.TargetRef.Name),
 			Namespace: namespace,
 		},
 	}}
@@ -574,9 +641,9 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// Gateway to APIPolicy indexer
-	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha3.APIPolicy{}, gatewayAPIPolicyIndex,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha4.APIPolicy{}, gatewayAPIPolicyIndex,
 		func(rawObj k8client.Object) []string {
-			apiPolicy := rawObj.(*dpv1alpha3.APIPolicy)
+			apiPolicy := rawObj.(*dpv1alpha4.APIPolicy)
 			var httpRoutes []string
 			if apiPolicy.Spec.TargetRef.Kind == constants.KindGateway {
 
@@ -595,6 +662,52 @@ func addGatewayIndexes(ctx context.Context, mgr manager.Manager) error {
 					}.String())
 			}
 			return httpRoutes
+		}); err != nil {
+		return err
+	}
+	// Secret to TokenIssuer indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.TokenIssuer{}, secretTokenIssuerIndex,
+		func(rawObj k8client.Object) []string {
+			jwtIssuer := rawObj.(*dpv1alpha1.TokenIssuer)
+			var secrets []string
+			if jwtIssuer.Spec.SignatureValidation.Certificate != nil && jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef != nil && len(jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef.Name) > 0 {
+				secrets = append(secrets,
+					types.NamespacedName{
+						Name:      string(jwtIssuer.Spec.SignatureValidation.Certificate.SecretRef.Name),
+						Namespace: jwtIssuer.Namespace,
+					}.String())
+			}
+			if jwtIssuer.Spec.SignatureValidation.JWKS != nil && jwtIssuer.Spec.SignatureValidation.JWKS.TLS != nil && jwtIssuer.Spec.SignatureValidation.JWKS.TLS.SecretRef != nil && len(jwtIssuer.Spec.SignatureValidation.JWKS.TLS.SecretRef.Name) > 0 {
+				secrets = append(secrets,
+					types.NamespacedName{
+						Name:      string(jwtIssuer.Spec.SignatureValidation.JWKS.TLS.SecretRef.Name),
+						Namespace: jwtIssuer.Namespace,
+					}.String())
+			}
+			return secrets
+		}); err != nil {
+		return err
+	}
+	// Configmap to TokenIssuer indexer
+	err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha1.TokenIssuer{}, configmapIssuerIndex,
+		func(rawObj k8client.Object) []string {
+			tokenIssuer := rawObj.(*dpv1alpha1.TokenIssuer)
+			var configMaps []string
+			if tokenIssuer.Spec.SignatureValidation.Certificate != nil && tokenIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef != nil && len(tokenIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef.Name) > 0 {
+				configMaps = append(configMaps,
+					types.NamespacedName{
+						Name:      string(tokenIssuer.Spec.SignatureValidation.Certificate.ConfigMapRef.Name),
+						Namespace: tokenIssuer.Namespace,
+					}.String())
+			}
+			if tokenIssuer.Spec.SignatureValidation.JWKS != nil && tokenIssuer.Spec.SignatureValidation.JWKS.TLS != nil && tokenIssuer.Spec.SignatureValidation.JWKS.TLS.ConfigMapRef != nil && len(tokenIssuer.Spec.SignatureValidation.JWKS.TLS.ConfigMapRef.Name) > 0 {
+				configMaps = append(configMaps,
+					types.NamespacedName{
+						Name:      string(tokenIssuer.Spec.SignatureValidation.JWKS.TLS.ConfigMapRef.Name),
+						Namespace: tokenIssuer.Namespace,
+					}.String())
+			}
+			return configMaps
 		})
 	return err
 }

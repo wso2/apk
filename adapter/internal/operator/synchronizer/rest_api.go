@@ -59,7 +59,7 @@ func UpdateInternalMapsFromHTTPRoute(apiState APIState, httpRoute *HTTPRouteStat
 
 	vHosts := getVhostsForAPI(httpRoute.HTTPRouteCombined)
 	labels := getGatewayNameForAPI(httpRoute.HTTPRouteCombined)
-	listeners, relativeSectionNames := getListenersForAPI(httpRoute.HTTPRouteCombined, adapterInternalAPI.UUID)
+	listeners, relativeSectionNames := getListenersForAPI(httpRoute.HTTPRouteCombined)
 	// We dont have a use case where a perticular API's two different http routes refer to two different gateway. Hence get the first listener name for the list for processing.
 	if len(listeners) == 0 || len(relativeSectionNames) == 0 {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2633, logging.MINOR, "Failed to find a matching listener for http route: %v. ",
@@ -129,7 +129,14 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 		loggers.LoggerAPKOperator.Debugf("AI Provider: %+v", *apiState.AIProvider)
 		adapterInternalAPI.SetAIProvider(*apiState.AIProvider)
 	}
+
+	if apiState.ModelBasedRoundRobin != nil && len(apiState.ModelBasedRoundRobin.Models) > 0 {
+		loggers.LoggerAPKOperator.Debugf("Model Based Round Robin: %+v", *apiState.ModelBasedRoundRobin)
+		adapterInternalAPI.SetModelBasedRoundRobin(*apiState.ModelBasedRoundRobin)
+	}
+
 	loggers.LoggerAPKOperator.Infof("AdapterInternalAPI AI Provider: %+v", adapterInternalAPI.GetAIProvider())
+	loggers.LoggerAPKOperator.Infof("AdapterInternalAPI Model Based Round Robin: %+v", adapterInternalAPI.GetModelBasedRoundRobin())
 
 	return &adapterInternalAPI, nil
 }
@@ -159,7 +166,7 @@ func getGatewayNameForAPI(httpRoute *gwapiv1.HTTPRoute) map[string]struct{} {
 }
 
 // getListenersForAPI returns the listeners related to an API.
-func getListenersForAPI(httpRoute *gwapiv1.HTTPRoute, apiUUID string) ([]string, []string) {
+func getListenersForAPI(httpRoute *gwapiv1.HTTPRoute) ([]string, []string) {
 	var listeners []string
 	var sectionNames []string
 	for _, parentRef := range httpRoute.Spec.ParentRefs {

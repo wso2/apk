@@ -52,6 +52,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -71,6 +72,8 @@ func init() {
 	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
 
 	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
+
+	utilruntime.Must(dpv1alpha4.AddToScheme(scheme))
 
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
@@ -148,9 +151,6 @@ func InitOperator(metricsConfig config.Metrics) {
 		loggers.LoggerAPKOperator.Errorf("Error creating API controller: %v", err)
 	}
 
-	if err := dpcontrollers.NewTokenIssuerReconciler(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.BLOCKER, "Error creating JWT Issuer controller: %v", err))
-	}
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2602, logging.BLOCKER, "Unable to set up health check: %v", err))
 	}

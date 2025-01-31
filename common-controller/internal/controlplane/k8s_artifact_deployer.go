@@ -22,7 +22,7 @@ import (
 
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/common-controller/internal/loggers"
-	"github.com/wso2/apk/common-controller/internal/server"
+	"github.com/wso2/apk/common-go-libs/pkg/server/model"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/constants"
@@ -49,7 +49,7 @@ func NewK8sArtifactDeployer(mgr manager.Manager) K8sArtifactDeployer {
 }
 
 // DeployApplication deploys an application
-func (k8sArtifactDeployer K8sArtifactDeployer) DeployApplication(application server.Application) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeployApplication(application model.Application) error {
 	crApplication := cpv1alpha2.Application{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      application.UUID,
@@ -74,7 +74,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployApplication(application ser
 }
 
 // UpdateApplication updates an application
-func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplication(application server.Application) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplication(application model.Application) error {
 	crApplication := cpv1alpha2.Application{}
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: application.UUID, Namespace: utils.GetOperatorPodNamespace()}, &crApplication)
 	if err != nil {
@@ -99,12 +99,12 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplication(application ser
 }
 
 // UpdateKeyMappings updates a key mapping
-func (k8sArtifactDeployer K8sArtifactDeployer) UpdateKeyMappings(keyMapping server.ApplicationKeyMapping) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) UpdateKeyMappings(keyMapping model.ApplicationKeyMapping) error {
 	return nil
 }
 
 // DeploySubscription deploys a subscription
-func (k8sArtifactDeployer K8sArtifactDeployer) DeploySubscription(subscription server.Subscription) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeploySubscription(subscription model.Subscription) error {
 	loggers.LoggerAPK.Info("Deploying subscription", subscription.RatelimitTier)
 	crSubscription := cpv1alpha3.Subscription{ObjectMeta: v1.ObjectMeta{Name: subscription.UUID, Namespace: utils.GetOperatorPodNamespace()},
 		Spec: cpv1alpha3.SubscriptionSpec{Organization: subscription.Organization, API: cpv1alpha3.API{Name: subscription.SubscribedAPI.Name, Version: subscription.SubscribedAPI.Version}, SubscriptionStatus: subscription.SubStatus, RatelimitRef: cpv1alpha3.RatelimitRef{Name: subscription.RatelimitTier, Level: "app"}}}
@@ -117,7 +117,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeploySubscription(subscription s
 }
 
 // UpdateSubscription updates a subscription
-func (k8sArtifactDeployer K8sArtifactDeployer) UpdateSubscription(subscription server.Subscription) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) UpdateSubscription(subscription model.Subscription) error {
 	crSubscription := cpv1alpha3.Subscription{}
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: subscription.UUID, Namespace: utils.GetOperatorPodNamespace()}, &crSubscription)
 	if err != nil {
@@ -143,14 +143,14 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateSubscription(subscription s
 }
 
 // DeployApplicationMappings deploys an application mapping
-func (k8sArtifactDeployer K8sArtifactDeployer) DeployApplicationMappings(applicationMapping server.ApplicationMapping) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeployApplicationMappings(applicationMapping model.ApplicationMapping) error {
 	crApplicationMapping := cpv1alpha2.ApplicationMapping{ObjectMeta: v1.ObjectMeta{Name: applicationMapping.UUID, Namespace: utils.GetOperatorPodNamespace()},
 		Spec: cpv1alpha2.ApplicationMappingSpec{ApplicationRef: applicationMapping.ApplicationRef, SubscriptionRef: applicationMapping.SubscriptionRef}}
 	return k8sArtifactDeployer.client.Create(context.Background(), &crApplicationMapping)
 }
 
 // DeployKeyMappings deploys a key mapping
-func (k8sArtifactDeployer K8sArtifactDeployer) DeployKeyMappings(keyMapping server.ApplicationKeyMapping) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeployKeyMappings(keyMapping model.ApplicationKeyMapping) error {
 	var crApplication cpv1alpha2.Application
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: keyMapping.ApplicationUUID, Namespace: utils.GetOperatorPodNamespace()}, &crApplication)
 	if err != nil {
@@ -235,7 +235,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteApplicationMappings(applica
 }
 
 // UpdateApplicationMappings updates an application mapping
-func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplicationMappings(applicationMapping server.ApplicationMapping) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplicationMappings(applicationMapping model.ApplicationMapping) error {
 	crApplicationMapping := cpv1alpha2.ApplicationMapping{}
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: applicationMapping.UUID, Namespace: utils.GetOperatorPodNamespace()}, &crApplicationMapping)
 	if err != nil {
@@ -258,7 +258,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) UpdateApplicationMappings(applica
 }
 
 // DeleteKeyMappings deletes a key mapping
-func (k8sArtifactDeployer K8sArtifactDeployer) DeleteKeyMappings(keyMapping server.ApplicationKeyMapping) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeleteKeyMappings(keyMapping model.ApplicationKeyMapping) error {
 	var crApplication cpv1alpha2.Application
 	err := k8sArtifactDeployer.client.Get(context.Background(), client.ObjectKey{Name: keyMapping.ApplicationUUID, Namespace: utils.GetOperatorPodNamespace()}, &crApplication)
 	if err != nil {
@@ -306,17 +306,17 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeleteSubscription(subscriptionID
 }
 
 // DeployAllApplicationMappings deploys all application mappings
-func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplicationMappings(applicationMappings server.ApplicationMappingList) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplicationMappings(applicationMappings model.ApplicationMappingList) error {
 	applicationMappingsFromK8s, _, err := k8sArtifactDeployer.retrieveAllApplicationMappings("")
 	if err != nil {
 		return err
 	}
 	clonedApplicationMappingsFromK8s := make([]cpv1alpha2.ApplicationMapping, len(applicationMappingsFromK8s))
 	copy(clonedApplicationMappingsFromK8s, applicationMappingsFromK8s)
-	clonedApplicationMappings := make([]server.ApplicationMapping, len(applicationMappings.List))
+	clonedApplicationMappings := make([]model.ApplicationMapping, len(applicationMappings.List))
 	copy(clonedApplicationMappings, applicationMappings.List)
-	newApplicationMappings := make([]server.ApplicationMapping, 0)
-	sameApplicationMappings := make([]server.ApplicationMapping, 0)
+	newApplicationMappings := make([]model.ApplicationMapping, 0)
+	sameApplicationMappings := make([]model.ApplicationMapping, 0)
 	for _, applicationMapping := range clonedApplicationMappings {
 		found := false
 		unFilteredApplicationMappingsInK8s := make([]cpv1alpha2.ApplicationMapping, 0)
@@ -355,17 +355,17 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplicationMappings(appl
 }
 
 // DeployAllApplications deploys all key mappings
-func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplications(applications server.ApplicationList) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplications(applications model.ApplicationList) error {
 	applicationsFromK8s, _, err := k8sArtifactDeployer.retrieveAllApplicationsFromK8s("")
 	if err != nil {
 		return err
 	}
 	clonedApplicationsFromK8s := make([]cpv1alpha2.Application, len(applicationsFromK8s))
 	copy(clonedApplicationsFromK8s, applicationsFromK8s)
-	clonedApplications := make([]server.Application, len(applications.List))
+	clonedApplications := make([]model.Application, len(applications.List))
 	copy(clonedApplications, applications.List)
-	newApplications := make([]server.Application, 0)
-	sameApplications := make([]server.Application, 0)
+	newApplications := make([]model.Application, 0)
+	sameApplications := make([]model.Application, 0)
 	for _, application := range clonedApplications {
 		found := false
 		unFilteredApplicationsInK8s := make([]cpv1alpha2.Application, 0)
@@ -404,7 +404,7 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllApplications(application
 }
 
 // DeployAllKeyMappings deploys all key mappings
-func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllKeyMappings(keyMappings server.ApplicationKeyMappingList) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllKeyMappings(keyMappings model.ApplicationKeyMappingList) error {
 	for _, keyMapping := range keyMappings.List {
 		err := k8sArtifactDeployer.DeployKeyMappings(keyMapping)
 		if err != nil {
@@ -415,17 +415,17 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllKeyMappings(keyMappings 
 }
 
 // DeployAllSubscriptions deploys all subscriptions
-func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllSubscriptions(subscriptions server.SubscriptionList) error {
+func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllSubscriptions(subscriptions model.SubscriptionList) error {
 	subscriptionsFromK8s, _, err := k8sArtifactDeployer.retrieveAllSubscriptionsFromK8s("")
 	if err != nil {
 		return err
 	}
 	clonedSubscriptionsFromK8s := make([]cpv1alpha3.Subscription, len(subscriptionsFromK8s))
 	copy(clonedSubscriptionsFromK8s, subscriptionsFromK8s)
-	clonedSubscriptions := make([]server.Subscription, len(subscriptions.List))
+	clonedSubscriptions := make([]model.Subscription, len(subscriptions.List))
 	copy(clonedSubscriptions, subscriptions.List)
-	newSubscriptions := make([]server.Subscription, 0)
-	sameSubscriptions := make([]server.Subscription, 0)
+	newSubscriptions := make([]model.Subscription, 0)
+	sameSubscriptions := make([]model.Subscription, 0)
 	for _, subscription := range clonedSubscriptions {
 		found := false
 		unFilteredSubscriptionsInK8s := make([]cpv1alpha3.Subscription, 0)
@@ -464,47 +464,47 @@ func (k8sArtifactDeployer K8sArtifactDeployer) DeployAllSubscriptions(subscripti
 }
 
 // GetAllApplicationMappings returns all application mappings
-func (k8sArtifactDeployer K8sArtifactDeployer) GetAllApplicationMappings() (server.ApplicationMappingList, error) {
-	return server.ApplicationMappingList{}, nil
+func (k8sArtifactDeployer K8sArtifactDeployer) GetAllApplicationMappings() (model.ApplicationMappingList, error) {
+	return model.ApplicationMappingList{}, nil
 }
 
 // GetAllApplications returns all applications
-func (k8sArtifactDeployer K8sArtifactDeployer) GetAllApplications() (server.ApplicationList, error) {
-	return server.ApplicationList{}, nil
+func (k8sArtifactDeployer K8sArtifactDeployer) GetAllApplications() (model.ApplicationList, error) {
+	return model.ApplicationList{}, nil
 }
 
 // GetAllKeyMappings returns all key mappings
-func (k8sArtifactDeployer K8sArtifactDeployer) GetAllKeyMappings() (server.ApplicationKeyMappingList, error) {
-	return server.ApplicationKeyMappingList{}, nil
+func (k8sArtifactDeployer K8sArtifactDeployer) GetAllKeyMappings() (model.ApplicationKeyMappingList, error) {
+	return model.ApplicationKeyMappingList{}, nil
 }
 
 // GetAllSubscriptions returns all subscriptions
-func (k8sArtifactDeployer K8sArtifactDeployer) GetAllSubscriptions() (server.SubscriptionList, error) {
-	return server.SubscriptionList{}, nil
+func (k8sArtifactDeployer K8sArtifactDeployer) GetAllSubscriptions() (model.SubscriptionList, error) {
+	return model.SubscriptionList{}, nil
 }
 
 // GetApplication returns an application
-func (k8sArtifactDeployer K8sArtifactDeployer) GetApplication(applicationID string) (server.Application, error) {
-	return server.Application{}, nil
+func (k8sArtifactDeployer K8sArtifactDeployer) GetApplication(applicationID string) (model.Application, error) {
+	return model.Application{}, nil
 }
 
 // GetApplicationMappings returns an application mapping
-func (k8sArtifactDeployer K8sArtifactDeployer) GetApplicationMappings(applicationID string) (server.ApplicationMapping, error) {
-	return server.ApplicationMapping{}, nil
+func (k8sArtifactDeployer K8sArtifactDeployer) GetApplicationMappings(applicationID string) (model.ApplicationMapping, error) {
+	return model.ApplicationMapping{}, nil
 }
 
 // GetKeyMappings returns a key mapping
-func (k8sArtifactDeployer K8sArtifactDeployer) GetKeyMappings(applicationID string) (server.ApplicationKeyMapping, error) {
-	return server.ApplicationKeyMapping{}, nil
+func (k8sArtifactDeployer K8sArtifactDeployer) GetKeyMappings(applicationID string) (model.ApplicationKeyMapping, error) {
+	return model.ApplicationKeyMapping{}, nil
 }
 
 // GetSubscription returns a subscription
-func (k8sArtifactDeployer K8sArtifactDeployer) GetSubscription(subscriptionID string) (server.Subscription, error) {
-	return server.Subscription{}, nil
+func (k8sArtifactDeployer K8sArtifactDeployer) GetSubscription(subscriptionID string) (model.Subscription, error) {
+	return model.Subscription{}, nil
 }
 
 // GenerateSecurityScheme generates a security scheme
-func generateSecurityScheme(keyMapping server.ApplicationKeyMapping) cpv1alpha2.Environment {
+func generateSecurityScheme(keyMapping model.ApplicationKeyMapping) cpv1alpha2.Environment {
 	return cpv1alpha2.Environment{EnvID: keyMapping.EnvID, AppID: keyMapping.ApplicationIdentifier, KeyType: keyMapping.KeyType}
 }
 
