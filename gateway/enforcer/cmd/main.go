@@ -60,7 +60,12 @@ func main() {
 
 
 	revokedJTIStore := datastore.NewRevokedJTIStore()
-	tokenrevocation.NewRevokedTokenFetcher(cfg, revokedJTIStore, tlsConfig).Start()
+	if cfg.IsRedisTLSEnabled {
+		tokenrevocation.NewRevokedTokenFetcher(cfg, revokedJTIStore, tlsConfig).Start()
+	} else {
+		tokenrevocation.NewRevokedTokenFetcher(cfg, revokedJTIStore, nil).Start()
+	}
+	
 
 	// Wait forever
 	select {}

@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package tokenrevocation
 
 import (
@@ -22,6 +22,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
@@ -29,15 +30,19 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
+const (
+	jtiTimeStampSeperator = "_##_"
+)
+
 // RevokedTokenFetcher fetches revoked tokens from the Redis datastore.
 type RevokedTokenFetcher struct {
-	user         string
-	password     string
-	address      string
-	tlsConfig    *tls.Config
-	jtiDatastore *datastore.RevokedJTIStore
-	cfg          *config.Server
-	channelName  string
+	user          string
+	password      string
+	address       string
+	tlsConfig     *tls.Config
+	jtiDatastore  *datastore.RevokedJTIStore
+	cfg           *config.Server
+	channelName   string
 	retryInterval time.Duration
 }
 
@@ -108,6 +113,18 @@ func (r *RevokedTokenFetcher) subscribe() {
 			r.subscribe()
 		}
 		r.cfg.Logger.Info(fmt.Sprintf("Received message: %s", msg.Payload))
+		parts := strings.Split(msg.Payload, jtiTimeStampSeperator)
+		if len(parts) != 2 {
+			r.cfg.Logger.Error(fmt.Errorf("invalid message format"), "Error splitting message payload")
+			continue
+		}
+		jti := parts[0]
+		expirationTime, err := strconv.ParseInt(parts[1], 10, 64)
+		if err != nil {
+			r.cfg.Logger.Error(err, fmt.Sprintf("Error parsing expiration time for JTI %s", jti))
+			continue
+		}
+		r.jtiDatastore.AddJTI(jti, time.Unix(expirationTime, 0))
 	}
 
 }
