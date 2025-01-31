@@ -51,7 +51,7 @@ type Resource struct {
 	Endpoints              EndpointCluster             `json:"endpoints"`              // Endpoint cluster for the resource
 	EndpointSecurity       []*EndpointSecurity         `json:"endpointSecurity"`       // Endpoint security configurations
 	PolicyConfig           PolicyConfig                `json:"policyConfig"`           // Policy configurations for the resource
-	AuthenticationConfig   auth.AuthenticationConfig   `json:"authenticationConfig"`   // Authentication configuration
+	AuthenticationConfig   *auth.AuthenticationConfig   `json:"authenticationConfig"`   // Authentication configuration
 	Scopes                 []string                    `json:"scopes"`                 // Scopes for the resource
 	AIModelBasedRoundRobin *dto.AIModelBasedRoundRobin `json:"aiModelBasedRoundRobin"` // AI model-based round robin configuration
 }
