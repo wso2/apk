@@ -193,7 +193,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.log.Info(fmt.Sprintf("Matched api bjc: %v", s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
 			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
-			if !s.requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !s.requestConfigHolder.MatchedAPI.DisableAuthentication {
+			if s.requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !s.requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !s.requestConfigHolder.MatchedAPI.DisableAuthentication {
 				jwtValidationInfo := s.jwtTransformer.TransformJWTClaims(s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.ExternalProcessingEnvoyMetadata)
 				s.requestConfigHolder.JWTValidationInfo = &jwtValidationInfo
 				s.log.Sugar().Infof("jwtValidation==%v", jwtValidationInfo)
