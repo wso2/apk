@@ -568,8 +568,7 @@ func getRemoteJWKSCluster(jwksInfo v1alpha1.ResolvedJWKS, clusterName string) (*
 	endpointCluster := &model.EndpointCluster{
 		Endpoints: endpoints,
 	}
-
-	return envoy.ProcessEndpoints(clusterName, endpointCluster, 0, "")
+	return envoy.ProcessEndpoints(clusterName, endpointCluster, 20, endpoint.Basepath)
 }
 
 // GetJWTFilter
