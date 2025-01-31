@@ -69,6 +69,8 @@ type Server struct {
 	ExternalProcessingMaxHeaderLimit int    `envconfig:"EXTERNAL_PROCESSING_MAX_HEADER_LIMIT" default:"8192"`
 	Logger                           logging.Logger
 	Metrics                          metrics
+	JWTGeneratorPublicKeyPath        string `envconfig:"JWT_GENERATOR_PUBLIC_CERTIFICATE_PATH" default:"/home/wso2/security/keystore/mg.pem"`
+	JWTGeneratorPrivateKeyPath       string `envconfig:"JWT_GENERATOR_PRIVATE_KEY_PATH" default:"/home/wso2/security/keystore/mg.key"`
 }
 
 type metrics struct {

@@ -36,6 +36,6 @@ func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.Subscription
 		return immediateResponse
 	}
 	cfg.Logger.Info(fmt.Sprintf("Subscription validation successful for the request: %s", rch.MatchedResource.Path))
-
+	
 	return nil
 }

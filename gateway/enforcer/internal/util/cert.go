@@ -20,6 +20,7 @@ package util
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/pem"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
@@ -93,4 +94,24 @@ func CreateTLSConfig(cert tls.Certificate, certPool *x509.CertPool) *tls.Config 
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      certPool,
 	}
+}
+
+// LoadCertificate loads an x509 certificate from a file path
+func LoadCertificate(path string) (*x509.Certificate, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read certificate file: %w", err)
+	}
+
+	block, _ := pem.Decode(data)
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM block")
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse certificate: %w", err)
+	}
+
+	return cert, nil
 }

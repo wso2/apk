@@ -48,7 +48,7 @@ func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.Confi
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
 	configDatastore := datastore.NewConfigStore()
 	jwtIssuerDatastore := datastore.NewJWTIssuerStore()
-	apiDatastore := datastore.NewAPIStore(configDatastore)
+	apiDatastore := datastore.NewAPIStore(configDatastore, cfg)
 	// Initialize the tracker
 	modelBasedRoundRobinTracker := datastore.NewModelBasedRoundRobinTracker()
 	// Start the reactivation task
