@@ -21,12 +21,12 @@ import (
 	"fmt"
 )
 
-// AddBearerTokenToHeader adds a bearer token to the request.
+// AddBearerTokenToHeader adds a Bearer token to the request.
 func AddBearerTokenToHeader(token string, headers map[string]string) map[string]string {
 	return AddCustomBearerTokenHeader("Authorization", token, headers)
 }
 
-// AddCustomBearerTokenHeader adds a bearer token to the request with specified auth header name.
+// AddCustomBearerTokenHeader adds a Bearer token to the request with specified auth header name.
 func AddCustomBearerTokenHeader(headerName string, token string, headers map[string]string) map[string]string {
 	if headers == nil {
 		headers = make(map[string]string)

@@ -7,7 +7,7 @@ Feature: API Subscription Feature
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""
     And I eventually receive 403 response code, not accepting
       |429|
@@ -15,7 +15,7 @@ Feature: API Subscription Feature
     Then the response status code should be 403
     Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120005"
     Then I set headers
-      |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -25,7 +25,7 @@ Feature: API Subscription Feature
 
     Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120006"
     Then I set headers
-      |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120006-token}|
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120006-token}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -36,7 +36,7 @@ Feature: API Subscription Feature
       |429|
     Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120007"
     Then I set headers
-      |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120007-token}|
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120007-token}|
     And I send "GET" request to "https://default.sandbox.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""
     Then the response status code should be 200
     And I send "GET" request to "https://default.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""
@@ -45,7 +45,7 @@ Feature: API Subscription Feature
       |429|
     Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120008"
     Then I set headers
-      |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120008-token}|
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120008-token}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""
     And I eventually receive 403 response code, not accepting
       |200|
@@ -56,7 +56,7 @@ Feature: API Subscription Feature
       |429|
     Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120009"
     Then I set headers
-      |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120009-token}|
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120009-token}|
     And I send "GET" request to "https://default.sandbox.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""
     Then the response status code should be 403
     And I send "GET" request to "https://default.gw.wso2.com:9095/subscription-api/1.0.0/endpoint1" with body ""

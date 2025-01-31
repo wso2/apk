@@ -21,7 +21,7 @@ Feature: Generating APK conf for gRPC API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
         And the student response body should contain name: "Student" age: 10
@@ -40,7 +40,7 @@ Feature: Generating APK conf for gRPC API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
             | Host          | default.gw.wso2.com   |
         And I send "GET" request to "https://default.gw.wso2.com:9095/org.apk.v1/api-definition/" with body ""
         And I eventually receive 200 response code, not accepting
@@ -80,13 +80,13 @@ Feature: Generating APK conf for gRPC API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 7
         Given I have a valid subscription with scopes
             | wso2 |
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
         And the student response body should contain name: "Student" age: 10
@@ -105,13 +105,13 @@ Feature: Generating APK conf for gRPC API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
         And the student response body should contain name: "Student" age: 10
         Given I have a valid subscription
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I make grpc request GetStudent default version to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
         And the student response body should contain name: "Student" age: 10
@@ -130,7 +130,7 @@ Feature: Generating APK conf for gRPC API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I make grpc request GetStudent to "default.gw.wso2.com" with port 9095
         And the gRPC response status code should be 0
         And the student response body should contain name: "Student" age: 10

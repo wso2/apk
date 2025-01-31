@@ -4,7 +4,7 @@ Feature: API backend based AI ratelimit Feature
     Given The system is ready
     And I have a valid subscription
     Then I set headers
-      | Authorization | bearer ${accessToken} |
+      | Authorization | Bearer ${accessToken} |
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api/v1.0.0/3.14/employee?send=body" with body ""
     Then the response status code should be 200
@@ -55,7 +55,7 @@ Feature: API backend based AI ratelimit Feature
     Given The system is ready
     And I have a valid subscription
     Then I set headers
-      | Authorization | bearer ${accessToken} |
+      | Authorization | Bearer ${accessToken} |
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api-header/v1.0.0/3.14/employee?send=header" with body ""
     Then the response status code should be 200
@@ -91,7 +91,7 @@ Feature: API backend based AI ratelimit Feature
     Given The system is ready
     And I have a valid subscription
     Then I set headers
-      | Authorization | bearer ${accessToken} |
+      | Authorization | Bearer ${accessToken} |
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api/v1.0.0/3.14/employee?send=header" with body ""
     Then the response status code should be 200
@@ -111,7 +111,7 @@ Feature: API backend based AI ratelimit Feature
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      | Authorization | bearer ${accessToken} |
+      | Authorization | Bearer ${accessToken} |
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/backend-based-airl/1.0.0/employee?send=body" with body ""
     Then the response status code should be 200

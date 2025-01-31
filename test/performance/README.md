@@ -162,7 +162,7 @@ Add the extracted IP to `/etc/hosts` and map it to `default.gw.wso2.com` hostnam
 Execute the following command to make a test request to APK using a previously generated access token:
 
 ```bash
-curl -k "https://default.gw.wso2.com:9095/test-definition-default/3.14/employee" --header "Authorization: bearer $access_token" -d "{"sds":"dsdsd"}" -X POST
+curl -k "https://default.gw.wso2.com:9095/test-definition-default/3.14/employee" --header "Authorization: Bearer $access_token" -d "{"sds":"dsdsd"}" -X POST
 ```
 
 ### Start JMeter Slave Servers

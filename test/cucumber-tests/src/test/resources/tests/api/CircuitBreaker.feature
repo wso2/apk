@@ -7,7 +7,7 @@ Feature: BackendRetry
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "POST" request to "https://default.gw.wso2.com:9095/circuit-breaker/3.14/set-retry-count" with body "{\"count\": 500}"
     And I eventually receive 200 response code, not accepting
       |429|
