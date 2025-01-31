@@ -8,7 +8,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
@@ -28,7 +28,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
@@ -48,7 +48,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
@@ -68,7 +68,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
@@ -107,7 +107,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer invalidToken |
+            | Authorization | Bearer invalidToken |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
@@ -127,12 +127,12 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer invalidToken |
+            | Authorization | Bearer invalidToken |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
@@ -157,13 +157,13 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
@@ -173,7 +173,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And I eventually receive 200 response code, not accepting
             | 401 |
         Then I set headers
-            | Authorization             | bearer invalidToken |
+            | Authorization             | Bearer invalidToken |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
@@ -193,7 +193,7 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer invalidToken |
+            | Authorization | Bearer invalidToken |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
@@ -272,12 +272,12 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
         Then I set headers
-            | Authorization | bearer invalidToken |
+            | Authorization | Bearer invalidToken |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
@@ -297,21 +297,21 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
         And I have a valid token with a client certificate "config-map-2.txt"
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
             | 200 |
         And I have a valid token with a client certificate "config-map-3.txt"
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting
@@ -331,21 +331,21 @@ Feature: Test mTLS between client and gateway with client certificate sent in he
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
         And I have a valid token with a client certificate "config-map-2.txt"
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 200 response code, not accepting
             | 401 |
         And I have a valid token with a client certificate "config-map-3.txt"
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "GET" request to "https://default.gw.wso2.com:9095/mtls/3.14/employee/" with body ""
         And I eventually receive 401 response code, not accepting

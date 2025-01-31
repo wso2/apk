@@ -7,13 +7,13 @@ Feature: Test JWT related functionalities
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
       |401|
     Then I set headers
-      |Authorization|bearer invalidToken|
+      |Authorization|Bearer invalidToken|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And the response status code should be 401
     Then I remove header "Authorization"
@@ -25,19 +25,19 @@ Feature: Test JWT related functionalities
     Given The system is ready
     Then I generate JWT token from idp1 with kid "123-456"
     Then I set headers
-      |Authorization|bearer ${idp-1-token}|
+      |Authorization|Bearer ${idp-1-token}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
       |401|
     Then I set headers
-      |Authorization|bearer "${idp-1-token}h"|
+      |Authorization|Bearer "${idp-1-token}h"|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And I eventually receive 401 response code, not accepting
       |429|
       |200|
     Then I set headers
-      |Authorization|bearer ${idp-1-token}|
+      |Authorization|Bearer ${idp-1-token}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -48,7 +48,7 @@ Feature: Test JWT related functionalities
       |429|
       |401|
     Then I set headers
-      |Authorization|bearer ${idp-1-token}|
+      |Authorization|Bearer ${idp-1-token}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-basic/3.14/employee/" with body ""
     And I eventually receive 401 response code, not accepting
       |429|
@@ -61,7 +61,7 @@ Feature: Test JWT related functionalities
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer invalidToken|
+      |Authorization|Bearer invalidToken|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-disabled/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -75,13 +75,13 @@ Feature: Test JWT related functionalities
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-custom-header/3.14/employee/" with body ""
     And I eventually receive 401 response code, not accepting
       |429|
       |200|
     Then I set headers
-      |testAuth|bearer ${accessToken}|
+      |testAuth|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-custom-header/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -100,13 +100,13 @@ Feature: Test JWT related functionalities
       And make the API deployment request
       Then the response status code should be 200
       Then I set headers
-        |Authorization|bearer ${accessToken}|
+        |Authorization|Bearer ${accessToken}|
       And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-custom-header-resource/3.14/employee/" with body ""
       And I eventually receive 401 response code, not accepting
         |429|
         |200|
       Then I set headers
-        |testAuth|bearer ${accessToken}|
+        |testAuth|Bearer ${accessToken}|
       And I send "GET" request to "https://default.gw.wso2.com:9095/jwt-custom-header-resource/3.14/employee/" with body ""
       And I eventually receive 200 response code, not accepting
         |429|

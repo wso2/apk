@@ -31,7 +31,7 @@ Feature: API Deploying in DP to CP Flow
     Then the response status code should be 200
     And the response body should contain "accessToken"
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://carbon.super.gw.wso2.com:9095/endpoint/3.14/employee" with body ""
     And I eventually receive 200 response code, not accepting
       |429|

@@ -7,7 +7,7 @@ Feature: Deploy APIs in multiple environments
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/withoutenv/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -22,7 +22,7 @@ Feature: Deploy APIs in multiple environments
     And make the API deployment request for organization "org3"
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${org3}|
+      |Authorization|Bearer ${org3}|
     And I send "GET" request to "https://org3.gw.wso2.com:9095/withoutenv/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -37,7 +37,7 @@ Feature: Deploy APIs in multiple environments
     And make the API deployment request for organization "org4"
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${org4}|
+      |Authorization|Bearer ${org4}|
     And I send "GET" request to "https://org4.gw.wso2.com:9095/withoutenv/3.14/employee/" with body ""
     And I eventually receive 401 response code, not accepting
       |200|
@@ -52,7 +52,7 @@ Feature: Deploy APIs in multiple environments
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default-dev.gw.wso2.com:9095/multienv/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -61,7 +61,7 @@ Feature: Deploy APIs in multiple environments
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default-qa.gw.wso2.com:9095/multienv/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -78,7 +78,7 @@ Feature: Deploy APIs in multiple environments
     And make the API deployment request for organization "org3"
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${org3}|
+      |Authorization|Bearer ${org3}|
     And I send "GET" request to "https://org3-qa.gw.wso2.com:9095/multienv/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |401|
@@ -93,7 +93,7 @@ Feature: Deploy APIs in multiple environments
     And make the API deployment request for organization "org4"
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${org4}|
+      |Authorization|Bearer ${org4}|
     And I send "GET" request to "https://org4-qa.gw.wso2.com:9095/multienv/3.14/employee/" with body ""
     And I eventually receive 401 response code, not accepting
       |200|
@@ -108,7 +108,7 @@ Feature: Deploy APIs in multiple environments
     And make the API deployment request for organization "org4"
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${org4}|
+      |Authorization|Bearer ${org4}|
     And I send "GET" request to "https://org4-dev.gw.wso2.com:9095/multienv/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       |401|

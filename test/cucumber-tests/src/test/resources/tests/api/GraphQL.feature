@@ -13,14 +13,14 @@ Feature: Generating APK conf for GraphQL API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 200 response code, not accepting
             | 429 |
             | 500 |
         And the response body should contain "\"name\":\"string\""
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 200 response code, not accepting
             | 429 |
@@ -41,7 +41,7 @@ Feature: Generating APK conf for GraphQL API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 403 response code, not accepting
             | 429 |
@@ -49,7 +49,7 @@ Feature: Generating APK conf for GraphQL API
         Given I have a valid subscription with scopes
             | wso2 |
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 200 response code, not accepting
             | 429 |
@@ -69,7 +69,7 @@ Feature: Generating APK conf for GraphQL API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 200 response code, not accepting
             | 429 |
@@ -95,7 +95,7 @@ Feature: Generating APK conf for GraphQL API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.0.0" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 200 response code, not accepting
             | 429 |
@@ -125,7 +125,7 @@ Feature: Generating APK conf for GraphQL API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 200 response code, not accepting
@@ -147,7 +147,7 @@ Feature: Generating APK conf for GraphQL API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 401 response code, not accepting
             | 200 |
@@ -168,7 +168,7 @@ Feature: Generating APK conf for GraphQL API
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 200 response code, not accepting
@@ -176,7 +176,7 @@ Feature: Generating APK conf for GraphQL API
             | 500 |
         And the response body should contain "\"name\":\"string\""
         Then I set headers
-            | Authorization | bearer ${accessToken} |
+            | Authorization | Bearer ${accessToken} |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 200 response code, not accepting
             | 429 |
@@ -184,7 +184,7 @@ Feature: Generating APK conf for GraphQL API
         And the response body should contain "\"name\":\"string\""
         And I have a valid token with a client certificate "invalid-cert.txt"
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
             | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
         And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
         And I eventually receive 401 response code, not accepting

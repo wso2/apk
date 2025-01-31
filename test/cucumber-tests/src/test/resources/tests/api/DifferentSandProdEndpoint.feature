@@ -7,7 +7,7 @@ Feature: API different endpoint resource level
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-different-sand-prod-endpoint/3.14/endpoint1" with body ""
     And I eventually receive 200 response code, not accepting
       |429|

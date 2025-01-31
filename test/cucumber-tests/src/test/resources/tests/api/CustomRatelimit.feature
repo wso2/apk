@@ -7,7 +7,7 @@ Feature: Custom ratelimit
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      | Authorization | bearer ${accessToken} |
+      | Authorization | Bearer ${accessToken} |
       | user_id       | bob                   |
       | org_id        | wso2                  |
     And I wait for next minute

@@ -7,7 +7,7 @@ Feature: API Definition Endpoint
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-definition-default/3.14/api-definition" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -23,7 +23,7 @@ Feature: API Definition Endpoint
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-definition-custom/3.14/docs" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -46,7 +46,7 @@ Feature: API Definition Endpoint
     Then the response status code should be 200
     And I wait for 1 minute
     Then I set headers
-      | Authorization | bearer ${accessToken} |
+      | Authorization | Bearer ${accessToken} |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-definition-default/3.14/api-definition" with body ""
     Then the response status code should be 404
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-definition-default/api-definition" with body ""
@@ -65,7 +65,7 @@ Feature: API Definition Endpoint
     Then the response status code should be 200
     And I wait for 1 minute
     Then I set headers
-      | Authorization | bearer ${accessToken} |
+      | Authorization | Bearer ${accessToken} |
     And I send "GET" request to "https://default.sandbox.gw.wso2.com:9095/test-definition-default/3.14/api-definition" with body ""
     Then the response status code should be 404
     And I send "GET" request to "https://default.sandbox.gw.wso2.com:9095/test-definition-default/api-definition" with body ""

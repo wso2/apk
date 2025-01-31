@@ -9,7 +9,7 @@ Feature: Semantic Versioning Based Intelligent Routing
       Then the response status code should be 200
       Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120005"
       Then I set headers
-      |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
 
       And I send "GET" request to "https://default.gw.wso2.com:9095/sem-api/v1.0/employee/" with body ""
       Then the response status code should be 200
@@ -73,7 +73,7 @@ Feature: Semantic Versioning Based Intelligent Routing
       Then the response status code should be 200
       Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120005"
       Then I set headers
-      |Authorization|bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
       And I send "GET" request to "https://default.gw.wso2.com:9095/sem-api/v1/employee/" with body ""
       Then the response status code should be 200
       And the response body should contain "\"version\":\"v1.5\""

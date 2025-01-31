@@ -7,7 +7,7 @@ Feature: BackendTimeout
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/backend-timeout/3.14/delay/2" with body ""
     And I eventually receive 504 response code, not accepting
       |429|

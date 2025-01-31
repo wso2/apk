@@ -7,7 +7,7 @@ Feature: circuitBreakerMaxRequest
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/circuit-breaker-max-request/3.14/anything/test" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
@@ -23,7 +23,7 @@ Feature: circuitBreakerMaxRequest
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers
-      |Authorization|bearer ${accessToken}|
+      |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/circuit-breaker-max-request-v1/3.14/anything/test" with body ""
     And I eventually receive 200 response code, not accepting
       |429|

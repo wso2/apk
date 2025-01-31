@@ -7,7 +7,7 @@ Feature: Test HTTPRoute Filter Request Redirect functionality
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
         And I send "GET" request to "https://default.gw.wso2.com:9095/request-redirect-filter/3.14/employee/" with body ""
         And I eventually receive 301 response code, not accepting
             | 401 |
@@ -29,7 +29,7 @@ Feature: Test HTTPRoute Filter Request Redirect functionality
         And make the API deployment request
         Then the response status code should be 200
         Then I set headers
-            | Authorization             | bearer ${accessToken} |
+            | Authorization             | Bearer ${accessToken} |
         And I send "GET" request to "https://default.gw.wso2.com:9095/request-redirect-filter/3.14/employee/" with body ""
         And I eventually receive 301 response code, not accepting
             | 401 |
