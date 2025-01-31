@@ -5,7 +5,6 @@ import (
 	"strconv"
 )
 
-
 // ConvertBytesToInt converts a []byte to an int.
 // It assumes the []byte contains a valid numeric string (e.g., "123").
 func ConvertBytesToInt(data []byte) (int, error) {

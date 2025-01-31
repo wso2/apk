@@ -31,6 +31,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+	"github.com/wso2/apk/gateway/enforcer/internal/jwtbackend"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
@@ -189,6 +190,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			s.requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
 			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
+			s.log.Info(fmt.Sprintf("Matched api bjc: %v", s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
 			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
 			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
 			if !s.requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !s.requestConfigHolder.MatchedAPI.DisableAuthentication {
@@ -216,6 +218,11 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier)
 				}
 			}
+			backendJWT := ""
+			if s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration != nil && s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration.Enabled {
+				backendJWT = jwtbackend.CreateBackendJWT(s.requestConfigHolder, s.cfg)
+				s.log.Sugar().Infof("generated backendJWT==%v", backendJWT)
+			}
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
@@ -232,6 +239,17 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ClearRouteCache: true,
 				},
 			}
+			if backendJWT != "" {
+				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
+						Header: &corev3.HeaderValue{
+							Key:      s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader,
+							RawValue: []byte(attributes.ClusterName),
+						},
+					
+				})
+				s.cfg.Logger.Info(fmt.Sprintf("Added backend JWT to the header: %s, header name: %s", backendJWT, s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader))
+			}
+
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
 				RequestHeaders: rhq,
 			}
@@ -796,7 +814,7 @@ func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, e
 }
 
 func (s *ExternalProcessingServer) prepareMetadataKeyValuePairAndAddTo(metadataKeyValuePair map[string]string) *map[string]string {
-	if s.requestConfigHolder.MatchedAPI != nil {
+	if s.requestConfigHolder != nil && s.requestConfigHolder.MatchedAPI != nil {
 		metadataKeyValuePair[analytics.APIIDKey] = s.requestConfigHolder.MatchedAPI.UUID
 		metadataKeyValuePair[analytics.APIContextKey] = s.requestConfigHolder.MatchedAPI.BasePath
 		metadataKeyValuePair[organizationMetadataKey] = s.requestConfigHolder.MatchedAPI.OrganizationID

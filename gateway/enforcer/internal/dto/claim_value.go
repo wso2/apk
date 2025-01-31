@@ -19,6 +19,6 @@ package dto
 
 // ClaimValue represents the claim value
 type ClaimValue struct {
-    Value interface{} `json:"value"` // Value of the claim (can be any type)
+    Value string `json:"value"` // Value of the claim (can be any type)
     Type  string      `json:"type"`  // Type of the claim
 }
