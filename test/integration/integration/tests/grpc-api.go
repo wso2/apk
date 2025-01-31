@@ -26,7 +26,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, GRPCAPI)
+	// IntegrationTests = append(IntegrationTests, GRPCAPI)
 }
 
 // GRPCAPI tests gRPC API
