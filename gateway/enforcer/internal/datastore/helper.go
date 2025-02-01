@@ -59,7 +59,7 @@ func buildResource(operation *api.Operation, path string, aiModelBasedRoundRobin
 		Method:                 requestconfig.HTTPMethods(operation.Method),
 		Tier:                   operation.Tier,
 		EndpointSecurity:       endpointSecurity,
-		AuthenticationConfig:   authConfig,
+		AuthenticationConfig:   &authConfig,
 		Scopes:                 operation.Scopes,
 		AIModelBasedRoundRobin: aiModelBasedRoundRobin,
 	}

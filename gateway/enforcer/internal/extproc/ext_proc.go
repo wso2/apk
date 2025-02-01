@@ -164,7 +164,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		dynamicMetadataKeyValuePairs := make(map[string]string)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
-			s.requestConfigHolder = &requestconfig.Holder{}
+			requestConfigHolder := &requestconfig.Holder{}
 			attributes, err := extractExternalProcessingAttributes(req.GetAttributes())
 			if err != nil {
 				s.log.Error(err, "failed to extract context attributes")
@@ -181,23 +181,26 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 				break
 			}
-			s.requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
-			s.requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
+			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
+			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
 				s.log.Error(err, "failed to extract context metadata")
 				return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
 			}
-			s.requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
-			s.requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(s.requestConfigHolder.MatchedAPI, *s.requestConfigHolder.ExternalProcessingEnvoyAttributes)
-			s.log.Info(fmt.Sprintf("Matched api bjc: %v", s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
-			s.log.Info(fmt.Sprintf("Matched Resource: %v", s.requestConfigHolder.MatchedResource))
-			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
-			if !s.requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !s.requestConfigHolder.MatchedAPI.DisableAuthentication {
-				jwtValidationInfo := s.jwtTransformer.TransformJWTClaims(s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.ExternalProcessingEnvoyMetadata)
-				s.requestConfigHolder.JWTValidationInfo = &jwtValidationInfo
+			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
+			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
+			
+			
+			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
+			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
+			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
+			s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
+			if requestConfigHolder.MatchedResource != nil && requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !requestConfigHolder.MatchedAPI.DisableAuthentication {
+				jwtValidationInfo := s.jwtTransformer.TransformJWTClaims(requestConfigHolder.MatchedAPI.OrganizationID, requestConfigHolder.ExternalProcessingEnvoyMetadata)
+				requestConfigHolder.JWTValidationInfo = &jwtValidationInfo
 				s.log.Sugar().Infof("jwtValidation==%v", jwtValidationInfo)
-				if immediateResponse := authorization.Validate(s.requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
+				if immediateResponse := authorization.Validate(requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
 					resp = &envoy_service_proc_v3.ProcessingResponse{
 						Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
 							ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
@@ -211,16 +214,16 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					break
 				}
 				resp = &envoy_service_proc_v3.ProcessingResponse{}
-				if s.requestConfigHolder.MatchedSubscription != nil && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && s.requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
-					dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = s.requestConfigHolder.MatchedSubscription.UUID
-					dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = s.requestConfigHolder.MatchedSubscription.RatelimitTier
-					dynamicMetadataKeyValuePairs[organizationMetadataKey] = s.requestConfigHolder.MatchedAPI.OrganizationID
-					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", s.requestConfigHolder.MatchedAPI.OrganizationID, s.requestConfigHolder.MatchedSubscription.RatelimitTier)
+				if requestConfigHolder.MatchedSubscription != nil && requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
+					dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = requestConfigHolder.MatchedSubscription.UUID
+					dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = requestConfigHolder.MatchedSubscription.RatelimitTier
+					dynamicMetadataKeyValuePairs[organizationMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
+					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", requestConfigHolder.MatchedAPI.OrganizationID, requestConfigHolder.MatchedSubscription.RatelimitTier)
 				}
 			}
 			backendJWT := ""
-			if s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration != nil && s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration.Enabled {
-				backendJWT = jwtbackend.CreateBackendJWT(s.requestConfigHolder, s.cfg)
+			if requestConfigHolder.MatchedAPI != nil && requestConfigHolder.MatchedAPI.BackendJwtConfiguration != nil && requestConfigHolder.MatchedAPI.BackendJwtConfiguration.Enabled {
+				backendJWT = jwtbackend.CreateBackendJWT(requestConfigHolder, s.cfg)
 				s.log.Sugar().Infof("generated backendJWT==%v", backendJWT)
 			}
 			rhq := &envoy_service_proc_v3.HeadersResponse{
@@ -242,12 +245,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if backendJWT != "" {
 				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
 						Header: &corev3.HeaderValue{
-							Key:      s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader,
+							Key:      requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader,
 							RawValue: []byte(attributes.ClusterName),
 						},
 					
 				})
-				s.cfg.Logger.Info(fmt.Sprintf("Added backend JWT to the header: %s, header name: %s", backendJWT, s.requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader))
+				s.cfg.Logger.Info(fmt.Sprintf("Added backend JWT to the header: %s, header name: %s", backendJWT, requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader))
 			}
 
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
@@ -257,8 +260,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
 			s.log.Info("Request Body Flow")
-			s.log.Info(fmt.Sprintf("Matched Resource Round Robin :%+v", s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin))
-			s.log.Info(fmt.Sprintf("Matched api Round Robin: %v", s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin))
+			// s.log.Info(fmt.Sprintf("Matched Resource Round Robin :%+v", s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin))
+			// s.log.Info(fmt.Sprintf("Matched api Round Robin: %v", s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin))
 			if s.requestConfigHolder != nil &&
 				s.requestConfigHolder.MatchedAPI != nil &&
 				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
@@ -529,7 +532,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
-			s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
+			// s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
 			s.log.Info("Response Body Flow")
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
