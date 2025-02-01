@@ -79,6 +79,8 @@ func (ds *SubscriptionApplicationDataStore) AddApplicationMapping(mapping *subsc
 	if _, exists := ds.applicationMappings[mapping.OrganizationID]; !exists {
 		ds.applicationMappings[mapping.OrganizationID] = make(map[string]map[string]*subscription_model.ApplicationMapping)
 		ds.applicationMappings[mapping.OrganizationID][mapping.ApplicationRef] = make(map[string]*subscription_model.ApplicationMapping)
+	} else if _, exists := ds.applicationMappings[mapping.OrganizationID][mapping.ApplicationRef]; !exists {
+		ds.applicationMappings[mapping.OrganizationID][mapping.ApplicationRef] = make(map[string]*subscription_model.ApplicationMapping)
 	}
 	ds.applicationMappings[mapping.OrganizationID][mapping.ApplicationRef][mapping.UUID] = mapping
 }
