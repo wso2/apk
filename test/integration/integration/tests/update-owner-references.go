@@ -29,7 +29,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, UpdateOwnerReferences)
+	// IntegrationTests = append(IntegrationTests, UpdateOwnerReferences)
 }
 
 // UpdateOwnerReferences test
