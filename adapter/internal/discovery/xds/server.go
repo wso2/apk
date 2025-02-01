@@ -417,18 +417,18 @@ func GenerateJWTProviders(label string, jwtIssuers map[string]*v1alpha1.Resolved
 
 // GenerateInterceptorClusters generates the globally available clusters and endpoints with interceptors.
 func GenerateInterceptorClusters(label string,
-	gwReqICluster *clusterv3.Cluster, gwReqIAddresses []*corev3.Address,
-	gwResICluster *clusterv3.Cluster, gwResIAddresses []*corev3.Address) {
+	gwReqICluster []*clusterv3.Cluster, gwReqIAddresses []*corev3.Address,
+	gwResICluster []*clusterv3.Cluster, gwResIAddresses []*corev3.Address) {
 	var clusters []*clusterv3.Cluster
 	var endpoints []*corev3.Address
 
 	if gwReqICluster != nil && len(gwReqIAddresses) > 0 {
-		clusters = append(clusters, gwReqICluster)
+		clusters = append(clusters, gwReqICluster...)
 		endpoints = append(endpoints, gwReqIAddresses...)
 	}
 
 	if gwResICluster != nil && len(gwResIAddresses) > 0 {
-		clusters = append(clusters, gwResICluster)
+		clusters = append(clusters, gwResICluster...)
 		endpoints = append(endpoints, gwResIAddresses...)
 	}
 

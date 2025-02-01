@@ -63,7 +63,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 	if conf.Tracing.Enabled && conf.Tracing.Type != envoy.TracerTypeAzure {
 		logger.LoggerOasparser.Debugln("Creating global cluster - Tracing")
 		if c, e, err := envoy.CreateTracingCluster(conf); err == nil {
-			clusters = append(clusters, c)
+			clusters = append(clusters, c...)
 			endpoints = append(endpoints, e...)
 		} else {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2249, logging.CRITICAL, "Failed to initialize tracer's cluster. Router tracing will be disabled. %v", err.Error()))
@@ -535,7 +535,7 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 			logger.LoggerOasparser.Error(err)
 			return nil, nil, nil, err
 		}
-		jwksClusters = append(jwksClusters, jwksCluster)
+		jwksClusters = append(jwksClusters, jwksCluster...)
 		jwksAddresses = append(jwksAddresses, jwksAddress...)
 		jwtProvider.JwksSourceSpecifier = &jwt.JwtProvider_RemoteJwks{
 			RemoteJwks: &jwt.RemoteJwks{
@@ -560,7 +560,7 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 
 	return jwtProvider, jwksClusters, jwksAddresses, nil
 }
-func getRemoteJWKSCluster(jwksInfo v1alpha1.ResolvedJWKS, clusterName string) (*clusterv3.Cluster, []*corev3.Address, error) {
+func getRemoteJWKSCluster(jwksInfo v1alpha1.ResolvedJWKS, clusterName string) ([]*clusterv3.Cluster, []*corev3.Address, error) {
 	endpoint, err := model.GETHTTPEndpoint(jwksInfo.URL)
 	if err != nil {
 		return nil, nil, err

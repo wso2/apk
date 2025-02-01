@@ -368,9 +368,10 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 5, len(clusters), "Number of production clusters created is incorrect.")
 
 	orderServiceCluster := clusters[1]
+	orderServiceCluster2 := clusters[2]
 	clusterName := strings.Split(orderServiceCluster.GetName(), "_")
 
 	assert.Equal(t, 5, len(clusterName), "clustername is incorrect. Expected: carbon.super__prod.gw.wso2.com_test-api1.0.0_<id>, Found: %s", orderServiceCluster.GetName())
@@ -383,11 +384,11 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	orderServiceClusterPort0 := orderServiceCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetPortValue()
 	orderServiceClusterPriority0 := orderServiceCluster.GetLoadAssignment().GetEndpoints()[0].Priority
-	orderServiceClusterHost1 := orderServiceCluster.GetLoadAssignment().GetEndpoints()[1].GetLbEndpoints()[0].GetEndpoint().
+	orderServiceClusterHost1 := orderServiceCluster2.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetAddress()
-	orderServiceClusterPort1 := orderServiceCluster.GetLoadAssignment().GetEndpoints()[1].GetLbEndpoints()[0].GetEndpoint().
+	orderServiceClusterPort1 := orderServiceCluster2.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetPortValue()
-	orderServiceClusterPriority1 := orderServiceCluster.GetLoadAssignment().GetEndpoints()[1].Priority
+	orderServiceClusterPriority1 := orderServiceCluster2.GetLoadAssignment().GetEndpoints()[0].Priority
 
 	assert.NotEmpty(t, orderServiceClusterHost0, "Order Service Cluster's assigned host should not be null")
 	assert.Equal(t, "order-service.default", orderServiceClusterHost0, "Order Service Cluster's assigned host is incorrect.")
@@ -401,18 +402,19 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	assert.Equal(t, uint32(8080), orderServiceClusterPort1, "Order Service Cluster's second endpoint port is incorrect.")
 	assert.Equal(t, uint32(0), orderServiceClusterPriority1, "Order Service Cluster's second endpoint Priority is incorrect.")
 
-	userServiceCluster := clusters[2]
+	userServiceCluster := clusters[3]
+	userServiceCluster2 := clusters[4]
 
 	userServiceClusterHost0 := userServiceCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetAddress()
 	userServiceClusterPort0 := userServiceCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetPortValue()
 	userServiceClusterPriority0 := userServiceCluster.GetLoadAssignment().GetEndpoints()[0].Priority
-	userServiceClusterHost1 := userServiceCluster.GetLoadAssignment().GetEndpoints()[1].GetLbEndpoints()[0].GetEndpoint().
+	userServiceClusterHost1 := userServiceCluster2.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetAddress()
-	userServiceClusterPort1 := userServiceCluster.GetLoadAssignment().GetEndpoints()[1].GetLbEndpoints()[0].GetEndpoint().
+	userServiceClusterPort1 := userServiceCluster2.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetPortValue()
-	userServiceClusterPriority1 := userServiceCluster.GetLoadAssignment().GetEndpoints()[1].Priority
+	userServiceClusterPriority1 := userServiceCluster2.GetLoadAssignment().GetEndpoints()[0].Priority
 
 	assert.NotEmpty(t, userServiceClusterHost0, "User Service Cluster's assigned host should not be null")
 	assert.Equal(t, "user-service.default", userServiceClusterHost0, "User Service Cluster's assigned host is incorrect.")
@@ -426,10 +428,10 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	assert.Equal(t, uint32(8081), userServiceClusterPort1, "User Service Cluster's second endpoint port is incorrect.")
 	assert.Equal(t, uint32(0), userServiceClusterPriority1, "API Level Cluster's second endpoint Priority is incorrect.")
 
-	assert.Equal(t, 15, len(routes), "Created number of routes are incorrect.")
+	assert.Equal(t, 29, len(routes), "Created number of routes are incorrect.")
 	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/orders((?:/.*)*)"}, routes[2].GetMatch().GetSafeRegex().Regex)
-	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/users((?:/.*)*)"}, routes[9].GetMatch().GetSafeRegex().Regex)
-	assert.NotEqual(t, routes[1].GetMatch().GetSafeRegex().Regex, routes[8].GetMatch().GetSafeRegex().Regex,
+	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/users((?:/.*)*)"}, routes[18].GetMatch().GetSafeRegex().Regex)
+	assert.NotEqual(t, routes[1].GetMatch().GetSafeRegex().Regex, routes[17].GetMatch().GetSafeRegex().Regex,
 		"The route regex for the two paths should not be the same")
 }
 
@@ -737,5 +739,5 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
 }

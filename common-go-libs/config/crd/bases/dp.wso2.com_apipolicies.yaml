@@ -1179,6 +1179,12 @@ spec:
                                             required:
                                             - name
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: Must have port for Service
+                                                reference
+                                              rule: '(size(self.group) == 0 && self.kind
+                                                == ''Service'') ? has(self.port) :
+                                                true'
                                           fraction:
                                             description: "Fraction represents the
                                               fraction of requests that should be
@@ -1199,6 +1205,10 @@ spec:
                                             required:
                                             - numerator
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: numerator must be less than
+                                                or equal to denominator
+                                              rule: self.numerator <= self.denominator
                                           percent:
                                             description: "Percent represents the percentage
                                               of requests that should be mirrored
@@ -1312,6 +1322,24 @@ spec:
                                             required:
                                             - type
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: replaceFullPath must be specified
+                                                when type is set to 'ReplaceFullPath'
+                                              rule: 'self.type == ''ReplaceFullPath''
+                                                ? has(self.replaceFullPath) : true'
+                                            - message: type must be 'ReplaceFullPath'
+                                                when replaceFullPath is set
+                                              rule: 'has(self.replaceFullPath) ? self.type
+                                                == ''ReplaceFullPath'' : true'
+                                            - message: replacePrefixMatch must be
+                                                specified when type is set to 'ReplacePrefixMatch'
+                                              rule: 'self.type == ''ReplacePrefixMatch''
+                                                ? has(self.replacePrefixMatch) : true'
+                                            - message: type must be 'ReplacePrefixMatch'
+                                                when replacePrefixMatch is set
+                                              rule: 'has(self.replacePrefixMatch)
+                                                ? self.type == ''ReplacePrefixMatch''
+                                                : true'
                                           port:
                                             description: "Port is the port to be used
                                               in the value of the `Location` header
@@ -1626,13 +1654,102 @@ spec:
                                             required:
                                             - type
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: replaceFullPath must be specified
+                                                when type is set to 'ReplaceFullPath'
+                                              rule: 'self.type == ''ReplaceFullPath''
+                                                ? has(self.replaceFullPath) : true'
+                                            - message: type must be 'ReplaceFullPath'
+                                                when replaceFullPath is set
+                                              rule: 'has(self.replaceFullPath) ? self.type
+                                                == ''ReplaceFullPath'' : true'
+                                            - message: replacePrefixMatch must be
+                                                specified when type is set to 'ReplacePrefixMatch'
+                                              rule: 'self.type == ''ReplacePrefixMatch''
+                                                ? has(self.replacePrefixMatch) : true'
+                                            - message: type must be 'ReplacePrefixMatch'
+                                                when replacePrefixMatch is set
+                                              rule: 'has(self.replacePrefixMatch)
+                                                ? self.type == ''ReplacePrefixMatch''
+                                                : true'
                                         type: object
                                     required:
                                     - type
                                     type: object
-                                    
+                                    x-kubernetes-validations:
+                                    - message: filter.requestHeaderModifier must be
+                                        nil if the filter.type is not RequestHeaderModifier
+                                      rule: '!(has(self.requestHeaderModifier) &&
+                                        self.type != ''RequestHeaderModifier'')'
+                                    - message: filter.requestHeaderModifier must be
+                                        specified for RequestHeaderModifier filter.type
+                                      rule: '!(!has(self.requestHeaderModifier) &&
+                                        self.type == ''RequestHeaderModifier'')'
+                                    - message: filter.responseHeaderModifier must
+                                        be nil if the filter.type is not ResponseHeaderModifier
+                                      rule: '!(has(self.responseHeaderModifier) &&
+                                        self.type != ''ResponseHeaderModifier'')'
+                                    - message: filter.responseHeaderModifier must
+                                        be specified for ResponseHeaderModifier filter.type
+                                      rule: '!(!has(self.responseHeaderModifier) &&
+                                        self.type == ''ResponseHeaderModifier'')'
+                                    - message: filter.requestMirror must be nil if
+                                        the filter.type is not RequestMirror
+                                      rule: '!(has(self.requestMirror) && self.type
+                                        != ''RequestMirror'')'
+                                    - message: filter.requestMirror must be specified
+                                        for RequestMirror filter.type
+                                      rule: '!(!has(self.requestMirror) && self.type
+                                        == ''RequestMirror'')'
+                                    - message: filter.requestRedirect must be nil
+                                        if the filter.type is not RequestRedirect
+                                      rule: '!(has(self.requestRedirect) && self.type
+                                        != ''RequestRedirect'')'
+                                    - message: filter.requestRedirect must be specified
+                                        for RequestRedirect filter.type
+                                      rule: '!(!has(self.requestRedirect) && self.type
+                                        == ''RequestRedirect'')'
+                                    - message: filter.urlRewrite must be nil if the
+                                        filter.type is not URLRewrite
+                                      rule: '!(has(self.urlRewrite) && self.type !=
+                                        ''URLRewrite'')'
+                                    - message: filter.urlRewrite must be specified
+                                        for URLRewrite filter.type
+                                      rule: '!(!has(self.urlRewrite) && self.type
+                                        == ''URLRewrite'')'
+                                    - message: filter.extensionRef must be nil if
+                                        the filter.type is not ExtensionRef
+                                      rule: '!(has(self.extensionRef) && self.type
+                                        != ''ExtensionRef'')'
+                                    - message: filter.extensionRef must be specified
+                                        for ExtensionRef filter.type
+                                      rule: '!(!has(self.extensionRef) && self.type
+                                        == ''ExtensionRef'')'
                                   maxItems: 16
                                   type: array
+                                  x-kubernetes-validations:
+                                  - message: May specify either httpRouteFilterRequestRedirect
+                                      or httpRouteFilterRequestRewrite, but not both
+                                    rule: '!(self.exists(f, f.type == ''RequestRedirect'')
+                                      && self.exists(f, f.type == ''URLRewrite''))'
+                                  - message: May specify either httpRouteFilterRequestRedirect
+                                      or httpRouteFilterRequestRewrite, but not both
+                                    rule: '!(self.exists(f, f.type == ''RequestRedirect'')
+                                      && self.exists(f, f.type == ''URLRewrite''))'
+                                  - message: RequestHeaderModifier filter cannot be
+                                      repeated
+                                    rule: self.filter(f, f.type == 'RequestHeaderModifier').size()
+                                      <= 1
+                                  - message: ResponseHeaderModifier filter cannot
+                                      be repeated
+                                    rule: self.filter(f, f.type == 'ResponseHeaderModifier').size()
+                                      <= 1
+                                  - message: RequestRedirect filter cannot be repeated
+                                    rule: self.filter(f, f.type == 'RequestRedirect').size()
+                                      <= 1
+                                  - message: URLRewrite filter cannot be repeated
+                                    rule: self.filter(f, f.type == 'URLRewrite').size()
+                                      <= 1
                                 group:
                                   default: ""
                                   description: Group is the group of the referent.
@@ -1713,6 +1830,10 @@ spec:
                               required:
                               - name
                               type: object
+                              x-kubernetes-validations:
+                              - message: Must have port for Service reference
+                                rule: '(size(self.group) == 0 && self.kind == ''Service'')
+                                  ? has(self.port) : true'
                             model:
                               type: string
                             weight:
@@ -2029,6 +2150,12 @@ spec:
                                             required:
                                             - name
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: Must have port for Service
+                                                reference
+                                              rule: '(size(self.group) == 0 && self.kind
+                                                == ''Service'') ? has(self.port) :
+                                                true'
                                           fraction:
                                             description: "Fraction represents the
                                               fraction of requests that should be
@@ -2049,6 +2176,10 @@ spec:
                                             required:
                                             - numerator
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: numerator must be less than
+                                                or equal to denominator
+                                              rule: self.numerator <= self.denominator
                                           percent:
                                             description: "Percent represents the percentage
                                               of requests that should be mirrored
@@ -2162,6 +2293,24 @@ spec:
                                             required:
                                             - type
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: replaceFullPath must be specified
+                                                when type is set to 'ReplaceFullPath'
+                                              rule: 'self.type == ''ReplaceFullPath''
+                                                ? has(self.replaceFullPath) : true'
+                                            - message: type must be 'ReplaceFullPath'
+                                                when replaceFullPath is set
+                                              rule: 'has(self.replaceFullPath) ? self.type
+                                                == ''ReplaceFullPath'' : true'
+                                            - message: replacePrefixMatch must be
+                                                specified when type is set to 'ReplacePrefixMatch'
+                                              rule: 'self.type == ''ReplacePrefixMatch''
+                                                ? has(self.replacePrefixMatch) : true'
+                                            - message: type must be 'ReplacePrefixMatch'
+                                                when replacePrefixMatch is set
+                                              rule: 'has(self.replacePrefixMatch)
+                                                ? self.type == ''ReplacePrefixMatch''
+                                                : true'
                                           port:
                                             description: "Port is the port to be used
                                               in the value of the `Location` header
@@ -2476,12 +2625,102 @@ spec:
                                             required:
                                             - type
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: replaceFullPath must be specified
+                                                when type is set to 'ReplaceFullPath'
+                                              rule: 'self.type == ''ReplaceFullPath''
+                                                ? has(self.replaceFullPath) : true'
+                                            - message: type must be 'ReplaceFullPath'
+                                                when replaceFullPath is set
+                                              rule: 'has(self.replaceFullPath) ? self.type
+                                                == ''ReplaceFullPath'' : true'
+                                            - message: replacePrefixMatch must be
+                                                specified when type is set to 'ReplacePrefixMatch'
+                                              rule: 'self.type == ''ReplacePrefixMatch''
+                                                ? has(self.replacePrefixMatch) : true'
+                                            - message: type must be 'ReplacePrefixMatch'
+                                                when replacePrefixMatch is set
+                                              rule: 'has(self.replacePrefixMatch)
+                                                ? self.type == ''ReplacePrefixMatch''
+                                                : true'
                                         type: object
                                     required:
                                     - type
                                     type: object
+                                    x-kubernetes-validations:
+                                    - message: filter.requestHeaderModifier must be
+                                        nil if the filter.type is not RequestHeaderModifier
+                                      rule: '!(has(self.requestHeaderModifier) &&
+                                        self.type != ''RequestHeaderModifier'')'
+                                    - message: filter.requestHeaderModifier must be
+                                        specified for RequestHeaderModifier filter.type
+                                      rule: '!(!has(self.requestHeaderModifier) &&
+                                        self.type == ''RequestHeaderModifier'')'
+                                    - message: filter.responseHeaderModifier must
+                                        be nil if the filter.type is not ResponseHeaderModifier
+                                      rule: '!(has(self.responseHeaderModifier) &&
+                                        self.type != ''ResponseHeaderModifier'')'
+                                    - message: filter.responseHeaderModifier must
+                                        be specified for ResponseHeaderModifier filter.type
+                                      rule: '!(!has(self.responseHeaderModifier) &&
+                                        self.type == ''ResponseHeaderModifier'')'
+                                    - message: filter.requestMirror must be nil if
+                                        the filter.type is not RequestMirror
+                                      rule: '!(has(self.requestMirror) && self.type
+                                        != ''RequestMirror'')'
+                                    - message: filter.requestMirror must be specified
+                                        for RequestMirror filter.type
+                                      rule: '!(!has(self.requestMirror) && self.type
+                                        == ''RequestMirror'')'
+                                    - message: filter.requestRedirect must be nil
+                                        if the filter.type is not RequestRedirect
+                                      rule: '!(has(self.requestRedirect) && self.type
+                                        != ''RequestRedirect'')'
+                                    - message: filter.requestRedirect must be specified
+                                        for RequestRedirect filter.type
+                                      rule: '!(!has(self.requestRedirect) && self.type
+                                        == ''RequestRedirect'')'
+                                    - message: filter.urlRewrite must be nil if the
+                                        filter.type is not URLRewrite
+                                      rule: '!(has(self.urlRewrite) && self.type !=
+                                        ''URLRewrite'')'
+                                    - message: filter.urlRewrite must be specified
+                                        for URLRewrite filter.type
+                                      rule: '!(!has(self.urlRewrite) && self.type
+                                        == ''URLRewrite'')'
+                                    - message: filter.extensionRef must be nil if
+                                        the filter.type is not ExtensionRef
+                                      rule: '!(has(self.extensionRef) && self.type
+                                        != ''ExtensionRef'')'
+                                    - message: filter.extensionRef must be specified
+                                        for ExtensionRef filter.type
+                                      rule: '!(!has(self.extensionRef) && self.type
+                                        == ''ExtensionRef'')'
                                   maxItems: 16
                                   type: array
+                                  x-kubernetes-validations:
+                                  - message: May specify either httpRouteFilterRequestRedirect
+                                      or httpRouteFilterRequestRewrite, but not both
+                                    rule: '!(self.exists(f, f.type == ''RequestRedirect'')
+                                      && self.exists(f, f.type == ''URLRewrite''))'
+                                  - message: May specify either httpRouteFilterRequestRedirect
+                                      or httpRouteFilterRequestRewrite, but not both
+                                    rule: '!(self.exists(f, f.type == ''RequestRedirect'')
+                                      && self.exists(f, f.type == ''URLRewrite''))'
+                                  - message: RequestHeaderModifier filter cannot be
+                                      repeated
+                                    rule: self.filter(f, f.type == 'RequestHeaderModifier').size()
+                                      <= 1
+                                  - message: ResponseHeaderModifier filter cannot
+                                      be repeated
+                                    rule: self.filter(f, f.type == 'ResponseHeaderModifier').size()
+                                      <= 1
+                                  - message: RequestRedirect filter cannot be repeated
+                                    rule: self.filter(f, f.type == 'RequestRedirect').size()
+                                      <= 1
+                                  - message: URLRewrite filter cannot be repeated
+                                    rule: self.filter(f, f.type == 'URLRewrite').size()
+                                      <= 1
                                 group:
                                   default: ""
                                   description: Group is the group of the referent.
@@ -2562,6 +2801,10 @@ spec:
                               required:
                               - name
                               type: object
+                              x-kubernetes-validations:
+                              - message: Must have port for Service reference
+                                rule: '(size(self.group) == 0 && self.kind == ''Service'')
+                                  ? has(self.port) : true'
                             model:
                               type: string
                             weight:
@@ -2991,6 +3234,12 @@ spec:
                                             required:
                                             - name
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: Must have port for Service
+                                                reference
+                                              rule: '(size(self.group) == 0 && self.kind
+                                                == ''Service'') ? has(self.port) :
+                                                true'
                                           fraction:
                                             description: "Fraction represents the
                                               fraction of requests that should be
@@ -3011,6 +3260,10 @@ spec:
                                             required:
                                             - numerator
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: numerator must be less than
+                                                or equal to denominator
+                                              rule: self.numerator <= self.denominator
                                           percent:
                                             description: "Percent represents the percentage
                                               of requests that should be mirrored
@@ -3124,6 +3377,24 @@ spec:
                                             required:
                                             - type
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: replaceFullPath must be specified
+                                                when type is set to 'ReplaceFullPath'
+                                              rule: 'self.type == ''ReplaceFullPath''
+                                                ? has(self.replaceFullPath) : true'
+                                            - message: type must be 'ReplaceFullPath'
+                                                when replaceFullPath is set
+                                              rule: 'has(self.replaceFullPath) ? self.type
+                                                == ''ReplaceFullPath'' : true'
+                                            - message: replacePrefixMatch must be
+                                                specified when type is set to 'ReplacePrefixMatch'
+                                              rule: 'self.type == ''ReplacePrefixMatch''
+                                                ? has(self.replacePrefixMatch) : true'
+                                            - message: type must be 'ReplacePrefixMatch'
+                                                when replacePrefixMatch is set
+                                              rule: 'has(self.replacePrefixMatch)
+                                                ? self.type == ''ReplacePrefixMatch''
+                                                : true'
                                           port:
                                             description: "Port is the port to be used
                                               in the value of the `Location` header
@@ -3438,12 +3709,102 @@ spec:
                                             required:
                                             - type
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: replaceFullPath must be specified
+                                                when type is set to 'ReplaceFullPath'
+                                              rule: 'self.type == ''ReplaceFullPath''
+                                                ? has(self.replaceFullPath) : true'
+                                            - message: type must be 'ReplaceFullPath'
+                                                when replaceFullPath is set
+                                              rule: 'has(self.replaceFullPath) ? self.type
+                                                == ''ReplaceFullPath'' : true'
+                                            - message: replacePrefixMatch must be
+                                                specified when type is set to 'ReplacePrefixMatch'
+                                              rule: 'self.type == ''ReplacePrefixMatch''
+                                                ? has(self.replacePrefixMatch) : true'
+                                            - message: type must be 'ReplacePrefixMatch'
+                                                when replacePrefixMatch is set
+                                              rule: 'has(self.replacePrefixMatch)
+                                                ? self.type == ''ReplacePrefixMatch''
+                                                : true'
                                         type: object
                                     required:
                                     - type
                                     type: object
+                                    x-kubernetes-validations:
+                                    - message: filter.requestHeaderModifier must be
+                                        nil if the filter.type is not RequestHeaderModifier
+                                      rule: '!(has(self.requestHeaderModifier) &&
+                                        self.type != ''RequestHeaderModifier'')'
+                                    - message: filter.requestHeaderModifier must be
+                                        specified for RequestHeaderModifier filter.type
+                                      rule: '!(!has(self.requestHeaderModifier) &&
+                                        self.type == ''RequestHeaderModifier'')'
+                                    - message: filter.responseHeaderModifier must
+                                        be nil if the filter.type is not ResponseHeaderModifier
+                                      rule: '!(has(self.responseHeaderModifier) &&
+                                        self.type != ''ResponseHeaderModifier'')'
+                                    - message: filter.responseHeaderModifier must
+                                        be specified for ResponseHeaderModifier filter.type
+                                      rule: '!(!has(self.responseHeaderModifier) &&
+                                        self.type == ''ResponseHeaderModifier'')'
+                                    - message: filter.requestMirror must be nil if
+                                        the filter.type is not RequestMirror
+                                      rule: '!(has(self.requestMirror) && self.type
+                                        != ''RequestMirror'')'
+                                    - message: filter.requestMirror must be specified
+                                        for RequestMirror filter.type
+                                      rule: '!(!has(self.requestMirror) && self.type
+                                        == ''RequestMirror'')'
+                                    - message: filter.requestRedirect must be nil
+                                        if the filter.type is not RequestRedirect
+                                      rule: '!(has(self.requestRedirect) && self.type
+                                        != ''RequestRedirect'')'
+                                    - message: filter.requestRedirect must be specified
+                                        for RequestRedirect filter.type
+                                      rule: '!(!has(self.requestRedirect) && self.type
+                                        == ''RequestRedirect'')'
+                                    - message: filter.urlRewrite must be nil if the
+                                        filter.type is not URLRewrite
+                                      rule: '!(has(self.urlRewrite) && self.type !=
+                                        ''URLRewrite'')'
+                                    - message: filter.urlRewrite must be specified
+                                        for URLRewrite filter.type
+                                      rule: '!(!has(self.urlRewrite) && self.type
+                                        == ''URLRewrite'')'
+                                    - message: filter.extensionRef must be nil if
+                                        the filter.type is not ExtensionRef
+                                      rule: '!(has(self.extensionRef) && self.type
+                                        != ''ExtensionRef'')'
+                                    - message: filter.extensionRef must be specified
+                                        for ExtensionRef filter.type
+                                      rule: '!(!has(self.extensionRef) && self.type
+                                        == ''ExtensionRef'')'
                                   maxItems: 16
                                   type: array
+                                  x-kubernetes-validations:
+                                  - message: May specify either httpRouteFilterRequestRedirect
+                                      or httpRouteFilterRequestRewrite, but not both
+                                    rule: '!(self.exists(f, f.type == ''RequestRedirect'')
+                                      && self.exists(f, f.type == ''URLRewrite''))'
+                                  - message: May specify either httpRouteFilterRequestRedirect
+                                      or httpRouteFilterRequestRewrite, but not both
+                                    rule: '!(self.exists(f, f.type == ''RequestRedirect'')
+                                      && self.exists(f, f.type == ''URLRewrite''))'
+                                  - message: RequestHeaderModifier filter cannot be
+                                      repeated
+                                    rule: self.filter(f, f.type == 'RequestHeaderModifier').size()
+                                      <= 1
+                                  - message: ResponseHeaderModifier filter cannot
+                                      be repeated
+                                    rule: self.filter(f, f.type == 'ResponseHeaderModifier').size()
+                                      <= 1
+                                  - message: RequestRedirect filter cannot be repeated
+                                    rule: self.filter(f, f.type == 'RequestRedirect').size()
+                                      <= 1
+                                  - message: URLRewrite filter cannot be repeated
+                                    rule: self.filter(f, f.type == 'URLRewrite').size()
+                                      <= 1
                                 group:
                                   default: ""
                                   description: Group is the group of the referent.
@@ -3524,6 +3885,10 @@ spec:
                               required:
                               - name
                               type: object
+                              x-kubernetes-validations:
+                              - message: Must have port for Service reference
+                                rule: '(size(self.group) == 0 && self.kind == ''Service'')
+                                  ? has(self.port) : true'
                             model:
                               type: string
                             weight:
@@ -3840,6 +4205,12 @@ spec:
                                             required:
                                             - name
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: Must have port for Service
+                                                reference
+                                              rule: '(size(self.group) == 0 && self.kind
+                                                == ''Service'') ? has(self.port) :
+                                                true'
                                           fraction:
                                             description: "Fraction represents the
                                               fraction of requests that should be
@@ -3860,6 +4231,10 @@ spec:
                                             required:
                                             - numerator
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: numerator must be less than
+                                                or equal to denominator
+                                              rule: self.numerator <= self.denominator
                                           percent:
                                             description: "Percent represents the percentage
                                               of requests that should be mirrored
@@ -3973,6 +4348,24 @@ spec:
                                             required:
                                             - type
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: replaceFullPath must be specified
+                                                when type is set to 'ReplaceFullPath'
+                                              rule: 'self.type == ''ReplaceFullPath''
+                                                ? has(self.replaceFullPath) : true'
+                                            - message: type must be 'ReplaceFullPath'
+                                                when replaceFullPath is set
+                                              rule: 'has(self.replaceFullPath) ? self.type
+                                                == ''ReplaceFullPath'' : true'
+                                            - message: replacePrefixMatch must be
+                                                specified when type is set to 'ReplacePrefixMatch'
+                                              rule: 'self.type == ''ReplacePrefixMatch''
+                                                ? has(self.replacePrefixMatch) : true'
+                                            - message: type must be 'ReplacePrefixMatch'
+                                                when replacePrefixMatch is set
+                                              rule: 'has(self.replacePrefixMatch)
+                                                ? self.type == ''ReplacePrefixMatch''
+                                                : true'
                                           port:
                                             description: "Port is the port to be used
                                               in the value of the `Location` header
@@ -4287,12 +4680,102 @@ spec:
                                             required:
                                             - type
                                             type: object
+                                            x-kubernetes-validations:
+                                            - message: replaceFullPath must be specified
+                                                when type is set to 'ReplaceFullPath'
+                                              rule: 'self.type == ''ReplaceFullPath''
+                                                ? has(self.replaceFullPath) : true'
+                                            - message: type must be 'ReplaceFullPath'
+                                                when replaceFullPath is set
+                                              rule: 'has(self.replaceFullPath) ? self.type
+                                                == ''ReplaceFullPath'' : true'
+                                            - message: replacePrefixMatch must be
+                                                specified when type is set to 'ReplacePrefixMatch'
+                                              rule: 'self.type == ''ReplacePrefixMatch''
+                                                ? has(self.replacePrefixMatch) : true'
+                                            - message: type must be 'ReplacePrefixMatch'
+                                                when replacePrefixMatch is set
+                                              rule: 'has(self.replacePrefixMatch)
+                                                ? self.type == ''ReplacePrefixMatch''
+                                                : true'
                                         type: object
                                     required:
                                     - type
                                     type: object
+                                    x-kubernetes-validations:
+                                    - message: filter.requestHeaderModifier must be
+                                        nil if the filter.type is not RequestHeaderModifier
+                                      rule: '!(has(self.requestHeaderModifier) &&
+                                        self.type != ''RequestHeaderModifier'')'
+                                    - message: filter.requestHeaderModifier must be
+                                        specified for RequestHeaderModifier filter.type
+                                      rule: '!(!has(self.requestHeaderModifier) &&
+                                        self.type == ''RequestHeaderModifier'')'
+                                    - message: filter.responseHeaderModifier must
+                                        be nil if the filter.type is not ResponseHeaderModifier
+                                      rule: '!(has(self.responseHeaderModifier) &&
+                                        self.type != ''ResponseHeaderModifier'')'
+                                    - message: filter.responseHeaderModifier must
+                                        be specified for ResponseHeaderModifier filter.type
+                                      rule: '!(!has(self.responseHeaderModifier) &&
+                                        self.type == ''ResponseHeaderModifier'')'
+                                    - message: filter.requestMirror must be nil if
+                                        the filter.type is not RequestMirror
+                                      rule: '!(has(self.requestMirror) && self.type
+                                        != ''RequestMirror'')'
+                                    - message: filter.requestMirror must be specified
+                                        for RequestMirror filter.type
+                                      rule: '!(!has(self.requestMirror) && self.type
+                                        == ''RequestMirror'')'
+                                    - message: filter.requestRedirect must be nil
+                                        if the filter.type is not RequestRedirect
+                                      rule: '!(has(self.requestRedirect) && self.type
+                                        != ''RequestRedirect'')'
+                                    - message: filter.requestRedirect must be specified
+                                        for RequestRedirect filter.type
+                                      rule: '!(!has(self.requestRedirect) && self.type
+                                        == ''RequestRedirect'')'
+                                    - message: filter.urlRewrite must be nil if the
+                                        filter.type is not URLRewrite
+                                      rule: '!(has(self.urlRewrite) && self.type !=
+                                        ''URLRewrite'')'
+                                    - message: filter.urlRewrite must be specified
+                                        for URLRewrite filter.type
+                                      rule: '!(!has(self.urlRewrite) && self.type
+                                        == ''URLRewrite'')'
+                                    - message: filter.extensionRef must be nil if
+                                        the filter.type is not ExtensionRef
+                                      rule: '!(has(self.extensionRef) && self.type
+                                        != ''ExtensionRef'')'
+                                    - message: filter.extensionRef must be specified
+                                        for ExtensionRef filter.type
+                                      rule: '!(!has(self.extensionRef) && self.type
+                                        == ''ExtensionRef'')'
                                   maxItems: 16
                                   type: array
+                                  x-kubernetes-validations:
+                                  - message: May specify either httpRouteFilterRequestRedirect
+                                      or httpRouteFilterRequestRewrite, but not both
+                                    rule: '!(self.exists(f, f.type == ''RequestRedirect'')
+                                      && self.exists(f, f.type == ''URLRewrite''))'
+                                  - message: May specify either httpRouteFilterRequestRedirect
+                                      or httpRouteFilterRequestRewrite, but not both
+                                    rule: '!(self.exists(f, f.type == ''RequestRedirect'')
+                                      && self.exists(f, f.type == ''URLRewrite''))'
+                                  - message: RequestHeaderModifier filter cannot be
+                                      repeated
+                                    rule: self.filter(f, f.type == 'RequestHeaderModifier').size()
+                                      <= 1
+                                  - message: ResponseHeaderModifier filter cannot
+                                      be repeated
+                                    rule: self.filter(f, f.type == 'ResponseHeaderModifier').size()
+                                      <= 1
+                                  - message: RequestRedirect filter cannot be repeated
+                                    rule: self.filter(f, f.type == 'RequestRedirect').size()
+                                      <= 1
+                                  - message: URLRewrite filter cannot be repeated
+                                    rule: self.filter(f, f.type == 'URLRewrite').size()
+                                      <= 1
                                 group:
                                   default: ""
                                   description: Group is the group of the referent.
@@ -4373,6 +4856,10 @@ spec:
                               required:
                               - name
                               type: object
+                              x-kubernetes-validations:
+                              - message: Must have port for Service reference
+                                rule: '(size(self.group) == 0 && self.kind == ''Service'')
+                                  ? has(self.port) : true'
                             model:
                               type: string
                             weight:
