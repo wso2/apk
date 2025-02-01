@@ -32,7 +32,7 @@ isolated service http:InterceptableService /api/deployer on ep0 {
     }
 
     public function createInterceptors() returns http:Interceptor|http:Interceptor[] {
-        http:Interceptor[] interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor];
+        http:Interceptor[] interceptors = [requestErrorInterceptor, responseErrorInterceptor];
         return interceptors;
     }
 }
