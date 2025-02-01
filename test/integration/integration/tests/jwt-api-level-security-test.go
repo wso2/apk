@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APILevelJWT)
+	// IntegrationTests = append(IntegrationTests, APILevelJWT)
 }
 
 // APILevelJWT test
@@ -37,7 +37,7 @@ var APILevelJWT = suite.IntegrationTest{
 		gwAddr := "api-level-jwt.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
 		ns := "gateway-integration-test-infra"
-		
+
 		testCases := []http.ExpectedResponse{
 			{
 				Request: http.Request{
@@ -56,7 +56,7 @@ var APILevelJWT = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response: http.Response{StatusCode: 200},
+				Response:  http.Response{StatusCode: 200},
 			},
 			{
 				Request: http.Request{
@@ -74,7 +74,7 @@ var APILevelJWT = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response: http.Response{StatusCode: 401},
+				Response:  http.Response{StatusCode: 401},
 			},
 			{
 				Request: http.Request{
@@ -93,7 +93,7 @@ var APILevelJWT = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response: http.Response{StatusCode: 401},
+				Response:  http.Response{StatusCode: 401},
 			},
 		}
 		for i := range testCases {

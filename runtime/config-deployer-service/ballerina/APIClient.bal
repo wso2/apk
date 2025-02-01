@@ -32,7 +32,7 @@ import wso2/apk_common_lib as commons;
 
 public class APIClient {
 
-    # This function to convert APKInternalAPI model to APKConf.
+    # This function used to convert APKInternalAPI model to APKConf.
     #
     # + api - APKInternalAPI model
     # + return - APKConf model.
