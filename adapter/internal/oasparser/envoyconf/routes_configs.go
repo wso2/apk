@@ -76,13 +76,14 @@ const (
 	DescriptorKeyForAISubscription                         = "subscription"
 )
 
-func generateRouteConfig(routeName string, match *routev3.RouteMatch, action *routev3.Route_Route, redirectAction *routev3.Route_Redirect,
+func generateRouteConfig(routeName string, method *string, match *routev3.RouteMatch, action *routev3.Route_Route, redirectAction *routev3.Route_Redirect,
 	metadata *corev3.Metadata, decorator *routev3.Decorator, typedPerFilterConfig map[string]*anypb.Any,
 	requestHeadersToAdd []*corev3.HeaderValueOption, requestHeadersToRemove []string,
 	responseHeadersToAdd []*corev3.HeaderValueOption, responseHeadersToRemove []string, authentication *model.Authentication) *routev3.Route {
 	cloneTypedPerFilterConfig := cloneTypedPerFilterConfig(typedPerFilterConfig)
 	if authentication != nil {
-		if authentication.Disabled {
+		//todo: need to fix it in proper way
+		if authentication.Disabled || authentication.JWT == nil || authentication.Oauth2 == nil || (method != nil && strings.ToUpper(*method) == "OPTIONS") {
 			delete(cloneTypedPerFilterConfig, EnvoyJWT)
 		}
 	}

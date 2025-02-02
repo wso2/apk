@@ -1253,7 +1253,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				requestHeadersToRemove := make([]string, 0)
 				// Create route1 for current method.
 				// Do not add policies to route config. Send via enforcer
-				route1 := generateRouteConfig(xWso2Basepath+operation.GetMethod(), match1, action1, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
+				method := operation.GetMethod()
+				route1 := generateRouteConfig(xWso2Basepath+method, &method, match1, action1, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
 					nil, requestHeadersToRemove, nil, nil, operation.GetAuthentication())
 
 				// Create route2 for new method.
@@ -1264,7 +1265,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
-				route2 := generateRouteConfig(xWso2Basepath, match2, action2, requestRedirectAction, metaData, decorator, configToSkipEnforcer,
+				route2 := generateRouteConfig(xWso2Basepath, &method, match2, action2, requestRedirectAction, metaData, decorator, configToSkipEnforcer,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove, operation.GetAuthentication())
 
 				routes = append(routes, route1)
@@ -1284,7 +1285,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				} else if requestRedirectAction == nil {
 					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
-				route := generateRouteConfig(xWso2Basepath, match, action, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
+				method := operation.GetMethod()
+				route := generateRouteConfig(xWso2Basepath, &method, match, action, requestRedirectAction, metaData, decorator, perRouteFilterConfigs,
 					requestHeadersToAdd, requestHeadersToRemove, responseHeadersToAdd, responseHeadersToRemove, operation.GetAuthentication())
 				routes = append(routes, route)
 			}
@@ -1312,7 +1314,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			}
 			// action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
 		}
-		route := generateRouteConfig(xWso2Basepath, match, action, nil, metaData, decorator, perRouteFilterConfigs,
+		route := generateRouteConfig(xWso2Basepath, nil, match, action, nil, metaData, decorator, perRouteFilterConfigs,
 			nil, requestHeadersToRemove, nil, nil, nil) // general headers to add and remove are included in this methods
 		routes = append(routes, route)
 	}
