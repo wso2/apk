@@ -854,6 +854,8 @@ public class APIClient {
                 defaultSpecData.requestInterceptors = [item];
             } else if item is model:BackendJwtReference {
                 defaultSpecData.backendJwtPolicy = item;
+            } else if item is model:ModelBasedRoundRobin {
+                defaultSpecData.modelBasedRoundRobin = item;
             }
         }
         APKResponseOperationPolicy[]? response = policies?.response;
@@ -1644,6 +1646,89 @@ public class APIClient {
                         model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, operations, organization);
                         apiArtifact.backendJwt = backendJwt;
                         policyReferences.push(<model:BackendJwtReference>{name: backendJwt.metadata.name});
+                    } else if (policyName == ModelBasedRoundRobin) {
+                        ModelBasedRoundRobinPolicy modelBasedRoundRobinPolicy = check policy.cloneWithType(ModelBasedRoundRobinPolicy);
+                        ModelBasedRoundRobinPolicy_parameters parameters = <ModelBasedRoundRobinPolicy_parameters>modelBasedRoundRobinPolicy.parameters;
+                        model:ModelWeight[] productionModels = [];
+                        model:ModelWeight[] sandboxModels = [];
+                        foreach ModelRouting model in parameters.productionModels {
+                            string url = model.endpoint;
+                            string host = self.getHost(url);
+                            int|error port = self.getPort(url);
+                            if port is int {
+                                model:Backend backendService = {
+                                    metadata: {
+                                        name: self.getBackendServiceUid(apkConf, operations, PRODUCTION_TYPE, host, organization),
+                                        labels: self.getLabels(apkConf, organization)
+                                    },
+                                    spec: {
+                                        services: [
+                                            {
+                                                host: host,
+                                                port: port
+                                            }
+                                        ],
+                                        basePath: getPath(url),
+                                        protocol: self.getProtocol(url)
+                                    }
+                                };
+                                //apiArtifact.backendServices[backendService.metadata.name] = backendService;
+                                
+                                model:Endpoint[] modelEndpoint = [{
+                                    url: url,
+                                    name: backendService.metadata.name
+                                }];
+                                model:BackendRef backendRef = self.retrieveGeneratedBackend(apkConf, modelEndpoint, "")[0];
+                                model:ModelWeight modelWeight = {
+                                    model: model.model,
+                                    backendRef: {group: backendRef.group, kind: backendRef.kind, name: backendRef.name, port: backendRef.port, namespace: backendRef.namespace},
+                                    weight: model.weight
+                                };
+                                productionModels.push(modelWeight);
+                            }
+                        }
+                        foreach ModelRouting model in parameters.sandboxModels {
+                            string url = model.endpoint;
+                            string host = self.getHost(url);
+                            int|error port = self.getPort(url);
+                            if port is int {
+                                model:Backend backendService = {
+                                    metadata: {
+                                        name: self.getBackendServiceUid(apkConf, operations, SANDBOX_TYPE, host, organization),
+                                        labels: self.getLabels(apkConf, organization)
+                                    },
+                                    spec: {
+                                        services: [
+                                            {
+                                                host: host,
+                                                port: port
+                                            }
+                                        ],
+                                        basePath: getPath(url),
+                                        protocol: self.getProtocol(url)
+                                    }
+                                };
+                                //apiArtifact.backendServices[backendService.metadata.name] = backendService;
+                                
+                                model:Endpoint[] modelEndpoint = [{
+                                    url: url,
+                                    name: backendService.metadata.name
+                                }];
+                                model:BackendRef backendRef = self.retrieveGeneratedBackend(apkConf, modelEndpoint, "")[0];
+                                model:ModelWeight modelWeight = {
+                                    model: model.model,
+                                    backendRef: {group: backendRef.group, kind: backendRef.kind, name: backendRef.name, port: backendRef.port, namespace: backendRef.namespace},
+                                    weight: model.weight
+                                };
+                                sandboxModels.push(modelWeight);
+                            }
+                        }
+                        model:ModelBasedRoundRobin modelBasedRoundRobin = {
+                            onQuotaExceedSuspendDuration: parameters.onQuotaExceedSuspendDuration,
+                            productionModels: productionModels,
+                            sandboxModels: sandboxModels
+                        };
+                        policyReferences.push(modelBasedRoundRobin);
                     } else if policyName != AddHeader && policyName != SetHeader && policyName != RemoveHeader && policyName != RequestMirror && policyName != RequestRedirect {
                         return e909052(error("Incorrect API Policy name provided."));
                     }

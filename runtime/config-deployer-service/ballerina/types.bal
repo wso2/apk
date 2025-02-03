@@ -142,7 +142,7 @@ public type APKOperations record {
 public type APKOperationPolicy APKRequestOperationPolicy|APKResponseOperationPolicy;
 
 # Common type for request operation policies.
-public type APKRequestOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy|RequestMirrorPolicy|RequestRedirectPolicy;
+public type APKRequestOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy|RequestMirrorPolicy|RequestRedirectPolicy|ModelBasedRoundRobinPolicy;
 
 # Common type for response operation policies.
 public type APKResponseOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy;
@@ -422,7 +422,8 @@ public enum PolicyName {
     SetHeader,
     RemoveHeader,
     RequestMirror,
-    RequestRedirect
+    RequestRedirect,
+    ModelBasedRoundRobin
 }
 
 # Configuration for authentication types.
@@ -440,6 +441,36 @@ public type Authentication record {|
 public type InterceptorPolicy record {
     *BaseOperationPolicy;
     InterceptorPolicy_parameters parameters?;
+};
+
+# Model based round robin policy configuration for an operation.
+#
+# + parameters - Contains model based routing policy parameters
+public type ModelBasedRoundRobinPolicy record {
+    *BaseOperationPolicy;
+    ModelBasedRoundRobinPolicy_parameters parameters;
+};
+
+# Configuration for model based round robin policy parameters.
+#
+# + onQuotaExceedSuspendDuration - The duration to suspend on quota exceed.
+# + productionModels - The production models for routing.
+# + sandboxModels - The sandbox models for routing.
+public type ModelBasedRoundRobinPolicy_parameters record {
+    int onQuotaExceedSuspendDuration;
+    ModelRouting[] productionModels;
+    ModelRouting[] sandboxModels;
+};
+
+# Configuration for model routing.
+# 
+# + model - The model to route.
+# + endpoint - The endpoint to route to.
+# + weight - The weight of the model.
+public type ModelRouting record {
+    string model;
+    string endpoint;
+    int weight;
 };
 
 # APK configuration for a given API
