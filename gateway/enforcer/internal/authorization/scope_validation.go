@@ -40,8 +40,8 @@ func ValidateScopes(rch *requestconfig.Holder, subAppDataStore *datastore.Subscr
 		}
 	}
 	found := false
-	for requiredScope := range requiredScopes {
-		for scope := range scopes {
+	for _, requiredScope := range requiredScopes {
+		for _, scope := range scopes {
 			if requiredScope == scope {
 				found = true
 				break
