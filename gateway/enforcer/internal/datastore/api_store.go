@@ -33,7 +33,7 @@ type APIStore struct {
 	apis        map[string]*requestconfig.API
 	mu          sync.RWMutex
 	configStore *ConfigStore
-	cfg *config.Server
+	cfg         *config.Server
 }
 
 // NewAPIStore creates a new instance of APIStore.
@@ -66,7 +66,8 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			Tier:                    api.Tier,
 			DisableAuthentication:   api.DisableAuthentications,
 			DisableScopes:           api.DisableScopes,
-			Resources:               make([]requestconfig.Resource, 0),
+			Resources:               make([]*requestconfig.Resource, 0),
+			ResourceMap:             make(map[string]*requestconfig.Resource, 0),
 			IsMockedAPI:             false, // You can add logic to determine if the API is mocked
 			MutualSSL:               api.MutualSSL,
 			TransportSecurity:       api.TransportSecurity,
@@ -98,7 +99,8 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 					}
 					return endpointSecurity
 				}())
-				customAPI.Resources = append(customAPI.Resources, resource)
+				customAPI.Resources = append(customAPI.Resources, &resource)
+				customAPI.ResourceMap[resource.GetResourceIdentifier()] = &resource
 			}
 		}
 		s.cfg.Logger.Info(fmt.Sprintf("Adding API: %+v", customAPI.BackendJwtConfiguration))
@@ -209,8 +211,8 @@ func convertBackendJWTTokenInfoToJWTConfig(info *api.BackendJWTTokenInfo, cfg *c
 		Encoding:           info.Encoding,
 		TokenIssuerDtoMap:  make(map[string]dto.TokenIssuer), // Populate if required
 		JwtExcludedClaims:  make(map[string]bool),            // Populate if required
-		PublicCert:         publicCert,                              // Add conversion logic if needed
-		PrivateKey:         privateKey,                              // Add conversion logic if needed
+		PublicCert:         publicCert,                       // Add conversion logic if needed
+		PrivateKey:         privateKey,                       // Add conversion logic if needed
 		TTL:                int64(info.TokenTTL),             // Convert int32 to int64
 		CustomClaims:       customClaims,
 	}

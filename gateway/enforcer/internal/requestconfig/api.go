@@ -36,7 +36,8 @@ type API struct {
 	Tier                              string                       `json:"tier"`                              // API tier (e.g., Unlimited)
 	DisableAuthentication             bool                         `json:"disableAuthentication"`             // Whether authentication is disabled
 	DisableScopes                     bool                         `json:"disableScopes"`                     // Whether scopes are disabled
-	Resources                         []Resource                   `json:"resources"`                         // List of resources for the API
+	Resources                         []*Resource                   `json:"resources"`                         // List of resources for the API
+	ResourceMap                       map[string]*Resource         `json:"resourceMap"`                       // Map of resources for the API
 	IsMockedAPI                       bool                         `json:"isMockedApi"`                       // Whether the API is mocked
 	MutualSSL                         string                       `json:"mutualSSL"`                         // Mutual SSL configuration
 	TransportSecurity                 bool                         `json:"transportSecurity"`                 // Whether transport security is enabled

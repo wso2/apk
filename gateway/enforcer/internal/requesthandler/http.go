@@ -39,7 +39,7 @@ func (h *HTTP) GetMatchedResource(api *requestconfig.API, epa dto.ExternalProces
 		fmt.Println("Resource Method: ", resource.Method)
 		fmt.Println("Resource Path: ", resource.Path)
 		if string(resource.Method) == method && resource.Path == pathTemplate {
-			return &resource
+			return resource
 		}
 	}
 	return nil

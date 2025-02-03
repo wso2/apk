@@ -18,6 +18,8 @@
 package requestconfig
 
 import (
+	"fmt"
+
 	auth "github.com/wso2/apk/gateway/enforcer/internal/authentication/authconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 )
@@ -44,14 +46,20 @@ const (
 
 // Resource represents the configuration for a resource
 type Resource struct {
-	Path                   string                      `json:"path"`                   // The path of the resource
-	MatchID                string                      `json:"matchID"`                // The match ID for the resource
-	Method                 HTTPMethods                 `json:"method"`                 // The HTTP method (GET, POST, etc.)
-	Tier                   string                      `json:"tier"`                   // The tier of the resource (default is "Unlimited")
-	Endpoints              EndpointCluster             `json:"endpoints"`              // Endpoint cluster for the resource
-	EndpointSecurity       []*EndpointSecurity         `json:"endpointSecurity"`       // Endpoint security configurations
-	PolicyConfig           PolicyConfig                `json:"policyConfig"`           // Policy configurations for the resource
-	AuthenticationConfig   *auth.AuthenticationConfig   `json:"authenticationConfig"`   // Authentication configuration
-	Scopes                 []string                    `json:"scopes"`                 // Scopes for the resource
-	AIModelBasedRoundRobin *dto.AIModelBasedRoundRobin `json:"aiModelBasedRoundRobin"` // AI model-based round robin configuration
+	Path                    string                                 `json:"path"`                    // The path of the resource
+	MatchID                 string                                 `json:"matchID"`                 // The match ID for the resource
+	Method                  HTTPMethods                            `json:"method"`                  // The HTTP method (GET, POST, etc.)
+	Tier                    string                                 `json:"tier"`                    // The tier of the resource (default is "Unlimited")
+	Endpoints               EndpointCluster                        `json:"endpoints"`               // Endpoint cluster for the resource
+	EndpointSecurity        []*EndpointSecurity                    `json:"endpointSecurity"`        // Endpoint security configurations
+	PolicyConfig            PolicyConfig                           `json:"policyConfig"`            // Policy configurations for the resource
+	AuthenticationConfig    *auth.AuthenticationConfig             `json:"authenticationConfig"`    // Authentication configuration
+	Scopes                  []string                               `json:"scopes"`                  // Scopes for the resource
+	AIModelBasedRoundRobin  *dto.AIModelBasedRoundRobin            `json:"aiModelBasedRoundRobin"`  // AI model-based round robin configuration
+	RouteMetadataAttributes *dto.ExternalProcessingEnvoyAttributes `json:"routeMetadataAttributes"` // Route metadata attributes
+}
+
+// GetResourceIdentifier returns the identifier for the resource
+func (r *Resource) GetResourceIdentifier() string {
+	return fmt.Sprintf("%s_%s", r.Method, r.Path)
 }

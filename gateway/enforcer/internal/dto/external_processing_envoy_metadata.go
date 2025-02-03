@@ -18,7 +18,11 @@ package dto
 
 // ExternalProcessingEnvoyMetadata represents the metadata extracted from the external processing request.
 type ExternalProcessingEnvoyMetadata struct {
-	JwtAuthenticationData *JwtAuthenticationData `json:"jwtAuthenticationData"`
+	JwtAuthenticationData         *JwtAuthenticationData `json:"jwtAuthenticationData"`
+	MatchedAPIIdentifier          string                 `json:"matchedAPIIdentifier"`
+	MatchedResourceIdentifier     string                 `json:"matchedResourceIdentifier"`
+	MatchedSubscriptionIdentifier string                 `json:"matchedSubscriptionIdentifier"`
+	MatchedApplicationIdentifier  string                 `json:"matchedApplicationIdentifier"`
 }
 
 // JwtAuthenticationData represents the JWT authentication data.
