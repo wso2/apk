@@ -12,28 +12,28 @@ operations:
     scopes: []
     endpointConfigurations:
       production:
-        endpoint: "http://backend:80/anything"
+        - endpoint: "http://backend:80/anything"
   - target: "/employee"
     verb: "POST"
     secured: true
     scopes: []
     endpointConfigurations:
       production:
-        endpoint: "http://backend:80/anything"
+        - endpoint: "http://backend:80/anything"
   - target: "/employee/{employeeId}"
     verb: "PUT"
     secured: true
     scopes: []
     endpointConfigurations:
       production:
-        endpoint: "http://backend:80/anything"
+        - endpoint: "http://backend:80/anything"
   - target: "/employee/{employeeId}"
     verb: "DELETE"
     secured: true
     scopes: []
     endpointConfigurations:
       production:
-        endpoint: "http://backend:80/anything"
+        - endpoint: "http://backend:80/anything"
 authentication:
  - authType: OAuth2
    enabled: true

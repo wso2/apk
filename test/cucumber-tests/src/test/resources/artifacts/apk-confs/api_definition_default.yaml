@@ -7,9 +7,9 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-    endpoint: "http://backend:80/anything"
+    - endpoint: "http://backend:80/anything"
   sandbox:
-    endpoint: "http://backend:80/anything/sand"
+    - endpoint: "http://backend:80/anything/sand"
 operations:
   - target: "/employee"
     verb: "GET"

@@ -5,7 +5,7 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-    endpoint: "http://backend.apk-integration-test.svc.cluster.local"
+    - endpoint: "http://backend.apk-integration-test.svc.cluster.local"
 operations:
   - target: "/get"
     verb: "GET"

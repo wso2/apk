@@ -5,9 +5,9 @@ type: REST
 defaultVersion: true
 endpointConfigurations:
   production:
-    endpoint: http://backend.test-apk.svc.cluster.local:80
+  - endpoint: http://backend.test-apk.svc.cluster.local:80
   sandbox:
-    endpoint: http://backend.test-apk.svc.cluster.local:80
+  - endpoint: http://backend.test-apk.svc.cluster.local:80
 operations:
 - target: /get
   verb: GET

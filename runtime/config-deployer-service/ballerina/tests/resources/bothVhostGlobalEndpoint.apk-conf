@@ -5,9 +5,9 @@ version: "1.0.0"
 type: "REST"
 endpointConfigurations:
   production:
-     endpoint: "https://petstore.swagger.io/v2/pet"
+  - endpoint: "https://petstore.swagger.io/v2/pet"
   sandbox:
-     endpoint: "https://petstore.swagger.io/v2/pet"
+  - endpoint: "https://petstore.swagger.io/v2/pet"
 operations:
   - target: "/pets"
     verb: "GET"

@@ -286,11 +286,11 @@ public type AuthenticationRequest OAuth2Authentication|APIKeyAuthentication|MTLS
 
 # Configuration for production and sandbox endpoints.
 #
-# + production - Production endpoint.
-# + sandbox - Sandbox endpoint.
+# + production - Production endpoints.
+# + sandbox - Sandbox endpoints.
 public type EndpointConfigurations record {
-    EndpointConfiguration production?;
-    EndpointConfiguration sandbox?;
+    EndpointConfiguration[] production?;
+    EndpointConfiguration[] sandbox?;
 };
 
 # Configuration for production and sandbox endpoints.

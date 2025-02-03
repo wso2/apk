@@ -5,11 +5,11 @@ version: "2.0.0"
 type: "REST"
 endpointConfigurations:
     production:
-      endpoint: 
-        name: "sample"
-        namespace: "apk"
-        protocol: "http"
-        port: 55
+      - endpoint:
+            name: "sample"
+            namespace: "apk"
+            protocol: "http"
+            port: 55
 operations:
     - target: "/anything"
       verb: "GET"

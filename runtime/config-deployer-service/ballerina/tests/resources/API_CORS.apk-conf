@@ -4,8 +4,8 @@ basePath: "/test_cors"
 version: "2.0.0"
 type: "REST"
 endpointConfigurations:
-    production:
-        endpoint: "https://httpbin.org"
+  production:
+    - endpoint: "https://httpbin.org"
 operations:
     - target: "/anything"
       verb: "GET"

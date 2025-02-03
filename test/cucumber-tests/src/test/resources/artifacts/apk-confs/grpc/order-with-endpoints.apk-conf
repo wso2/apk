@@ -8,7 +8,7 @@ defaultVersion: false
 subscriptionValidation: false
 endpointConfigurations:
   production:
-    endpoint: "http://order-backend-service:6566"
+    - endpoint: "http://order-backend-service:6566"
 operations:
   - target: "order.OrderService"
     verb: "CreateOrder"

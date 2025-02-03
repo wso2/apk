@@ -9,14 +9,14 @@ operations:
     secured: true
     endpointConfigurations:
       sandbox:
-        endpoint: "https://petstore.swagger.io/v2/pet"
+      - endpoint: "https://petstore.swagger.io/v2/pet"
   - target: "/pets/{petId}"
     verb: "GET"
     secured: true
     scopes: []
     endpointConfigurations:
       production:
-        endpoint: "https://petstore.swagger.io/v2/pet"
+      - endpoint: "https://petstore.swagger.io/v2/pet"
   - target: "/cat/{petId}"
     verb: "GET"
     secured: true

@@ -7,14 +7,14 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-    endpoint: "http://backend:80/anything"
-    endpointSecurity:
-      enabled: true
-      securityType:
-        secretName: "mysecret"
-        in: "Header"
-        apiKeyNameKey: "api-key"
-        apiKeyValueKey: "apiKey"
+    - endpoint: "http://backend:80/anything"
+      endpointSecurity:
+        enabled: true
+        securityType:
+          secretName: "mysecret"
+          in: "Header"
+          apiKeyNameKey: "api-key"
+          apiKeyValueKey: "apiKey"
 operations:
   - target: "/employee"
     verb: "GET"

@@ -368,7 +368,8 @@
             "Interceptor",
             "BackendJwt",
             "RequestMirror",
-            "RequestRedirect"
+            "RequestRedirect",
+            "RoundRobinModelRouting"
           ]
         },
         "policyVersion": {
@@ -397,6 +398,9 @@
             },
             {
               "$ref": "#/schemas/RequestRedirectProperties"
+            },
+            {
+              "$ref": "#/schemas/RoundRobinModelRouting"
             }
           ]
         }
@@ -496,10 +500,16 @@
       "title": "Endpoint Configurations",
       "properties": {
         "production": {
-          "$ref": "#/schemas/EndpointConfiguration"
+          "type": "array",
+          "items": {
+            "$ref": "#/schemas/EndpointConfiguration"
+          }   
         },
         "sandbox": {
-          "$ref": "#/schemas/EndpointConfiguration"
+          "type": "array",
+          "items": {
+            "$ref": "#/schemas/EndpointConfiguration"
+          } 
         }
       },
       "additionalProperties": false
@@ -900,6 +910,56 @@
           }
         }
       },
+      "additionalProperties": false
+    },
+    "RoundRobinModelRouting": {
+      "title": "Round Robin Model Routing Parameters",
+      "type": "object",
+      "properties": {
+        "onQuotaExceedSuspendDuration": {
+          "type": "integer",
+          "description": "The duration for which the model routing is suspended for a particular model upon exceeding the quota for that model."
+        },
+        "productionModels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/schemas/AIModel"
+          }
+        },
+        "sandboxModels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/schemas/AIModel"
+          }
+        }
+      },
+      "required": [
+        "onQuotaExceedSuspendDuration",
+        "productionModels"
+      ],
+      "additionalProperties": false
+    },
+    "AIModel": {
+      "title": "AI Model",
+      "type": "object",
+      "properties": {
+        "modelName": {
+          "type": "string",
+          "description": "The Name of the model."
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "The endpoint of the model."
+        },
+        "weight": {
+          "type": "integer",
+          "description": "The weight of the model."
+        }
+      },
+      "required": [
+        "modelId",
+        "endpoint"
+      ],
       "additionalProperties": false
     },
     "HeaderModifierProperties": {

@@ -5,7 +5,7 @@ type: "GRPC"
 id: "grpc-mtls-optional-oauth2-optional"
 endpointConfigurations:
   production:
-    endpoint: "http://grpc-backend:6565"
+    - endpoint: "http://grpc-backend:6565"
 defaultVersion: false
 subscriptionValidation: false
 operations:

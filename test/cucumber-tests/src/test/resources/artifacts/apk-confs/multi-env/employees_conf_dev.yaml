@@ -8,7 +8,7 @@ defaultVersion: false
 environment: "dev"
 endpointConfigurations:
   production:
-    endpoint: "http://backend:80/anything"
+    - endpoint: "http://backend:80/anything"
 operations:
   - target: "/employee"
     verb: "GET"
