@@ -13,20 +13,8 @@ isolated service http:InterceptableService /api/deployer on ep0 {
     # InternalServerErrorError (Internal Server Error.)
     isolated resource function post apis/deploy(http:RequestContext requestContext, http:Request request) returns commons:APKError|http:Response {
         DeployerClient deployerClient = new;
-        // commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
-        // commons:Organization organization = authenticatedUserContext.organization;
-        commons:Organization organization = {
-        uuid: "123e4567-e89b-12d3-a456-426614174000",
-        name: "default",
-        displayName: "Example Corporation",
-        organizationClaimValue: "example-claim",
-        enabled: true,
-        serviceListingNamespaces: ["namespace1", "namespace2"], // Override default
-        properties: [
-            { key: "region", value: "US" },
-            { key: "type", value: "Enterprise" }
-        ]
-        };
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
         return check deployerClient.handleAPIDeployment(request, organization);
     }
     # Undeploy API
@@ -38,25 +26,13 @@ isolated service http:InterceptableService /api/deployer on ep0 {
     # InternalServerErrorError (Internal Server Error.)
     isolated resource function post apis/undeploy(http:RequestContext requestContext, string apiId) returns AcceptedString|BadRequestError|InternalServerErrorError|commons:APKError {
         DeployerClient deployerClient = new;
-        // commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
-        // commons:Organization organization = authenticatedUserContext.organization;
-        commons:Organization organization = {
-        uuid: "123e4567-e89b-12d3-a456-426614174000",
-        name: "default",
-        displayName: "Example Corporation",
-        organizationClaimValue: "example-claim",
-        enabled: true,
-        serviceListingNamespaces: ["namespace1", "namespace2"], // Override default
-        properties: [
-            { key: "region", value: "US" },
-            { key: "type", value: "Enterprise" }
-        ]
-        };
+        commons:UserContext authenticatedUserContext = check commons:getAuthenticatedUserContext(requestContext);
+        commons:Organization organization = authenticatedUserContext.organization;
         return check deployerClient.handleAPIUndeployment(apiId, organization);
     }
 
     public function createInterceptors() returns http:Interceptor|http:Interceptor[] {
-        http:Interceptor[] interceptors = [requestErrorInterceptor, responseErrorInterceptor];
+        http:Interceptor[] interceptors = [jwtValidationInterceptor, requestErrorInterceptor, responseErrorInterceptor];
         return interceptors;
     }
 }
