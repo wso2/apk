@@ -82,6 +82,14 @@ func CreateBackendJWT(rch *requestconfig.Holder, cfg *config.Server) string {
 				Type:  "string",
 			}
 		}
+		if rch.JWTValidationInfo != nil {
+			if sub, exists := rch.JWTValidationInfo.Claims["sub"]; exists {
+				customClaims["sub"] = &dto.ClaimValue{
+					Value: sub.(string),
+					Type:  "string",
+				}
+			}
+		}
 		signatureAlgorithm := bjc.SignatureAlgorithm
 		if signatureAlgorithm !=  "NONE" && signatureAlgorithm != sha256WithRSA {
 			signatureAlgorithm = sha256WithRSA
