@@ -180,6 +180,13 @@ func (s *APIStore) GetMatchedAPI(apiKey string) *requestconfig.API {
 	return s.apis[apiKey]
 }
 
+// UpdateMatchedAPI updates the API that matches the given API key.
+func (s *APIStore) UpdateMatchedAPI(apiKey string, api *requestconfig.API) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.apis[apiKey] = api
+}
+
 // ConvertBackendJWTTokenInfoToJWTConfig converts BackendJWTTokenInfo to JWTConfiguration.
 func convertBackendJWTTokenInfoToJWTConfig(info *api.BackendJWTTokenInfo, cfg *config.Server, apiName string) *dto.BackendJWTConfiguration {
 	if info == nil {

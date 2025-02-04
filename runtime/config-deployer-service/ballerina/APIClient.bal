@@ -146,14 +146,14 @@ public class APIClient {
                 }
             }
 
-            model:Endpoint[]? productionEndpoints = createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (); 
-            model:Endpoint[]? sandboxEndpoints = createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : ();
-            if productionEndpoints is model:Endpoint[] && productionEndpoints.length() > 0 {
-                _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE)  ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
-            }
-            if sandboxEndpoints is model:Endpoint[] && sandboxEndpoints.length() > 0 {
-                _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
-            }
+            // model:Endpoint[]? productionEndpoints = createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (); 
+            // model:Endpoint[]? sandboxEndpoints = createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : ();
+            // if productionEndpoints is model:Endpoint[] && productionEndpoints.length() > 0 {
+            _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE)  ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+            //}
+            //if sandboxEndpoints is model:Endpoint[] && sandboxEndpoints.length() > 0 {
+            _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+            //}
             string|json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
             check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization);
@@ -564,11 +564,6 @@ public class APIClient {
         APKOperations[][] operationsArray = [];
         int row = 0;
         int column = 0;
-        if endpoint is model:Endpoint[] && endpoint.length() > 0 {
-            operationsArray = [apiOperations];
-        } else {
-            operationsArray = [apiOperations];
-        }
         foreach APKOperations item in apiOperations {
             if column > 7 {
                 row = row + 1;
@@ -601,7 +596,7 @@ public class APIClient {
                     hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
                 }
             };
-            if endpoint is model:Endpoint[] {
+            if endpoint is model:Endpoint[] && endpoint.length() > 0 {
                 gqlRoute.spec.backendRefs = self.retrieveGeneratedBackend(apkConf, endpoint, endpointType);
             }
             if gqlRoute.spec.rules.length() > 0 {
@@ -937,7 +932,7 @@ public class APIClient {
 
         do {
             EndpointConfigurations? endpointConfig = operation.endpointConfigurations;
-            model:Endpoint[]? endpointToUse = [];
+            model:Endpoint[]? endpointToUse = ();
             if endpointConfig is EndpointConfigurations {
                 // endpointConfig presence at Operation Level.
                 map<model:Endpoint[]> operationalLevelBackend = check self.createAndAddBackendServices(apiArtifact, apkConf,
@@ -946,7 +941,7 @@ public class APIClient {
                     endpointToUse = operationalLevelBackend.get(endpointType);
                 }
             } else {
-                if endpoint is model:Endpoint[] {
+                if endpoint is model:Endpoint[] && endpoint.length() > 0 {
                     endpointToUse = endpoint;
                 }
             }
