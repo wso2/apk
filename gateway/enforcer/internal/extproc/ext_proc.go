@@ -246,7 +246,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
 						Header: &corev3.HeaderValue{
 							Key:      requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader,
-							RawValue: []byte(attributes.ClusterName),
+							RawValue: []byte(backendJWT),
 						},
 					
 				})
