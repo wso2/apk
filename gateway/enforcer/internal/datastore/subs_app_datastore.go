@@ -43,10 +43,10 @@ import (
 // - mu: A read-write mutex to ensure thread-safe access to the data store.
 // - commonControllerRestBaseUrl: The base URL for the common controller REST API.
 type SubscriptionApplicationDataStore struct {
-	applications                map[string]map[string]*subscription_model.Application
-	applicationMappings         map[string]map[string]map[string]*subscription_model.ApplicationMapping
-	applicationKeyMappings      map[string]map[string]*subscription_model.ApplicationKeyMapping
-	subscriptions               map[string]map[string]*subscription_model.Subscription
+	applications                map[string]map[string]*subscription_model.Application                   // OrganozationID -> ApplicationUUID -> Application
+	applicationMappings         map[string]map[string]map[string]*subscription_model.ApplicationMapping // OrganizationID -> ApplicationRef -> ApplicationMappingUUID -> ApplicationMapping
+	applicationKeyMappings      map[string]map[string]*subscription_model.ApplicationKeyMapping         // OrganizationID -> ApplicationKeyMappingCacheKey -> ApplicationKeyMapping
+	subscriptions               map[string]map[string]*subscription_model.Subscription                  // OrganizationID -> SubscriptionUUID -> Subscription
 	mu                          sync.RWMutex
 	commonControllerRestBaseURL string
 }
@@ -177,6 +177,18 @@ func (ds *SubscriptionApplicationDataStore) GetSubscriptions(org string, subscri
 	return nil
 }
 
+// GetSubscription Get an Subscription by UUID
+func (ds *SubscriptionApplicationDataStore) GetSubscription(org string, subscriptionID string) *subscription_model.Subscription {
+	ds.mu.RLock()
+	defer ds.mu.RUnlock()
+	if _, exists := ds.subscriptions[org]; exists {
+		if _, exists := ds.subscriptions[org][subscriptionID]; exists {
+			return ds.subscriptions[org][subscriptionID]
+		}
+	}
+	return nil
+}
+
 // GetApplicationKeyMapping Get an ApplicationKeyMapping by UUID
 func (ds *SubscriptionApplicationDataStore) GetApplicationKeyMapping(org string, appKeyMapKey string) *subscription_model.ApplicationKeyMapping {
 	ds.mu.RLock()
@@ -200,7 +212,6 @@ func (ds *SubscriptionApplicationDataStore) GetApplication(org string, appID str
 	}
 	return nil
 }
-
 
 // // UpdateApplication Update an Application
 // func (ds *SubscriptionApplicationDataStore) UpdateApplication(app *subscription_model.Application) error {

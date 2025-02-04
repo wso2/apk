@@ -83,6 +83,11 @@ const (
 	promptTokenIDMetadataKey                        string = "aitoken:prompttokenid"
 	completionTokenIDMetadataKey                    string = "aitoken:completiontokenid"
 	totalTokenIDMetadataKey                         string = "aitoken:totaltokenid"
+	matchedAPIMetadataKey                           string = "request:matchedapi"
+	matchedResourceMetadataKey                      string = "request:matchedresource"
+	matchedSubscriptionMetadataKey                  string = "request:matchedsubscription"
+	matchedApplicationMetadataKey                   string = "request:matchedapplication"	
+
 
 	modelMetadataKey string = "aitoken:model"
 )
@@ -165,7 +170,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
 			requestConfigHolder := &requestconfig.Holder{}
-			attributes, err := extractExternalProcessingAttributes(req.GetAttributes())
+			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
 			if err != nil {
 				s.log.Error(err, "failed to extract context attributes")
 				resp = &envoy_service_proc_v3.ProcessingResponse{
@@ -181,7 +186,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 				break
 			}
+			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
 			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
+			dynamicMetadataKeyValuePairs[matchedAPIMetadataKey] = apiKey
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
@@ -190,8 +197,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
 			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
-			
-			
+			if requestConfigHolder.MatchedResource != nil {
+				requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
+				dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
+			}
 			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
 			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
 			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
@@ -256,6 +265,13 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
 				RequestHeaders: rhq,
 			}
+			if requestConfigHolder.MatchedApplication != nil {
+				dynamicMetadataKeyValuePairs[matchedApplicationMetadataKey] = requestConfigHolder.MatchedApplication.UUID
+			}
+			if requestConfigHolder.MatchedSubscription != nil {
+				dynamicMetadataKeyValuePairs[matchedSubscriptionMetadataKey] = requestConfigHolder.MatchedSubscription.UUID
+			}
+			
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
@@ -435,14 +451,30 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ResponseHeaders: rhq,
 				},
 			}
-			s.log.Info("Response Header Flow")
-			if s.requestConfigHolder != nil &&
-				s.requestConfigHolder.MatchedAPI != nil &&
-				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
-				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
-				matchedAPI := s.requestConfigHolder.MatchedAPI
+			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
+			if err != nil {
+				s.log.Error(err, "failed to extract context metadata")
+				break
+			}
+			s.cfg.Logger.Info(fmt.Sprintf("metadata: %v", metadata))
+			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
+			if matchedAPI == nil {
+				s.cfg.Logger.Info(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
+				break
+			}
+			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
+			if matchedResource == nil {
+				s.cfg.Logger.Info(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
+				break
+			}
+			s.cfg.Logger.Info(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
+			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
+			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
+			if matchedAPI.AiProvider != nil &&
+				matchedAPI.AiProvider.CompletionToken != nil &&
+				matchedResource.RouteMetadataAttributes != nil &&
+				matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true" &&
+				matchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
 				s.log.Info("Backend based AI rate limit enabled using headers")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(),
 					matchedAPI.AiProvider.PromptTokens.Value,
@@ -454,8 +486,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				} else {
 					s.ratelimitHelper.DoAIRatelimit(tokenCount, true,
 						matchedAPI.DoSubscriptionAIRLInHeaderReponse,
-						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
-						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
+						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
+						matchedSubscription, matchedApplication)
 					aiProvider := matchedAPI.AiProvider
 					dynamicMetadataKeyValuePairs[analytics.AIProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
 					dynamicMetadataKeyValuePairs[analytics.AIProviderNameMetadataKey] = aiProvider.ProviderName
@@ -543,13 +575,29 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					ResponseBody: rbq,
 				},
 			}
-			if s.requestConfigHolder != nil &&
-				s.requestConfigHolder.MatchedAPI != nil &&
-				s.requestConfigHolder.MatchedAPI.AiProvider != nil &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
-				s.requestConfigHolder.ExternalProcessingEnvoyAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				s.requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-				matchedAPI := s.requestConfigHolder.MatchedAPI
+			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
+			if err != nil {
+				s.log.Error(err, "failed to extract context metadata")
+				break
+			}
+			s.cfg.Logger.Info(fmt.Sprintf("metadata: %v", metadata))
+			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
+			if matchedAPI == nil {
+				s.cfg.Logger.Info(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
+				break
+			}
+			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
+			if matchedResource == nil {
+				s.cfg.Logger.Info(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
+				break
+			}
+			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
+			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
+			if matchedAPI.AiProvider != nil &&
+				matchedAPI.AiProvider.CompletionToken != nil &&
+				matchedResource.RouteMetadataAttributes != nil &&
+				matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true" &&
+				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
 				s.log.Info("Backend based AI rate limit enabled using body")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
 					matchedAPI.AiProvider.PromptTokens.Value,
@@ -561,8 +609,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				} else {
 					s.ratelimitHelper.DoAIRatelimit(tokenCount, true,
 						matchedAPI.DoSubscriptionAIRLInBodyReponse,
-						s.requestConfigHolder.ExternalProcessingEnvoyAttributes.BackendBasedAIRatelimitDescriptorValue,
-						s.requestConfigHolder.MatchedSubscription, s.requestConfigHolder.MatchedApplication)
+						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
+						matchedSubscription, matchedApplication)
 					aiProvider := matchedAPI.AiProvider
 					dynamicMetadataKeyValuePairs[analytics.AIProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
 					dynamicMetadataKeyValuePairs[analytics.AIProviderNameMetadataKey] = aiProvider.ProviderName
@@ -692,13 +740,28 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 			}
 			externalProcessingEnvoyMetadata.JwtAuthenticationData = authenticationData
 		}
+		if extProcMetadata, exists := filterMatadata[externalProessingMetadataContextKey]; exists {
+			if matchedAPIKey, exists := extProcMetadata.Fields[matchedAPIMetadataKey]; exists {
+				externalProcessingEnvoyMetadata.MatchedAPIIdentifier = matchedAPIKey.GetStringValue()
+			}
+			if matchedResourceKey, exists := extProcMetadata.Fields[matchedResourceMetadataKey]; exists {
+				externalProcessingEnvoyMetadata.MatchedResourceIdentifier = matchedResourceKey.GetStringValue()
+			}
+			if matchedApplicationKey, exists := extProcMetadata.Fields[matchedApplicationMetadataKey]; exists {
+				externalProcessingEnvoyMetadata.MatchedApplicationIdentifier = matchedApplicationKey.GetStringValue()
+			}
+			if matchedSubscriptionKey, exists := extProcMetadata.Fields[matchedSubscriptionMetadataKey]; exists {
+				externalProcessingEnvoyMetadata.MatchedSubscriptionIdentifier = matchedSubscriptionKey.GetStringValue()
+			}
+
+		}
 		return externalProcessingEnvoyMetadata, nil
 	}
 	return nil, nil
 }
 
-// extractExternalProcessingAttributes extracts the external processing attributes from the given data.
-func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*dto.ExternalProcessingEnvoyAttributes, error) {
+// extractExternalProcessingXDSRouteMetadataAttributes extracts the external processing attributes from the given data.
+func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*structpb.Struct) (*dto.ExternalProcessingEnvoyAttributes, error) {
 
 	// Get the fields from the map
 	extProcData, exists := data["envoy.filters.http.ext_proc"]
@@ -713,7 +776,6 @@ func extractExternalProcessingAttributes(data map[string]*structpb.Struct) (*dto
 	if field, ok := fields["request.method"]; ok {
 		method := field.GetStringValue()
 		attributes.RequestMehod = method
-		fmt.Printf("*******   %s\n", method)
 	}
 
 	// We need to navigate through the nested fields to get the actual values
