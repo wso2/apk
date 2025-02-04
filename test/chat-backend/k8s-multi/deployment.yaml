@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-backend-1
+  labels:
+    app: chat-backend-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-backend-1
+  template:
+    metadata:
+      labels:
+        app: chat-backend-1
+    spec:
+      containers:
+      - name: chat-backend-1
+        image: sampathrajapakse/chat-backend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+        env:
+        - name: PORT
+          value: "8080"

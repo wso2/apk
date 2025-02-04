@@ -2012,7 +2012,7 @@ public class APIClient {
 
     public isolated function getBackendServiceUid(APKConf apkConf, APKOperations? apiOperation, string endpointType, string endpointHost, commons:Organization organization) returns string {
         string concatanatedString = uuid:createType1AsString();
-        if (apiOperation is APKOperations) {
+        if (apiOperation is APKOperations && apiOperation.endpointConfigurations is EndpointConfigurations) {
             return "backend-" + concatanatedString + "-resource";
         } else {
             concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version, endpointType, endpointHost);

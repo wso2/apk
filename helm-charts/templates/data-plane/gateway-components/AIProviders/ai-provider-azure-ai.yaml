@@ -7,6 +7,10 @@ spec:
   providerName : "AzureAI"
   providerAPIVersion : "2024-06-01"
   organization : "default"
+  supportedModels:
+    - "gpt-4o"
+    - "gpt-3.5"
+    - "gpt-4.5"
   requestModel:
     in: "Body"
     value: "model"
