@@ -17,6 +17,7 @@ import (
 // AIRatelimitHelper is a helper struct for managing AI rate limiting.
 type AIRatelimitHelper struct {
 	rlClient *client
+	cfg 	*config.Server
 }
 
 // TokenCountAndModel is a struct that holds the prompt, completion, and total token counts.
@@ -50,67 +51,71 @@ func NewAIRatelimitHelper(cfg *config.Server) *AIRatelimitHelper {
 	client.start()
 	return &AIRatelimitHelper{
 		rlClient: client,
+		cfg: 	cfg,
 	}
 }
 
 // DoAIRatelimit performs AI rate limiting.
 func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount TokenCountAndModel, doBackendBasedAIRatelimit bool, doSubscriptionBasedAIRatelimit bool, backendBasedAIRatelimitDescriptorValue string, subscription *subscription_model.Subscription, application *subscription_model.Application) {
-	go func() {
-		configs := []*keyValueHitsAddend{}
-		if doBackendBasedAIRatelimit {
-			// For promt token count
-			configs = append(configs, &keyValueHitsAddend{
-				Key:        DescriptorKeyForAIPromtTokenCount,
-				Value:      backendBasedAIRatelimitDescriptorValue,
-				HitsAddend: tokenCount.Prompt,
-			})
-			// For completion token count
-			configs = append(configs, &keyValueHitsAddend{
-				Key:        DescriptorKeyForAICompletionTokenCount,
-				Value:      backendBasedAIRatelimitDescriptorValue,
-				HitsAddend: tokenCount.Completion,
-			})
-			// For total token count
-			configs = append(configs, &keyValueHitsAddend{
-				Key:        DescriptorKeyForAITotalTokenCount,
-				Value:      backendBasedAIRatelimitDescriptorValue,
-				HitsAddend: tokenCount.Total,
-			})
+	defer func() {
+		if r := recover(); r != nil {
+			airl.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic, %+v", r))
 		}
-		if doSubscriptionBasedAIRatelimit && subscription != nil && application != nil {
-			// For promt token count
-			configs = append(configs, &keyValueHitsAddend{
-				Key:   DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
-				Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
-				KeyValueHitsAddend: &keyValueHitsAddend{
-					Key:        DescriptorKeyForAISubscription,
-					Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
-					HitsAddend: tokenCount.Prompt,
-				},
-			})
-			// For completion token count
-			configs = append(configs, &keyValueHitsAddend{
-				Key:   DescriptorKeyForSubscriptionBasedAIResponseTokenCount,
-				Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
-				KeyValueHitsAddend: &keyValueHitsAddend{
-					Key:        DescriptorKeyForAISubscription,
-					Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
-					HitsAddend: tokenCount.Completion,
-				},
-			})
-			// For total token count
-			configs = append(configs, &keyValueHitsAddend{
-				Key:   DescriptorKeyForSubscriptionBasedAITotalTokenCount,
-				Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
-				KeyValueHitsAddend: &keyValueHitsAddend{
-					Key:        DescriptorKeyForAISubscription,
-					Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
-					HitsAddend: tokenCount.Total,
-				},
-			})
-		}
-		airl.rlClient.shouldRatelimit(configs)
 	}()
+	configs := []*keyValueHitsAddend{}
+	if doBackendBasedAIRatelimit {
+		// For promt token count
+		configs = append(configs, &keyValueHitsAddend{
+			Key:        DescriptorKeyForAIPromtTokenCount,
+			Value:      backendBasedAIRatelimitDescriptorValue,
+			HitsAddend: tokenCount.Prompt,
+		})
+		// For completion token count
+		configs = append(configs, &keyValueHitsAddend{
+			Key:        DescriptorKeyForAICompletionTokenCount,
+			Value:      backendBasedAIRatelimitDescriptorValue,
+			HitsAddend: tokenCount.Completion,
+		})
+		// For total token count
+		configs = append(configs, &keyValueHitsAddend{
+			Key:        DescriptorKeyForAITotalTokenCount,
+			Value:      backendBasedAIRatelimitDescriptorValue,
+			HitsAddend: tokenCount.Total,
+		})
+	}
+	if doSubscriptionBasedAIRatelimit && subscription != nil && application != nil {
+		// For promt token count
+		configs = append(configs, &keyValueHitsAddend{
+			Key:   DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
+			Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+			KeyValueHitsAddend: &keyValueHitsAddend{
+				Key:        DescriptorKeyForAISubscription,
+				Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+				HitsAddend: tokenCount.Prompt,
+			},
+		})
+		// For completion token count
+		configs = append(configs, &keyValueHitsAddend{
+			Key:   DescriptorKeyForSubscriptionBasedAIResponseTokenCount,
+			Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+			KeyValueHitsAddend: &keyValueHitsAddend{
+				Key:        DescriptorKeyForAISubscription,
+				Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+				HitsAddend: tokenCount.Completion,
+			},
+		})
+		// For total token count
+		configs = append(configs, &keyValueHitsAddend{
+			Key:   DescriptorKeyForSubscriptionBasedAITotalTokenCount,
+			Value: fmt.Sprintf("%s-%s", subscription.Organization, subscription.RatelimitTier),
+			KeyValueHitsAddend: &keyValueHitsAddend{
+				Key:        DescriptorKeyForAISubscription,
+				Value:      fmt.Sprintf("%s:%s%s", subscription.SubscribedAPI.Name, application.UUID, subscription.UUID),
+				HitsAddend: tokenCount.Total,
+			},
+		})
+	}
+	airl.rlClient.shouldRatelimit(configs)
 }
 
 // ExtractTokenCountFromExternalProcessingResponseHeaders extracts token counts from external processing response headers.

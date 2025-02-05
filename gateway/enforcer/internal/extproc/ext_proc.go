@@ -481,7 +481,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response headers")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
+					go s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
 						matchedAPI.DoSubscriptionAIRLInHeaderReponse,
 						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
 						matchedSubscription, matchedApplication)
@@ -604,7 +604,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
+					go s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
 						matchedAPI.DoSubscriptionAIRLInBodyReponse,
 						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
 						matchedSubscription, matchedApplication)
