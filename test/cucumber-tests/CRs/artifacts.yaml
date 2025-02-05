@@ -222,7 +222,7 @@ spec:
           configMap:
             name: "interceptor-service-config-toml" 
 ---
-apiVersion: dp.wso2.com/v1alpha3
+apiVersion: dp.wso2.com/v1alpha4
 kind: APIPolicy
 metadata:
   name: interceptor-policy-gateway-level
@@ -1347,7 +1347,7 @@ spec:
     name: llm-backend-header
     group: gateway.networking.k8s.io
 ---
-apiVersion: dp.wso2.com/v1alpha3
+apiVersion: dp.wso2.com/v1alpha4
 kind: APIPolicy
 metadata:
   name: llm-policy-subs
@@ -1552,7 +1552,7 @@ spec:
     name: llm-backend-header
     group: gateway.networking.k8s.io
 ---
-apiVersion: dp.wso2.com/v1alpha3
+apiVersion: dp.wso2.com/v1alpha4
 kind: APIPolicy
 metadata:
   name: llm-policy-header
@@ -1716,7 +1716,7 @@ spec:
     name: llm-backend
     group: gateway.networking.k8s.io
 ---
-apiVersion: dp.wso2.com/v1alpha3
+apiVersion: dp.wso2.com/v1alpha4
 kind: APIPolicy
 metadata:
   name: llm-policy
