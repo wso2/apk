@@ -185,6 +185,25 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 				break
 			}
+			rhq := &envoy_service_proc_v3.HeadersResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{
+					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
+						SetHeaders: []*corev3.HeaderValueOption{
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "x-wso2-cluster-header",
+									RawValue: []byte(attributes.ClusterName),
+								},
+							},
+						},
+					},
+					// This is necessary if the remote server modified headers that are used to calculate the route.
+					ClearRouteCache: true,
+				},
+			}
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
+				RequestHeaders: rhq,
+			}
 			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
 			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
 			dynamicMetadataKeyValuePairs[matchedAPIMetadataKey] = apiKey
@@ -192,7 +211,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
 				s.log.Error(err, "failed to extract context metadata")
-				return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
+				// return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
+				break
 			}
 			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
 			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
@@ -234,22 +254,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				backendJWT = jwtbackend.CreateBackendJWT(requestConfigHolder, s.cfg)
 				s.log.Sugar().Infof("generated backendJWT==%v", backendJWT)
 			}
-			rhq := &envoy_service_proc_v3.HeadersResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{
-					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
-						SetHeaders: []*corev3.HeaderValueOption{
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "x-wso2-cluster-header",
-									RawValue: []byte(attributes.ClusterName),
-								},
-							},
-						},
-					},
-					// This is necessary if the remote server modified headers that are used to calculate the route.
-					ClearRouteCache: true,
-				},
-			}
+			
 			if backendJWT != "" {
 				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
 					Header: &corev3.HeaderValue{
@@ -258,10 +263,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					},
 				})
 				s.cfg.Logger.Info(fmt.Sprintf("Added backend JWT to the header: %s, header name: %s", backendJWT, requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader))
-			}
-
-			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
-				RequestHeaders: rhq,
 			}
 			if requestConfigHolder.MatchedApplication != nil {
 				dynamicMetadataKeyValuePairs[matchedApplicationMetadataKey] = requestConfigHolder.MatchedApplication.UUID
