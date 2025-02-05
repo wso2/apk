@@ -125,20 +125,22 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 
 	for _, headerValue := range headerValues {
 		switch headerValue.Key {
+		
+		
 		case promptHeader:
 			if headerValue.Value != "" {
 				value, err := util.ConvertStringToInt(headerValue.Value)
 				if err != nil {
 					return nil, err
 				}
-				tokenCount.Prompt = value
+				tokenCount.Prompt = value - 1
 				promptFlag = true
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
 					return nil, err
 				}
-				tokenCount.Prompt = value
+				tokenCount.Prompt = value - 1
 				promptFlag = true
 			}
 
@@ -148,14 +150,14 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 				if err != nil {
 					return nil, err
 				}
-				tokenCount.Completion = value
+				tokenCount.Completion = value - 1
 				completionFlag = true
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
 					return nil, err
 				}
-				tokenCount.Completion = value
+				tokenCount.Completion = value - 1
 				completionFlag = true
 			}
 
@@ -165,14 +167,14 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 				if err != nil {
 					return nil, err
 				}
-				tokenCount.Total = value
+				tokenCount.Total = value - 1
 				totalFlag = true
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
 					return nil, err
 				}
-				tokenCount.Total = value
+				tokenCount.Total = value - 1
 				totalFlag = true
 			}
 
@@ -186,7 +188,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 	}
 
 	if !(promptFlag && completionFlag && totalFlag) {
-		return nil, fmt.Errorf("missing token headers from the AI response headers")
+		return nil, fmt.Errorf("missing token headers from the AI response headers. %+v", tokenCount)
 	}
 
 	return tokenCount, nil
@@ -235,7 +237,7 @@ func extractValueFromPath(data map[string]interface{}, path string) (interface{}
 }
 
 // extractUsageFromBody extracts usage data from the JSON body based on the provided paths.
-func extractUsageFromBody(body, completionTokenPath, promptTokenPath, totalTokenPath, modelPath string) (*TokenCountAndModel, error) {
+func extractUsageFromBody(body, promptTokenPath, completionTokenPath, totalTokenPath, modelPath string) (*TokenCountAndModel, error) {
 	body = sanitize(body)
 	var rootNode map[string]interface{}
 	if err := json.Unmarshal([]byte(body), &rootNode); err != nil {
@@ -250,7 +252,7 @@ func extractUsageFromBody(body, completionTokenPath, promptTokenPath, totalToken
 		return nil, fmt.Errorf("failed to extract prompt tokens: %w", err)
 	}
 	if pt, ok := promt.(float64); ok { // JSON numbers are decoded as float64
-		usage.Prompt = int(pt)
+		usage.Prompt = int(pt) - 1
 	} else {
 		return nil, errors.New("invalid type for prompt tokens")
 	}
@@ -261,7 +263,7 @@ func extractUsageFromBody(body, completionTokenPath, promptTokenPath, totalToken
 		return nil, fmt.Errorf("failed to extract completion tokens: %w", err)
 	}
 	if ct, ok := completion.(float64); ok {
-		usage.Completion = int(ct)
+		usage.Completion = int(ct) - 1
 	} else {
 		return nil, errors.New("invalid type for completion tokens")
 	}
@@ -272,21 +274,21 @@ func extractUsageFromBody(body, completionTokenPath, promptTokenPath, totalToken
 		return nil, fmt.Errorf("failed to extract total tokens: %w", err)
 	}
 	if tt, ok := total.(float64); ok {
-		usage.Total = int(tt)
+		usage.Total = int(tt) - 1
 	} else {
 		return nil, errors.New("invalid type for total tokens")
 	}
 
 	// Extract model
-	// model, err := extractValueFromPath(rootNode, modelPath)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to extract model: %w", err)
-	// }
-	// if m, ok := model.(string); ok {
-	// 	usage.model = m
-	// } else {
-	// 	return nil, errors.New("invalid type for model")
-	// }
+	model, err := extractValueFromPath(rootNode, modelPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract model: %w", err)
+	}
+	if m, ok := model.(string); ok {
+		usage.Model = m
+	} else {
+		return nil, errors.New("invalid type for model")
+	}
 
 	return usage, nil
 }

@@ -468,7 +468,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 			if matchedAPI.AiProvider != nil &&
+				matchedAPI.AiProvider.PromptTokens != nil &&
 				matchedAPI.AiProvider.CompletionToken != nil &&
+				matchedAPI.AiProvider.TotalToken != nil &&
 				matchedResource.RouteMetadataAttributes != nil &&
 				matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true" &&
 				matchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
@@ -476,7 +478,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(),
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
-					matchedAPI.AiProvider.CompletionToken.Value,
+					matchedAPI.AiProvider.TotalToken.Value,
 					matchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response headers")
@@ -583,15 +585,19 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.cfg.Logger.Info(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
 				break
 			}
+			s.cfg.Logger.Info(fmt.Sprintf("Matched API: %+v", matchedAPI))
 			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
 			if matchedResource == nil {
 				s.cfg.Logger.Info(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
 				break
 			}
+			s.cfg.Logger.Info(fmt.Sprintf("Matched resource: %+v", matchedResource))
 			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 			if matchedAPI.AiProvider != nil &&
 				matchedAPI.AiProvider.CompletionToken != nil &&
+				matchedAPI.AiProvider.PromptTokens != nil &&
+				matchedAPI.AiProvider.TotalToken != nil &&
 				matchedResource.RouteMetadataAttributes != nil &&
 				matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true" &&
 				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
@@ -599,7 +605,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
-					matchedAPI.AiProvider.CompletionToken.Value,
+					matchedAPI.AiProvider.TotalToken.Value,
 					matchedAPI.AiProvider.Model.Value)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")

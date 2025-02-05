@@ -369,7 +369,7 @@ public class BaseSteps {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime nextMinute = now.plusMinutes(1).withSecond(0).withNano(0);
         long secondsToWait = now.until(nextMinute, ChronoUnit.SECONDS);
-        Thread.sleep((secondsToWait + 1) * 1000);
+        Thread.sleep((secondsToWait + 5) * 1000);
         logger.info("Current time: " + LocalDateTime.now());
     }
 
