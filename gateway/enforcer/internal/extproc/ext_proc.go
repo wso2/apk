@@ -86,8 +86,7 @@ const (
 	matchedAPIMetadataKey                           string = "request:matchedapi"
 	matchedResourceMetadataKey                      string = "request:matchedresource"
 	matchedSubscriptionMetadataKey                  string = "request:matchedsubscription"
-	matchedApplicationMetadataKey                   string = "request:matchedapplication"	
-
+	matchedApplicationMetadataKey                   string = "request:matchedapplication"
 
 	modelMetadataKey string = "aitoken:model"
 )
@@ -253,11 +252,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			if backendJWT != "" {
 				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
-						Header: &corev3.HeaderValue{
-							Key:      requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader,
-							RawValue: []byte(backendJWT),
-						},
-					
+					Header: &corev3.HeaderValue{
+						Key:      requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader,
+						RawValue: []byte(backendJWT),
+					},
 				})
 				s.cfg.Logger.Info(fmt.Sprintf("Added backend JWT to the header: %s, header name: %s", backendJWT, requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader))
 			}
@@ -271,7 +269,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if requestConfigHolder.MatchedSubscription != nil {
 				dynamicMetadataKeyValuePairs[matchedSubscriptionMetadataKey] = requestConfigHolder.MatchedSubscription.UUID
 			}
-			
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
@@ -484,7 +481,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response headers")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(tokenCount, true,
+					s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
 						matchedAPI.DoSubscriptionAIRLInHeaderReponse,
 						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
 						matchedSubscription, matchedApplication)
@@ -607,7 +604,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {
-					s.ratelimitHelper.DoAIRatelimit(tokenCount, true,
+					s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
 						matchedAPI.DoSubscriptionAIRLInBodyReponse,
 						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
 						matchedSubscription, matchedApplication)
@@ -775,7 +772,7 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 
 	if field, ok := fields["request.method"]; ok {
 		method := field.GetStringValue()
-		attributes.RequestMehod = method
+		attributes.RequestMethod = method
 	}
 
 	// We need to navigate through the nested fields to get the actual values
