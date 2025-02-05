@@ -31,6 +31,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+	"github.com/wso2/apk/gateway/enforcer/internal/graphql"
 	"github.com/wso2/apk/gateway/enforcer/internal/jwtbackend"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
@@ -289,6 +290,23 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if matchedAPI == nil {
 				s.cfg.Logger.Info(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
 				break
+			}
+
+			if matchedAPI.IsGraphQLAPI() {
+				if immediateResponse := graphql.ValidateGraphQLOperation(matchedAPI, s.jwtTransformer, metadata, s.subscriptionApplicationDatastore, s.cfg, string(req.GetRequestBody().Body)); immediateResponse != nil {
+					resp = &envoy_service_proc_v3.ProcessingResponse{
+						Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+							ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+								Status: &v32.HttpStatus{
+									Code: v32.StatusCode(immediateResponse.StatusCode),
+								},
+								Body: []byte(immediateResponse.Message),
+							},
+						},
+					}
+					break
+				}
+				continue
 			}
 			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
 			if matchedResource == nil {

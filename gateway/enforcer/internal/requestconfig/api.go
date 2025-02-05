@@ -18,6 +18,8 @@
 package requestconfig
 
 import (
+	"strings"
+
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 )
 
@@ -53,4 +55,9 @@ type API struct {
 	AIModelBasedRoundRobin            *dto.AIModelBasedRoundRobin  `json:"aiModelBasedRoundRobin"`            // AI model-based round robin configuration
 	DoSubscriptionAIRLInHeaderReponse bool                         `json:"doSubscriptionAIRLInHeaderReponse"` // Whether to include subscription AIRL in header response
 	DoSubscriptionAIRLInBodyReponse   bool                         `json:"doSubscriptionAIRLInBodyReponse"`   // Whether to include subscription AIRL in body response
+}
+
+// IsGraphQLAPI checks whether the API is graphql
+func (api *API) IsGraphQLAPI() bool {
+	return strings.ToLower(api.APIType) == "graphql"
 }
