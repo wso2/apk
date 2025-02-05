@@ -128,17 +128,6 @@ spec:
           spec:
             description: AIProviderSpec defines the desired state of AIProvider
             properties:
-              model:
-                description: ValueDetails defines the value details
-                properties:
-                  in:
-                    type: string
-                  value:
-                    type: string
-                required:
-                - in
-                - value
-                type: object
               organization:
                 type: string
               providerAPIVersion:
@@ -187,16 +176,39 @@ spec:
                 - promptTokens
                 - totalToken
                 type: object
+              requestModel:
+                description: ValueDetails defines the value details
+                properties:
+                  in:
+                    type: string
+                  value:
+                    type: string
+                required:
+                - in
+                - value
+                type: object
+              responseModel:
+                description: ValueDetails defines the value details
+                properties:
+                  in:
+                    type: string
+                  value:
+                    type: string
+                required:
+                - in
+                - value
+                type: object
               supportedModels:
                 items:
                   type: string
                 type: array
             required:
-            - model
             - organization
             - providerAPIVersion
             - providerName
             - rateLimitFields
+            - requestModel
+            - responseModel
             type: object
           status:
             description: AIProviderStatus defines the observed state of AIProvider

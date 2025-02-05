@@ -7,11 +7,11 @@ type: "REST"
 defaultVersion: false
 endpointConfigurations:
   production:
-    endpoint: "http://backend:80"
-    resiliency:
-      timeout:
-        downstreamRequestIdleTimeout: 5
-        upstreamResponseTimeout: 3
+    - endpoint: "http://backend:80"
+      resiliency:
+        timeout:
+          downstreamRequestIdleTimeout: 5
+          upstreamResponseTimeout: 3
 operations:
   - target: "/get"
     verb: "GET"
@@ -23,22 +23,22 @@ operations:
     scopes: [ ]
     endpointConfigurations:
       production:
-        endpoint: "http://backend:80"
-        resiliency:
-          timeout:
-            downstreamRequestIdleTimeout: 5
-            upstreamResponseTimeout: 1
+        - endpoint: "http://backend:80"
+          resiliency:
+            timeout:
+              downstreamRequestIdleTimeout: 5
+              upstreamResponseTimeout: 1
   - target: "/delay/{delay}"
     verb: "POST"
     secured: true
     scopes: [ ]
     endpointConfigurations:
       production:
-        endpoint: "http://backend:80"
-        resiliency:
-          timeout:
-            downstreamRequestIdleTimeout: 5
-            upstreamResponseTimeout: 2
+        - endpoint: "http://backend:80"
+          resiliency:
+            timeout:
+              downstreamRequestIdleTimeout: 5
+              upstreamResponseTimeout: 2
   - target: "/delay/{delay}"
     verb: "PUT"
     secured: true

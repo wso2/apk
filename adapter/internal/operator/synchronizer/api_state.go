@@ -29,28 +29,43 @@ import (
 // the state of the Kubernetes controller cache to detect updates.
 // +k8s:deepcopy-gen=true
 type APIState struct {
-	APIDefinition             *v1alpha3.API
-	ProdHTTPRoute             *HTTPRouteState
-	SandHTTPRoute             *HTTPRouteState
-	ProdGQLRoute              *GQLRouteState
-	SandGQLRoute              *GQLRouteState
-	ProdGRPCRoute             *GRPCRouteState
-	SandGRPCRoute             *GRPCRouteState
-	Authentications           map[string]v1alpha2.Authentication
-	RateLimitPolicies         map[string]v1alpha3.RateLimitPolicy
-	ResourceAuthentications   map[string]v1alpha2.Authentication
-	ResourceRateLimitPolicies map[string]v1alpha3.RateLimitPolicy
-	ResourceAPIPolicies       map[string]v1alpha4.APIPolicy
-	APIPolicies               map[string]v1alpha4.APIPolicy
-	AIProvider                *v1alpha4.AIProvider
-	ModelBasedRoundRobin      *v1alpha4.ModelBasedRoundRobin
-	InterceptorServiceMapping map[string]v1alpha1.InterceptorService
-	BackendJWTMapping         map[string]v1alpha1.BackendJWT
-	APIDefinitionFile         []byte
-	SubscriptionValidation    bool
-	MutualSSL                 *v1alpha2.MutualSSL
-	ProdAIRL                  *v1alpha3.AIRateLimitPolicy
-	SandAIRL                  *v1alpha3.AIRateLimitPolicy
+	APIDefinition                *v1alpha3.API
+	ProdHTTPRoute                *HTTPRouteState
+	SandHTTPRoute                *HTTPRouteState
+	ProdGQLRoute                 *GQLRouteState
+	SandGQLRoute                 *GQLRouteState
+	ProdGRPCRoute                *GRPCRouteState
+	SandGRPCRoute                *GRPCRouteState
+	Authentications              map[string]v1alpha2.Authentication
+	RateLimitPolicies            map[string]v1alpha3.RateLimitPolicy
+	ResourceAuthentications      map[string]v1alpha2.Authentication
+	ResourceRateLimitPolicies    map[string]v1alpha3.RateLimitPolicy
+	ResourceAPIPolicies          map[string]v1alpha4.APIPolicy
+	APIPolicies                  map[string]v1alpha4.APIPolicy
+	AIProvider                   *v1alpha4.AIProvider
+	ResolvedModelBasedRoundRobin *ResolvedModelBasedRoundRobin
+	InterceptorServiceMapping    map[string]v1alpha1.InterceptorService
+	BackendJWTMapping            map[string]v1alpha1.BackendJWT
+	APIDefinitionFile            []byte
+	SubscriptionValidation       bool
+	MutualSSL                    *v1alpha2.MutualSSL
+	ProdAIRL                     *v1alpha3.AIRateLimitPolicy
+	SandAIRL                     *v1alpha3.AIRateLimitPolicy
+}
+
+// ResolvedModelBasedRoundRobin holds the resolved model based round robin configuration.
+// ModelBasedRoundRobin holds the model based round robin configurations
+type ResolvedModelBasedRoundRobin struct {
+	OnQuotaExceedSuspendDuration int                   `json:"onQuotaExceedSuspendDuration,omitempty"`
+	ProductionModels             []ResolvedModelWeight `json:"productionModels"`
+	SandboxModels                []ResolvedModelWeight `json:"sandboxModels"`
+}
+
+// ResolvedModelWeight holds the model configurations
+type ResolvedModelWeight struct {
+	Model           string                    `json:"model"`
+	ResolvedBackend *v1alpha2.ResolvedBackend `json:"resolvedBackend"`
+	Weight          int                       `json:"weight,omitempty"`
 }
 
 // HTTPRouteState holds the state of the deployed httpRoutes. This state is compared with

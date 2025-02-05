@@ -21,11 +21,13 @@ package dto
 type AIModelBasedRoundRobin struct {
 	Enabled                      bool          `json:"enabled"` // Whether AI model-based round robin is enabled
 	OnQuotaExceedSuspendDuration int           `json:"onQuotaExceedSuspendDuration,omitempty"`
-	Models                       []ModelWeight `json:"models"`
+	ProductionModels             []ModelWeight `json:"productionModels"`
+	SandboxModels                []ModelWeight `json:"sandboxModels"`
 }
 
 // ModelWeight holds the model configurations
 type ModelWeight struct {
-	Model  string `json:"model"`
-	Weight int    `json:"weight,omitempty"`
+	Model    string `json:"model"`
+	Endpoint string `json:"endpoint"`
+	Weight   int    `json:"weight,omitempty"`
 }

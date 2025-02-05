@@ -5,13 +5,13 @@ version: "2.0.0"
 type: "REST"
 endpointConfigurations:
     production:
-      endpoint: "https://backend-prod-test/v1/"
+    - endpoint: "https://backend-prod-test/v1/"
     sandbox:
-      endpoint:
-        name: http-bin-backend
-        namespace: apk-test
-        port: 7676
-        protocol: http
+    - endpoint:
+       name: http-bin-backend
+       namespace: apk-test
+       port: 7676
+       protocol: http
 operations:
     - target: "/anything"
       verb: "GET"
@@ -23,7 +23,7 @@ operations:
       scopes: ["admin", "publisher"]
       endpointConfigurations:
         production:
-          endpoint: "https://backend-prod-post-cat/v2/"
+        - endpoint: "https://backend-prod-post-cat/v2/"
 rateLimit:
   requestsPerUnit: 5
   unit: Minute

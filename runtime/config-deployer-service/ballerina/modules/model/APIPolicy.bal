@@ -51,12 +51,14 @@ public type AIProviderReference record {
 };
 
 public type ModelBasedRoundRobin record {
-    int onQuotaExceedSuspendDuration?;
-    ModelWeight[] models;
+    int onQuotaExceedSuspendDuration?; 
+    ModelWeight[] productionModels?;
+    ModelWeight[] sandboxModels?;
 };
 
 public type ModelWeight record {
     string model;
+    BackendRef backendRef;
     int weight;
 };
 

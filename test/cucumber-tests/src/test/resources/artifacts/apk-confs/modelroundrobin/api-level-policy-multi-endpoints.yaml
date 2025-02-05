@@ -1,0 +1,52 @@
+id: "chat-service-api-prod-sand"
+name: "chat-service-api-prod-sand"
+basePath: "/chat-service-prod-sand"
+version: "1.0"
+type: "REST"
+defaultVersion: false
+subscriptionValidation: false
+aiProvider:
+  name: "my-mistral-ai-new1"
+  apiVersion: "v1"
+endpointConfigurations:
+  production:
+    - endpoint: "http://chat-backend-1:80"
+    - endpoint: "http://chat-backend-2:80"
+  sandbox:
+    - endpoint: "http://chat-backend-1:80"
+    - endpoint: "http://chat-backend-2:80"
+operations:
+- target: "/get"
+  verb: "GET"
+  secured: true
+  scopes: []
+- target: "/chat/completions"
+  verb: "POST"
+  secured: true
+  scopes: []
+apiPolicies:
+  request:
+    - policyName: "ModelBasedRoundRobin"
+      policyVersion: v1
+      parameters:
+        onQuotaExceedSuspendDuration: 60
+        productionModels:
+          - model: "gpt-4o"
+            endpoint: "http://chat-backend-1:80"
+            weight: 1
+          - model: "gpt-3.5"
+            endpoint: "http://chat-backend-2:80"
+            weight: 1
+          - model: "gpt-4.5"
+            endpoint: "http://chat-backend-1:80"
+            weight: 1
+        sandboxModels:
+          - model: "gpt-4o"
+            endpoint: "http://chat-backend-2:80"
+            weight: 1
+          - model: "gpt-3.5"
+            endpoint: "http://chat-backend-1:80"
+            weight: 1
+          - model: "gpt-4.5"
+            endpoint: "http://chat-backend-2:80"
+            weight: 1

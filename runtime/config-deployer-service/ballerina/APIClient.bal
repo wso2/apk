@@ -53,7 +53,7 @@ public class APIClient {
         };
         string endpoint = api.getEndpoint();
         if endpoint.length() > 0 {
-            apkConf.endpointConfigurations = {production: {endpoint: endpoint}};
+            apkConf.endpointConfigurations = {production: [{endpoint: endpoint}]};
         }
 
         runtimeModels:URITemplate[]|error uriTemplates = api.getUriTemplates();
@@ -68,7 +68,7 @@ public class APIClient {
                 };
                 string resourceEndpoint = uriTemplate.getEndpoint();
                 if resourceEndpoint.length() > 0 {
-                    operation.endpointConfigurations = {production: {endpoint: resourceEndpoint}};
+                    operation.endpointConfigurations = {production: [{endpoint: resourceEndpoint}]};
                 }
                 operations.push(operation);
             }
@@ -97,7 +97,7 @@ public class APIClient {
             } else {
                 return e909021();
             }
-            map<model:Endpoint|()> createdEndpoints = {};
+            map<model:Endpoint[]|()> createdEndpoints = {};
             EndpointConfigurations? endpointConfigurations = apkConf.endpointConfigurations;
             if endpointConfigurations is EndpointConfigurations {
                 createdEndpoints = check self.createAndAddBackendServices(apiArtifact, apkConf, endpointConfigurations, (), (), organization);
@@ -110,22 +110,33 @@ public class APIClient {
                     // check if there are resource level endpoints
                     if resourceLevelEndpointConfigList.length() > 0 {
                         foreach EndpointConfigurations resourceEndpointConfigurations in resourceLevelEndpointConfigList {
-                            map<model:Endpoint> resourceEndpointIdMap = {};
-                            EndpointConfiguration? productionEndpointConfig = resourceEndpointConfigurations.production;
-                            EndpointConfiguration? sandboxEndpointConfig = resourceEndpointConfigurations.sandbox;
-                            if sandboxEndpointConfig is EndpointConfiguration {
-                                resourceEndpointIdMap[SANDBOX_TYPE] = {
-                                    name: "",
-                                    serviceEntry: false,
-                                    url: self.constructURlFromService(sandboxEndpointConfig.endpoint)
-                                };
+                            map<model:Endpoint[]> resourceEndpointIdMap = {};
+                            EndpointConfiguration[]? productionEndpointConfigs = resourceEndpointConfigurations.production;
+                            EndpointConfiguration[]? sandboxEndpointConfigs = resourceEndpointConfigurations.sandbox;
+
+                            if sandboxEndpointConfigs is EndpointConfiguration[] {
+                                model:Endpoint[] sandboxEndpointsResource = [];
+                                foreach EndpointConfiguration sandboxEndpointConfig in sandboxEndpointConfigs {
+                                    model:Endpoint endpoint = {
+                                        name: "",
+                                        serviceEntry: false,
+                                        url: self.constructURlFromService(sandboxEndpointConfig.endpoint)
+                                    };
+                                    sandboxEndpointsResource.push(endpoint);
+                                }
+                                resourceEndpointIdMap[SANDBOX_TYPE] = sandboxEndpointsResource;
                             }
-                            if productionEndpointConfig is EndpointConfiguration {
-                                resourceEndpointIdMap[PRODUCTION_TYPE] = {
-                                    name: "",
-                                    serviceEntry: false,
-                                    url: self.constructURlFromService(productionEndpointConfig.endpoint)
-                                };
+                            if productionEndpointConfigs is EndpointConfiguration[] {
+                                model:Endpoint[] productionEndpointsResource = [];
+                                foreach EndpointConfiguration productionEndpointConfig in productionEndpointConfigs {
+                                    model:Endpoint endpoint = {
+                                        name: "",
+                                        serviceEntry: false,
+                                        url: self.constructURlFromService(productionEndpointConfig.endpoint)
+                                    };
+                                    productionEndpointsResource.push(endpoint);
+                                }
+                                resourceEndpointIdMap[PRODUCTION_TYPE] = productionEndpointsResource;
                             }
                             _ = check self.populateAuthenticationMap(apiArtifact, apkConf, authentication, resourceEndpointIdMap, organization);
                         }
@@ -135,8 +146,14 @@ public class APIClient {
                 }
             }
 
-            _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+            // model:Endpoint[]? productionEndpoints = createdEndpoints.hasKey(PRODUCTION_TYPE) ? createdEndpoints.get(PRODUCTION_TYPE) : (); 
+            // model:Endpoint[]? sandboxEndpoints = createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : ();
+            // if productionEndpoints is model:Endpoint[] && productionEndpoints.length() > 0 {
+            _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(PRODUCTION_TYPE)  ? createdEndpoints.get(PRODUCTION_TYPE) : (), uniqueId, PRODUCTION_TYPE, organization);
+            //}
+            //if sandboxEndpoints is model:Endpoint[] && sandboxEndpoints.length() > 0 {
             _ = check self.setRoute(apiArtifact, apkConf, createdEndpoints.hasKey(SANDBOX_TYPE) ? createdEndpoints.get(SANDBOX_TYPE) : (), uniqueId, SANDBOX_TYPE, organization);
+            //}
             string|json generatedSwagger = check self.retrieveGeneratedSwaggerDefinition(apkConf, definition);
             check self.retrieveGeneratedConfigmapForDefinition(apiArtifact, apkConf, generatedSwagger, uniqueId, organization);
             self.generateAndSetAPICRArtifact(apiArtifact, apkConf, organization);
@@ -216,46 +233,56 @@ public class APIClient {
         return ();
     }
 
-    private isolated function createAndAddBackendServices(model:APIArtifact apiArtifact, APKConf apkConf, EndpointConfigurations endpointConfigurations, APKOperations? apiOperation, string? endpointType, commons:Organization organization) returns map<model:Endpoint>|commons:APKError|error {
-        map<model:Endpoint> endpointIdMap = {};
-        EndpointConfiguration? productionEndpointConfig = endpointConfigurations.production;
-        EndpointConfiguration? sandboxEndpointConfig = endpointConfigurations.sandbox;
-        if endpointType == () || (endpointType == SANDBOX_TYPE) {
-            if sandboxEndpointConfig is EndpointConfiguration {
-                model:Backend backendService = check self.createBackendService(apiArtifact, apkConf, apiOperation, SANDBOX_TYPE, organization, sandboxEndpointConfig);
-                if apiOperation == () {
-                    apiArtifact.sandboxEndpointAvailable = true;
+    private isolated function createAndAddBackendServices(model:APIArtifact apiArtifact, APKConf apkConf, EndpointConfigurations endpointConfigurations, APKOperations? apiOperation, string? endpointType, commons:Organization organization) returns map<model:Endpoint[]>|commons:APKError|error {
+        map<model:Endpoint[]> endpointIdMap = {};
+        model:Endpoint[] productionEndpoints = [];
+        model:Endpoint[] sandboxEndpoints = [];
+        EndpointConfiguration[]? productionEndpointConfigs = endpointConfigurations.production;
+        EndpointConfiguration[]? sandboxEndpointConfigs = endpointConfigurations.sandbox;
+        if (endpointType == () || endpointType == SANDBOX_TYPE) {
+            if sandboxEndpointConfigs is EndpointConfiguration[] {
+                foreach EndpointConfiguration sandboxEndpointConfig in sandboxEndpointConfigs {
+                    model:Backend backendService = check self.createBackendService(apiArtifact, apkConf, apiOperation, SANDBOX_TYPE, organization, sandboxEndpointConfig);
+                    if apiOperation == () {
+                        apiArtifact.sandboxEndpointAvailable = true;
+                    }
+                    apiArtifact.backendServices[backendService.metadata.name] = (backendService);
+                    model:Endpoint endpoint = {
+                        name: backendService.metadata.name,
+                        serviceEntry: false,
+                        url: self.constructURlFromService(sandboxEndpointConfig.endpoint)
+                    };
+                    sandboxEndpoints.push(endpoint);
+                    AIRatelimit? aiRatelimit = sandboxEndpointConfig.aiRatelimit;
+                    if aiRatelimit is AIRatelimit && aiRatelimit.enabled {
+                        model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization, SANDBOX_TYPE);
+                        apiArtifact.aiRatelimitPolicies[airl.metadata.name] = airl;
+                    }
                 }
-                apiArtifact.backendServices[backendService.metadata.name] = (backendService);
-                endpointIdMap[SANDBOX_TYPE] = {
-                    name: backendService.metadata.name,
-                    serviceEntry: false,
-                    url: self.constructURlFromService(sandboxEndpointConfig.endpoint)
-                };
-                AIRatelimit? aiRatelimit = sandboxEndpointConfig.aiRatelimit;
-                if aiRatelimit is AIRatelimit && aiRatelimit.enabled {
-                    model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization, SANDBOX_TYPE);
-                    apiArtifact.aiRatelimitPolicies[airl.metadata.name] = airl;
-                }
+                endpointIdMap[SANDBOX_TYPE] = sandboxEndpoints;
             }
         }
         if (endpointType == () || endpointType == PRODUCTION_TYPE) {
-            if productionEndpointConfig is EndpointConfiguration {
-                model:Backend backendService = check self.createBackendService(apiArtifact, apkConf, apiOperation, PRODUCTION_TYPE, organization, productionEndpointConfig);
-                if apiOperation == () {
-                    apiArtifact.productionEndpointAvailable = true;
+            if productionEndpointConfigs is EndpointConfiguration[] {
+                foreach EndpointConfiguration productionEndpointConfig in productionEndpointConfigs {
+                    model:Backend backendService = check self.createBackendService(apiArtifact, apkConf, apiOperation, PRODUCTION_TYPE, organization, productionEndpointConfig);
+                    if apiOperation == () {
+                        apiArtifact.productionEndpointAvailable = true;
+                    }
+                    apiArtifact.backendServices[backendService.metadata.name] = (backendService);
+                    model:Endpoint endpoint = {
+                        name: backendService.metadata.name,
+                        serviceEntry: false,
+                        url: self.constructURlFromService(productionEndpointConfig.endpoint)
+                    };
+                    productionEndpoints.push(endpoint);
+                    AIRatelimit? aiRatelimit = productionEndpointConfig.aiRatelimit;
+                    if aiRatelimit is AIRatelimit && aiRatelimit.enabled {
+                        model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization, PRODUCTION_TYPE);
+                        apiArtifact.aiRatelimitPolicies[airl.metadata.name] = airl;
+                    }
                 }
-                apiArtifact.backendServices[backendService.metadata.name] = (backendService);
-                endpointIdMap[PRODUCTION_TYPE] = {
-                    name: backendService.metadata.name,
-                    serviceEntry: false,
-                    url: self.constructURlFromService(productionEndpointConfig.endpoint)
-                };
-                AIRatelimit? aiRatelimit = productionEndpointConfig.aiRatelimit;
-                if aiRatelimit is AIRatelimit && aiRatelimit.enabled {
-                    model:AIRateLimitPolicy airl = self.generateAIRateLimitPolicyCR(apkConf, aiRatelimit.token, aiRatelimit.request, backendService.metadata.name, organization, PRODUCTION_TYPE);
-                    apiArtifact.aiRatelimitPolicies[airl.metadata.name] = airl;
-                }
+                endpointIdMap[PRODUCTION_TYPE] = productionEndpoints;
             }
         }
         return endpointIdMap;
@@ -363,7 +390,7 @@ public class APIClient {
     }
 
     private isolated function populateAuthenticationMap(model:APIArtifact apiArtifact, APKConf apkConf, AuthenticationRequest[] authentications,
-            map<model:Endpoint|()> createdEndpointMap, commons:Organization organization) returns error? {
+            map<model:Endpoint[]|()> createdEndpointMap, commons:Organization organization) returns error? {
         map<model:Authentication> authenticationMap = {};
         model:AuthenticationExtensionType authTypes = {};
         foreach AuthenticationRequest authentication in authentications {
@@ -532,7 +559,7 @@ public class APIClient {
     private isolated function retrieveAuthenticationRefName(APKConf apkConf, string 'type, commons:Organization organization) returns string {
         return self.getUniqueIdForAPI(apkConf.name, apkConf.'version, organization) + "-" + 'type + "-authentication";
     }
-    private isolated function setRoute(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError|error? {
+    private isolated function setRoute(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint[]? endpoint, string uniqueId, string endpointType, commons:Organization organization) returns commons:APKError|error? {
         APKOperations[] apiOperations = apkConf.operations ?: [];
         APKOperations[][] operationsArray = [];
         int row = 0;
@@ -554,7 +581,7 @@ public class APIClient {
         }
     }
 
-    private isolated function putRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string uniqueId, string endpointType, commons:Organization organization, int count) returns commons:APKError|error? {
+    private isolated function putRouteForPartition(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint[]? endpoint, string uniqueId, string endpointType, commons:Organization organization, int count) returns commons:APKError|error? {
 
         if apkConf.'type == API_TYPE_GRAPHQL {
             model:GQLRoute gqlRoute = {
@@ -569,7 +596,7 @@ public class APIClient {
                     hostnames: self.getHostNames(apkConf, uniqueId, endpointType, organization)
                 }
             };
-            if endpoint is model:Endpoint {
+            if endpoint is model:Endpoint[] && endpoint.length() > 0 {
                 gqlRoute.spec.backendRefs = self.retrieveGeneratedBackend(apkConf, endpoint, endpointType);
             }
             if gqlRoute.spec.rules.length() > 0 {
@@ -635,7 +662,7 @@ public class APIClient {
         return parentRefs;
     }
 
-    private isolated function generateHTTPRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError|error {
+    private isolated function generateHTTPRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint[]? endpoint, string endpointType, commons:Organization organization) returns model:HTTPRouteRule[]|commons:APKError|error {
         model:HTTPRouteRule[] httpRouteRules = [];
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
@@ -694,7 +721,7 @@ public class APIClient {
         return httpRouteRules;
     }
 
-    private isolated function generateGQLRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:GQLRouteRule[]|commons:APKError|error {
+    private isolated function generateGQLRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint[]? endpoint, string endpointType, commons:Organization organization) returns model:GQLRouteRule[]|commons:APKError|error {
         model:GQLRouteRule[] gqlRouteRules = [];
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
@@ -753,7 +780,7 @@ public class APIClient {
         return gqlRouteRules;
     }
 
-    private isolated function generateGRPCRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, string endpointType, commons:Organization organization) returns model:GRPCRouteRule[]|commons:APKError|error {
+    private isolated function generateGRPCRouteRules(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint[]? endpoint, string endpointType, commons:Organization organization) returns model:GRPCRouteRule[]|commons:APKError|error {
         model:GRPCRouteRule[] grpcRouteRules = [];
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
@@ -822,6 +849,8 @@ public class APIClient {
                 defaultSpecData.requestInterceptors = [item];
             } else if item is model:BackendJwtReference {
                 defaultSpecData.backendJwtPolicy = item;
+            } else if item is model:ModelBasedRoundRobin {
+                defaultSpecData.modelBasedRoundRobin = item;
             }
         }
         APKResponseOperationPolicy[]? response = policies?.response;
@@ -898,21 +927,21 @@ public class APIClient {
         return authentication;
     }
 
-    private isolated function generateRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint? endpoint, APKOperations operation, string endpointType, commons:Organization organization)
+    private isolated function generateRouteRule(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint[]? endpoint, APKOperations operation, string endpointType, commons:Organization organization)
         returns model:HTTPRouteRule|model:GQLRouteRule|model:GRPCRouteRule|()|commons:APKError {
 
         do {
             EndpointConfigurations? endpointConfig = operation.endpointConfigurations;
-            model:Endpoint? endpointToUse = ();
+            model:Endpoint[]? endpointToUse = ();
             if endpointConfig is EndpointConfigurations {
                 // endpointConfig presence at Operation Level.
-                map<model:Endpoint> operationalLevelBackend = check self.createAndAddBackendServices(apiArtifact, apkConf,
+                map<model:Endpoint[]> operationalLevelBackend = check self.createAndAddBackendServices(apiArtifact, apkConf,
                     endpointConfig, operation, endpointType, organization);
                 if operationalLevelBackend.hasKey(endpointType) {
                     endpointToUse = operationalLevelBackend.get(endpointType);
                 }
             } else {
-                if endpoint is model:Endpoint {
+                if endpoint is model:Endpoint[] && endpoint.length() > 0 {
                     endpointToUse = endpoint;
                 }
             }
@@ -958,7 +987,7 @@ public class APIClient {
         }
     }
 
-    private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns [model:HTTPRouteFilter[], boolean] {
+    private isolated function generateFilters(model:APIArtifact apiArtifact, APKConf apkConf, model:Endpoint[] endpoint, APKOperations operation, string endpointType, commons:Organization organization) returns [model:HTTPRouteFilter[], boolean] {
         model:HTTPRouteFilter[] routeFilters = [];
         boolean hasRedirectPolicy = false;
         APIOperationPolicies? operationPoliciesToUse = ();
@@ -1001,7 +1030,7 @@ public class APIClient {
         return [routeFilters, hasRedirectPolicy];
     }
 
-    isolated function extractHttpRouteFilter(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations apiOperation, model:Endpoint endpoint, APKOperationPolicy[] operationPolicies, commons:Organization organization, boolean isRequest) returns [model:HTTPRouteFilter[], boolean] {
+    isolated function extractHttpRouteFilter(model:APIArtifact apiArtifact, APKConf apkConf, APKOperations apiOperation, model:Endpoint[] endpoint, APKOperationPolicy[] operationPolicies, commons:Organization organization, boolean isRequest) returns [model:HTTPRouteFilter[], boolean] {
         model:HTTPRouteFilter[] httpRouteFilters = [];
         model:HTTPHeader[] addHeaders = [];
         model:HTTPHeader[] setHeaders = [];
@@ -1043,7 +1072,7 @@ public class APIClient {
                     if port is int {
                         model:Backend backendService = {
                             metadata: {
-                                name: self.getBackendServiceUid(apkConf, apiOperation, "", organization),
+                                name: self.getBackendServiceUid(apkConf, apiOperation, "", host, organization),
                                 labels: self.getLabels(apkConf, organization)
                             },
                             spec: {
@@ -1058,10 +1087,11 @@ public class APIClient {
                             }
                         };
                         apiArtifact.backendServices[backendService.metadata.name] = backendService;
-                        model:Endpoint mirrorEndpoint = {
+                        
+                        model:Endpoint[] mirrorEndpoint = [{
                             url: url,
                             name: backendService.metadata.name
-                        };
+                        }];
                         model:BackendRef backendRef = self.retrieveGeneratedBackend(apkConf, mirrorEndpoint, "")[0];
                         mirrorFilter.requestMirror = {
                             backendRef: {
@@ -1145,7 +1175,7 @@ public class APIClient {
         return [httpRouteFilters, hasRedirectPolicy];
     }
 
-    isolated function generatePrefixMatch(model:Endpoint endpoint, APKOperations operation) returns string {
+    isolated function generatePrefixMatch(model:Endpoint[] endpoint, APKOperations operation) returns string {
         string target = operation.target ?: "/*";
         string[] splitValues = regex:split(target, "/");
         string generatedPath = "";
@@ -1172,7 +1202,8 @@ public class APIClient {
             int lastSlashIndex = <int>generatedPath.lastIndexOf("/", generatedPath.length());
             generatedPath = generatedPath.substring(0, lastSlashIndex) + "///" + pathparamCount.toString();
         }
-        if endpoint.serviceEntry {
+
+        if endpoint.length() > 0 && endpoint[0].serviceEntry {
             return generatedPath.trim();
         }
         return generatedPath;
@@ -1221,13 +1252,19 @@ public class APIClient {
         return generatedPath.trim();
     }
 
-    private isolated function retrieveGeneratedBackend(APKConf apkConf, model:Endpoint endpoint, string endpointType) returns model:HTTPBackendRef[] {
-        model:HTTPBackendRef httpBackend = {
-            kind: "Backend",
-            name: <string>endpoint.name,
-            group: "dp.wso2.com"
-        };
-        return [httpBackend];
+    private isolated function retrieveGeneratedBackend(APKConf apkConf, model:Endpoint[] endpoint, string endpointType) returns model:HTTPBackendRef[] {
+        model:HTTPBackendRef[] httpBackendRefs = [];
+        if endpoint is model:Endpoint[] {
+            foreach model:Endpoint endpointItem in endpoint {
+                model:HTTPBackendRef httpBackend = {
+                    kind: "Backend",
+                    name: <string>endpointItem.name,
+                    group: "dp.wso2.com"
+                };
+                httpBackendRefs.push(httpBackend);
+            }
+        }
+        return httpBackendRefs;
     }
 
     private isolated function retrieveHTTPMatches(APKConf apkConf, APKOperations apiOperation, commons:Organization organization) returns model:HTTPRouteMatch[] {
@@ -1427,7 +1464,7 @@ public class APIClient {
         EndpointSecurity? endpointSecurity = endpointConfig?.endpointSecurity;
         model:Backend backendService = {
             metadata: {
-                name: self.getBackendServiceUid(apkConf, apiOperation, endpointType, organization),
+                name: self.getBackendServiceUid(apkConf, apiOperation, endpointType, self.getHost(endpointConfig.endpoint), organization),
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
@@ -1604,6 +1641,89 @@ public class APIClient {
                         model:BackendJWT backendJwt = self.retrieveBackendJWTPolicy(apkConf, apiArtifact, backendJWTPolicy, operations, organization);
                         apiArtifact.backendJwt = backendJwt;
                         policyReferences.push(<model:BackendJwtReference>{name: backendJwt.metadata.name});
+                    } else if (policyName == ModelBasedRoundRobin) {
+                        ModelBasedRoundRobinPolicy modelBasedRoundRobinPolicy = check policy.cloneWithType(ModelBasedRoundRobinPolicy);
+                        ModelBasedRoundRobinPolicy_parameters parameters = <ModelBasedRoundRobinPolicy_parameters>modelBasedRoundRobinPolicy.parameters;
+                        model:ModelWeight[] productionModels = [];
+                        model:ModelWeight[] sandboxModels = [];
+                        foreach ModelRouting model in parameters.productionModels {
+                            string url = model.endpoint;
+                            string host = self.getHost(url);
+                            int|error port = self.getPort(url);
+                            if port is int {
+                                model:Backend backendService = {
+                                    metadata: {
+                                        name: self.getBackendServiceUid(apkConf, operations, PRODUCTION_TYPE, host, organization),
+                                        labels: self.getLabels(apkConf, organization)
+                                    },
+                                    spec: {
+                                        services: [
+                                            {
+                                                host: host,
+                                                port: port
+                                            }
+                                        ],
+                                        basePath: getPath(url),
+                                        protocol: self.getProtocol(url)
+                                    }
+                                };
+                                //apiArtifact.backendServices[backendService.metadata.name] = backendService;
+                                
+                                model:Endpoint[] modelEndpoint = [{
+                                    url: url,
+                                    name: backendService.metadata.name
+                                }];
+                                model:BackendRef backendRef = self.retrieveGeneratedBackend(apkConf, modelEndpoint, "")[0];
+                                model:ModelWeight modelWeight = {
+                                    model: model.model,
+                                    backendRef: {group: backendRef.group, kind: backendRef.kind, name: backendRef.name, port: backendRef.port, namespace: backendRef.namespace},
+                                    weight: model.weight
+                                };
+                                productionModels.push(modelWeight);
+                            }
+                        }
+                        foreach ModelRouting model in parameters.sandboxModels {
+                            string url = model.endpoint;
+                            string host = self.getHost(url);
+                            int|error port = self.getPort(url);
+                            if port is int {
+                                model:Backend backendService = {
+                                    metadata: {
+                                        name: self.getBackendServiceUid(apkConf, operations, SANDBOX_TYPE, host, organization),
+                                        labels: self.getLabels(apkConf, organization)
+                                    },
+                                    spec: {
+                                        services: [
+                                            {
+                                                host: host,
+                                                port: port
+                                            }
+                                        ],
+                                        basePath: getPath(url),
+                                        protocol: self.getProtocol(url)
+                                    }
+                                };
+                                //apiArtifact.backendServices[backendService.metadata.name] = backendService;
+                                
+                                model:Endpoint[] modelEndpoint = [{
+                                    url: url,
+                                    name: backendService.metadata.name
+                                }];
+                                model:BackendRef backendRef = self.retrieveGeneratedBackend(apkConf, modelEndpoint, "")[0];
+                                model:ModelWeight modelWeight = {
+                                    model: model.model,
+                                    backendRef: {group: backendRef.group, kind: backendRef.kind, name: backendRef.name, port: backendRef.port, namespace: backendRef.namespace},
+                                    weight: model.weight
+                                };
+                                sandboxModels.push(modelWeight);
+                            }
+                        }
+                        model:ModelBasedRoundRobin modelBasedRoundRobin = {
+                            onQuotaExceedSuspendDuration: parameters.onQuotaExceedSuspendDuration,
+                            productionModels: productionModels,
+                            sandboxModels: sandboxModels
+                        };
+                        policyReferences.push(modelBasedRoundRobin);
                     } else if policyName != AddHeader && policyName != SetHeader && policyName != RemoveHeader && policyName != RequestMirror && policyName != RequestRedirect {
                         return e909052(error("Incorrect API Policy name provided."));
                     }
@@ -1885,12 +2005,12 @@ public class APIClient {
         }
     }
 
-    public isolated function getBackendServiceUid(APKConf apkConf, APKOperations? apiOperation, string endpointType, commons:Organization organization) returns string {
+    public isolated function getBackendServiceUid(APKConf apkConf, APKOperations? apiOperation, string endpointType, string endpointHost, commons:Organization organization) returns string {
         string concatanatedString = uuid:createType1AsString();
-        if (apiOperation is APKOperations) {
+        if (apiOperation is APKOperations && apiOperation.endpointConfigurations is EndpointConfigurations) {
             return "backend-" + concatanatedString + "-resource";
         } else {
-            concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version, endpointType);
+            concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version, endpointType, endpointHost);
             byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
             concatanatedString = hashedValue.toBase16();
             return "backend-" + concatanatedString + "-api";
@@ -1998,8 +2118,8 @@ public class APIClient {
         boolean productionEndpointAvailable = false;
         boolean sandboxEndpointAvailable = false;
         if endpointConfigurations is EndpointConfigurations {
-            sandboxEndpointAvailable = endpointConfigurations.sandbox is EndpointConfiguration;
-            productionEndpointAvailable = endpointConfigurations.production is EndpointConfiguration;
+            sandboxEndpointAvailable = endpointConfigurations.sandbox is EndpointConfiguration[];
+            productionEndpointAvailable = endpointConfigurations.production is EndpointConfiguration[];
         }
         APKOperations[]? operations = apkConf.operations;
         if operations is APKOperations[] {
@@ -2008,8 +2128,8 @@ public class APIClient {
                 boolean operationLevelSandboxEndpointAvailable = false;
                 EndpointConfigurations? endpointConfigs = operation.endpointConfigurations;
                 if endpointConfigs is EndpointConfigurations {
-                    operationLevelProductionEndpointAvailable = endpointConfigs.production is EndpointConfiguration;
-                    operationLevelSandboxEndpointAvailable = endpointConfigs.sandbox is EndpointConfiguration;
+                    operationLevelProductionEndpointAvailable = endpointConfigs.production is EndpointConfiguration[];
+                    operationLevelSandboxEndpointAvailable = endpointConfigs.sandbox is EndpointConfiguration[];
                 }
                 if (!operationLevelProductionEndpointAvailable && !productionEndpointAvailable) && (!operationLevelSandboxEndpointAvailable && !sandboxEndpointAvailable) {
                     errors["endpoint"] = "production/sandbox endpoint not available for " + <string>operation.target;

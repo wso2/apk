@@ -11,17 +11,17 @@ aiProvider:
   apiVersion: “2024.06.01”
 endpointConfigurations:
   production:
-    endpoint: "http://llm-service:80"
-    aiRatelimit: 
-      enabled: true
-      token:
-        promptLimit: 5000
-        completionLimit: 10000
-        totalLimit: 15000
-        unit: Minute
-      request:
-        requestLimit: 6000
-        unit: Minute
+    - endpoint: "http://llm-service:80"
+      aiRatelimit:
+        enabled: true
+        token:
+          promptLimit: 5000
+          completionLimit: 10000
+          totalLimit: 15000
+          unit: Minute
+        request:
+          requestLimit: 6000
+          unit: Minute
 operations:
 - target: "/employee"
   verb: "GET"

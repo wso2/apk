@@ -8,7 +8,7 @@ defaultVersion: true
 subscriptionValidation: false
 endpointConfigurations:
   production:
-    endpoint: "http://graphql-faker-service:9002/graphql"
+    - endpoint: "http://graphql-faker-service:9002/graphql"
 operations:
   - target: "hero"
     verb: "QUERY"

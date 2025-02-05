@@ -37,7 +37,6 @@ import (
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -64,7 +63,7 @@ func GetGlobalClusters() ([]*clusterv3.Cluster, []*corev3.Address) {
 	if conf.Tracing.Enabled && conf.Tracing.Type != envoy.TracerTypeAzure {
 		logger.LoggerOasparser.Debugln("Creating global cluster - Tracing")
 		if c, e, err := envoy.CreateTracingCluster(conf); err == nil {
-			clusters = append(clusters, c)
+			clusters = append(clusters, c...)
 			endpoints = append(endpoints, e...)
 		} else {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2249, logging.CRITICAL, "Failed to initialize tracer's cluster. Router tracing will be disabled. %v", err.Error()))
@@ -152,11 +151,12 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 		}
 		modelBasedRoundRobin := res.GetAIModelBasedRoundRobin()
 		logger.LoggerOasparser.Debugf("Get AI Model Based Round Robin: %+v", modelBasedRoundRobin)
-		if modelBasedRoundRobin != nil && modelBasedRoundRobin.Models != nil {
+		if modelBasedRoundRobin != nil && (modelBasedRoundRobin.ProductionModels != nil || modelBasedRoundRobin.SandboxModels != nil) {
 			resource.AiModelBasedRoundRobin = &api.AIModelBasedRoundRobin{
 				Enabled:                      true,
 				OnQuotaExceedSuspendDuration: int32(modelBasedRoundRobin.OnQuotaExceedSuspendDuration),
-				Models:                       convertModelWeights(modelBasedRoundRobin.Models),
+				ProductionModels:             convertModelWeights(modelBasedRoundRobin.ProductionModels),
+				SandboxModels:                convertModelWeights(modelBasedRoundRobin.SandboxModels),
 			}
 		}
 		logger.LoggerOasparser.Infof("Resource AI Model Based Round Robin: %+v", resource.AiModelBasedRoundRobin)
@@ -205,9 +205,13 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 			ProviderAPIVersion: aiProviderFromInternalAPI.ProviderAPIVersion,
 			Organization:       aiProviderFromInternalAPI.Organization,
 			SupportedModels:    aiProviderFromInternalAPI.SupportedModels,
-			Model: &api.ValueDetails{
-				In:    aiProviderFromInternalAPI.Model.In,
-				Value: aiProviderFromInternalAPI.Model.Value,
+			RequestModel: &api.ValueDetails{
+				In:    aiProviderFromInternalAPI.RequestModel.In,
+				Value: aiProviderFromInternalAPI.RequestModel.Value,
+			},
+			ResponseModel: &api.ValueDetails{
+				In:    aiProviderFromInternalAPI.ResponseModel.In,
+				Value: aiProviderFromInternalAPI.ResponseModel.Value,
 			},
 			PromptTokens: &api.ValueDetails{
 				In:    aiProviderFromInternalAPI.PromptTokens.In,
@@ -231,11 +235,12 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 	modelBasedRoundRobinFromInternalAPI := adapterInternalAPI.GetModelBasedRoundRobin()
 	logger.LoggerOasparser.Debugf("Before Internal Model Based Round Robin: %+v", modelBasedRoundRobinFromInternalAPI)
 
-	if modelBasedRoundRobinFromInternalAPI.Models != nil {
+	if modelBasedRoundRobinFromInternalAPI.ProductionModels != nil || modelBasedRoundRobinFromInternalAPI.SandboxModels != nil {
 		modelBasedRoundRobin = &api.AIModelBasedRoundRobin{
 			Enabled:                      true,
 			OnQuotaExceedSuspendDuration: int32(modelBasedRoundRobinFromInternalAPI.OnQuotaExceedSuspendDuration),
-			Models:                       convertModelWeights(modelBasedRoundRobinFromInternalAPI.Models),
+			ProductionModels:             convertModelWeights(modelBasedRoundRobinFromInternalAPI.ProductionModels),
+			SandboxModels:                convertModelWeights(modelBasedRoundRobinFromInternalAPI.SandboxModels),
 		}
 	}
 
@@ -417,12 +422,13 @@ func generateRPCEndpointCluster(inputEndpointCluster *model.EndpointCluster) *ap
 	return endpoints
 }
 
-func convertModelWeights(inputModels []v1alpha4.ModelWeight) []*api.ModelWeight {
+func convertModelWeights(inputModels []model.InternalModelWeight) []*api.ModelWeight {
 	var outputModels []*api.ModelWeight
 	for _, model := range inputModels {
 		outputModels = append(outputModels, &api.ModelWeight{
-			Model:  model.Model,
-			Weight: int32(model.Weight),
+			Model:    model.Model,
+			Endpoint: model.EndpointClusterName,
+			Weight:   int32(model.Weight),
 		})
 	}
 	return outputModels
@@ -529,7 +535,7 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 			logger.LoggerOasparser.Error(err)
 			return nil, nil, nil, err
 		}
-		jwksClusters = append(jwksClusters, jwksCluster)
+		jwksClusters = append(jwksClusters, jwksCluster...)
 		jwksAddresses = append(jwksAddresses, jwksAddress...)
 		jwtProvider.JwksSourceSpecifier = &jwt.JwtProvider_RemoteJwks{
 			RemoteJwks: &jwt.RemoteJwks{
@@ -554,7 +560,7 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 
 	return jwtProvider, jwksClusters, jwksAddresses, nil
 }
-func getRemoteJWKSCluster(jwksInfo v1alpha1.ResolvedJWKS, clusterName string) (*clusterv3.Cluster, []*corev3.Address, error) {
+func getRemoteJWKSCluster(jwksInfo v1alpha1.ResolvedJWKS, clusterName string) ([]*clusterv3.Cluster, []*corev3.Address, error) {
 	endpoint, err := model.GETHTTPEndpoint(jwksInfo.URL)
 	if err != nil {
 		return nil, nil, err

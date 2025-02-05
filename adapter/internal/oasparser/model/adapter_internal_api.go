@@ -82,8 +82,22 @@ type AdapterInternalAPI struct {
 	Endpoints              *EndpointCluster
 	EndpointSecurity       []*EndpointSecurity
 	AIProvider             InternalAIProvider
-	AIModelBasedRoundRobin dpv1alpha4.ModelBasedRoundRobin
+	AIModelBasedRoundRobin InternalModelBasedRoundRobin
 	HTTPRouteIDs           []string
+}
+
+// InternalModelBasedRoundRobin holds the model based round robin configurations
+type InternalModelBasedRoundRobin struct {
+	OnQuotaExceedSuspendDuration int                   `json:"onQuotaExceedSuspendDuration,omitempty"`
+	ProductionModels             []InternalModelWeight `json:"productionModels"`
+	SandboxModels                []InternalModelWeight `json:"sandboxModels"`
+}
+
+// InternalModelWeight holds the model configurations
+type InternalModelWeight struct {
+	Model               string `json:"model"`
+	EndpointClusterName string `json:"endpointClusterName"`
+	Weight              int    `json:"weight,omitempty"`
 }
 
 // BackendJWTTokenInfo represents the object structure holding the information related to the JWT Generator
@@ -103,7 +117,8 @@ type InternalAIProvider struct {
 	ProviderAPIVersion string
 	Organization       string
 	SupportedModels    []string
-	Model              ValueDetails
+	RequestModel       ValueDetails
+	ResponseModel      ValueDetails
 	PromptTokens       ValueDetails
 	CompletionToken    ValueDetails
 	TotalToken         ValueDetails
@@ -461,9 +476,13 @@ func (adapterInternalAPI *AdapterInternalAPI) SetAIProvider(aiProvider dpv1alpha
 		ProviderAPIVersion: aiProvider.Spec.ProviderAPIVersion,
 		Organization:       aiProvider.Spec.Organization,
 		SupportedModels:    aiProvider.Spec.SupportedModels,
-		Model: ValueDetails{
-			In:    aiProvider.Spec.Model.In,
-			Value: aiProvider.Spec.Model.Value,
+		RequestModel: ValueDetails{
+			In:    aiProvider.Spec.RequestModel.In,
+			Value: aiProvider.Spec.RequestModel.Value,
+		},
+		ResponseModel: ValueDetails{
+			In:    aiProvider.Spec.ResponseModel.In,
+			Value: aiProvider.Spec.ResponseModel.Value,
 		},
 		PromptTokens: ValueDetails{
 			In:    aiProvider.Spec.RateLimitFields.PromptTokens.In,
@@ -486,12 +505,12 @@ func (adapterInternalAPI *AdapterInternalAPI) GetAIProvider() InternalAIProvider
 }
 
 // SetModelBasedRoundRobin sets the ModelBasedRoundRobin of the API.
-func (adapterInternalAPI *AdapterInternalAPI) SetModelBasedRoundRobin(modelBasedRoundRobin dpv1alpha4.ModelBasedRoundRobin) {
+func (adapterInternalAPI *AdapterInternalAPI) SetModelBasedRoundRobin(modelBasedRoundRobin InternalModelBasedRoundRobin) {
 	adapterInternalAPI.AIModelBasedRoundRobin = modelBasedRoundRobin
 }
 
 // GetModelBasedRoundRobin returns the ModelBasedRoundRobin of the API
-func (adapterInternalAPI *AdapterInternalAPI) GetModelBasedRoundRobin() dpv1alpha4.ModelBasedRoundRobin {
+func (adapterInternalAPI *AdapterInternalAPI) GetModelBasedRoundRobin() InternalModelBasedRoundRobin {
 	return adapterInternalAPI.AIModelBasedRoundRobin
 }
 
@@ -948,9 +967,13 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 			operations := getAllowedOperations(matchID, match.Method, policies, apiAuth,
 				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
 
-			var modelBasedRoundRobin *dpv1alpha4.ModelBasedRoundRobin
-			if extracted := extractModelBasedRoundRobinFromPolicy(resourceAPIPolicy); extracted != nil {
-				loggers.LoggerAPI.Infof("ModelBasedRoundRobin extracted %v", extracted)
+			vhost := ""
+			for _, hostName := range httpRoute.Spec.Hostnames {
+				vhost = string(hostName)
+			}
+			var modelBasedRoundRobin *InternalModelBasedRoundRobin
+			if extracted := extractModelBasedRoundRobinFromPolicy(resourceAPIPolicy, resourceParams.BackendMapping, adapterInternalAPI, resourcePath, vhost); extracted != nil {
+				loggers.LoggerAPI.Debugf("ModelBasedRoundRobin extracted %v", extracted)
 				modelBasedRoundRobin = extracted
 			}
 
@@ -1050,25 +1073,176 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 }
 
 // ExtractModelBasedRoundRobinFromPolicy extracts the ModelBasedRoundRobin from the API Policy
-func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy) *dpv1alpha4.ModelBasedRoundRobin {
+func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, backendMapping map[string]*dpv1alpha2.ResolvedBackend, adapterInternalAPI *AdapterInternalAPI, resourcePath string, vHost string) *InternalModelBasedRoundRobin {
 	if apiPolicy == nil {
 		return nil
 	}
+	resolvedModelBasedRoundRobin := &InternalModelBasedRoundRobin{}
+	loggers.LoggerAPI.Debugf("Extracting ModelBasedRoundRobin from API Policy %v", apiPolicy)
+	loggers.LoggerAPI.Debugf("Backend Mapping %v", backendMapping)
+	loggers.LoggerAPI.Debugf("ResourcePath %v", resourcePath)
 
 	// Safely access Override section
 	if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ModelBasedRoundRobin != nil {
-		loggers.LoggerAPI.Infof("ModelBasedRoundRobin Override section  %v", apiPolicy.Spec.Override.ModelBasedRoundRobin)
-		return apiPolicy.Spec.Override.ModelBasedRoundRobin
-	}
+		loggers.LoggerAPI.Debugf("ModelBasedRoundRobin Override section  %v", apiPolicy.Spec.Override.ModelBasedRoundRobin)
+		modelBasedRoundRobin := apiPolicy.Spec.Override.ModelBasedRoundRobin
+		resolvedModelBasedRoundRobin = &InternalModelBasedRoundRobin{
+			OnQuotaExceedSuspendDuration: modelBasedRoundRobin.OnQuotaExceedSuspendDuration,
+		}
+		if modelBasedRoundRobin.ProductionModels != nil {
+			productionModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.ProductionModels
+			for _, model := range productionModels {
+				if model.BackendRef.Name != "" {
+					namespace := ""
+					if apiPolicy.Namespace == "" {
+						namespace = "default"
+					} else {
+						namespace = apiPolicy.Namespace
+					}
+					backendNamespacedName := types.NamespacedName{
+						Name:      string(model.BackendRef.Name),
+						Namespace: utils.GetNamespace(model.BackendRef.Namespace, namespace),
+					}
+					loggers.LoggerAPI.Debugf("Backend NamespacedKey %v", backendNamespacedName.String())
+					if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+						loggers.LoggerAPI.Debugf("Backend not found %v", backendNamespacedName)
+						continue
+					}
+					endpoints := GetEndpoints(backendNamespacedName, backendMapping)
 
+					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+
+					resolvedModelWeight := InternalModelWeight{
+						Model:               model.Model,
+						Weight:              model.Weight,
+						EndpointClusterName: clusternName,
+					}
+					resolvedModelBasedRoundRobin.ProductionModels = append(resolvedModelBasedRoundRobin.ProductionModels, resolvedModelWeight)
+				}
+			}
+		}
+		if modelBasedRoundRobin.SandboxModels != nil {
+			sandboxModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.SandboxModels
+			for _, model := range sandboxModels {
+				if model.BackendRef.Name != "" {
+					namespace := ""
+					if apiPolicy.Namespace == "" {
+						namespace = "default"
+					} else {
+						namespace = apiPolicy.Namespace
+					}
+					backendNamespacedName := types.NamespacedName{
+						Name:      string(model.BackendRef.Name),
+						Namespace: utils.GetNamespace(model.BackendRef.Namespace, namespace),
+					}
+					loggers.LoggerAPI.Debugf("Backend NamespacedKey %v", backendNamespacedName.String())
+					if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+						loggers.LoggerAPI.Debugf("Backend not found %v", backendNamespacedName)
+						continue
+					}
+					endpoints := GetEndpoints(backendNamespacedName, backendMapping)
+
+					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+
+					resolvedModelWeight := InternalModelWeight{
+						Model:               model.Model,
+						Weight:              model.Weight,
+						EndpointClusterName: clusternName,
+					}
+					resolvedModelBasedRoundRobin.SandboxModels = append(resolvedModelBasedRoundRobin.SandboxModels, resolvedModelWeight)
+				}
+			}
+		}
+		return resolvedModelBasedRoundRobin
+	}
 	// Safely access Default section
 	if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ModelBasedRoundRobin != nil {
-		loggers.LoggerAPI.Infof("ModelBasedRoundRobin Default section  %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
-		return apiPolicy.Spec.Default.ModelBasedRoundRobin
+		loggers.LoggerAPI.Debugf("ModelBasedRoundRobin Default section  %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
+		modelBasedRoundRobin := apiPolicy.Spec.Default.ModelBasedRoundRobin
+		resolvedModelBasedRoundRobin = &InternalModelBasedRoundRobin{
+			OnQuotaExceedSuspendDuration: modelBasedRoundRobin.OnQuotaExceedSuspendDuration,
+		}
+		if modelBasedRoundRobin.ProductionModels != nil {
+			loggers.LoggerAPI.Debugf("ModelBasedRoundRobin Default section ProductionModels %v", modelBasedRoundRobin.ProductionModels)
+			productionModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.ProductionModels
+			for _, model := range productionModels {
+				if model.BackendRef.Name != "" {
+					namespace := ""
+					if apiPolicy.Namespace == "" {
+						namespace = "default"
+					} else {
+						namespace = apiPolicy.Namespace
+					}
+					backendNamespacedName := types.NamespacedName{
+						Name:      string(model.BackendRef.Name),
+						Namespace: utils.GetNamespace(model.BackendRef.Namespace, namespace),
+					}
+					if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+						loggers.LoggerAPI.Debugf("Backend not found %v", backendNamespacedName)
+						continue
+					}
+					endpoints := GetEndpoints(backendNamespacedName, backendMapping)
+
+					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+
+					resolvedModelWeight := InternalModelWeight{
+						Model:               model.Model,
+						Weight:              model.Weight,
+						EndpointClusterName: clusternName,
+					}
+					resolvedModelBasedRoundRobin.ProductionModels = append(resolvedModelBasedRoundRobin.ProductionModels, resolvedModelWeight)
+				}
+			}
+		}
+		if modelBasedRoundRobin.SandboxModels != nil {
+			loggers.LoggerAPI.Debugf("ModelBasedRoundRobin Default section SandboxModels %v", modelBasedRoundRobin.SandboxModels)
+			sandboxModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.SandboxModels
+			for _, model := range sandboxModels {
+				if model.BackendRef.Name != "" {
+					namespace := ""
+					if apiPolicy.Namespace == "" {
+						namespace = "default"
+					} else {
+						namespace = apiPolicy.Namespace
+					}
+					backendNamespacedName := types.NamespacedName{
+						Name:      string(model.BackendRef.Name),
+						Namespace: utils.GetNamespace(model.BackendRef.Namespace, namespace),
+					}
+					if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
+						loggers.LoggerAPI.Debugf("Backend not found %v", backendNamespacedName)
+						continue
+					}
+					endpoints := GetEndpoints(backendNamespacedName, backendMapping)
+
+					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+
+					resolvedModelWeight := InternalModelWeight{
+						Model:               model.Model,
+						Weight:              model.Weight,
+						EndpointClusterName: clusternName,
+					}
+					resolvedModelBasedRoundRobin.SandboxModels = append(resolvedModelBasedRoundRobin.SandboxModels, resolvedModelWeight)
+				}
+			}
+		}
+		return resolvedModelBasedRoundRobin
 	}
 
+	loggers.LoggerAPI.Debugf("ModelBasedRoundRobin not found in API Policy %v", apiPolicy)
 	// Return nil if nothing matches
 	return nil
+}
+
+// getClusterName returns the cluster name for the API.
+func getClusterName(epPrefix string, organizationID string, vHost string, swaggerTitle string, swaggerVersion string,
+	hostname string) string {
+	if hostname != "" {
+		return strings.TrimSpace(organizationID+"_"+epPrefix+"_"+vHost+"_"+strings.Replace(swaggerTitle, " ", "", -1)+swaggerVersion) +
+			"_" + strings.Replace(hostname, " ", "", -1) + "0"
+	}
+	return strings.TrimSpace(organizationID + "_" + epPrefix + "_" + vHost + "_" + strings.Replace(swaggerTitle, " ", "", -1) +
+		swaggerVersion)
 }
 
 // SetInfoGQLRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches

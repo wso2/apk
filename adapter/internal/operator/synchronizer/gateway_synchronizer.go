@@ -145,10 +145,10 @@ func getCustomRateLimitPolicies(customRateLimitPoliciesDef map[string]*dpv1alpha
 
 func generateGlobalInterceptorResource(gatewayAPIPolicies map[string]dpv1alpha4.APIPolicy,
 	gatewayInterceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	gatewayBackendMapping map[string]*dpv1alpha2.ResolvedBackend) (string, *clusterv3.Cluster, []*corev3.Address,
-	*clusterv3.Cluster, []*corev3.Address) {
+	gatewayBackendMapping map[string]*dpv1alpha2.ResolvedBackend) (string, []*clusterv3.Cluster, []*corev3.Address,
+	[]*clusterv3.Cluster, []*corev3.Address) {
 	var gwLuaScript string
-	var gwReqICluster, gwResICluster *clusterv3.Cluster
+	var gwReqICluster, gwResICluster []*clusterv3.Cluster
 	var gwReqIAddresses, gwResIAddresses []*corev3.Address
 
 	if len(gatewayAPIPolicies) > 0 && len(gatewayBackendMapping) > 0 {

@@ -19,7 +19,8 @@ package v1alpha4
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1alpha2"
+	gwapiv1b1 "sigs.k8s.io/gateway-api/apis/v1"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -29,7 +30,7 @@ import (
 type APIPolicySpec struct {
 	Default   *PolicySpec                               `json:"default,omitempty"`
 	Override  *PolicySpec                               `json:"override,omitempty"`
-	TargetRef gwapiv1b1.NamespacedPolicyTargetReference `json:"targetRef,omitempty"`
+	TargetRef gwapiv1a2.NamespacedPolicyTargetReference `json:"targetRef,omitempty"`
 }
 
 // PolicySpec contains API policies
@@ -73,13 +74,15 @@ type PolicySpec struct {
 // ModelBasedRoundRobin holds the model based round robin configurations
 type ModelBasedRoundRobin struct {
 	OnQuotaExceedSuspendDuration int           `json:"onQuotaExceedSuspendDuration,omitempty"`
-	Models                       []ModelWeight `json:"models"`
+	ProductionModels             []ModelWeight `json:"productionModels"`
+	SandboxModels                []ModelWeight `json:"sandboxModels"`
 }
 
 // ModelWeight holds the model configurations
 type ModelWeight struct {
-	Model  string `json:"model"`
-	Weight int    `json:"weight,omitempty"`
+	Model      string                   `json:"model"`
+	BackendRef gwapiv1b1.HTTPBackendRef `json:"backendRef,omitempty"`
+	Weight     int                      `json:"weight,omitempty"`
 }
 
 // BackendJWTToken holds backend JWT token information

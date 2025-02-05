@@ -7,7 +7,14 @@ spec:
   providerName : "OpenAI"
   providerAPIVersion : "v1"
   organization : "default"
-  model:
+  supportedModels:
+    - "gpt-4o"
+    - "gpt-3.5"
+    - "gpt-4.5"
+  requestModel:
+    in: "Body"
+    value: "model"
+  responseModel:
     in: "Body"
     value: "model"
   rateLimitFields:

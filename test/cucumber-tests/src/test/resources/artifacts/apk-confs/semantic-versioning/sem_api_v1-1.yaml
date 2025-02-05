@@ -8,7 +8,7 @@ defaultVersion: false
 subscriptionValidation: true
 endpointConfigurations:
   production:
-    endpoint: "http://dynamic-backend-service:8080/sem-api/v1.1"
+    - endpoint: "http://dynamic-backend-service:8080/sem-api/v1.1"
 operations:
   - target: "/employee"
     verb: "GET"

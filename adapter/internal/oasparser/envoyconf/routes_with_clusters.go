@@ -142,11 +142,11 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 	endpointCluster := model.EndpointCluster{
 		Endpoints: endpointForAPIDefinitions,
 	}
-	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "")
+	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "", nil)
 	if err != nil {
 		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, apiDefinitionQueryParam, err.Error()))
 	}
-	clusters = append(clusters, cluster)
+	clusters = append(clusters, cluster...)
 	endpoints = append(endpoints, address...)
 
 	if adapterInternalAPI.GetAPIType() == constants.GRAPHQL {
@@ -154,7 +154,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 
 		clusterName := getClusterName(adapterInternalAPI.Endpoints.EndpointPrefix, organizationID, vHost,
 			adapterInternalAPI.GetTitle(), apiVersion, "")
-		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath)
+		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath, nil)
 
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR,
@@ -162,7 +162,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			return nil, nil, nil, fmt.Errorf("error while adding gql endpoints for %s:%v. %v", apiTitle, apiVersion,
 				err.Error())
 		}
-		clusters = append(clusters, cluster)
+		clusters = append(clusters, cluster...)
 		endpoints = append(endpoints, address...)
 
 		// The current code requires to create policy for all routes to support backend endpoint.
@@ -208,14 +208,14 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		clusterName := getClusterName(adapterInternalAPI.Endpoints.EndpointPrefix, organizationID, vHost,
 			adapterInternalAPI.GetTitle(), apiVersion, "")
 		adapterInternalAPI.Endpoints.HTTP2BackendEnabled = true
-		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath)
+		cluster, address, err := processEndpoints(clusterName, adapterInternalAPI.Endpoints, timeout, basePath, nil)
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR,
 				"Error while adding grpc endpoints for %s:%v. %v", apiTitle, apiVersion, err.Error()))
 			return nil, nil, nil, fmt.Errorf("error while adding grpc endpoints for %s:%v. %v", apiTitle, apiVersion,
 				err.Error())
 		}
-		clusters = append(clusters, cluster)
+		clusters = append(clusters, cluster...)
 		endpoints = append(endpoints, address...)
 
 		for _, resource := range adapterInternalAPI.GetResources() {
@@ -227,12 +227,12 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
 			if existingClusterName == "" {
-				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
-				cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
+				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, endpoint.Endpoints[0].Host)
+				cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, nil)
 				if err != nil {
 					logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
 				} else {
-					clusters = append(clusters, cluster)
+					clusters = append(clusters, cluster...)
 					endpoints = append(endpoints, address...)
 					processedEndpoints[clusterName] = *endpoint
 				}
@@ -277,93 +277,89 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		mirrorClusterNames := map[string][]string{}
 		resourcePath := resource.GetPath()
 		endpoint := resource.GetEndpoints()
-		basePath := ""
-		if len(endpoint.Endpoints) > 0 {
-			basePath = strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
-		}
-		existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
+		for _, ep := range endpoint.Endpoints {
+			basePath := ""
+			basePath = strings.TrimSuffix(ep.Basepath, "/")
 
-		if existingClusterName == "" {
-			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, resource.GetID())
-			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath)
+			//existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
+
+			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, ep.Host)
+			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, &ep)
 			if err != nil {
 				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
 			} else {
-				clusters = append(clusters, cluster)
+				clusters = append(clusters, cluster...)
 				endpoints = append(endpoints, address...)
-				processedEndpoints[clusterName] = *endpoint
 			}
-		} else {
-			clusterName = existingClusterName
-		}
 
-		// Creating clusters for request mirroring endpoints
-		for _, op := range resource.GetOperations() {
-			if op.GetMirrorEndpointClusters() != nil && len(op.GetMirrorEndpointClusters()) > 0 {
-				mirrorEndpointClusters := op.GetMirrorEndpointClusters()
-				for _, mirrorEndpointCluster := range mirrorEndpointClusters {
-					for _, mirrorEndpoint := range mirrorEndpointCluster.Endpoints {
-						mirrorBasepath := strings.TrimSuffix(mirrorEndpoint.Basepath, "/")
-						existingMirrorClusterName := getExistingClusterName(*mirrorEndpointCluster, processedEndpoints)
-						var mirrorClusterName string
-						if existingMirrorClusterName == "" {
-							mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, op.GetID())
-							mirrorCluster, mirrorAddress, err := processEndpoints(mirrorClusterName, mirrorEndpointCluster, timeout, mirrorBasepath)
-							if err != nil {
-								logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level mirror filter endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+			// Creating clusters for request mirroring endpoints
+			for _, op := range resource.GetOperations() {
+				if op.GetMirrorEndpointClusters() != nil && len(op.GetMirrorEndpointClusters()) > 0 {
+					mirrorEndpointClusters := op.GetMirrorEndpointClusters()
+					for _, mirrorEndpointCluster := range mirrorEndpointClusters {
+						for _, mirrorEndpoint := range mirrorEndpointCluster.Endpoints {
+							mirrorBasepath := strings.TrimSuffix(mirrorEndpoint.Basepath, "/")
+							existingMirrorClusterName := getExistingClusterName(*mirrorEndpointCluster, processedEndpoints)
+							var mirrorClusterName string
+							if existingMirrorClusterName == "" {
+								mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, mirrorEndpoint.Host)
+								mirrorCluster, mirrorAddress, err := processEndpoints(mirrorClusterName, mirrorEndpointCluster, timeout, mirrorBasepath, &mirrorEndpoint)
+								if err != nil {
+									logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level mirror filter endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+								} else {
+									clusters = append(clusters, mirrorCluster...)
+									endpoints = append(endpoints, mirrorAddress...)
+									processedEndpoints[mirrorClusterName] = *mirrorEndpointCluster
+								}
 							} else {
-								clusters = append(clusters, mirrorCluster)
-								endpoints = append(endpoints, mirrorAddress...)
-								processedEndpoints[mirrorClusterName] = *mirrorEndpointCluster
+								mirrorClusterName = existingMirrorClusterName
 							}
-						} else {
-							mirrorClusterName = existingMirrorClusterName
+							if _, exists := mirrorClusterNames[op.GetID()]; !exists {
+								mirrorClusterNames[op.GetID()] = []string{}
+							}
+							mirrorClusterNames[op.GetID()] = append(mirrorClusterNames[op.GetID()], mirrorClusterName)
 						}
-						if _, exists := mirrorClusterNames[op.GetID()]; !exists {
-							mirrorClusterNames[op.GetID()] = []string{}
-						}
-						mirrorClusterNames[op.GetID()] = append(mirrorClusterNames[op.GetID()], mirrorClusterName)
 					}
 				}
 			}
-		}
 
-		// Create resource level interceptor clusters if required
-		clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
-			interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
-		clusters = append(clusters, clustersI...)
-		endpoints = append(endpoints, endpointsI...)
-		routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-			false, false, mirrorClusterNames)
+			// Create resource level interceptor clusters if required
+			clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
+				interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
+			clusters = append(clusters, clustersI...)
+			endpoints = append(endpoints, endpointsI...)
+			routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+				false, false, mirrorClusterNames)
 
-		routeP, err := createRoutes(routeParams)
-		if err != nil {
-			logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
-				"Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(),
-				adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
-			return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
-		}
-		routes = append(routes, routeP...)
-		if adapterInternalAPI.IsDefaultVersion {
-			defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-				false, true, mirrorClusterNames))
-			if errDefaultPath != nil {
-				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
-				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
+			routeP, err := createRoutes(routeParams)
+			if err != nil {
+				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
+					"Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(),
+					adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
+				return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
 			}
-			routes = append(routes, defaultRoutes...)
-		}
+			routes = append(routes, routeP...)
+			if adapterInternalAPI.IsDefaultVersion {
+				defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+					false, true, mirrorClusterNames))
+				if errDefaultPath != nil {
+					logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
+					return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
+				}
+				routes = append(routes, defaultRoutes...)
+			}
 
+		}
 	}
 
 	return routes, clusters, endpoints, nil
 }
 
 func getClusterName(epPrefix string, organizationID string, vHost string, swaggerTitle string, swaggerVersion string,
-	resourceID string) string {
-	if resourceID != "" {
+	hostname string) string {
+	if hostname != "" {
 		return strings.TrimSpace(organizationID+"_"+epPrefix+"_"+vHost+"_"+strings.Replace(swaggerTitle, " ", "", -1)+swaggerVersion) +
-			"_" + strings.Replace(resourceID, " ", "", -1) + "0"
+			"_" + strings.Replace(hostname, " ", "", -1) + "0"
 	}
 	return strings.TrimSpace(organizationID + "_" + epPrefix + "_" + vHost + "_" + strings.Replace(swaggerTitle, " ", "", -1) +
 		swaggerVersion)
@@ -379,9 +375,9 @@ func getExistingClusterName(endpoint model.EndpointCluster, clusterEndpointMappi
 }
 
 // CreateLuaCluster creates lua cluster configuration.
-func CreateLuaCluster(interceptorCerts map[string][]byte, endpoint model.InterceptEndpoint) (*clusterv3.Cluster, []*corev3.Address, error) {
+func CreateLuaCluster(interceptorCerts map[string][]byte, endpoint model.InterceptEndpoint) ([]*clusterv3.Cluster, []*corev3.Address, error) {
 	logger.LoggerOasparser.Debug("creating a lua cluster ", endpoint.ClusterName)
-	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath)
+	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath, nil)
 }
 
 // CreateRateLimitCluster creates cluster relevant to the rate limit service
@@ -403,7 +399,7 @@ func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
 		},
 	}
 
-	cluster, address, rlErr := processEndpoints(rateLimitClusterName, rlCluster, conf.Envoy.ClusterTimeoutInSeconds, "")
+	cluster, address, rlErr := processEndpoints(rateLimitClusterName, rlCluster, conf.Envoy.ClusterTimeoutInSeconds, "", nil)
 	if rlErr != nil {
 		return nil, nil, rlErr
 	}
@@ -423,7 +419,7 @@ func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	cluster.TypedExtensionProtocolOptions = map[string]*anypb.Any{
+	cluster[0].TypedExtensionProtocolOptions = map[string]*anypb.Any{
 		"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
 			TypeUrl: httpProtocolOptionsName,
 			Value:   MarshalledHTTPProtocolOptions,
@@ -471,7 +467,7 @@ func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
 		return nil, nil, errors.New("internal Error while marshalling the upstream TLS Context")
 	}
 
-	cluster.TransportSocketMatches[0] = &clusterv3.Cluster_TransportSocketMatch{
+	cluster[0].TransportSocketMatches[0] = &clusterv3.Cluster_TransportSocketMatch{
 		Name: "ts" + strconv.Itoa(0),
 		Match: &structpb.Struct{
 			Fields: map[string]*structpb.Value{
@@ -485,11 +481,11 @@ func CreateRateLimitCluster() (*clusterv3.Cluster, []*corev3.Address, error) {
 			},
 		},
 	}
-	return cluster, address, nil
+	return cluster[0], address, nil
 }
 
 // CreateTracingCluster creates a cluster definition for router's tracing server.
-func CreateTracingCluster(conf *config.Config) (*clusterv3.Cluster, []*corev3.Address, error) {
+func CreateTracingCluster(conf *config.Config) ([]*clusterv3.Cluster, []*corev3.Address, error) {
 	var epHost string
 	var epPort uint32
 	var epPath string
@@ -524,34 +520,44 @@ func CreateTracingCluster(conf *config.Config) (*clusterv3.Cluster, []*corev3.Ad
 		epCluster.HTTP2BackendEnabled = true
 	}
 
-	return processEndpoints(tracingClusterName, epCluster, epTimeout, epPath)
+	return processEndpoints(tracingClusterName, epCluster, epTimeout, epPath, nil)
 }
 
 // ProcessEndpoints creates cluster configuration. AddressConfiguration, cluster name and
 // urlType (http or https) is required to be provided.
 // timeout cluster timeout
 func ProcessEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
-	timeout time.Duration, basePath string) (*clusterv3.Cluster, []*corev3.Address, error) {
-	return processEndpoints(clusterName, clusterDetails, timeout, basePath)
+	timeout time.Duration, basePath string) ([]*clusterv3.Cluster, []*corev3.Address, error) {
+	return processEndpoints(clusterName, clusterDetails, timeout, basePath, nil)
 }
 
 // processEndpoints creates cluster configuration. AddressConfiguration, cluster name and
 // urlType (http or https) is required to be provided.
 // timeout cluster timeout
 func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
-	timeout time.Duration, basePath string) (*clusterv3.Cluster, []*corev3.Address, error) {
+	timeout time.Duration, basePath string, endpoint *model.Endpoint) ([]*clusterv3.Cluster, []*corev3.Address, error) {
 	// tls configs
 	var transportSocketMatches []*clusterv3.Cluster_TransportSocketMatch
-	// create loadbalanced/failover endpoints
-	var lbEPs []*endpointv3.LocalityLbEndpoints
 	// failover priority
 	priority := 0
 	// epType {loadbalance, failover}
 	epType := clusterDetails.EndpointType
 
 	addresses := []*corev3.Address{}
+	var clusters []*clusterv3.Cluster
 
-	for i, ep := range clusterDetails.Endpoints {
+	var endpoints []model.Endpoint
+
+	if endpoint != nil {
+		endpoints = []model.Endpoint{*endpoint}
+	} else {
+		endpoints = clusterDetails.Endpoints
+	}
+
+	for i, ep := range endpoints {
+		// create loadbalanced/failover endpoints
+		var lbEPs []*endpointv3.LocalityLbEndpoints
+
 		// validating the basepath to be same for all upstreams of an api
 		if strings.TrimSuffix(ep.Basepath, "/") != basePath {
 			return nil, nil, errors.New("endpoint basepath mismatched for " + ep.RawURL + ". expected : " + basePath + " but found : " + ep.Basepath)
@@ -612,88 +618,90 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		if strings.HasPrefix(epType, "failover") {
 			priority = priority + 1
 		}
-	}
-	conf := config.ReadConfigs()
 
-	httpProtocolOptions := &upstreams.HttpProtocolOptions{
-		UpstreamProtocolOptions: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_{
-			ExplicitHttpConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig{
-				ProtocolConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_HttpProtocolOptions{
-					HttpProtocolOptions: &corev3.Http1ProtocolOptions{
-						EnableTrailers: config.GetWireLogConfig().LogTrailersEnabled,
-					},
-				},
-			},
-		},
-	}
+		conf := config.ReadConfigs()
 
-	if clusterDetails.HTTP2BackendEnabled {
-		httpProtocolOptions.UpstreamProtocolOptions = &upstreams.HttpProtocolOptions_ExplicitHttpConfig_{
-			ExplicitHttpConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig{
-				ProtocolConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
-					Http2ProtocolOptions: &corev3.Http2ProtocolOptions{
-						HpackTableSize: &wrapperspb.UInt32Value{
-							Value: conf.Envoy.Upstream.HTTP2.HpackTableSize,
-						},
-						MaxConcurrentStreams: &wrapperspb.UInt32Value{
-							Value: conf.Envoy.Upstream.HTTP2.MaxConcurrentStreams,
+		httpProtocolOptions := &upstreams.HttpProtocolOptions{
+			UpstreamProtocolOptions: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_{
+				ExplicitHttpConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig{
+					ProtocolConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_HttpProtocolOptions{
+						HttpProtocolOptions: &corev3.Http1ProtocolOptions{
+							EnableTrailers: config.GetWireLogConfig().LogTrailersEnabled,
 						},
 					},
 				},
 			},
 		}
-	}
 
-	ext, err2 := proto.Marshal(httpProtocolOptions)
-	if err2 != nil {
-		logger.LoggerOasparser.Error(err2)
-	}
+		if clusterDetails.HTTP2BackendEnabled {
+			httpProtocolOptions.UpstreamProtocolOptions = &upstreams.HttpProtocolOptions_ExplicitHttpConfig_{
+				ExplicitHttpConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig{
+					ProtocolConfig: &upstreams.HttpProtocolOptions_ExplicitHttpConfig_Http2ProtocolOptions{
+						Http2ProtocolOptions: &corev3.Http2ProtocolOptions{
+							HpackTableSize: &wrapperspb.UInt32Value{
+								Value: conf.Envoy.Upstream.HTTP2.HpackTableSize,
+							},
+							MaxConcurrentStreams: &wrapperspb.UInt32Value{
+								Value: conf.Envoy.Upstream.HTTP2.MaxConcurrentStreams,
+							},
+						},
+					},
+				},
+			}
+		}
 
-	cluster := clusterv3.Cluster{
-		Name:                 clusterName,
-		ConnectTimeout:       durationpb.New(timeout * time.Second),
-		ClusterDiscoveryType: &clusterv3.Cluster_Type{Type: clusterv3.Cluster_STRICT_DNS},
-		DnsLookupFamily:      clusterv3.Cluster_V4_ONLY,
-		LbPolicy:             clusterv3.Cluster_ROUND_ROBIN,
-		LoadAssignment: &endpointv3.ClusterLoadAssignment{
-			ClusterName: clusterName,
-			Endpoints:   lbEPs,
-		},
-		TransportSocketMatches: transportSocketMatches,
-		DnsRefreshRate:         durationpb.New(time.Duration(conf.Envoy.Upstream.DNS.DNSRefreshRate) * time.Millisecond),
-		RespectDnsTtl:          conf.Envoy.Upstream.DNS.RespectDNSTtl,
-		TypedExtensionProtocolOptions: map[string]*anypb.Any{
-			"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": &any.Any{
-				TypeUrl: "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
-				Value:   ext,
+		ext, err2 := proto.Marshal(httpProtocolOptions)
+		if err2 != nil {
+			logger.LoggerOasparser.Error(err2)
+		}
+
+		cluster := clusterv3.Cluster{
+			Name:                 clusterName,
+			ConnectTimeout:       durationpb.New(timeout * time.Second),
+			ClusterDiscoveryType: &clusterv3.Cluster_Type{Type: clusterv3.Cluster_STRICT_DNS},
+			DnsLookupFamily:      clusterv3.Cluster_V4_ONLY,
+			LbPolicy:             clusterv3.Cluster_ROUND_ROBIN,
+			LoadAssignment: &endpointv3.ClusterLoadAssignment{
+				ClusterName: clusterName,
+				Endpoints:   lbEPs,
 			},
-		},
-	}
-
-	if len(clusterDetails.Endpoints) > 0 && clusterDetails.HealthCheck != nil {
-		cluster.HealthChecks = createHealthCheck(clusterDetails.HealthCheck)
-	}
-
-	if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
-		circuitBreaker := clusterDetails.Config.CircuitBreakers
-		threshold := &clusterv3.CircuitBreakers_Thresholds{
-			MaxConnections:     wrapperspb.UInt32(uint32(circuitBreaker.MaxConnections)),
-			MaxRequests:        wrapperspb.UInt32(uint32(circuitBreaker.MaxRequests)),
-			MaxPendingRequests: wrapperspb.UInt32(uint32(circuitBreaker.MaxPendingRequests)),
-			MaxRetries:         wrapperspb.UInt32(uint32(circuitBreaker.MaxRetries)),
-		}
-		if circuitBreaker.MaxConnectionPools > 0 {
-			threshold.MaxConnectionPools = wrapperspb.UInt32(uint32(circuitBreaker.MaxConnectionPools))
-		}
-
-		cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
-			Thresholds: []*clusterv3.CircuitBreakers_Thresholds{
-				threshold,
+			TransportSocketMatches: transportSocketMatches,
+			DnsRefreshRate:         durationpb.New(time.Duration(conf.Envoy.Upstream.DNS.DNSRefreshRate) * time.Millisecond),
+			RespectDnsTtl:          conf.Envoy.Upstream.DNS.RespectDNSTtl,
+			TypedExtensionProtocolOptions: map[string]*anypb.Any{
+				"envoy.extensions.upstreams.http.v3.HttpProtocolOptions": &any.Any{
+					TypeUrl: "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
+					Value:   ext,
+				},
 			},
 		}
+
+		if len(clusterDetails.Endpoints) > 0 && clusterDetails.HealthCheck != nil {
+			cluster.HealthChecks = createHealthCheck(clusterDetails.HealthCheck)
+		}
+
+		if clusterDetails.Config != nil && clusterDetails.Config.CircuitBreakers != nil {
+			circuitBreaker := clusterDetails.Config.CircuitBreakers
+			threshold := &clusterv3.CircuitBreakers_Thresholds{
+				MaxConnections:     wrapperspb.UInt32(uint32(circuitBreaker.MaxConnections)),
+				MaxRequests:        wrapperspb.UInt32(uint32(circuitBreaker.MaxRequests)),
+				MaxPendingRequests: wrapperspb.UInt32(uint32(circuitBreaker.MaxPendingRequests)),
+				MaxRetries:         wrapperspb.UInt32(uint32(circuitBreaker.MaxRetries)),
+			}
+			if circuitBreaker.MaxConnectionPools > 0 {
+				threshold.MaxConnectionPools = wrapperspb.UInt32(uint32(circuitBreaker.MaxConnectionPools))
+			}
+
+			cluster.CircuitBreakers = &clusterv3.CircuitBreakers{
+				Thresholds: []*clusterv3.CircuitBreakers_Thresholds{
+					threshold,
+				},
+			}
+		}
+		clusters = append(clusters, &cluster)
 	}
 
-	return &cluster, addresses, nil
+	return clusters, addresses, nil
 }
 
 func createHealthCheck(healthCheck *model.HealthCheck) []*corev3.HealthCheck {
@@ -1922,13 +1930,13 @@ func createInterceptorAPIClusters(adapterInternalAPI *model.AdapterInternalAPI, 
 	if apiRequestInterceptor.Enable {
 		logger.LoggerOasparser.Debugf("API level request interceptors found for %v : %v", apiTitle, apiVersion)
 		apiRequestInterceptor.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost,
-			apiTitle, apiVersion, "")
+			apiTitle, apiVersion, apiRequestInterceptor.EndpointCluster.Endpoints[0].Host)
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiRequestInterceptor)
 		if err != nil {
 			apiRequestInterceptor = model.InterceptEndpoint{}
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2242, logging.MAJOR, "Error while adding api level request intercepter external cluster for %s. %v", apiTitle, err.Error()))
 		} else {
-			clusters = append(clusters, cluster)
+			clusters = append(clusters, cluster...)
 			endpoints = append(endpoints, addresses...)
 		}
 	}
@@ -1937,13 +1945,13 @@ func createInterceptorAPIClusters(adapterInternalAPI *model.AdapterInternalAPI, 
 	if apiResponseInterceptor.Enable {
 		logger.LoggerOasparser.Debugln("API level response interceptors found for " + apiTitle)
 		apiResponseInterceptor.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost,
-			apiTitle, apiVersion, "")
+			apiTitle, apiVersion, apiResponseInterceptor.EndpointCluster.Endpoints[0].Host)
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiResponseInterceptor)
 		if err != nil {
 			apiResponseInterceptor = model.InterceptEndpoint{}
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2243, logging.MAJOR, "Error while adding api level response intercepter external cluster for %s. %v", apiTitle, err.Error()))
 		} else {
-			clusters = append(clusters, cluster)
+			clusters = append(clusters, cluster...)
 			endpoints = append(endpoints, addresses...)
 		}
 	}
@@ -1965,13 +1973,13 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 	if reqInterceptorVal.Enable {
 		logger.LoggerOasparser.Debugf("Resource level request interceptors found for %v:%v-%v", apiTitle, apiVersion, resource.GetPath())
 		reqInterceptorVal.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost,
-			apiTitle, apiVersion, resource.GetID())
+			apiTitle, apiVersion, reqInterceptorVal.EndpointCluster.Endpoints[0].Host)
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, reqInterceptorVal)
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2244, logging.MAJOR, "Error while adding resource level request intercept external cluster for %s. %v", apiTitle, err.Error()))
 		} else {
 			resourceRequestInterceptor = &reqInterceptorVal
-			clusters = append(clusters, cluster)
+			clusters = append(clusters, cluster...)
 			endpoints = append(endpoints, addresses...)
 		}
 	}
@@ -1983,7 +1991,7 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 			logger.LoggerOasparser.Debugf("Operation level request interceptors found for %v:%v-%v-%v", apiTitle, apiVersion, resource.GetPath(),
 				opI.ClusterName)
 			opID := opI.ClusterName
-			opI.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opID)
+			opI.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opI.EndpointCluster.Endpoints[0].Host)
 			operationalReqInterceptors[method] = opI // since cluster name is updated
 			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
 			if err != nil {
@@ -1991,7 +1999,7 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 				// setting resource level interceptor to failed operation level interceptor.
 				operationalReqInterceptors[method] = *resourceRequestInterceptor
 			} else {
-				clusters = append(clusters, cluster)
+				clusters = append(clusters, cluster...)
 				endpoints = append(endpoints, addresses...)
 			}
 		}
@@ -2002,13 +2010,13 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 	if respInterceptorVal.Enable {
 		logger.LoggerOasparser.Debugf("Resource level response interceptors found for %v:%v-%v"+apiTitle, apiVersion, resource.GetPath())
 		respInterceptorVal.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID,
-			vHost, apiTitle, apiVersion, resource.GetID())
+			vHost, apiTitle, apiVersion, respInterceptorVal.EndpointCluster.Endpoints[0].Host)
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, respInterceptorVal)
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2246, logging.MAJOR, "Error while adding resource level response intercept external cluster for %s. %v", apiTitle, err.Error()))
 		} else {
 			resourceResponseInterceptor = &respInterceptorVal
-			clusters = append(clusters, cluster)
+			clusters = append(clusters, cluster...)
 			endpoints = append(endpoints, addresses...)
 		}
 	}
@@ -2021,7 +2029,7 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 			logger.LoggerOasparser.Debugf("Operational level response interceptors found for %v:%v-%v-%v", apiTitle, apiVersion, resource.GetPath(),
 				opI.ClusterName)
 			opID := opI.ClusterName
-			opI.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opID)
+			opI.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opI.EndpointCluster.Endpoints[0].Host)
 			operationalRespInterceptorVal[method] = opI // since cluster name is updated
 			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
 			if err != nil {
@@ -2029,7 +2037,7 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 				// setting resource level interceptor to failed operation level interceptor.
 				operationalRespInterceptorVal[method] = *resourceResponseInterceptor
 			} else {
-				clusters = append(clusters, cluster)
+				clusters = append(clusters, cluster...)
 				endpoints = append(endpoints, addresses...)
 			}
 		}

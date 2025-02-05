@@ -7,7 +7,7 @@ defaultVersion: false
 subscriptionValidation: false
 endpointConfigurations:
   production:
-    endpoint: "https://httpbin.org"
+  - endpoint: "https://httpbin.org"
 operations:
 - target: "/anything"
   verb: "GET"

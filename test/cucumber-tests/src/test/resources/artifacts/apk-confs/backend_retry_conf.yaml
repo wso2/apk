@@ -7,12 +7,12 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-    endpoint: "http://backend-retry:80"
-    resiliency:
-      retryPolicy:
-        count: 3
-        statusCodes:
-          - 500
+    - endpoint: "http://backend-retry:80"
+      resiliency:
+        retryPolicy:
+          count: 3
+          statusCodes:
+            - 500
 operations:
   - target: "/retry"
     verb: "GET"

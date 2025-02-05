@@ -7,13 +7,13 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-    endpoint: "http://backend:80/anything"
-    endpointSecurity:
-      enabled: true
-      securityType:
-        secretName: "backend-creds"
-        userNameKey: "username"
-        passwordKey: "password"
+    - endpoint: "http://backend:80/anything"
+      endpointSecurity:
+        enabled: true
+        securityType:
+          secretName: "backend-creds"
+          userNameKey: "username"
+          passwordKey: "password"
 operations:
   - target: "/employee"
     verb: "GET"
@@ -25,41 +25,41 @@ operations:
     scopes: []
     endpointConfigurations:
       production:
-        endpoint: "http://backend:80/anything/test"
-        endpointSecurity:
-          enabled: true
-          securityType:
-            secretName: "backend-creds-1"
-            userNameKey: "username"
-            passwordKey: "password"
+        - endpoint: "http://backend:80/anything/test"
+          endpointSecurity:
+            enabled: true
+            securityType:
+              secretName: "backend-creds-1"
+              userNameKey: "username"
+              passwordKey: "password"
   - target: "/post"
     verb: "POST"
     secured: true
     scopes: [ ]
     endpointConfigurations:
       production:
-        endpoint:
-          name: "backend"
-          namespace: "apk-integration-test"
-          port: 80
-          protocol: "http"
-        endpointSecurity:
-          enabled: true
-          securityType:
-            secretName: "backend-creds"
-            userNameKey: "username"
-            passwordKey: "password"
+        - endpoint:
+            name: "backend"
+            namespace: "apk-integration-test"
+            port: 80
+            protocol: "http"
+          endpointSecurity:
+            enabled: true
+            securityType:
+              secretName: "backend-creds"
+              userNameKey: "username"
+              passwordKey: "password"
   - target: "/employee"
     verb: "POST"
     secured: true
     scopes: []
     endpointConfigurations:
       production:
-        endpoint:
-          name: "backend"
-          namespace: "apk-integration-test"
-          port: 80
-          protocol: "http"
+        - endpoint:
+            name: "backend"
+            namespace: "apk-integration-test"
+            port: 80
+            protocol: "http"
   - target: "/employee/{employeeId}"
     verb: "PUT"
     secured: true

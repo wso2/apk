@@ -7,19 +7,19 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-    endpoint: "http://backend-retry:80"
-    resiliency:
-      retryPolicy:
-        count: 50
-        baseIntervalMillis: 3000
-        statusCodes:
-          - 500
-      circuitBreaker:
-        maxConnectionPools: 1000
-        maxConnections: 1024
-        maxPendingRequests: 10
-        maxRequests: 20
-        maxRetries: 2
+    - endpoint: "http://backend-retry:80"
+      resiliency:
+        retryPolicy:
+          count: 50
+          baseIntervalMillis: 3000
+          statusCodes:
+            - 500
+        circuitBreaker:
+          maxConnectionPools: 1000
+          maxConnections: 1024
+          maxPendingRequests: 10
+          maxRequests: 20
+          maxRetries: 2
 operations:
   - target: "/retry"
     verb: "GET"

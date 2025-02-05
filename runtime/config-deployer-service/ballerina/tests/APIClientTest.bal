@@ -366,10 +366,10 @@ public isolated function testGeneratePrefixMatch() returns error? {
     string method = "GET";
     string errorMessage = "Acual prefix match not equal to expected prefix match";
 
-    model:Endpoint endpoint = {
+    model:Endpoint[] endpoint = [{
         url: urlStr,
         name: apiName
-    };
+    }];
     APKOperations operations = {
         target: "/",
         verb: method,
@@ -378,10 +378,6 @@ public isolated function testGeneratePrefixMatch() returns error? {
     prefixMatch = apiClient.generatePrefixMatch(endpoint, operations);
     test:assertEquals(prefixMatch, "/", errorMessage);
 
-    endpoint = {
-        url: urlStr,
-        name: apiName
-    };
     operations = {
         target: "/*",
         verb: method,
@@ -390,10 +386,6 @@ public isolated function testGeneratePrefixMatch() returns error? {
     prefixMatch = apiClient.generatePrefixMatch(endpoint, operations);
     test:assertEquals(prefixMatch, "\\1", errorMessage);
 
-    endpoint = {
-        url: urlStr,
-        name: apiName
-    };
     operations = {
         target: "/employees/get",
         verb: method,
@@ -402,10 +394,6 @@ public isolated function testGeneratePrefixMatch() returns error? {
     prefixMatch = apiClient.generatePrefixMatch(endpoint, operations);
     test:assertEquals(prefixMatch, "/employees/get", errorMessage);
 
-    endpoint = {
-        url: urlStr,
-        name: apiName
-    };
     operations = {
         target: "/employees/get/*",
         verb: method,
@@ -729,7 +717,7 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 basePath: "/test",
                 version: "1.0.0",
-                endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
+                endpointConfigurations: {production: [{endpoint: "http://localhost:9090"}]},
                 operations: []
             }
 
@@ -740,10 +728,10 @@ public function APIToAPKConfDataProvider() returns map<[runtimeModels:API, APKCo
                 name: "testAPI",
                 basePath: "/test",
                 version: "1.0.0",
-                endpointConfigurations: {production: {endpoint: "http://localhost:9090"}},
+                endpointConfigurations: {production: [{endpoint: "http://localhost:9090"}]},
                 operations: [
                     {target: "/menu", verb: "GET", secured: true, scopes: []},
-                    {target: "/order", verb: "POST", secured: false, endpointConfigurations: {production: {endpoint: "http://localhost:9091"}}, scopes: ["scope1"]}
+                    {target: "/order", verb: "POST", secured: false, endpointConfigurations: {production: [{endpoint: "http://localhost:9091"}]}, scopes: ["scope1"]}
                 ]
             }
         ]

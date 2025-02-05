@@ -19,8 +19,8 @@ public type APIArtifact record {|
     map<APIPolicy> apiPolicies = {};
     map<InterceptorService> interceptorServices = {};
     boolean sandboxEndpointAvailable = false;
-    string productionUrl?;
-    string sandboxUrl?;
+    string[] productionUrl?;
+    string[] sandboxUrl?;
     boolean productionEndpointAvailable = false;
     string uniqueId;
     map<K8sSecret> secrets = {};

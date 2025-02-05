@@ -5,9 +5,9 @@ version: "2.0.0"
 type: "REST"
 endpointConfigurations:
     production:
-      endpoint: "https://backend-prod-test/v1/"
+    - endpoint: "https://backend-prod-test/v1/"
     sandbox:
-      endpoint:
+    - endpoint:
         name: http-bin-backend
         namespace: apk-test
         port: 8080

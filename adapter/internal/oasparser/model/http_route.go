@@ -182,6 +182,24 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*d
 	return endpoints
 }
 
+// GetEndpointsByResolvedBackend creates endpoints using resolved backends in backendMapping
+func GetEndpointsByResolvedBackend(backend *dpv1alpha2.ResolvedBackend) []Endpoint {
+	endpoints := []Endpoint{}
+	if len(backend.Services) > 0 {
+		for _, service := range backend.Services {
+			endpoints = append(endpoints, Endpoint{
+				Host:        service.Host,
+				Port:        service.Port,
+				Basepath:    backend.BasePath,
+				URLType:     string(backend.Protocol),
+				Certificate: []byte(backend.TLS.ResolvedCertificate),
+				AllowedSANs: backend.TLS.AllowedSANs,
+			})
+		}
+	}
+	return endpoints
+}
+
 // GetBackendBasePath gets basePath of the the Backend
 func GetBackendBasePath(backendName types.NamespacedName, backendMapping map[string]*dpv1alpha2.ResolvedBackend) string {
 	backend, ok := backendMapping[backendName.String()]
