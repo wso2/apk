@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package requesthandler
 
 import (
@@ -31,7 +31,7 @@ type HTTP struct {
 
 // GetMatchedResource returns the matched resource
 func (h *HTTP) GetMatchedResource(api *requestconfig.API, epa dto.ExternalProcessingEnvoyAttributes) *requestconfig.Resource {
-	method := epa.RequestMehod
+	method := epa.RequestMethod
 	pathTemplate := util.NormalizePath(epa.Path)
 	fmt.Println("Method: ", method)
 	fmt.Println("Path: ", pathTemplate)

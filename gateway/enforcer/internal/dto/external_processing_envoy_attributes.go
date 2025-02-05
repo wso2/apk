@@ -20,7 +20,7 @@ package dto
 // ExternalProcessingEnvoyAttributes represents the attributes extracted from the external processing request.
 type ExternalProcessingEnvoyAttributes struct {
 	EnableBackendBasedAIRatelimit          string `json:"enableBackendBasedAIRatelimitAttribute"`
-	SuspendAIModel                         string   `json:"suspendAIModelAttribute"`
+	SuspendAIModel                         string `json:"suspendAIModelAttribute"`
 	BackendBasedAIRatelimitDescriptorValue string `json:"backendBasedAIRatelimitDescriptorValueAttribute"`
 	Path                                   string `json:"pathAttribute"`
 	VHost                                  string `json:"vHostAttribute"`
@@ -29,8 +29,8 @@ type ExternalProcessingEnvoyAttributes struct {
 	APIVersion                             string `json:"apiVersionAttribute"`
 	APIName                                string `json:"apiNameAttribute"`
 	ClusterName                            string `json:"clusterNameAttribute"`
-	RequestMehod                           string `json:"requestMehodAttribute"`
+	RequestMethod                          string `json:"requestMethodAttribute"`
 	Organization                           string `json:"organizationAttribute"`
 	ApplicationID                          string `json:"applicationIdAttribute"`
-	CorrelationID						  string   `json:"correlationIdAttribute"`
+	CorrelationID                          string `json:"correlationIdAttribute"`
 }
