@@ -121,64 +121,62 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount TokenCountAndModel, doBa
 // ExtractTokenCountFromExternalProcessingResponseHeaders extracts token counts from external processing response headers.
 func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.HeaderValue, promptHeader, completionHeader, totalHeader, modelHeader string) (*TokenCountAndModel, error) {
 	tokenCount := &TokenCountAndModel{}
-	promtFlag, completionFlag, totalFlag := false, false, false
+	promptFlag, completionFlag, totalFlag := false, false, false
+
 	for _, headerValue := range headerValues {
-		if headerValue.Key == promptHeader {
+		switch headerValue.Key {
+		case promptHeader:
 			if headerValue.Value != "" {
 				value, err := util.ConvertStringToInt(headerValue.Value)
 				if err != nil {
-					tokenCount.Prompt = value
-					promtFlag = true
-				} else {
 					return nil, err
 				}
+				tokenCount.Prompt = value
+				promptFlag = true
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
-					tokenCount.Prompt = value
-					promtFlag = true
-				} else {
 					return nil, err
 				}
+				tokenCount.Prompt = value
+				promptFlag = true
 			}
 
-		} else if headerValue.Key == completionHeader {
+		case completionHeader:
 			if headerValue.Value != "" {
 				value, err := strconv.Atoi(headerValue.Value)
 				if err != nil {
-					tokenCount.Completion = value
-					completionFlag = true
-				} else {
 					return nil, err
 				}
+				tokenCount.Completion = value
+				completionFlag = true
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
-					tokenCount.Completion = value
-					completionFlag = true
-				} else {
 					return nil, err
 				}
+				tokenCount.Completion = value
+				completionFlag = true
 			}
-		} else if headerValue.Key == totalHeader {
+
+		case totalHeader:
 			if headerValue.Value != "" {
 				value, err := strconv.Atoi(headerValue.Value)
 				if err != nil {
-					tokenCount.Total = value
-					totalFlag = true
-				} else {
 					return nil, err
 				}
+				tokenCount.Total = value
+				totalFlag = true
 			} else if len(headerValue.RawValue) != 0 {
 				value, err := util.ConvertBytesToInt(headerValue.RawValue)
 				if err != nil {
-					tokenCount.Total = value
-					totalFlag = true
-				} else {
 					return nil, err
 				}
+				tokenCount.Total = value
+				totalFlag = true
 			}
-		} else if headerValue.Key == modelHeader {
+
+		case modelHeader:
 			if headerValue.Value != "" {
 				tokenCount.Model = headerValue.Value
 			} else if len(headerValue.RawValue) != 0 {
@@ -186,11 +184,14 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 			}
 		}
 	}
-	if !promtFlag || !completionFlag || !totalFlag {
+
+	if !(promptFlag && completionFlag && totalFlag) {
 		return nil, fmt.Errorf("missing token headers from the AI response headers")
 	}
+
 	return tokenCount, nil
 }
+
 
 // ExtractTokenCountFromExternalProcessingResponseBody extracts token counts from external processing response body.
 func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, promptPath, completionPath, totalPath, modelPath string) (*TokenCountAndModel, error) {
