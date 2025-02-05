@@ -273,6 +273,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
 			s.log.Info("Request Body Flow")
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+				RequestBody: &envoy_service_proc_v3.BodyResponse{
+					Response: &envoy_service_proc_v3.CommonResponse{
+					},
+				},
+			}
 			// s.log.Info(fmt.Sprintf("Matched Resource Round Robin :%+v", s.requestConfigHolder.MatchedResource.AIModelBasedRoundRobin))
 			// s.log.Info(fmt.Sprintf("Matched api Round Robin: %v", s.requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin))
 			if s.requestConfigHolder != nil &&
@@ -439,7 +445,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
-			// s.log.Info(fmt.Sprintf("response header %+v, attributes %+v, addr: %+v", v.ResponseHeaders, s.externalProcessingEnvoyAttributes, s))
+			s.log.Info(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
