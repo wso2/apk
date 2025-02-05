@@ -754,7 +754,7 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 		}
 		return externalProcessingEnvoyMetadata, nil
 	}
-	return nil, fmt.Errorf("Could not find the filter metadata")
+	return nil, fmt.Errorf("could not find the filter metadata")
 }
 
 // extractExternalProcessingXDSRouteMetadataAttributes extracts the external processing attributes from the given data.
