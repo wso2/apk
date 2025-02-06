@@ -2,6 +2,7 @@ package transformer
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
@@ -58,7 +59,7 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, exter
 				fmt.Printf("Remote scopes: %v\n", remoteScopes)
 				switch remoteScopes := remoteScopes.(type) {
 				case string:
-					scopes := []string{remoteScopes}
+					scopes := strings.Split(remoteScopes, " ")
 					jwtValidationInfo.Scopes = scopes
 				case []string:
 					scopes := remoteScopes
