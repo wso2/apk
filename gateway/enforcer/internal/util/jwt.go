@@ -240,3 +240,8 @@ func signJWT(header, payload string, privateKey *rsa.PrivateKey) (string, error)
 func base64URLEncode(input []byte) string {
 	return base64.RawURLEncoding.EncodeToString(input)
 }
+
+// Base64Encode encodes a byte slice to a base64 string.
+func Base64Encode(input []byte) string {
+	return base64.StdEncoding.EncodeToString(input)
+}

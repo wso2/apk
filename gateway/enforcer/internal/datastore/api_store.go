@@ -77,8 +77,8 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			APIDefinition:           api.ApiDefinitionFile,
 			Environment:             api.Environment,
 			SubscriptionValidation:  api.SubscriptionValidation,
-			// Endpoints:              api.Endpoints,
-			// EndpointSecurity:       convertSecurityInfoToEndpointSecurity(api.EndpointSecurity),
+			// Endpoints:                         api.Endpoints,
+			EndpointSecurity:                  convertSecurityInfoToEndpointSecurity(api.EndpointSecurity),
 			AiProvider:                        convertAIProviderToDTO(api.Aiprovider),
 			AIModelBasedRoundRobin:            convertAIModelBasedRoundRobinToDTO(api.AiModelBasedRoundRobin),
 			DoSubscriptionAIRLInHeaderReponse: api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InHeader,
@@ -185,6 +185,26 @@ func (s *APIStore) UpdateMatchedAPI(apiKey string, api *requestconfig.API) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.apis[apiKey] = api
+}
+
+// convertSecurityInfoToEndpointSecurity converts SecurityInfo to EndpointSecurity.
+func convertSecurityInfoToEndpointSecurity(securityInfo []*api.SecurityInfo) []requestconfig.EndpointSecurity {
+	if securityInfo == nil {
+		return nil
+	}
+	endpointSecurities := []requestconfig.EndpointSecurity{}
+	for i := range securityInfo {
+		security := (securityInfo)[i]
+		endpointSecurity := requestconfig.EndpointSecurity{
+			Password:         security.Password,
+			Enabled:          security.Enabled,
+			Username:         security.Username,
+			SecurityType:     security.SecurityType,
+			CustomParameters: security.CustomParameters,
+		}
+		endpointSecurities = append(endpointSecurities, endpointSecurity)
+	}
+	return endpointSecurities
 }
 
 // ConvertBackendJWTTokenInfoToJWTConfig converts BackendJWTTokenInfo to JWTConfiguration.
