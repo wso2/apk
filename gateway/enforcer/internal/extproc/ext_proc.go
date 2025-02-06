@@ -306,7 +306,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					}
 					break
 				}
-				continue
 			}
 			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
 			if matchedResource == nil {
@@ -502,6 +501,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.cfg.Logger.Info(fmt.Sprintf("request body after %+v\n", newHTTPBody))
 				}
 			}
+
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			s.log.Info(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{

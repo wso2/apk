@@ -103,7 +103,6 @@ func ValidateGraphQLOperation(matchedAPI *requestconfig.API, jwtTransformer *tra
 			if res.AuthenticationConfig != nil && !res.AuthenticationConfig.Disabled && !matchedAPI.DisableAuthentication {
 				jwtValidationInfo := jwtTransformer.TransformJWTClaims(matchedAPI.OrganizationID, metadata)
 				rch.JWTValidationInfo = &jwtValidationInfo
-				cfg.Logger.Info(fmt.Sprintf("Skipping authentication for the resource: %s", rch.MatchedResource.Path))
 				if immediateResponse := authorization.ValidateScopes(rch, subAppDataStore, cfg); immediateResponse != nil {
 					return immediateResponse
 				}
