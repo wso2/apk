@@ -71,6 +71,9 @@ type CombinedTemplateValues struct {
 	interceptor.Interceptor
 }
 
+// Intialize array to store weighted clusters
+var weightedClusters []*routev3.WeightedCluster_ClusterWeight
+
 // Constants relevant to the route related ratelimit configurations
 const (
 	DescriptorKeyForOrg                = "org"
@@ -1105,11 +1108,45 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	}
 	routeConfig := resource.GetEndpoints().Config
 
+	// Extract weighted clusters if they are present
+	var isWeightedClusters = false
+	routeEndpoints := resource.GetEndpoints().Endpoints
+	var weightedCluster routev3.WeightedCluster_ClusterWeight
+
+	// Weightmap is used in this case to check if the weights of the endpoints are different from each other.
+	// If the weights are different, then the weighted cluster configuration would be created.
+	// But this would ignore scenarios when the weights are the same.
+	// This logic would need to be modified in order to handle scenarios where the weights of all the endpoints are the same
+	weightMap := make(map[int32]bool)
+	for _, endpoint := range routeEndpoints {
+		weightMap[endpoint.Weight] = true
+		if len(weightMap) > 1 {
+			isWeightedClusters = true
+			break
+		}
+	}
+
+	// If weighted clusters are present, create the weighted cluster configuration
+	if isWeightedClusters {
+		// Extract the host part from the clusterName
+		parts := strings.Split(clusterName, "_")
+		hostPart := parts[len(parts)-1]
+		// Find the matching endpoint and get its weight
+		var weight uint32
+		for _, endpoint := range routeEndpoints {
+			if strings.Contains(hostPart, endpoint.Host) {
+				weight = uint32(endpoint.Weight)
+				break
+			}
+		}
+		weightedCluster.Name = clusterName
+		weightedCluster.Weight = &wrapperspb.UInt32Value{Value: weight}
+	}
+
 	// } else {
 	// 	metaData = nil
 	// }
 	if resource.HasPolicies() {
-		logger.LoggerOasparser.Debug("Start creating routes for resource with policies")
 		operations := resource.GetOperations()
 
 		// Add OPTIONS operation if CORS policy is enabled.
@@ -1247,8 +1284,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				metadataValue := operation.GetMethod() + "_to_" + newMethod
 				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
 
-				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
-				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
+				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
+				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
 
 				requestHeadersToRemove := make([]string, 0)
 				// Create route1 for current method.
@@ -1273,7 +1310,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			} else {
 				var action *routev3.Route_Route
 				if requestRedirectAction == nil {
-					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
+					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
 				}
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
@@ -1300,7 +1337,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
-		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue())
+		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
 		requestHeadersToRemove := make([]string, 0)
