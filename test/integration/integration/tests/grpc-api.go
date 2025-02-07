@@ -22,11 +22,12 @@ import (
 
 	"github.com/wso2/apk/test/integration/integration/utils/grpc-code/student"
 	"github.com/wso2/apk/test/integration/integration/utils/grpcutils"
+	"github.com/wso2/apk/test/integration/integration/utils/http"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
 
 func init() {
-	// IntegrationTests = append(IntegrationTests, GRPCAPI)
+	IntegrationTests = append(IntegrationTests, GRPCAPI)
 }
 
 // GRPCAPI tests gRPC API
@@ -35,9 +36,15 @@ var GRPCAPI = suite.IntegrationTest{
 	Description: "Tests gRPC API",
 	Manifests:   []string{"tests/grpc-api.yaml"},
 	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
+		token := http.GetTestToken(t)
 		gwAddr := "grpc.test.gw.wso2.com:9095"
 		testCases := []grpcutils.GRPCTestCase{
 			{
+				Request: grpcutils.Request{
+					Headers: map[string]string{
+						"Authorization": "Bearer " + token,
+					},
+				},
 				ExpectedResponse: grpcutils.ExpectedResponse{
 					Out: &student.StudentResponse{
 						Name: "Student",

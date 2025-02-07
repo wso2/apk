@@ -34,7 +34,7 @@ func (srs StudentResponseSatisfier) IsSatisfactory(response any, expectedRespons
 		return false
 	}
 }
-func GetStudent(conn *grpc.ClientConn) (any, error) {
+func GetStudent(conn *grpc.ClientConn, cont context.Context) (any, error) {
 	c := NewStudentServiceDefaultVersionClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

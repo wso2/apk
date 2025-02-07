@@ -86,7 +86,7 @@ metadata:
   namespace: gateway-integration-test-infra
 spec:
   override:
-    disabled: true
+    disabled: false
   targetRef:
     group: gateway.networking.k8s.io
     kind: API
