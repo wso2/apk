@@ -18,6 +18,8 @@
 package extproc
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -210,6 +212,53 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
 			dynamicMetadataKeyValuePairs[matchedAPIMetadataKey] = apiKey
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
+			if requestConfigHolder.MatchedAPI != nil && requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {
+				definitionPath := requestConfigHolder.MatchedAPI.APIDefinitionPath
+				fileName := "attachment; filename=\"api_definition.json\""
+				if requestConfigHolder.MatchedAPI.IsGraphQLAPI() {
+					fileName = "attachment; filename=\"api_definition.graphql\""
+				}
+				s.cfg.Logger.Info(fmt.Sprintf("definition Path: %v", definitionPath))
+				fullPath := requestConfigHolder.MatchedAPI.BasePath + requestConfigHolder.MatchedAPI.APIDefinitionPath
+				if attributes.Path == fullPath {
+					definition := requestConfigHolder.MatchedAPI.APIDefinition
+					// Decompress
+					decompressedStr, err := ReadGzip(definition)
+					if err != nil {
+						s.cfg.Logger.Error(err, "Error reading api definition gzip")
+					}
+					s.cfg.Logger.Info(fmt.Sprintf("decompressed definition: %v", decompressedStr))
+					if definition != nil {
+						resp = &envoy_service_proc_v3.ProcessingResponse{
+							Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+								ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+									Status: &v32.HttpStatus{
+										Code: v32.StatusCode(200),
+									},
+									Headers: &envoy_service_proc_v3.HeaderMutation{
+										SetHeaders: []*corev3.HeaderValueOption{
+											{
+												Header: &corev3.HeaderValue{
+													Key:      "Content-Type",
+													RawValue: []byte("application/octet-stream"),
+												},
+											},
+											{
+												Header: &corev3.HeaderValue{
+													Key:      "Content-Disposition",
+													RawValue: []byte(fileName),
+												},
+											},
+										},
+									},
+									Body: []byte(decompressedStr),
+								},
+							},
+						}
+						break
+					}
+				}
+			}
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
 				s.log.Error(err, "failed to extract context metadata")
@@ -889,6 +938,29 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 		return externalProcessingEnvoyMetadata, nil
 	}
 	return nil, fmt.Errorf("could not find the filter metadata")
+}
+
+// ReadGzip decompresses a GZIP-compressed byte slice and returns the string output
+func ReadGzip(gzipData []byte) (string, error) {
+	// Create a bytes.Reader from the gzip data
+	byteReader := bytes.NewReader(gzipData)
+
+	// Create a gzip reader
+	gzipReader, err := gzip.NewReader(byteReader)
+	if err != nil {
+		return "", err
+	}
+	defer gzipReader.Close()
+
+	// Read the uncompressed data
+	var result bytes.Buffer
+	_, err = io.Copy(&result, gzipReader)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert bytes buffer to string
+	return result.String(), nil
 }
 
 // extractExternalProcessingXDSRouteMetadataAttributes extracts the external processing attributes from the given data.
