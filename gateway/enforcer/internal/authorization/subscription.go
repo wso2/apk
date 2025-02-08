@@ -18,7 +18,7 @@ func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.
 	clientID := rch.JWTValidationInfo.ClientID
 	if rch.MatchedAPI.SubscriptionValidation {
 		if rch.JWTValidationInfo.ClientID != "" {
-			appID := getAppIDUsingConsumerKey(clientID, subAppDataStore, api, "oauth2")
+			appID := getAppIDUsingConsumerKey(clientID, subAppDataStore, api, "OAuth2")
 			if appID != "" {
 				appMaps := subAppDataStore.GetApplicationMappings(api.OrganizationID, appID)
 				for _, appMap := range appMaps {
@@ -46,7 +46,7 @@ func getAppIDUsingConsumerKey(consumerKey string, subAppDatastore *datastore.Sub
 	appKeyMapKey := util.PrepareApplicationKeyMappingCacheKey(consumerKey, api.EnvType, securityScheme, api.Environment)
 	appKeyMap := subAppDatastore.GetApplicationKeyMapping(api.OrganizationID, appKeyMapKey)
 	if appKeyMap != nil {
-		return appKeyMap.ApplicationIdentifier
+		return appKeyMap.ApplicationUUID
 	}
 	return ""
 }
