@@ -273,6 +273,58 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				dynamicMetadataKeyValuePairs[matchedSubscriptionMetadataKey] = requestConfigHolder.MatchedSubscription.UUID
 			}
 
+			if requestConfigHolder.MatchedAPI != nil && requestConfigHolder.MatchedAPI.EndpointSecurity != nil {
+				s.cfg.Logger.Info(fmt.Sprintf("Inside API Level Endpoint Security: %+v", requestConfigHolder.MatchedAPI.EndpointSecurity))
+				for _, es := range requestConfigHolder.MatchedAPI.EndpointSecurity {
+					if es.Enabled {
+						s.cfg.Logger.Info(fmt.Sprintf("Enabled API Level Endpoint Security: %+v", es))
+						s.cfg.Logger.Info(fmt.Sprintf("Enabled API Level Security Type: %s", es.SecurityType))
+						if es.SecurityType == "Basic" {
+							basicValue := fmt.Sprintf("Basic %s", util.Base64Encode([]byte(fmt.Sprintf("%s:%s", es.Username, es.Password))))
+							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
+								Header: &corev3.HeaderValue{
+									Key:      "Authorization",
+									RawValue: []byte(basicValue),
+								},
+							})
+						} else if es.SecurityType == "APIKey" {
+							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
+								Header: &corev3.HeaderValue{
+									Key:      es.CustomParameters["key"],
+									RawValue: []byte(es.CustomParameters["value"]),
+								},
+							})
+						}
+					}
+				}
+			}
+
+			if requestConfigHolder.MatchedResource != nil && requestConfigHolder.MatchedResource.EndpointSecurity != nil {
+				s.cfg.Logger.Info(fmt.Sprintf("Resource Level Endpoint Security: %+v", requestConfigHolder.MatchedResource.EndpointSecurity))
+				for _, es := range requestConfigHolder.MatchedResource.EndpointSecurity {
+					if es.Enabled {
+						s.cfg.Logger.Info(fmt.Sprintf("Resource Level Endpoint Security: %+v", es))
+						s.cfg.Logger.Info(fmt.Sprintf("Resource Level Security Type: %s", es.SecurityType))
+						if es.SecurityType == "Basic" {
+							basicValue := fmt.Sprintf("Basic %s", util.Base64Encode([]byte(fmt.Sprintf("%s:%s", es.Username, es.Password))))
+							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
+								Header: &corev3.HeaderValue{
+									Key:      "Authorization",
+									RawValue: []byte(basicValue),
+								},
+							})
+						} else if es.SecurityType == "APIKey" {
+							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
+								Header: &corev3.HeaderValue{
+									Key:      es.CustomParameters["key"],
+									RawValue: []byte(es.CustomParameters["value"]),
+								},
+							})
+						}
+					}
+				}
+			}
+
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
 			s.log.Info("Request Body Flow")
@@ -571,6 +623,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Info(fmt.Sprintf("Header Values: %v", headerValues))
 				remainingTokenCount := 100
 				remainingRequestCount := 100
+				status := 200
 				for _, headerValue := range headerValues {
 					if headerValue.Key == "x-ratelimit-remaining-tokens" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
@@ -586,8 +639,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						}
 						remainingRequestCount = value
 					}
+					if headerValue.Key == "status" {
+						status, err = util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve status code by header")
+						}
+					}
 				}
-				if remainingTokenCount <= 50 || remainingRequestCount <= 50 { // Suspend model if token/request count reaches 0
+				if remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
 					s.log.Info("Token/request are exhausted. Suspending the model")
 					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
 					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
@@ -604,6 +663,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Info(fmt.Sprintf("Header Values: %v", headerValues))
 				remainingTokenCount := 100
 				remainingRequestCount := 100
+				status := 200
 				for _, headerValue := range headerValues {
 					if headerValue.Key == "x-ratelimit-remaining-tokens" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
@@ -619,8 +679,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						}
 						remainingRequestCount = value
 					}
+					if headerValue.Key == "status" {
+						status, err = util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve status code by header")
+						}
+					}
 				}
-				if remainingTokenCount <= 50 || remainingRequestCount <= 50 { // Suspend model if token/request count reaches 0
+				if remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
 					s.log.Info("Token/request are exhausted. Suspending the model")
 					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
 					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
