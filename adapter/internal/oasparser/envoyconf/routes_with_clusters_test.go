@@ -139,9 +139,9 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 
-	exactPathCluster := clusters[1]
+	exactPathCluster := clusters[0]
 	clusterName := strings.Split(exactPathCluster.GetName(), "_")
 
 	assert.Equal(t, 5, len(clusterName), "clustername is incorrect. Expected: carbon.super__prod.gw.wso2.com_test-api-22.0.0_<id>, Found: %s", exactPathCluster.GetName())
@@ -161,7 +161,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	assert.Equal(t, uint32(7001), exactPathClusterPort, "Exact path cluster's assigned port is incorrect.")
 	assert.Equal(t, uint32(0), exactPathClusterPriority, "Exact path cluster's assigned Priority is incorrect.")
 
-	regexPathCluster := clusters[2]
+	regexPathCluster := clusters[1]
 
 	regexPathClusterHost := regexPathCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetAddress()
@@ -368,10 +368,10 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	routes, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 5, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 4, len(clusters), "Number of production clusters created is incorrect.")
 
-	orderServiceCluster := clusters[1]
-	orderServiceCluster2 := clusters[2]
+	orderServiceCluster := clusters[0]
+	orderServiceCluster2 := clusters[1]
 	clusterName := strings.Split(orderServiceCluster.GetName(), "_")
 
 	assert.Equal(t, 5, len(clusterName), "clustername is incorrect. Expected: carbon.super__prod.gw.wso2.com_test-api1.0.0_<id>, Found: %s", orderServiceCluster.GetName())
@@ -402,8 +402,8 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	assert.Equal(t, uint32(8080), orderServiceClusterPort1, "Order Service Cluster's second endpoint port is incorrect.")
 	assert.Equal(t, uint32(0), orderServiceClusterPriority1, "Order Service Cluster's second endpoint Priority is incorrect.")
 
-	userServiceCluster := clusters[3]
-	userServiceCluster2 := clusters[4]
+	userServiceCluster := clusters[2]
+	userServiceCluster2 := clusters[3]
 
 	userServiceClusterHost0 := userServiceCluster.GetLoadAssignment().GetEndpoints()[0].GetLbEndpoints()[0].GetEndpoint().
 		GetAddress().GetSocketAddress().GetAddress()
@@ -506,9 +506,9 @@ func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 1, len(clusters), "Number of production clusters created is incorrect.")
 
-	exactPathCluster := clusters[1]
+	exactPathCluster := clusters[0]
 
 	assert.True(t, strings.HasPrefix(exactPathCluster.GetName(), "carbon.super__prod.gw.wso2.com_test-api-31.0.0_"),
 		"Exact path cluster name mismatch, %v", exactPathCluster.GetName())
@@ -651,7 +651,7 @@ func TestCreateRoutesWithClustersDifferentBackendRefs(t *testing.T) {
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 }
 
 func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
@@ -739,5 +739,5 @@ func TestCreateRoutesWithClustersSameBackendRefs(t *testing.T) {
 	assert.Equal(t, map[string]struct{}{"default-gateway": {}}, labels, "Labels are incorrect.")
 	assert.Nil(t, err, "Error should not be present when apiState is converted to a AdapterInternalAPI object")
 	_, clusters, _, _ := envoy.CreateRoutesWithClusters(adapterInternalAPI, nil, "prod.gw.wso2.com", "carbon.super")
-	assert.Equal(t, 3, len(clusters), "Number of production clusters created is incorrect.")
+	assert.Equal(t, 2, len(clusters), "Number of production clusters created is incorrect.")
 }

@@ -125,29 +125,12 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 	} else {
 		methods = append(methods, "GET")
 	}
-	routeP := CreateAPIDefinitionEndpoint(adapterInternalAPI, vHost, methods, false)
+	routeP := CreateAPIDefinitionEndpoint(adapterInternalAPI, vHost, methods, false, organizationID)
 	routes = append(routes, routeP)
 	if (adapterInternalAPI).IsDefaultVersion {
-		defaultDefRoutes := CreateAPIDefinitionEndpoint(adapterInternalAPI, vHost, methods, true)
+		defaultDefRoutes := CreateAPIDefinitionEndpoint(adapterInternalAPI, vHost, methods, true, organizationID)
 		routes = append(routes, defaultDefRoutes)
 	}
-	var endpointForAPIDefinitions []model.Endpoint
-	endpoint := &model.Endpoint{
-		// Localhost is set as the two containers are in the same pod
-		Host:    "localhost",
-		Port:    uint32(8084),
-		URLType: "https",
-	}
-	endpointForAPIDefinitions = append(endpointForAPIDefinitions, *endpoint)
-	endpointCluster := model.EndpointCluster{
-		Endpoints: endpointForAPIDefinitions,
-	}
-	cluster, address, err := processEndpoints(apiDefinitionClusterName, &endpointCluster, timeout, "", nil)
-	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, apiDefinitionQueryParam, err.Error()))
-	}
-	clusters = append(clusters, cluster...)
-	endpoints = append(endpoints, address...)
 
 	if adapterInternalAPI.GetAPIType() == constants.GRAPHQL {
 		basePath := strings.TrimSuffix(adapterInternalAPI.Endpoints.Endpoints[0].Basepath, "/")
@@ -1474,12 +1457,13 @@ func CreateAPIDefinitionRoute(basePath string, vHost string, methods []string, i
 }
 
 // CreateAPIDefinitionEndpoint generates a route for the api defition endpoint
-func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, vHost string, methods []string, isDefaultversion bool) *routev3.Route {
+func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, vHost string, methods []string, isDefaultversion bool, organizationID string) *routev3.Route {
 
 	basePath := adapterInternalAPI.GetXWso2Basepath()
 	version := adapterInternalAPI.GetVersion()
 	providedAPIDefinitionPath := adapterInternalAPI.GetAPIDefinitionEndpoint()
 	endpoint := providedAPIDefinitionPath
+	path := basePath + endpoint
 	rewritePath := basePath + "/" + vHost + "?" + apiDefinitionQueryParam
 	basePath = strings.TrimSuffix(basePath, "/")
 	var (
@@ -1546,27 +1530,67 @@ func CreateAPIDefinitionEndpoint(adapterInternalAPI *model.AdapterInternalAPI, v
 		},
 	}
 
-	perFilterConfigExtProc := extProcessorv3.ExtProcPerRoute{
-		Override: &extProcessorv3.ExtProcPerRoute_Disabled{
-			Disabled: true,
+	metaData := &corev3.Metadata{
+		FilterMetadata: map[string]*structpb.Struct{
+			"envoy.filters.http.ext_proc": &structpb.Struct{
+				Fields: map[string]*structpb.Value{
+					enableBackendBasedAIRatelimitAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: fmt.Sprintf("%t", false),
+						},
+					},
+					backendBasedAIRatelimitDescriptorValueAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: "",
+						},
+					},
+					pathAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: path,
+						},
+					},
+					vHostAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: vHost,
+						},
+					},
+					basePathAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: basePath,
+						},
+					},
+					methodAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: strings.Join(methods, " "),
+						},
+					},
+					apiVersionAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: version,
+						},
+					},
+					apiNameAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: adapterInternalAPI.GetTitle(),
+						},
+					},
+					clusterNameAttribute: &structpb.Value{ // Use the variable here
+						Kind: &structpb.Value_StringValue{
+							StringValue: apiDefinitionClusterName,
+						},
+					},
+				},
+			},
 		},
 	}
-
-	dataExtProc, _ := proto.Marshal(&perFilterConfigExtProc)
-	filterExtProc := &any.Any{
-		TypeUrl: extProcPerRouteName,
-		Value:   dataExtProc,
-	}
-
 	router = &routev3.Route{
 		Name:      endpoint, //Categorize routes with same base path
 		Match:     match,
 		Action:    action,
-		Metadata:  nil,
+		Metadata:  metaData,
 		Decorator: decorator,
 		TypedPerFilterConfig: map[string]*any.Any{
 			wellknown.HTTPExternalAuthorization: filter,
-			HTTPExternalProcessor:               filterExtProc,
 		},
 	}
 	return router

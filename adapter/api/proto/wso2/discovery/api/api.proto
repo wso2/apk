@@ -66,4 +66,5 @@ message Api {
 	repeated SecurityInfo endpointSecurity = 30;
 	AIProvider aiprovider = 31;
 	AIModelBasedRoundRobin aiModelBasedRoundRobin = 32;
+	string apiDefinitionPath = 33;
 }

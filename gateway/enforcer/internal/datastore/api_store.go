@@ -75,6 +75,7 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			BackendJwtConfiguration: convertBackendJWTTokenInfoToJWTConfig(api.BackendJWTTokenInfo, s.cfg, fmt.Sprintf("%s-%s", api.Title, api.Version)),
 			SystemAPI:               api.SystemAPI,
 			APIDefinition:           api.ApiDefinitionFile,
+			APIDefinitionPath:       api.ApiDefinitionPath,
 			Environment:             api.Environment,
 			SubscriptionValidation:  api.SubscriptionValidation,
 			// Endpoints:                         api.Endpoints,

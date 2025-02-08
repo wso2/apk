@@ -272,6 +272,7 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 		// GraphqlComplexityInfo: adapterInternalAPI.GraphQLComplexities.Data.List,
 		SystemAPI:              adapterInternalAPI.IsSystemAPI,
 		ApiDefinitionFile:      adapterInternalAPI.GetAPIDefinitionFile(),
+		ApiDefinitionPath:      adapterInternalAPI.GetAPIDefinitionEndpoint(),
 		Environment:            adapterInternalAPI.GetEnvironment(),
 		SubscriptionValidation: adapterInternalAPI.GetSubscriptionValidation(),
 		Aiprovider: func() *api.AIProvider {
