@@ -1,9 +1,12 @@
 package ratelimit
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,7 +20,7 @@ import (
 // AIRatelimitHelper is a helper struct for managing AI rate limiting.
 type AIRatelimitHelper struct {
 	rlClient *client
-	cfg 	*config.Server
+	cfg      *config.Server
 }
 
 // TokenCountAndModel is a struct that holds the prompt, completion, and total token counts.
@@ -51,7 +54,7 @@ func NewAIRatelimitHelper(cfg *config.Server) *AIRatelimitHelper {
 	client.start()
 	return &AIRatelimitHelper{
 		rlClient: client,
-		cfg: 	cfg,
+		cfg:      cfg,
 	}
 }
 
@@ -62,8 +65,10 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount TokenCountAndModel, doBa
 			airl.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic, %+v", r))
 		}
 	}()
+	airl.cfg.Logger.Info(fmt.Sprintf("Performing AI rate limiting with token count: %+v", tokenCount))
 	configs := []*keyValueHitsAddend{}
 	if doBackendBasedAIRatelimit {
+		airl.cfg.Logger.Info("Performing backend based AI rate limiting")
 		// For promt token count
 		configs = append(configs, &keyValueHitsAddend{
 			Key:        DescriptorKeyForAIPromtTokenCount,
@@ -84,6 +89,7 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount TokenCountAndModel, doBa
 		})
 	}
 	if doSubscriptionBasedAIRatelimit && subscription != nil && application != nil {
+		airl.cfg.Logger.Info("Performing subscription based AI rate limiting")
 		// For promt token count
 		configs = append(configs, &keyValueHitsAddend{
 			Key:   DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
@@ -115,6 +121,7 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount TokenCountAndModel, doBa
 			},
 		})
 	}
+	airl.cfg.Logger.Info(fmt.Sprintf("AI rate limiting configs: %+v", configs))
 	airl.rlClient.shouldRatelimit(configs)
 }
 
@@ -125,8 +132,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 
 	for _, headerValue := range headerValues {
 		switch headerValue.Key {
-		
-		
+
 		case promptHeader:
 			if headerValue.Value != "" {
 				value, err := util.ConvertStringToInt(headerValue.Value)
@@ -194,10 +200,12 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 	return tokenCount, nil
 }
 
-
 // ExtractTokenCountFromExternalProcessingResponseBody extracts token counts from external processing response body.
 func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, promptPath, completionPath, totalPath, modelPath string) (*TokenCountAndModel, error) {
-	bodyStr := string(body)
+	bodyStr, err := ReadGzip(body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading body gzip: %w", err)
+	}
 	sanitizedBody := sanitize(bodyStr)
 	tokenCount, err := extractUsageFromBody(sanitizedBody, promptPath, completionPath, totalPath, "model")
 	if err != nil {
@@ -205,6 +213,29 @@ func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, promptPath
 	}
 	return tokenCount, nil
 
+}
+
+// ReadGzip decompresses a GZIP-compressed byte slice and returns the string output
+func ReadGzip(gzipData []byte) (string, error) {
+	// Create a bytes.Reader from the gzip data
+	byteReader := bytes.NewReader(gzipData)
+
+	// Create a gzip reader
+	gzipReader, err := gzip.NewReader(byteReader)
+	if err != nil {
+		return "", err
+	}
+	defer gzipReader.Close()
+
+	// Read the uncompressed data
+	var result bytes.Buffer
+	_, err = io.Copy(&result, gzipReader)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert bytes buffer to string
+	return result.String(), nil
 }
 
 func sanitize(input string) string {
