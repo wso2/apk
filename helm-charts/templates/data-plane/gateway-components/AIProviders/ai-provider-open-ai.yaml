@@ -9,8 +9,8 @@ spec:
   organization : "default"
   supportedModels:
     - "gpt-4o"
-    - "gpt-3.5"
-    - "gpt-4.5"
+    - "o1-mini"
+    - "gpt-4o-mini"
   requestModel:
     in: "Body"
     value: "model"

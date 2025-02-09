@@ -1,0 +1,259 @@
+kind: "API"
+apiVersion: "dp.wso2.com/v1alpha3"
+metadata:
+  name: "chat-service-api-prod-sand"
+  labels:
+    api-name: "chat-service-api-prod-sand"
+    api-version: "1.0"
+spec:
+  apiName: "chat-service-api-prod-sand"
+  apiType: "REST"
+  apiVersion: "1.0"
+  basePath: "/chat-service-prod-sand/1.0"
+  organization: "default"
+  isDefaultVersion: false
+  production:
+    - routeRefs:
+        - "chat-http-route-production-resource"
+  sandbox:
+    - routeRefs:
+        - "chat-http-route-sandbox-resource"
+  apiProperties: []
+status: null
+---
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: "chat-http-route-production-resource"
+  labels:
+    api-name: "chat-service-api-prod-sand"
+    api-version: "1.0"
+spec:
+  hostnames:
+    - "default.gw.wso2.com"
+  rules:
+    - matches:
+        - path:
+            type: "RegularExpression"
+            value: "/get"
+          method: "GET"
+      filters:
+        - type: "URLRewrite"
+          urlRewrite:
+            path:
+              type: "ReplaceFullPath"
+              replaceFullPath: "/get"
+      backendRefs:
+        - group: "dp.wso2.com"
+          kind: "Backend"
+          name: "chat-backend-1"
+        - group: "dp.wso2.com"
+          kind: "Backend"
+          name: "chat-backend-2"
+    - matches:
+        - path:
+            type: "RegularExpression"
+            value: "/chat/completions"
+          method: "POST"
+      filters:
+        - type: "URLRewrite"
+          urlRewrite:
+            path:
+              type: "ReplaceFullPath"
+              replaceFullPath: "/chat/completions"
+      backendRefs:
+        - group: "dp.wso2.com"
+          kind: "Backend"
+          name: "chat-backend-1"
+        - group: "dp.wso2.com"
+          kind: "Backend"
+          name: "chat-backend-2"
+  parentRefs:
+    - group: "gateway.networking.k8s.io"
+      kind: "Gateway"
+      name: "wso2-apk-default"
+      sectionName: "httpslistener"
+---
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: "chat-http-route-sandbox-resource"
+  labels:
+    api-name: "chat-service-api-prod-sand"
+    api-version: "1.0"
+spec:
+  hostnames:
+    - "default.sandbox.gw.wso2.com"
+  rules:
+    - matches:
+        - path:
+            type: "RegularExpression"
+            value: "/get"
+          method: "GET"
+      filters:
+        - type: "URLRewrite"
+          urlRewrite:
+            path:
+              type: "ReplaceFullPath"
+              replaceFullPath: "/get"
+      backendRefs:
+        - group: "dp.wso2.com"
+          kind: "Backend"
+          name: "chat-backend-1"
+        - group: "dp.wso2.com"
+          kind: "Backend"
+          name: "chat-backend-2"
+    - matches:
+        - path:
+            type: "RegularExpression"
+            value: "/chat/completions"
+          method: "POST"
+      filters:
+        - type: "URLRewrite"
+          urlRewrite:
+            path:
+              type: "ReplaceFullPath"
+              replaceFullPath: "/chat/completions"
+      backendRefs:
+        - group: "dp.wso2.com"
+          kind: "Backend"
+          name: "chat-backend-1"
+        - group: "dp.wso2.com"
+          kind: "Backend"
+          name: "chat-backend-2"
+  parentRefs:
+    - group: "gateway.networking.k8s.io"
+      kind: "Gateway"
+      name: "wso2-apk-default"
+      sectionName: "httpslistener"
+---
+apiVersion: "dp.wso2.com/v1alpha2"
+kind: "Backend"
+metadata:
+  name: "chat-backend-1"
+  labels:
+    api-name: "chat-service-api-prod-sand"
+spec:
+  services:
+    - host: "api.openai.com"
+      port: 443
+  basePath: "/v1/"
+  protocol: "https"
+  security:
+    apiKey:
+      in: "Header"
+      name: "Authorization"
+      valueFrom:
+        name: "mysecret"
+        valueKey: "apiKey"
+---
+apiVersion: "dp.wso2.com/v1alpha2"
+kind: "Backend"
+metadata:
+  name: "chat-backend-2"
+  labels:
+    api-name: "chat-service-api-prod-sand"
+spec:
+  services:
+    - host: "api.openai.com"
+      port: 443
+  basePath: "/v1/"
+  protocol: "https"
+  security:
+    apiKey:
+      in: "Header"
+      name: "Authorization"
+      valueFrom:
+        name: "mysecret"
+        valueKey: "apiKey"
+---
+apiVersion: dp.wso2.com/v1alpha4
+kind: AIProvider
+metadata:
+  name: my-openai-ai-new1
+spec:
+  providerName : "OpenAI"
+  providerAPIVersion : "v1"
+  organization : "default"
+  supportedModels:
+    - "gpt-4o"
+    - "gpt-3.5"
+    - "gpt-4o-mini"
+  requestModel:
+    in: "Body"
+    value: "model"
+  responseModel:
+    in: "Body"
+    value: "model"
+  rateLimitFields:
+    promptTokens:
+      in: "Body"
+      value: "$usage.promptTokens"
+    completionToken:
+      in: "Body"
+      value: "$usage.completionTokens"
+    totalToken:
+      in: "Body"
+      value: "$usage.totalTokens"
+---
+apiVersion: dp.wso2.com/v1alpha4
+kind: APIPolicy
+metadata:
+  name: chat-round-robin-prod-sand-api-policy
+spec:
+  default:
+    aiProvider:
+      name: "my-openai-ai-new1"
+    modelBasedRoundRobin:
+      onQuotaExceedSuspendDuration: 60
+      productionModels:
+        - model: "gpt-4o"
+          backendRef:
+            group: "dp.wso2.com"
+            kind: "Backend"
+            name: "chat-backend-1"
+          weight: 1
+        - model: "o1-mini"
+          backendRef:
+            group: "dp.wso2.com"
+            kind: "Backend"
+            name: "chat-backend-2"
+          weight: 1
+        - model: "gpt-4o-mini"
+          backendRef:
+            group: "dp.wso2.com"
+            kind: "Backend"
+            name: "chat-backend-1"
+          weight: 1
+      sandboxModels:
+        - model: "gpt-4o"
+          backendRef:
+            group: "dp.wso2.com"
+            kind: "Backend"
+            name: "chat-backend-1"
+          weight: 1
+        - model: "o1-mini"
+          backendRef:
+            group: "dp.wso2.com"
+            kind: "Backend"
+            name: "chat-backend-2"
+          weight: 1
+        - model: "gpt-4o-mini"
+          backendRef:
+            group: "dp.wso2.com"
+            kind: "Backend"
+            name: "chat-backend-2"
+          weight: 1
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: API
+    name: chat-service-api-prod-sand
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  apiKey: base64_encoded_api_key
+

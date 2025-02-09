@@ -878,8 +878,8 @@ public class APIClient {
                 aiProviderRef = "ai-provider-azure-ai";
             } else if aiProvider.name == "OpenAI" {
                 aiProviderRef = "ai-provider-open-ai";
-            } else if aiProvider.name == "GoogleAI" {
-                aiProviderRef = "ai-provider-google-ai";
+            } else if aiProvider.name == "MistralAI" {
+                aiProviderRef = "ai-provider-mistral-ai";
             } else {
                 aiProviderRef = aiProvider.name;
             }
