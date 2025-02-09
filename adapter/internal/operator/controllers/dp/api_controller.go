@@ -56,6 +56,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	"sigs.k8s.io/gateway-api/apis/v1alpha2"
 
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
@@ -752,7 +753,9 @@ func (apiReconciler *APIReconciler) getAuthenticationsForAPI(ctx context.Context
 	}
 	for item := range authenticationList.Items {
 		authenticationListItem := authenticationList.Items[item]
-		authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
+		if authenticationListItem.Spec.TargetRef.Name == v1alpha2.ObjectName(api.Name) {
+			authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
+		}
 	}
 	return authentications, nil
 }
@@ -828,7 +831,9 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 	}
 	for item := range authenticationList.Items {
 		authenticationListItem := authenticationList.Items[item]
-		authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
+		if authenticationListItem.Spec.TargetRef.Name != v1alpha2.ObjectName(api.Name) {
+			authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
+		}
 	}
 	return authentications, nil
 }
