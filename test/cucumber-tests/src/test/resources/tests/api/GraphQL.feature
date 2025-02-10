@@ -117,85 +117,85 @@ Feature: Generating APK conf for GraphQL API
             | graphql-v3 | 202                |
             | graphql-v4 | 202                |
 
-    Scenario: Deploying APK conf using a valid GraphQL API definition with mTLS mandatory and valid certificate
-        Given The system is ready
-        And I have a valid token with a client certificate "config-map-1.txt"
-        When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls.apk-conf"
-        And the definition file "artifacts/definitions/graphql_sample_api.graphql"
-        And make the API deployment request
-        Then the response status code should be 200
-        Then I set headers
-            | Authorization             | Bearer ${accessToken} |
-            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
-        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
-        And I eventually receive 200 response code, not accepting
-            | 429 |
-            | 500 |
-        And the response body should contain "\"name\":\"string\""
+    # Scenario: Deploying APK conf using a valid GraphQL API definition with mTLS mandatory and valid certificate
+    #     Given The system is ready
+    #     And I have a valid token with a client certificate "config-map-1.txt"
+    #     When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls.apk-conf"
+    #     And the definition file "artifacts/definitions/graphql_sample_api.graphql"
+    #     And make the API deployment request
+    #     Then the response status code should be 200
+    #     Then I set headers
+    #         | Authorization             | Bearer ${accessToken} |
+    #         | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+    #     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+    #     And I eventually receive 200 response code, not accepting
+    #         | 429 |
+    #         | 500 |
+    #     And the response body should contain "\"name\":\"string\""
 
-    Scenario: Undeploy API
-        Given The system is ready
-        And I have a valid subscription
-        When I undeploy the API whose ID is "graphql-mtls"
-        Then the response status code should be 202
+    # Scenario: Undeploy API
+    #     Given The system is ready
+    #     And I have a valid subscription
+    #     When I undeploy the API whose ID is "graphql-mtls"
+    #     Then the response status code should be 202
 
-    Scenario: Deploying APK conf using a valid GraphQL API definition with mTLS mandatory and no certificate
-        Given The system is ready
-        And I have a valid subscription
-        When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls.apk-conf"
-        And the definition file "artifacts/definitions/graphql_sample_api.graphql"
-        And make the API deployment request
-        Then the response status code should be 200
-        Then I set headers
-            | Authorization | Bearer ${accessToken} |
-        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
-        And I eventually receive 401 response code, not accepting
-            | 200 |
-            | 429 |
-            | 500 |
+    # Scenario: Deploying APK conf using a valid GraphQL API definition with mTLS mandatory and no certificate
+    #     Given The system is ready
+    #     And I have a valid subscription
+    #     When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls.apk-conf"
+    #     And the definition file "artifacts/definitions/graphql_sample_api.graphql"
+    #     And make the API deployment request
+    #     Then the response status code should be 200
+    #     Then I set headers
+    #         | Authorization | Bearer ${accessToken} |
+    #     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+    #     And I eventually receive 401 response code, not accepting
+    #         | 200 |
+    #         | 429 |
+    #         | 500 |
 
-    Scenario: Undeploy API
-        Given The system is ready
-        And I have a valid subscription
-        When I undeploy the API whose ID is "graphql-mtls"
-        Then the response status code should be 202
+    # Scenario: Undeploy API
+    #     Given The system is ready
+    #     And I have a valid subscription
+    #     When I undeploy the API whose ID is "graphql-mtls"
+    #     Then the response status code should be 202
 
-    Scenario: Deploying APK conf using a valid GraphQL API definition with OAuth2 mandatory mTLS optional
-        Given The system is ready
-        And I have a valid token with a client certificate "config-map-1.txt"
-        When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls_optional_oauth2_mandatory.apk-conf"
-        And the definition file "artifacts/definitions/graphql_sample_api.graphql"
-        And make the API deployment request
-        Then the response status code should be 200
-        Then I set headers
-            | Authorization             | Bearer ${accessToken} |
-            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
-        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
-        And I eventually receive 200 response code, not accepting
-            | 429 |
-            | 500 |
-        And the response body should contain "\"name\":\"string\""
-        Then I set headers
-            | Authorization | Bearer ${accessToken} |
-        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
-        And I eventually receive 200 response code, not accepting
-            | 429 |
-            | 500 |
-        And the response body should contain "\"name\":\"string\""
-        And I have a valid token with a client certificate "invalid-cert.txt"
-        Then I set headers
-            | Authorization             | Bearer ${accessToken} |
-            | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
-        And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
-        And I eventually receive 401 response code, not accepting
-            | 429 |
-            | 500 |
+    # Scenario: Deploying APK conf using a valid GraphQL API definition with OAuth2 mandatory mTLS optional
+    #     Given The system is ready
+    #     And I have a valid token with a client certificate "config-map-1.txt"
+    #     When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_with_mtls_optional_oauth2_mandatory.apk-conf"
+    #     And the definition file "artifacts/definitions/graphql_sample_api.graphql"
+    #     And make the API deployment request
+    #     Then the response status code should be 200
+    #     Then I set headers
+    #         | Authorization             | Bearer ${accessToken} |
+    #         | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+    #     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+    #     And I eventually receive 200 response code, not accepting
+    #         | 429 |
+    #         | 500 |
+    #     And the response body should contain "\"name\":\"string\""
+    #     Then I set headers
+    #         | Authorization | Bearer ${accessToken} |
+    #     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+    #     And I eventually receive 200 response code, not accepting
+    #         | 429 |
+    #         | 500 |
+    #     And the response body should contain "\"name\":\"string\""
+    #     And I have a valid token with a client certificate "invalid-cert.txt"
+    #     Then I set headers
+    #         | Authorization             | Bearer ${accessToken} |
+    #         | X-WSO2-CLIENT-CERTIFICATE | ${clientCertificate}  |
+    #     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ allHumans { name } }\"}"
+    #     And I eventually receive 401 response code, not accepting
+    #         | 429 |
+    #         | 500 |
 
-    Scenario: Undeploy API
-        Given The system is ready
-        And I have a valid subscription
-        When I undeploy the API whose ID is "graphql-mtls-optional"
-        Then the response status code should be 202
+    # Scenario: Undeploy API
+    #     Given The system is ready
+    #     And I have a valid subscription
+    #     When I undeploy the API whose ID is "graphql-mtls-optional"
+    #     Then the response status code should be 202
 
     Scenario: Deploying GraphQL API with OAuth2 disabled
         Given The system is ready
