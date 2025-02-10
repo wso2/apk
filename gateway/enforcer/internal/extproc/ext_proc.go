@@ -77,6 +77,7 @@ const (
 	clusterNameAttribute                            string = "clusterName"
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
+	customOrgMetadataKey                            string = "customorg"
 	suspendAIModelValueAttribute                    string = "ai:suspendmodel"
 	externalProessingMetadataContextKey             string = "envoy.filters.http.ext_proc"
 	subscriptionMetadataKey                         string = "ratelimit:subscription"
@@ -210,6 +211,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
 			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
+			dynamicMetadataKeyValuePairs[customOrgMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
+
 			dynamicMetadataKeyValuePairs[matchedAPIMetadataKey] = apiKey
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if requestConfigHolder.MatchedAPI != nil && requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {

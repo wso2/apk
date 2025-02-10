@@ -81,7 +81,7 @@ const (
 	DescriptorValueForAPIMethod        = "ALL"
 	DescriptorValueForOperationMethod  = ":method"
 	MetadataNamespaceForCustomPolicies = "apk.ratelimit.metadata"
-	MetadataNamespaceForWSO2Policies   = "envoy.filters.http.ext_authz"
+	MetadataNamespaceForWSO2Policies   = "envoy.filters.http.ext_proc"
 	apiDefinitionClusterName           = "api_definition_cluster"
 )
 
