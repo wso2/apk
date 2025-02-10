@@ -802,7 +802,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					dynamicMetadataKeyValuePairs[analytics.CompletionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
 					dynamicMetadataKeyValuePairs[analytics.TotalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
 					dynamicMetadataKeyValuePairs[analytics.PromptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
-
 				}
 			}
 
