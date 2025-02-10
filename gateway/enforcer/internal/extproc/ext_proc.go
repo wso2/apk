@@ -262,6 +262,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					}
 				}
 			}
+			s.cfg.Logger.Info(fmt.Sprintf("Metadata context : %+v", req.GetMetadataContext()))
+			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
+			if requestConfigHolder.MatchedResource != nil {
+				requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
+				dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
+			}
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
 				s.log.Error(err, "failed to extract context metadata")
@@ -269,11 +275,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
-			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
-			if requestConfigHolder.MatchedResource != nil {
-				requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
-				dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
-			}
+			
 			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
 			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
 			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))

@@ -23,7 +23,7 @@ import (
 )
 
 // MakeGETRequest HTTP client for making GET requests with custom TLS config
-func MakeGETRequest(url string, tlsConfig *tls.Config) (*http.Response, error) {
+func MakeGETRequest(url string, tlsConfig *tls.Config, headers map[string]string) (*http.Response, error) {
 	// Create a custom HTTP client with the provided TLS configuration
 	tr := &http.Transport{
 		TLSClientConfig: tlsConfig,
@@ -38,6 +38,9 @@ func MakeGETRequest(url string, tlsConfig *tls.Config) (*http.Response, error) {
 
 	// Set request headers
 	req.Header.Set("Content-Type", "application/json")
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
 	// Execute the request
 	return client.Do(req)
 }

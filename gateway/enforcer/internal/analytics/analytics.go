@@ -84,6 +84,7 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 		config := configStore.GetConfigs()[0]
 		if config.Analytics.Enabled {
 			for _, pub := range config.Analytics.AnalyticsPublisher {
+				cfg.Logger.Info(fmt.Sprintf("Publisher type: %s", pub.Type))
 				switch strings.ToLower(pub.Type) {
 				case strings.ToLower(ELKAnalyticsPublisher):
 					logLevel := "INFO"
@@ -95,7 +96,8 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 				case strings.ToLower(MoesifAnalyticsPublisher):
 					// publisher := publishers.NewMoesif(cfg, pub.LogLevel)
 				case strings.ToLower(DefaultAnalyticsPublisher):
-					// publisher := publishers.NewDefault(cfg, pub.LogLevel)
+					publishers = append(publishers, analytics_publisher.NewChoreo(cfg, cfg.ChoreoAnalyticsAuthURL, cfg.ChoreoAnalyticsAuthToken))
+					cfg.Logger.Info("Choreo publisher added")
 				}
 			}
 		}
