@@ -209,27 +209,6 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 		return
 	}
 	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
-	// jsonString = "{\"apiName\":\"oauth-api\",\"proxyResponseCode\":200,\"destination\":\"https://apk-test-setup-wso2-apk-idp-ds-service.apk-integration-test.svc:9443/oauth2\",\"apiCreatorTenantDomain\":\"apk-system\",\"platform\":\"Other\",\"apiMethod\":\"POST\",\"apiVersion\":\"1.0.0\",\"environmentId\":\"Default\",\"gatewayType\":\"Onprem\",\"apiCreator\":\"__unknown__\",\"responseCacheHit\":false,\"backendLatency\":13,\"correlationId\":\"0affad73-e0e2-4495-888b-a033ce642860\",\"requestMediationLatency\":9,\"keyType\":\"PRODUCTION\",\"apiId\":\"b01d4e1a-e3e0-4709-99e7-dfb27254c18e\",\"applicationName\":\"UNKNOWN\",\"targetResponseCode\":200,\"requestTimestamp\":\"2025-02-11T06:18:15.786Z\",\"applicationOwner\":\"anonymous\",\"userAgent\":\"curl\",\"eventType\":\"response\",\"apiResourceTemplate\":\"/oauth2/1.0.0/\",\"regionId\":\"UNKNOWN\",\"responseLatency\":22,\"responseMediationLatency\":0,\"userIp\":\"127.0.0.1\",\"apiContext\":\"/oauth2/1.0.0\",\"applicationId\":\"127.0.0.1\",\"apiType\":\"REST\"}"
-	// ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	// defer cancel()
-	// eventFromString := eventhub.NewEventFromString(jsonString)
-	// if eventFromString.Properties == nil {
-	// 	eventFromString.Properties = make(map[string]interface{})
-	// }
-	// eventFromString.Properties["token-hash"] = e.hashedToken
-	// e.cfg.Logger.Info(fmt.Sprintf("Event from string: %+v", eventFromString))
-	// // err = e.hub.Send(ctx, eventFromString)
-	// // if err != nil {
-	// // 	e.cfg.Logger.Error(err, "Error while sending event to Choreo")
-	// // }
-
-	// var events []*eventhub.Event
-	// events = append(events, eventFromString)
-
-	// err = e.hub.SendBatch(ctx, eventhub.NewEventBatchIterator(events...))
-	// if err != nil {
-	// 	e.cfg.Logger.Error(err, "Error while sending event to Choreo")
-	// }
 
 	newBatchOptions := &azeventhubs.EventDataBatchOptions{}
 
@@ -288,21 +267,49 @@ func (e *Choreo) publishFault(event *dto.Event) {
 		ErrorMessage:           event.Target.ResponseCodeDetail,
 	}
 
+	choreoResponseEvent.EnvironmentID = "Default"
+	choreoResponseEvent.GatewayType = "Onprem"
+	choreoResponseEvent.KeyType = "PRODUCTION"
+	if choreoResponseEvent.ApplicationOwner == "" {
+		choreoResponseEvent.ApplicationOwner = "anonymous"
+	}
+	setDefaultUnknown(choreoResponseEvent)
+
 	jsonString, err := util.ToJSONString(choreoResponseEvent)
 	if err != nil {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-	_ = jsonString
-	_ = ctx
-	// eventFromString := eventhub.NewEventFromString(jsonString)
-	// e.cfg.Logger.Info(fmt.Sprintf("Event from string: %+v", eventFromString))
-	// err = e.hub.Send(ctx, eventFromString)
-	// if err != nil {
-	// 	e.cfg.Logger.Error(err, "Error while sending event to Choreo")
-	// }
+	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
+
+	newBatchOptions := &azeventhubs.EventDataBatchOptions{}
+
+	batch, err := e.hub.NewEventDataBatch(context.TODO(), newBatchOptions)
+	if err != nil {
+		e.cfg.Logger.Error(err, "Error while creating new batch")
+		return
+	}
+	eventData := &azeventhubs.EventData{
+		Body: []byte(jsonString),
+	}
+	if eventData.Properties == nil {
+		eventData.Properties = make(map[string]interface{})
+	}
+	eventData.Properties["token-hash"] = e.hashedToken
+	eventData.CorrelationID = event.MetaInfo.CorrelationID
+	eventData.MessageID = &event.MetaInfo.CorrelationID
+	err = batch.AddEventData(eventData, nil)
+	if err != nil {
+		e.cfg.Logger.Error(err, "Error while adding event to batch")
+		return
+	}
+	e.cfg.Logger.Info(fmt.Sprintf("Batch: %+v\n json string : %+v \n\n\n %+v", batch, jsonString, eventData))
+	err = e.hub.SendEventDataBatch(context.TODO(), batch, nil)
+	if err != nil {
+		e.cfg.Logger.Error(err, "Error while sending batch")
+		return
+	}
+	e.cfg.Logger.Info("Event sent successfully")
 }
 
 func (e *Choreo) isFault(event *dto.Event) bool {
