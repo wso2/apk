@@ -4,15 +4,18 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
+	"reflect"
+
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-amqp-common-go/v4/auth"
-	eventhub "github.com/Azure/azure-event-hubs-go/v3"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azeventhubs"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
@@ -20,35 +23,28 @@ import (
 
 // Choreo represents the ELK publisher
 type Choreo struct {
-	logLevel    string
 	cfg         *config.Server
-	hub         *eventhub.Hub
+	hub         *azeventhubs.ProducerClient
 	hashedToken string
-}
-
-type choreoTokenProvider struct {
-	authURL string
-	token   string
-	cfg     *config.Server
 }
 
 type tokenResponse struct {
 	Token string `json:"token"`
 }
 
-func (c *choreoTokenProvider) GetToken(uri string) (*auth.Token, error) {
-	// clientCert, err := util.LoadCertificates(c.cfg.EnforcerPublicKeyPath, c.cfg.EnforcerPrivateKeyPath)
-	// if err != nil {
-	// 	panic(err)
-	// }
+// CustomCredential is your custom implementation of the TokenCredential interface.
+type CustomCredential struct {
+	authURL string
+	token   string
+	cfg     *config.Server
+}
 
-	// // Load the trusted CA certificates
-	// certPool, err := util.LoadCACertificates(c.cfg.TrustedAdapterCertsPath)
-	// if err != nil {
-	// 	panic(err)
-	// }
+// GetToken implements the azcore.TokenCredential interface.
+func (c *CustomCredential) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	// Implement your custom token retrieval logic here.
+	// For example, you might retrieve a token from a custom identity provider.
 
-	//Create the TLS configuration
+	// This is a placeholder implementation.
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true, // WARNING: This disables certificate verification
 	}
@@ -57,16 +53,20 @@ func (c *choreoTokenProvider) GetToken(uri string) (*auth.Token, error) {
 	}
 	response, err := util.MakeGETRequest(fmt.Sprintf("%s/%s", c.authURL, "token"), tlsConfig, headers)
 	if err != nil {
-		return nil, err
+		return azcore.AccessToken{}, err
 	}
 	var result tokenResponse
 	body, _ := ioutil.ReadAll(response.Body)
 	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
+		return azcore.AccessToken{}, err
 	}
 	log.Println("Applications: ", result)
-	return &auth.Token{
-		Token: result.Token,
+	token := result.Token
+	expiresOn := time.Now().Add(1 * time.Hour) // Token validity duration
+
+	return azcore.AccessToken{
+		Token:     token,
+		ExpiresOn: expiresOn,
 	}, nil
 }
 
@@ -82,10 +82,11 @@ func getResourceURI(sasToken string) string {
 
 func getNamespace(resourceURI string) string {
 	ns := strings.Split(resourceURI, "/")[0]
-	if strings.Contains(ns, ".") {
-		return strings.Split(ns, ".")[0]
-	}
 	return ns
+	// if strings.Contains(ns, ".") {
+	// 	return strings.Split(ns, ".")[0]
+	// }
+	// return ns
 }
 
 func getEventHubName(resourceURI string) string {
@@ -98,12 +99,12 @@ func getEventHubName(resourceURI string) string {
 
 // NewChoreo creates a new ELK publisher
 func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
-	ctp := &choreoTokenProvider{
+	ctp := &CustomCredential{
 		authURL: authURL,
 		token:   token,
 		cfg:     cfg,
 	}
-	tokenFromChoreo, err := ctp.GetToken(authURL)
+	tokenFromChoreo, err := ctp.GetToken(context.TODO(), policy.TokenRequestOptions{})
 
 	if err != nil {
 		cfg.Logger.Error(err, "Error while getting token from Choreo. Retrying in 5 seconds")
@@ -115,15 +116,17 @@ func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
 	ns := getNamespace(resourceURI)
 	eventHubName := getEventHubName(resourceURI)
 
-	cfg.Logger.Info(fmt.Sprintf("Resource URI: %s", resourceURI))
-	cfg.Logger.Info(fmt.Sprintf("Namespace: %s", ns))
-	cfg.Logger.Info(fmt.Sprintf("Event Hub Name: %s", eventHubName))
-
-	hub, err := eventhub.NewHub(ns, eventHubName, ctp)
+	// cfg.Logger.Info(fmt.Sprintf("Resource URI: %s", resourceURI))
+	// cfg.Logger.Info(fmt.Sprintf("Namespace: %s", ns))
+	// cfg.Logger.Info(fmt.Sprintf("Event Hub Name: %s", eventHubName))
+	// cred := azcore.NewSASCredential(tokenFromChoreo)
+	hub, err := azeventhubs.NewProducerClient(ns, eventHubName, ctp, nil)
+	// hub, err := eventhub.NewHub(ns, eventHubName, ctp)
 	if err != nil {
 		cfg.Logger.Error(err, "Error while creating event hub")
 		return nil
 	}
+	cfg.Logger.Info(fmt.Sprintf("Hashed token: %s", util.ComputeSHA256Hash(token)))
 	return &Choreo{
 		cfg:         cfg,
 		hub:         hub,
@@ -133,7 +136,7 @@ func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
 
 // Publish publishes the event to ELK
 func (e *Choreo) Publish(event *dto.Event) {
-	e.cfg.Logger.Info(fmt.Sprintf("Publishing event to Choreo: %v", event))
+	e.cfg.Logger.Info(fmt.Sprintf("Publishing event to Choreo: %+v", event))
 	defer func() {
 		if r := recover(); r != nil {
 			e.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic: %v", r))
@@ -144,6 +147,16 @@ func (e *Choreo) Publish(event *dto.Event) {
 		e.publishFault(event)
 	} else {
 		e.publishEvent(event)
+	}
+}
+
+func setDefaultUnknown(v interface{}) {
+	val := reflect.ValueOf(v).Elem()
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		if field.Kind() == reflect.String && field.String() == "" {
+			field.SetString("unknown")
+		}
 	}
 }
 
@@ -178,34 +191,75 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 		UserName:                 event.UserName,
 		UserIP:                   event.UserIP,
 		RequestTimestamp:         event.RequestTimestamp,
-		Properties:               event.Properties,
+		EventType:                "response",
+		// Properties:               event.Properties,
 	}
+	choreoResponseEvent.Platform = "Other"
+	choreoResponseEvent.EnvironmentID = "Default"
+	choreoResponseEvent.GatewayType = "Onprem"
+	choreoResponseEvent.KeyType = "PRODUCTION"
+	if choreoResponseEvent.ApplicationOwner == "" {
+		choreoResponseEvent.ApplicationOwner = "anonymous"
+	}
+	setDefaultUnknown(choreoResponseEvent)
 
 	jsonString, err := util.ToJSONString(choreoResponseEvent)
 	if err != nil {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-	eventFromString := eventhub.NewEventFromString(jsonString)
-	if eventFromString.Properties == nil {
-		eventFromString.Properties = make(map[string]interface{})
-	}
-	eventFromString.Properties["token-hash"] = e.hashedToken
-	e.cfg.Logger.Info(fmt.Sprintf("Event from string: %+v", eventFromString))
-	// err = e.hub.Send(ctx, eventFromString)
+	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
+	// jsonString = "{\"apiName\":\"oauth-api\",\"proxyResponseCode\":200,\"destination\":\"https://apk-test-setup-wso2-apk-idp-ds-service.apk-integration-test.svc:9443/oauth2\",\"apiCreatorTenantDomain\":\"apk-system\",\"platform\":\"Other\",\"apiMethod\":\"POST\",\"apiVersion\":\"1.0.0\",\"environmentId\":\"Default\",\"gatewayType\":\"Onprem\",\"apiCreator\":\"__unknown__\",\"responseCacheHit\":false,\"backendLatency\":13,\"correlationId\":\"0affad73-e0e2-4495-888b-a033ce642860\",\"requestMediationLatency\":9,\"keyType\":\"PRODUCTION\",\"apiId\":\"b01d4e1a-e3e0-4709-99e7-dfb27254c18e\",\"applicationName\":\"UNKNOWN\",\"targetResponseCode\":200,\"requestTimestamp\":\"2025-02-11T06:18:15.786Z\",\"applicationOwner\":\"anonymous\",\"userAgent\":\"curl\",\"eventType\":\"response\",\"apiResourceTemplate\":\"/oauth2/1.0.0/\",\"regionId\":\"UNKNOWN\",\"responseLatency\":22,\"responseMediationLatency\":0,\"userIp\":\"127.0.0.1\",\"apiContext\":\"/oauth2/1.0.0\",\"applicationId\":\"127.0.0.1\",\"apiType\":\"REST\"}"
+	// ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	// defer cancel()
+	// eventFromString := eventhub.NewEventFromString(jsonString)
+	// if eventFromString.Properties == nil {
+	// 	eventFromString.Properties = make(map[string]interface{})
+	// }
+	// eventFromString.Properties["token-hash"] = e.hashedToken
+	// e.cfg.Logger.Info(fmt.Sprintf("Event from string: %+v", eventFromString))
+	// // err = e.hub.Send(ctx, eventFromString)
+	// // if err != nil {
+	// // 	e.cfg.Logger.Error(err, "Error while sending event to Choreo")
+	// // }
+
+	// var events []*eventhub.Event
+	// events = append(events, eventFromString)
+
+	// err = e.hub.SendBatch(ctx, eventhub.NewEventBatchIterator(events...))
 	// if err != nil {
 	// 	e.cfg.Logger.Error(err, "Error while sending event to Choreo")
 	// }
 
-	var events []*eventhub.Event
-	events = append(events, eventFromString)
+	newBatchOptions := &azeventhubs.EventDataBatchOptions{}
 
-	err = e.hub.SendBatch(ctx, eventhub.NewEventBatchIterator(events...))
+	batch, err := e.hub.NewEventDataBatch(context.TODO(), newBatchOptions)
 	if err != nil {
-		e.cfg.Logger.Error(err, "Error while sending event to Choreo")
+		e.cfg.Logger.Error(err, "Error while creating new batch")
+		return
 	}
+	eventData := &azeventhubs.EventData{
+		Body: []byte(jsonString),
+	}
+	if eventData.Properties == nil {
+		eventData.Properties = make(map[string]interface{})
+	}
+	eventData.Properties["token-hash"] = e.hashedToken
+	eventData.CorrelationID = event.MetaInfo.CorrelationID
+	eventData.MessageID = &event.MetaInfo.CorrelationID
+	err = batch.AddEventData(eventData, nil)
+	if err != nil {
+		e.cfg.Logger.Error(err, "Error while adding event to batch")
+		return
+	}
+	e.cfg.Logger.Info(fmt.Sprintf("Batch: %+v\n json string : %+v \n\n\n %+v", batch, jsonString, eventData))
+	err = e.hub.SendEventDataBatch(context.TODO(), batch, nil)
+	if err != nil {
+		e.cfg.Logger.Error(err, "Error while sending batch")
+		return
+	}
+	e.cfg.Logger.Info("Event sent successfully")
+
 }
 
 func (e *Choreo) publishFault(event *dto.Event) {
@@ -241,12 +295,14 @@ func (e *Choreo) publishFault(event *dto.Event) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	eventFromString := eventhub.NewEventFromString(jsonString)
-	e.cfg.Logger.Info(fmt.Sprintf("Event from string: %+v", eventFromString))
-	err = e.hub.Send(ctx, eventFromString)
-	if err != nil {
-		e.cfg.Logger.Error(err, "Error while sending event to Choreo")
-	}
+	_ = jsonString
+	_ = ctx
+	// eventFromString := eventhub.NewEventFromString(jsonString)
+	// e.cfg.Logger.Info(fmt.Sprintf("Event from string: %+v", eventFromString))
+	// err = e.hub.Send(ctx, eventFromString)
+	// if err != nil {
+	// 	e.cfg.Logger.Error(err, "Error while sending event to Choreo")
+	// }
 }
 
 func (e *Choreo) isFault(event *dto.Event) bool {

@@ -87,7 +87,7 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
-				resource := buildResource(operation, resource.Path, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), func() []*requestconfig.EndpointSecurity {
+				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), func() []*requestconfig.EndpointSecurity {
 					endpointSecurity := make([]*requestconfig.EndpointSecurity, len(resource.EndpointSecurity))
 					for i, es := range resource.EndpointSecurity {
 						endpointSecurity[i] = &requestconfig.EndpointSecurity{
@@ -103,6 +103,7 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 				customAPI.Resources = append(customAPI.Resources, &resource)
 				customAPI.ResourceMap[resource.GetResourceIdentifier()] = &resource
 			}
+
 		}
 		s.cfg.Logger.Info(fmt.Sprintf("Adding API: %+v", customAPI.BackendJwtConfiguration))
 		s.apis[util.PrepareAPIKey(api.Vhost, api.BasePath, api.Version)] = &customAPI

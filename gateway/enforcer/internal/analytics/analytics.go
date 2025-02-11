@@ -34,6 +34,9 @@ type EventCategory string
 // FaultCategory represents the category of a fault.
 type FaultCategory string
 
+// RFC3339Millis represents the RFC3339 date format with milliseconds.
+const RFC3339Millis = "2006-01-02T15:04:05.000Z07:00"
+
 const (
 	// EventCategorySuccess represents a successful event.
 	EventCategorySuccess EventCategory = "SUCCESS"
@@ -53,16 +56,16 @@ const (
 	ELKAnalyticsPublisher = "elk"
 
 	// PromptTokenCountMetadataKey represents the prompt token count metadata key.
-	PromptTokenCountMetadataKey     string = "aitoken:prompttokencount"
+	PromptTokenCountMetadataKey string = "aitoken:prompttokencount"
 	// CompletionTokenCountMetadataKey represents the completion token count metadata key.
 	CompletionTokenCountMetadataKey string = "aitoken:completiontokencount"
 	// TotalTokenCountMetadataKey represents the total token count metadata key.
-	TotalTokenCountMetadataKey      string = "aitoken:totaltokencount"
+	TotalTokenCountMetadataKey string = "aitoken:totaltokencount"
 	// ModelIDMetadataKey represents the model name metadata key.
-	ModelIDMetadataKey              string = "aitoken:modelid"
+	ModelIDMetadataKey string = "aitoken:modelid"
 
 	// AIProviderNameMetadataKey represents the AI provider metadata key.
-	AIProviderNameMetadataKey       string = "ai:providername"
+	AIProviderNameMetadataKey string = "ai:providername"
 	// AIProviderAPIVersionMetadataKey represents the AI provider API version metadata key.
 	AIProviderAPIVersionMetadataKey string = "ai:providerversion"
 )
@@ -96,8 +99,13 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 				case strings.ToLower(MoesifAnalyticsPublisher):
 					// publisher := publishers.NewMoesif(cfg, pub.LogLevel)
 				case strings.ToLower(DefaultAnalyticsPublisher):
-					publishers = append(publishers, analytics_publisher.NewChoreo(cfg, cfg.ChoreoAnalyticsAuthURL, cfg.ChoreoAnalyticsAuthToken))
-					cfg.Logger.Info("Choreo publisher added")
+					publisher := analytics_publisher.NewChoreo(cfg, cfg.ChoreoAnalyticsAuthURL, cfg.ChoreoAnalyticsAuthToken)
+					if publisher == nil {
+						cfg.Logger.Error(nil, "Error while creating Choreo publisher")
+					} else {
+						publishers = append(publishers, publisher)
+						cfg.Logger.Info("Choreo publisher added")
+					}
 				}
 			}
 		}
@@ -143,6 +151,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	if logEntry.CommonProperties != nil && logEntry.CommonProperties.Metadata != nil && logEntry.CommonProperties.Metadata.FilterMetadata != nil {
 		if sv, exists := logEntry.CommonProperties.Metadata.FilterMetadata[ExtProcMetadataContextKey]; exists {
 			if sv.Fields != nil {
+				c.cfg.Logger.Info(fmt.Sprintf("Filter metadata: %+v", sv))
 				for key, value := range sv.Fields {
 					if value != nil {
 						keyValuePairsFromMetadata[key] = value.GetStringValue()
@@ -152,7 +161,9 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 		}
 	}
 	event := &dto.Event{}
-
+	for key, value := range keyValuePairsFromMetadata {
+		c.cfg.Logger.Info(fmt.Sprintf("Metadata key: %s, value: %s", key, value))
+	}
 	// Prepare extended API
 	extendedAPI := dto.ExtendedAPI{}
 	extendedAPI.APIType = keyValuePairsFromMetadata[APITypeKey]
@@ -168,7 +179,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	// Prepare operation
 	operation := dto.Operation{}
 	operation.APIResourceTemplate = keyValuePairsFromMetadata[APIResourceTemplateKey]
-	operation.APIMethod = keyValuePairsFromMetadata[logEntry.Request.GetRequestMethod().String()]
+	operation.APIMethod = logEntry.Request.GetRequestMethod().String()
 
 	// Prepare target
 	target := dto.Target{}
@@ -235,7 +246,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	event.UserName = userName
 	event.UserIP = userIP
 	event.ProxyResponseCode = int(logEntry.GetResponse().GetResponseCode().Value)
-	event.RequestTimestamp = logEntry.GetCommonProperties().GetStartTime().String()
+	event.RequestTimestamp = logEntry.GetCommonProperties().GetStartTime().AsTime().Format(RFC3339Millis)
 	event.Properties = make(map[string]interface{}, 0)
 
 	aiMetadata := dto.AIMetadata{}

@@ -50,7 +50,7 @@ type Resource struct {
 	MatchID                 string                                 `json:"matchID"`                 // The match ID for the resource
 	Method                  HTTPMethods                            `json:"method"`                  // The HTTP method (GET, POST, etc.)
 	Tier                    string                                 `json:"tier"`                    // The tier of the resource (default is "Unlimited")
-	Endpoints               EndpointCluster                        `json:"endpoints"`               // Endpoint cluster for the resource
+	Endpoints               *EndpointCluster                        `json:"endpoints"`               // Endpoint cluster for the resource
 	EndpointSecurity        []*EndpointSecurity                    `json:"endpointSecurity"`        // Endpoint security configurations
 	PolicyConfig            PolicyConfig                           `json:"policyConfig"`            // Policy configurations for the resource
 	AuthenticationConfig    *auth.AuthenticationConfig             `json:"authenticationConfig"`    // Authentication configuration

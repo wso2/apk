@@ -214,6 +214,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			dynamicMetadataKeyValuePairs[customOrgMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
 
 			dynamicMetadataKeyValuePairs[matchedAPIMetadataKey] = apiKey
+			dynamicMetadataKeyValuePairs[analytics.APITypeKey] = requestConfigHolder.MatchedAPI.APIType
+			dynamicMetadataKeyValuePairs[analytics.APIIDKey] = requestConfigHolder.MatchedAPI.UUID
+			dynamicMetadataKeyValuePairs[analytics.APINameKey] = requestConfigHolder.MatchedAPI.Name
+			dynamicMetadataKeyValuePairs[analytics.APIVersionKey] = requestConfigHolder.MatchedAPI.Version
+			dynamicMetadataKeyValuePairs[analytics.APIContextKey] = requestConfigHolder.MatchedAPI.BasePath
+			dynamicMetadataKeyValuePairs[analytics.APIOrganizationIDKey] = requestConfigHolder.MatchedAPI.OrganizationID
+			dynamicMetadataKeyValuePairs[analytics.APICreatorTenantDomainKey] = requestConfigHolder.MatchedAPI.OrganizationID
+
+
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if requestConfigHolder.MatchedAPI != nil && requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {
 				definitionPath := requestConfigHolder.MatchedAPI.APIDefinitionPath
@@ -263,10 +272,16 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 			}
 			s.cfg.Logger.Info(fmt.Sprintf("Metadata context : %+v", req.GetMetadataContext()))
+			
 			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			if requestConfigHolder.MatchedResource != nil {
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 				dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
+				dynamicMetadataKeyValuePairs[analytics.APIResourceTemplateKey] = requestConfigHolder.MatchedResource.Path
+				s.log.Info(fmt.Sprintf("Matched Resource Endpoints: %+v", requestConfigHolder.MatchedResource.Endpoints))
+				if requestConfigHolder.MatchedResource.Endpoints!= nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
+					dynamicMetadataKeyValuePairs[analytics.DestinationKey] =  requestConfigHolder.MatchedResource.Endpoints.URLs[0]
+				}
 			}
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
