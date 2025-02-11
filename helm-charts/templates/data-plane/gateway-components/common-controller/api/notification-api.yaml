@@ -118,5 +118,6 @@ spec:
     group: ""
     kind: "API"
     name: "{{ template "apk-helm.resource.prefix" . }}-wso2-apk-notification-api"
+    namespace: {{ .Release.Namespace }}
 ---
 {{- end}}

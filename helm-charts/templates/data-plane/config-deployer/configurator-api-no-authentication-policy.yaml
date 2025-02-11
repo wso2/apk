@@ -30,4 +30,5 @@ spec:
     group: ""
     kind: "API"
     name: "{{ template "apk-helm.resource.prefix" . }}-wso2-apk-config-generator-api"
+    namespace: {{ .Release.Namespace }}
 {{- end -}}
