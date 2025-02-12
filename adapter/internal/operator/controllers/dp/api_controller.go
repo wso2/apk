@@ -831,7 +831,7 @@ func (apiReconciler *APIReconciler) getAuthenticationsForResources(ctx context.C
 	}
 	for item := range authenticationList.Items {
 		authenticationListItem := authenticationList.Items[item]
-		if authenticationListItem.Spec.TargetRef.Name != v1alpha2.ObjectName(api.Name) {
+		if authenticationListItem.Spec.TargetRef.Name == v1alpha2.ObjectName(api.Name) {
 			authentications[utils.NamespacedName(&authenticationListItem).String()] = authenticationListItem
 		}
 	}
