@@ -280,7 +280,10 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				continue
 			}
 			if !envoyInternalAPI.adapterInternalAPI.GetDisableAuthentications() {
-				jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = oasParser.GetJWTRequirements(envoyInternalAPI.adapterInternalAPI, orgwizeJWTProviders[organizationID])
+				jwtRequirements := oasParser.GetJWTRequirements(envoyInternalAPI.adapterInternalAPI, orgwizeJWTProviders[organizationID])
+				if jwtRequirements != nil {
+					jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirements
+				}
 			}
 			vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 			if err != nil {
