@@ -380,6 +380,8 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 		})
 	}
 
+	loggers.LoggerOasparser.Infof("vhostToSubscriptionAIRL: %+v", vhostToSubscriptionAIRL)
+	loggers.LoggerOasparser.Infof("vhostToSubscriptionRL: %+v", vhostToSubscriptionRL)
 	for vhost, routes := range vhostToRouteArrayMap {
 		if flag, exists := vhostToSubscriptionAIRL[vhost]; exists && flag {
 			rateLimits = append(rateLimits, generateSubscriptionBasedAIRatelimits()...)
@@ -395,6 +397,7 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 		}
 		virtualHosts = append(virtualHosts, virtualHost)
 	}
+	loggers.LoggerOasparser.Infof("VirtualHosts: %+v", virtualHosts)
 	return virtualHosts
 }
 
@@ -406,7 +409,7 @@ func generateSubscriptionBasedRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForOrganization,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -424,7 +427,7 @@ func generateSubscriptionBasedRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForSubscription,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -442,7 +445,7 @@ func generateSubscriptionBasedRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForPolicy,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -463,7 +466,7 @@ func generateSubscriptionBasedRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForOrganization,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -481,7 +484,7 @@ func generateSubscriptionBasedRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForSubscription,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -499,7 +502,7 @@ func generateSubscriptionBasedRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForPolicy,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -533,7 +536,7 @@ func generateSubscriptionBasedAIRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForAIRequestTokenCountForSubscriptionBasedAIRL,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								&metadatav3.MetadataKey_PathSegment{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -551,7 +554,7 @@ func generateSubscriptionBasedAIRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForAISubscription,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								&metadatav3.MetadataKey_PathSegment{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -573,7 +576,7 @@ func generateSubscriptionBasedAIRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForAIResponseTokenCountForSubscriptionBasedAIRL,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								&metadatav3.MetadataKey_PathSegment{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -591,7 +594,7 @@ func generateSubscriptionBasedAIRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForAISubscription,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								&metadatav3.MetadataKey_PathSegment{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -613,7 +616,7 @@ func generateSubscriptionBasedAIRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForAIRequestCountForSubscriptionBasedAIRL,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								&metadatav3.MetadataKey_PathSegment{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -631,7 +634,7 @@ func generateSubscriptionBasedAIRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForAISubscription,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								&metadatav3.MetadataKey_PathSegment{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -653,7 +656,7 @@ func generateSubscriptionBasedAIRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForAITotalTokenCountForSubscriptionBasedAIRL,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								&metadatav3.MetadataKey_PathSegment{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
@@ -671,7 +674,7 @@ func generateSubscriptionBasedAIRatelimits() []*routev3.RateLimit {
 					Metadata: &routev3.RateLimit_Action_MetaData{
 						DescriptorKey: DescriptorKeyForAISubscription,
 						MetadataKey: &metadatav3.MetadataKey{
-							Key: extAuthzFilterName,
+							Key: extProcFilterName,
 							Path: []*metadatav3.MetadataKey_PathSegment{
 								&metadatav3.MetadataKey_PathSegment{
 									Segment: &metadatav3.MetadataKey_PathSegment_Key{
