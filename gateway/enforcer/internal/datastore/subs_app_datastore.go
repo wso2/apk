@@ -300,7 +300,7 @@ func (ds *SubscriptionApplicationDataStore) loadAllApplications() (*subscription
 	if err != nil {
 		return nil, fmt.Errorf("failed to get TLS config: %w", err)
 	}
-	resp, err := util.MakeGETRequest(url, tlsConfig)
+	resp, err := util.MakeGETRequest(url, tlsConfig, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +323,7 @@ func (ds *SubscriptionApplicationDataStore) loadAllSubscriptions() (*subscriptio
 	if err != nil {
 		return nil, fmt.Errorf("failed to get TLS config: %w", err)
 	}
-	resp, err := util.MakeGETRequest(url, tlsConfig)
+	resp, err := util.MakeGETRequest(url, tlsConfig, nil)
 	log.Println("Response: ", resp)
 	if err != nil {
 		return nil, err
@@ -346,7 +346,7 @@ func (ds *SubscriptionApplicationDataStore) loadAllApplicationMappings() (*subsc
 	if err != nil {
 		return nil, fmt.Errorf("failed to get TLS config: %w", err)
 	}
-	resp, err := util.MakeGETRequest(url, tlsConfig)
+	resp, err := util.MakeGETRequest(url, tlsConfig, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +367,7 @@ func (ds *SubscriptionApplicationDataStore) loadAllApplicationKeyMappings() (*su
 	if err != nil {
 		return nil, fmt.Errorf("failed to get TLS config: %w", err)
 	}
-	resp, err := util.MakeGETRequest(url, tlsConfig)
+	resp, err := util.MakeGETRequest(url, tlsConfig, nil)
 	if err != nil {
 		return nil, err
 	}

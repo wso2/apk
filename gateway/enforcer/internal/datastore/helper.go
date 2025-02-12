@@ -18,6 +18,8 @@
 package datastore
 
 import (
+	"strconv"
+
 	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	auth "github.com/wso2/apk/gateway/enforcer/internal/authentication/authconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
@@ -25,7 +27,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
-func buildResource(operation *api.Operation, path string, aiModelBasedRoundRobin *dto.AIModelBasedRoundRobin, endpointSecurity []*requestconfig.EndpointSecurity) requestconfig.Resource {
+func buildResource(operation *api.Operation, path string, endpointCluster *api.EndpointCluster, aiModelBasedRoundRobin *dto.AIModelBasedRoundRobin, endpointSecurity []*requestconfig.EndpointSecurity) requestconfig.Resource {
 	authConfig := auth.AuthenticationConfig{
 		Disabled: operation.ApiAuthentication.Disabled,
 	}
@@ -62,6 +64,22 @@ func buildResource(operation *api.Operation, path string, aiModelBasedRoundRobin
 		AuthenticationConfig:   &authConfig,
 		Scopes:                 operation.Scopes,
 		AIModelBasedRoundRobin: aiModelBasedRoundRobin,
+		Endpoints:              buildEndpointCluster(endpointCluster),
+	}
+}
+
+func buildEndpointCluster(endpointCluster *api.EndpointCluster) *requestconfig.EndpointCluster {
+	if endpointCluster == nil {
+		return nil
+	}
+	return &requestconfig.EndpointCluster{
+		URLs: func() []string {
+			urls := make([]string, len(endpointCluster.Urls))
+			for i, endpoint := range endpointCluster.Urls {
+				urls[i] = endpoint.URLType + "://" + endpoint.Host + ":" + strconv.Itoa(int(endpoint.Port)) + endpoint.Basepath
+			}
+			return urls
+		}(),
 	}
 }
 
