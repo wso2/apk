@@ -9,7 +9,7 @@ Feature: CORS Policy
     Then the response status code should be 200
     And I wait for next minute
     And I send "OPTIONS" request to "https://default.gw.wso2.com:9095/test_cors/2.0.0/anything/" with body ""
-    And I eventually receive 204 response code, not accepting
+    And I eventually receive 200 response code, not accepting
       | 429 |
     And the response headers should not contain
       | Access-Control-Allow-Origin      |
@@ -20,7 +20,7 @@ Feature: CORS Policy
     Then I set headers
       | Origin | test.domain.com |
     And I send "OPTIONS" request to "https://default.gw.wso2.com:9095/test_cors/2.0.0/anything/" with body ""
-    And I eventually receive 204 response code, not accepting
+    And I eventually receive 200 response code, not accepting
       | 429 |
     And the response headers should not contain
       | Access-Control-Allow-Origin      |
@@ -31,7 +31,7 @@ Feature: CORS Policy
     Then I set headers
       | Origin | abc.com |
     And I send "OPTIONS" request to "https://default.gw.wso2.com:9095/test_cors/2.0.0/anything/" with body ""
-    And I eventually receive 204 response code, not accepting
+    And I eventually receive 200 response code, not accepting
       | 429 |
     And the response headers should contain
       | Access-Control-Allow-Origin      | abc.com |
