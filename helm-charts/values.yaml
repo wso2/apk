@@ -383,12 +383,13 @@ postgresql:
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
+      fsGroup: 1001
     containerSecurityContext:
       enabled: true
       allowPrivilegeEscalation: false
       capabilities:
         drop: ["ALL"]
-      runAsUser: null
+      runAsUser: 1001
 
   image:
     debug: true
@@ -407,12 +408,13 @@ redis:
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault
+      fsGroup: 1001
     containerSecurityContext:
       enabled: true
       allowPrivilegeEscalation: false
       capabilities:
         drop: ["ALL"]
-      runAsUser: null
+      runAsUser: 1001
   auth:
     enabled: false
   image:
