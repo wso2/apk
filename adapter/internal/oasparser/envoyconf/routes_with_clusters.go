@@ -1335,6 +1335,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		if !strings.Contains(methodRegex, "OPTIONS") {
 			methodRegex = methodRegex + "|OPTIONS"
 		}
+
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
 		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
@@ -1351,8 +1352,12 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			}
 			// action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, newRoutePath, pathMatchType)
 		}
+		var authentication *model.Authentication
+		if len(resource.GetOperations()) > 0 {
+			authentication = resource.GetOperations()[0].GetAuthentication()
+		}
 		route := generateRouteConfig(xWso2Basepath, nil, match, action, nil, metaData, decorator, perRouteFilterConfigs,
-			nil, requestHeadersToRemove, nil, nil, nil) // general headers to add and remove are included in this methods
+			nil, requestHeadersToRemove, nil, nil, authentication) // general headers to add and remove are included in this methods
 		routes = append(routes, route)
 	}
 	return routes, nil
