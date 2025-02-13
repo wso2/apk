@@ -20,9 +20,11 @@ package extproc
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"strconv"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -222,14 +224,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			dynamicMetadataKeyValuePairs[analytics.APIOrganizationIDKey] = requestConfigHolder.MatchedAPI.OrganizationID
 			dynamicMetadataKeyValuePairs[analytics.APICreatorTenantDomainKey] = requestConfigHolder.MatchedAPI.OrganizationID
 
-
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if requestConfigHolder.MatchedAPI != nil && requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {
 				definitionPath := requestConfigHolder.MatchedAPI.APIDefinitionPath
-				fileName := "attachment; filename=\"api_definition.json\""
-				if requestConfigHolder.MatchedAPI.IsGraphQLAPI() {
-					fileName = "attachment; filename=\"api_definition.graphql\""
-				}
 				s.cfg.Logger.Info(fmt.Sprintf("definition Path: %v", definitionPath))
 				fullPath := requestConfigHolder.MatchedAPI.BasePath + requestConfigHolder.MatchedAPI.APIDefinitionPath
 				if attributes.Path == fullPath {
@@ -238,6 +235,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					decompressedStr, err := ReadGzip(definition)
 					if err != nil {
 						s.cfg.Logger.Error(err, "Error reading api definition gzip")
+					}
+					fileName, contentType := getFileNameAndContentTypeForDef(requestConfigHolder.MatchedAPI)
+					responseBody := []byte(decompressedStr)
+					// for grpc apis, the definition might be a zip file
+					if contentType == "application/zip" {
+						reader, _ := gzip.NewReader(bytes.NewReader([]byte(requestConfigHolder.MatchedAPI.APIDefinition)))
+						defer reader.Close()
+						decompressedData, _ := io.ReadAll(reader)
+						responseBody, _ = base64.StdEncoding.DecodeString(string(decompressedData))
 					}
 					s.cfg.Logger.Info(fmt.Sprintf("decompressed definition: %v", decompressedStr))
 					if definition != nil {
@@ -252,7 +258,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 											{
 												Header: &corev3.HeaderValue{
 													Key:      "Content-Type",
-													RawValue: []byte("application/octet-stream"),
+													RawValue: []byte(contentType),
 												},
 											},
 											{
@@ -263,7 +269,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 											},
 										},
 									},
-									Body: []byte(decompressedStr),
+									Body: responseBody,
 								},
 							},
 						}
@@ -272,15 +278,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 			}
 			s.cfg.Logger.Info(fmt.Sprintf("Metadata context : %+v", req.GetMetadataContext()))
-			
+
 			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			if requestConfigHolder.MatchedResource != nil {
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 				dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
 				dynamicMetadataKeyValuePairs[analytics.APIResourceTemplateKey] = requestConfigHolder.MatchedResource.Path
 				s.log.Info(fmt.Sprintf("Matched Resource Endpoints: %+v", requestConfigHolder.MatchedResource.Endpoints))
-				if requestConfigHolder.MatchedResource.Endpoints!= nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
-					dynamicMetadataKeyValuePairs[analytics.DestinationKey] =  requestConfigHolder.MatchedResource.Endpoints.URLs[0]
+				if requestConfigHolder.MatchedResource.Endpoints != nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
+					dynamicMetadataKeyValuePairs[analytics.DestinationKey] = requestConfigHolder.MatchedResource.Endpoints.URLs[0]
 				}
 			}
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
@@ -290,7 +296,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
-			
+
 			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
 			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
 			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
@@ -891,6 +897,47 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.log.Info(fmt.Sprintf("send error %v", err))
 		}
 	}
+}
+
+func getFileNameAndContentTypeForDef(matchedAPI *requestconfig.API) (string, string) {
+	fileName := "attachment; filename=\"api_definition.json\""
+	contentType := "application/octet-stream"
+	if matchedAPI.IsGraphQLAPI() {
+		fileName = "attachment; filename=\"api_definition.graphql\""
+	}
+	if matchedAPI.IsgRPCAPI() {
+		fileType, _ := DetectFileType([]byte(matchedAPI.APIDefinition))
+
+		if fileType == "proto" {
+			return "attachment; filename=\"api_definition.proto\"", contentType
+		}
+		if fileType == "zip" {
+			return "attachment; filename=\"api_definition.zip\"", "application/zip"
+		}
+	}
+
+	return fileName, contentType
+}
+
+// DetectFileType detects if the file is a .proto or .zip
+func DetectFileType(data []byte) (string, error) {
+
+	reader, err := gzip.NewReader(bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	defer reader.Close()
+
+	decompressedData, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return "", err
+	}
+
+	if bytes.Contains(decompressedData, []byte("syntax = ")) {
+		return "proto", nil
+	}
+
+	return "zip", nil
 }
 
 // extractExternalProcessingMetadata extracts the external processing metadata from the given data.

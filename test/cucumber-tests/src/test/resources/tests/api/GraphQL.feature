@@ -5,6 +5,27 @@ Feature: Generating APK conf for GraphQL API
         And generate the APK conf file for a "GRAPHQL" API
         Then the response status code should be 200
 
+    Scenario: Get API definition from a GraphQL API 
+        Given The system is ready
+        And I have a valid subscription
+        When I use the APK Conf file "artifacts/apk-confs/graphql/graphql_conf_without_sub.apk-conf"
+        And the definition file "artifacts/definitions/graphql_sample_api.graphql"
+        And make the API deployment request
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization | Bearer ${accessToken} |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/graphql/3.14/api-definition" with body ""
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
+        And the response body should be "artifacts/definitions/graphql_sample_api.graphql" in resources
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "graphql-without-sub"
+        Then the response status code should be 202
+
     Scenario: Deploying APK conf using a valid GraphQL API definition without a subscription resource
         Given The system is ready
         And I have a valid subscription

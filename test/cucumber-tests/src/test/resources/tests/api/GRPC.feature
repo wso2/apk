@@ -46,13 +46,36 @@ Feature: Generating APK conf for gRPC API
         And I eventually receive 200 response code, not accepting
             | 429 |
             | 500 |
-        And the response body should contain endpoint definition for student.proto
+        And the response body should be "artifacts/definitions/student.proto" in resources
 
 
     Scenario: Undeploy API
         Given The system is ready
         And I have a valid subscription
         When I undeploy the API whose ID is "grpc-basic-api"
+        Then the response status code should be 202
+
+    Scenario: Checking api-definition endpoint to get zip API definition file
+        Given The system is ready
+        And I have a valid subscription
+        When I use the APK Conf file "artifacts/apk-confs/grpc/order-with-endpoints.apk-conf"
+        And the definition file "artifacts/definitions/order-definition.zip"
+        And make the API deployment request
+        Then the response status code should be 200
+        Then I set headers
+            | Authorization | Bearer ${accessToken} |
+            | Host          | default.gw.wso2.com   |
+        And I send "GET" request to "https://default.gw.wso2.com:9095/grpcapi.v1/api-definition/" with body ""
+        And I eventually receive 200 response code, not accepting
+            | 429 |
+            | 500 |
+        And the response body should be "artifacts/definitions/order-definition.zip" in resources
+
+
+    Scenario: Undeploy API
+        Given The system is ready
+        And I have a valid subscription
+        When I undeploy the API whose ID is "grpc-order-api"
         Then the response status code should be 202
 
     Scenario: Deploying gRPC API with OAuth2 disabled
