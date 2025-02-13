@@ -195,6 +195,9 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 		}
 		action.Route.RetryPolicy = retryPolicy
 	}
+	if routeConfig != nil && routeConfig.TimeoutInMillis != 0 {
+		action.Route.Timeout = durationpb.New(time.Duration(routeConfig.TimeoutInMillis) * time.Millisecond)
+	}
 
 	if ratelimitCriteria != nil && ratelimitCriteria.level != "" {
 		action.Route.RateLimits = generateRateLimitPolicy(ratelimitCriteria)
