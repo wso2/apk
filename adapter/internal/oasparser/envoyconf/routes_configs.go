@@ -189,6 +189,9 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			RetryBackOff: &routev3.RetryPolicy_RetryBackOff{
 				BaseInterval: durationpb.New(time.Duration(routeConfig.RetryConfig.BaseIntervalInMillis) * time.Millisecond),
 			},
+			RetryOn: "retriable-status-codes",
+			RetriableStatusCodes: routeConfig.RetryConfig.StatusCodes,
+			NumRetries: 		 &wrapperspb.UInt32Value{Value: uint32(routeConfig.RetryConfig.Count)},
 		}
 		action.Route.RetryPolicy = retryPolicy
 	}
