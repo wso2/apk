@@ -314,7 +314,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 				if requestConfigHolder.MatchedSubscription != nil && requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
 					loggers.LoggerAPK.Info(fmt.Sprintf("Ratelimit Tier: %s", requestConfigHolder.MatchedSubscription.RatelimitTier))
-					dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = requestConfigHolder.MatchedSubscription.UUID
+					dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = fmt.Sprintf("%s:%s%s", requestConfigHolder.MatchedSubscription.SubscribedAPI.Name, requestConfigHolder.MatchedApplication.UUID, requestConfigHolder.MatchedSubscription.UUID)
 					dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = requestConfigHolder.MatchedSubscription.RatelimitTier
 					dynamicMetadataKeyValuePairs[organizationMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
 					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", requestConfigHolder.MatchedAPI.OrganizationID, requestConfigHolder.MatchedSubscription.RatelimitTier)
@@ -800,9 +800,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AiProvider.PromptTokens != nil &&
 				matchedAPI.AiProvider.TotalToken != nil &&
 				matchedResource.RouteMetadataAttributes != nil &&
-				matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true" &&
 				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-				s.log.Info("Backend based AI rate limit enabled using body")
+				s.log.Info("AI rate limit enabled using body")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
@@ -811,7 +810,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {
-					go s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
+					go s.ratelimitHelper.DoAIRatelimit(*tokenCount, matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true",
 						matchedAPI.DoSubscriptionAIRLInBodyReponse,
 						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
 						matchedSubscription, matchedApplication)

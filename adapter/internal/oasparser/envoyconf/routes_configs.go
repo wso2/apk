@@ -48,6 +48,7 @@ const (
 	DescriptorKeyForPolicy       = "policy"
 	DescriptorKeyForOrganization = "organization"
 	extAuthzFilterName           = "envoy.filters.http.ext_authz"
+	extProcFilterName           = "envoy.filters.http.ext_proc"
 
 	descriptorMetadataKeyForSubscription          = "ratelimit:subscription"
 	descriptorMetadataKeyForUsagePolicy           = "ratelimit:usage-policy"

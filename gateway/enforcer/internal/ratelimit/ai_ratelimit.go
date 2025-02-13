@@ -204,7 +204,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, promptPath, completionPath, totalPath, modelPath string) (*TokenCountAndModel, error) {
 	bodyStr, err := ReadGzip(body)
 	if err != nil {
-		return nil, fmt.Errorf("error reading body gzip: %w", err)
+		bodyStr = string(body)
 	}
 	sanitizedBody := sanitize(bodyStr)
 	tokenCount, err := extractUsageFromBody(sanitizedBody, promptPath, completionPath, totalPath, "model")
@@ -217,6 +217,10 @@ func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, promptPath
 
 // ReadGzip decompresses a GZIP-compressed byte slice and returns the string output
 func ReadGzip(gzipData []byte) (string, error) {
+	asString := string(gzipData)
+	if util.IsValidJSON(asString) {
+		return asString, nil
+	}
 	// Create a bytes.Reader from the gzip data
 	byteReader := bytes.NewReader(gzipData)
 
