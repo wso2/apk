@@ -77,15 +77,15 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Host: "",
+						Host:   "",
 						Method: "OPTIONS",
 					},
 				},
 				Response: http.Response{
 					Headers: map[string]string{
-						"allow":      "OPTIONS, GET",
+						"allow": "OPTIONS, GET",
 					},
-					StatusCode: 204,
+					StatusCode: 200,
 				},
 			},
 			{
@@ -156,7 +156,7 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 					Headers: map[string]string{
 						"allow": "OPTIONS, GET",
 					},
-					StatusCode: 204,
+					StatusCode: 200,
 				},
 			},
 			{
