@@ -175,6 +175,7 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*d
 					URLType:     string(backend.Protocol),
 					Certificate: []byte(backend.TLS.ResolvedCertificate),
 					AllowedSANs: backend.TLS.AllowedSANs,
+					Weight: 	 backend.Weight,
 				})
 			}
 		}

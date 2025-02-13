@@ -29,6 +29,7 @@ type ResolvedBackend struct {
 	Retry          *RetryConfig
 	BasePath       string `json:"basePath"`
 	HealthCheck    *HealthCheck
+	Weight 	   	   int32
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations

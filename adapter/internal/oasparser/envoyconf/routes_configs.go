@@ -127,21 +127,59 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	return match
 }
 
-func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria, mirrorClusterNames []string, isBackendBasedAIRatelimitEnabled bool, descriptorValueForBackendBasedAIRatelimit string) (action *routev3.Route_Route) {
-	action = &routev3.Route_Route{
-		Route: &routev3.RouteAction{
-			HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
-				AutoHostRewrite: &wrapperspb.BoolValue{
-					Value: true,
+func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria, mirrorClusterNames []string, isBackendBasedAIRatelimitEnabled bool, descriptorValueForBackendBasedAIRatelimit string, weightedCluster *routev3.WeightedCluster_ClusterWeight, isWeighted bool) (action *routev3.Route_Route) {
+	
+	if isWeighted {
+		// check if weightedCluster is already in the list
+		exists := false
+		for i, existingWeightedCluster := range weightedClusters {
+			if existingWeightedCluster.Name == weightedCluster.Name {
+				if existingWeightedCluster.Weight.GetValue() == weightedCluster.Weight.GetValue() {
+					exists = true
+				} else {
+					// Remove the existing entry with the same name but different weight
+					weightedClusters = append(weightedClusters[:i], weightedClusters[i+1:]...)
+				}
+			}
+		}
+
+		// if not existing, add to the list
+		if !exists {
+			weightedClusters = append(weightedClusters, weightedCluster)		
+		}
+		action = &routev3.Route_Route{
+			Route: &routev3.RouteAction{
+				HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+					AutoHostRewrite: &wrapperspb.BoolValue{
+						Value: true,
+					},
+				},
+				UpgradeConfigs:    getUpgradeConfig(apiType),
+				MaxStreamDuration: getMaxStreamDuration(apiType),
+				ClusterSpecifier: &routev3.RouteAction_WeightedClusters{
+					WeightedClusters: &routev3.WeightedCluster{
+						Clusters: weightedClusters,
+					},
 				},
 			},
-			UpgradeConfigs:    getUpgradeConfig(apiType),
-			MaxStreamDuration: getMaxStreamDuration(apiType),
-			ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
-				ClusterHeader: clusterHeaderName,
+		}
+    } else {
+		action = &routev3.Route_Route{
+			Route: &routev3.RouteAction{
+				HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+					AutoHostRewrite: &wrapperspb.BoolValue{
+						Value: true,
+					},
+				},
+				UpgradeConfigs:    getUpgradeConfig(apiType),
+				MaxStreamDuration: getMaxStreamDuration(apiType),
+				ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
+					ClusterHeader: clusterHeaderName,
+				},
 			},
-		},
+		}
 	}
+
 	if routeConfig != nil {
 		action.Route.IdleTimeout = durationpb.New(time.Duration(routeConfig.IdleTimeoutInSeconds) * time.Second)
 	}
