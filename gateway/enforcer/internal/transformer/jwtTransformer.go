@@ -8,7 +8,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 )
 
-// JWTTransformer represents the JWT transformer
+// JWTTransformer represents the JWT transformer.
 type JWTTransformer struct {
 	tokenissuerStore *datastore.JWTIssuerStore
 }
