@@ -62,3 +62,8 @@ type API struct {
 func (api *API) IsGraphQLAPI() bool {
 	return strings.ToLower(api.APIType) == "graphql"
 }
+
+// IsgRPCAPI checks whether the API is graphql
+func (api *API) IsgRPCAPI() bool {
+	return strings.ToLower(api.APIType) == "grpc"
+}
