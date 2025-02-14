@@ -463,13 +463,7 @@ func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[str
 			selectedIssuers = append(selectedIssuers, issuserName)
 		}
 	}
-	if len(selectedIssuers) == 1 {
-		return &jwt.JwtRequirement{
-			RequiresType: &jwt.JwtRequirement_ProviderName{
-				ProviderName: selectedIssuers[0],
-			},
-		}
-	} else if len(selectedIssuers) > 1 {
+	if len(selectedIssuers) >= 1 {
 		return &jwt.JwtRequirement{
 			RequiresType: &jwt.JwtRequirement_RequiresAny{
 				RequiresAny: &jwt.JwtRequirementOrList{
@@ -482,11 +476,13 @@ func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[str
 								},
 							})
 						}
+						requirements = append(requirements, &jwt.JwtRequirement{
+							RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
+						})
 						return requirements
 					}(),
 				},
-			},
-		}
+			}}
 	}
 	return nil
 }

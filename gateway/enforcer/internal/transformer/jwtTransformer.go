@@ -19,29 +19,42 @@ func NewJWTTransformer(jwtIssuerDatastore *datastore.JWTIssuerStore) *JWTTransfo
 }
 
 // TransformJWTClaims transforms the JWT claims
-func (transformer *JWTTransformer) TransformJWTClaims(organization string, externalProcessingEnvoyMetadata *dto.ExternalProcessingEnvoyMetadata) dto.JWTValidationInfo {
-	if externalProcessingEnvoyMetadata == nil {
-		fmt.Printf("External processing envoy metadata is nil\n")
-		return dto.JWTValidationInfo{}
-	}
-	if externalProcessingEnvoyMetadata.JwtAuthenticationData == nil {
+func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAuthenticationData *dto.JwtAuthenticationData) *dto.JWTValidationInfo {
+	if jwtAuthenticationData == nil {
 		fmt.Printf("JWT authentication data is nil\n")
-		return dto.JWTValidationInfo{}
+		return nil
 	}
-	if externalProcessingEnvoyMetadata.JwtAuthenticationData.Claims == nil {
+	if jwtAuthenticationData.Status != nil {
+		return &dto.JWTValidationInfo{Valid: false, ValidationCode: jwtAuthenticationData.Status.Code, ValidationMessage: jwtAuthenticationData.Status.Message}
+	}
+	if jwtAuthenticationData.Claims == nil {
 		fmt.Printf("JWT claims are nil\n")
-		return dto.JWTValidationInfo{}
+		return nil
 	}
 	fmt.Printf("Organization: %v\n", organization)
-	fmt.Printf("External processing envoy metadata: %v\n", externalProcessingEnvoyMetadata)
-	fmt.Printf("JWT authentication data: %v\n", externalProcessingEnvoyMetadata.JwtAuthenticationData)
-	tokenIssuer := transformer.tokenissuerStore.GetJWTIssuerByOrganizationAndIssuer(organization, externalProcessingEnvoyMetadata.JwtAuthenticationData.Issuer)
-	jwtValidationInfo := dto.JWTValidationInfo{Issuer: externalProcessingEnvoyMetadata.JwtAuthenticationData.Issuer, Claims: make(map[string]interface{})}
+	fmt.Printf("JWT authentication data: %v\n", jwtAuthenticationData)
+	tokenIssuer := transformer.tokenissuerStore.GetJWTIssuerByOrganizationAndIssuer(organization, jwtAuthenticationData.Issuer)
+	jwtValidationInfo := dto.JWTValidationInfo{Valid: true, Issuer: jwtAuthenticationData.Issuer, Claims: make(map[string]interface{})}
 	if tokenIssuer != nil {
 		fmt.Printf("Token issuer: %v\n", tokenIssuer)
-		remoteClaims := externalProcessingEnvoyMetadata.JwtAuthenticationData.Claims
+		remoteClaims := jwtAuthenticationData.Claims
 		if remoteClaims != nil {
 			fmt.Printf("Remote claims: %v\n", remoteClaims)
+			issuedTime := remoteClaims["iat"]
+			if issuedTime != nil {
+				fmt.Printf("Issued time: %v\n", issuedTime)
+				jwtValidationInfo.IssuedTime = int64(issuedTime.(float64))
+			}
+			expiryTime := remoteClaims["exp"]
+			if expiryTime != nil {
+				fmt.Printf("Expiry time: %v\n", expiryTime)
+				jwtValidationInfo.ExpiryTime = int64(expiryTime.(float64))
+			}
+			jti := remoteClaims["jti"]
+			if jti != nil {
+				fmt.Printf("JTI: %v\n", jti)
+				jwtValidationInfo.JTI = jti.(string)
+			}
 			audienceClaim := remoteClaims["aud"]
 			if audienceClaim != nil {
 				fmt.Printf("Audience claim: %v\n", audienceClaim)
@@ -84,5 +97,5 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, exter
 		fmt.Printf("Token issuer is nil\n")
 	}
 	fmt.Printf("JWT validation info: %v\n", jwtValidationInfo)
-	return jwtValidationInfo
+	return &jwtValidationInfo
 }

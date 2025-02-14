@@ -228,7 +228,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			dynamicMetadataKeyValuePairs[analytics.APIOrganizationIDKey] = requestConfigHolder.MatchedAPI.OrganizationID
 			dynamicMetadataKeyValuePairs[analytics.APICreatorTenantDomainKey] = requestConfigHolder.MatchedAPI.OrganizationID
 
-			
+
 			if requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {
 				definitionPath := requestConfigHolder.MatchedAPI.APIDefinitionPath
 				s.cfg.Logger.Info(fmt.Sprintf("definition Path: %v", definitionPath))
@@ -295,7 +295,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if requestConfigHolder.MatchedResource.Endpoints != nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
 				dynamicMetadataKeyValuePairs[analytics.DestinationKey] = requestConfigHolder.MatchedResource.Endpoints.URLs[0]
 			}
-			
+
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
 				s.log.Error(err, "failed to extract context metadata")
@@ -308,18 +308,27 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
 			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
 			s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", requestConfigHolder, s))
-			if requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !requestConfigHolder.MatchedAPI.DisableAuthentication {
-				jwtValidationInfo := s.jwtTransformer.TransformJWTClaims(requestConfigHolder.MatchedAPI.OrganizationID, requestConfigHolder.ExternalProcessingEnvoyMetadata)
-				requestConfigHolder.JWTValidationInfo = &jwtValidationInfo
-				s.log.Sugar().Infof("jwtValidation==%v", jwtValidationInfo)
-				if immediateResponse := authorization.Validate(requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
+			if requestConfigHolder.MatchedResource != nil && requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !requestConfigHolder.MatchedAPI.DisableAuthentication {
+				if immediateResponse := authorization.Validate(requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg, s.jwtTransformer); immediateResponse != nil {
+					// Update the Content-Type header
+					headers := &envoy_service_proc_v3.HeaderMutation{
+						SetHeaders: []*corev3.HeaderValueOption{
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "Content-Type",
+									RawValue: []byte("Application/json"),
+								},
+							},
+						},
+					}
 					resp = &envoy_service_proc_v3.ProcessingResponse{
 						Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
 							ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
 								Status: &v32.HttpStatus{
 									Code: v32.StatusCode(immediateResponse.StatusCode),
 								},
-								Body: []byte(immediateResponse.Message),
+								Body:    []byte(immediateResponse.Message),
+								Headers: headers,
 							},
 						},
 					}
@@ -427,16 +436,29 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.cfg.Logger.Info(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
 				break
 			}
-
+			rch := &requestconfig.Holder{}
+			rch.MatchedAPI = matchedAPI
+			rch.ExternalProcessingEnvoyMetadata = metadata
 			if matchedAPI.IsGraphQLAPI() {
-				if immediateResponse := graphql.ValidateGraphQLOperation(matchedAPI, s.jwtTransformer, metadata, s.subscriptionApplicationDatastore, s.cfg, string(req.GetRequestBody().Body)); immediateResponse != nil {
+				if immediateResponse := graphql.ValidateGraphQLOperation(rch, metadata, s.subscriptionApplicationDatastore, s.cfg, string(req.GetRequestBody().Body), s.jwtTransformer); immediateResponse != nil {
+					headers := &envoy_service_proc_v3.HeaderMutation{
+						SetHeaders: []*corev3.HeaderValueOption{
+							{
+								Header: &corev3.HeaderValue{
+									Key:      "Content-Type",
+									RawValue: []byte("Application/json"),
+								},
+							},
+						},
+					}
 					resp = &envoy_service_proc_v3.ProcessingResponse{
 						Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
 							ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
 								Status: &v32.HttpStatus{
 									Code: v32.StatusCode(immediateResponse.StatusCode),
 								},
-								Body: []byte(immediateResponse.Message),
+								Body:    []byte(immediateResponse.Message),
+								Headers: headers,
 							},
 						},
 					}

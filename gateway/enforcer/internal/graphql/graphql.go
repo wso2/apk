@@ -28,8 +28,9 @@ type GQLRequest struct {
 }
 
 // ValidateGraphQLOperation validates/authenticates the incoming GraphQL request.
-func ValidateGraphQLOperation(matchedAPI *requestconfig.API, jwtTransformer *transformer.JWTTransformer, metadata *dto.ExternalProcessingEnvoyMetadata, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, requestBody string) *dto.ImmediateResponse {
-	schemaBytes := matchedAPI.APIDefinition
+func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadata *dto.ExternalProcessingEnvoyMetadata, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, requestBody string, jwtTransformer *transformer.JWTTransformer) *dto.ImmediateResponse {
+	matchedapi := requestConfigHolder.MatchedAPI
+	schemaBytes := matchedapi.APIDefinition
 	var sdl string
 	if schemaString, err := unzipGzip(schemaBytes); err != nil {
 		fmt.Println("unzip gzip not working")
@@ -90,29 +91,21 @@ func ValidateGraphQLOperation(matchedAPI *requestconfig.API, jwtTransformer *tra
 
 	for _, operation := range document.Operations {
 		for _, selection := range operation.SelectionSet {
-			res := findMatchedResource(matchedAPI.Resources, operation, selection)
+			res := findMatchedResource(matchedapi.Resources, operation, selection)
 			if res == nil {
 				return &dto.ImmediateResponse{
 					StatusCode: 404,
 					Message:    "bad request - resource not found in schema",
 				}
 			}
-			rch := &requestconfig.Holder{}
-			rch.MatchedAPI = matchedAPI
-			rch.MatchedResource = res
-			if res.AuthenticationConfig != nil && !res.AuthenticationConfig.Disabled && !matchedAPI.DisableAuthentication {
-				jwtValidationInfo := jwtTransformer.TransformJWTClaims(matchedAPI.OrganizationID, metadata)
-				rch.JWTValidationInfo = &jwtValidationInfo
-				if immediateResponse := authorization.ValidateScopes(rch, subAppDataStore, cfg); immediateResponse != nil {
+			requestConfigHolder.MatchedResource = res
+			if res.AuthenticationConfig != nil && !res.AuthenticationConfig.Disabled && !matchedapi.DisableAuthentication {
+				immediateResponse := authorization.Validate(requestConfigHolder, subAppDataStore, cfg, jwtTransformer)
+				if immediateResponse != nil {
 					return immediateResponse
 				}
-				cfg.Logger.Info(fmt.Sprintf("Scope validation successful for the request: %s", rch.MatchedResource.Path))
-				if immediateResponse := authorization.ValidateSubscription(rch, subAppDataStore, cfg); immediateResponse != nil {
-					return immediateResponse
-				}
-				cfg.Logger.Info(fmt.Sprintf("Subscription validation successful for the request: %s", rch.MatchedResource.Path))
 			} else {
-				cfg.Logger.Info(fmt.Sprintf("Skipping authentication for the resource: %s", rch.MatchedResource.Path))
+				cfg.Logger.Info(fmt.Sprintf("Skipping authentication for the resource: %s", requestConfigHolder.MatchedResource.Path))
 			}
 		}
 	}
