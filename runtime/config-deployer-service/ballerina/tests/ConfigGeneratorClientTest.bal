@@ -48,7 +48,7 @@ public function testGetGeneratedAPKConfFromUrl() returns error? {
     if response is OkAnydata {
         test:assertEquals(response.status.code, http:STATUS_OK, "Status code mismatched");
         string content = check io:fileReadString("./tests/resources/expectedAPK.apk-conf");
-        test:assertEquals(response.body.toString(), content, "APK conf content mismatched");
+        test:assertEquals(response.body.toString(), content, "APK conf content mismatched.");
     } else {
         test:assertFail("Error occurred while generating APK conf");
     }
