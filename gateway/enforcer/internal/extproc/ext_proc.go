@@ -31,6 +31,7 @@ import (
 	"github.com/wso2/apk/common-go-libs/loggers"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/authorization"
+	"github.com/wso2/apk/gateway/enforcer/internal/cache"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
@@ -60,6 +61,8 @@ type ExternalProcessingServer struct {
 	log                              logging.Logger
 	apiStore                         *datastore.APIStore
 	subscriptionApplicationDatastore *datastore.SubscriptionApplicationDataStore
+	cacheStore                       datastore.CacheStore
+	incomingRequestCacheKeyStore     *datastore.IncomingRequestCacheKeyStore
 	ratelimitHelper                  *ratelimit.AIRatelimitHelper
 	requestConfigHolder              *requestconfig.Holder
 	cfg                              *config.Server
@@ -92,6 +95,7 @@ const (
 	matchedResourceMetadataKey                      string = "request:matchedresource"
 	matchedSubscriptionMetadataKey                  string = "request:matchedsubscription"
 	matchedApplicationMetadataKey                   string = "request:matchedapplication"
+	requestIDMetadataKey                            string = "request:requestid"
 
 	modelMetadataKey string = "aitoken:model"
 )
@@ -107,7 +111,7 @@ var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 //     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
-func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, jwtTransformer *transformer.JWTTransformer, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker) {
+func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, cacheStore datastore.CacheStore, incomingRequestCacheKeyStore *datastore.IncomingRequestCacheKeyStore, jwtTransformer *transformer.JWTTransformer, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker) {
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
@@ -122,7 +126,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 
 	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, nil, cfg, jwtTransformer, modelBasedRoundRobinTracker})
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, cacheStore, incomingRequestCacheKeyStore, ratelimitHelper, nil, cfg, jwtTransformer, modelBasedRoundRobinTracker})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -190,6 +194,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 				break
 			}
+			dynamicMetadataKeyValuePairs[requestIDMetadataKey] = attributes.RequestID
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
@@ -221,7 +226,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			dynamicMetadataKeyValuePairs[analytics.APIContextKey] = requestConfigHolder.MatchedAPI.BasePath
 			dynamicMetadataKeyValuePairs[analytics.APIOrganizationIDKey] = requestConfigHolder.MatchedAPI.OrganizationID
 			dynamicMetadataKeyValuePairs[analytics.APICreatorTenantDomainKey] = requestConfigHolder.MatchedAPI.OrganizationID
-
 
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if requestConfigHolder.MatchedAPI != nil && requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {
@@ -272,15 +276,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 			}
 			s.cfg.Logger.Info(fmt.Sprintf("Metadata context : %+v", req.GetMetadataContext()))
-			
+
 			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
 			if requestConfigHolder.MatchedResource != nil {
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 				dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
 				dynamicMetadataKeyValuePairs[analytics.APIResourceTemplateKey] = requestConfigHolder.MatchedResource.Path
 				s.log.Info(fmt.Sprintf("Matched Resource Endpoints: %+v", requestConfigHolder.MatchedResource.Endpoints))
-				if requestConfigHolder.MatchedResource.Endpoints!= nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
-					dynamicMetadataKeyValuePairs[analytics.DestinationKey] =  requestConfigHolder.MatchedResource.Endpoints.URLs[0]
+				if requestConfigHolder.MatchedResource.Endpoints != nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
+					dynamicMetadataKeyValuePairs[analytics.DestinationKey] = requestConfigHolder.MatchedResource.Endpoints.URLs[0]
 				}
 			}
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
@@ -290,7 +294,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
-			
+
 			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
 			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
 			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
@@ -625,6 +629,11 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 			}
 
+			// HANDLE CACHE
+			// TODO: add cacheStore and incomingRequestCacheKeyStore in server ext_proc_server
+			// TODO: make sure RequestIdentifier exists
+			cache.HandleHTTPRequestBody(metadata.RequestIdentifier, s.cacheStore, s.incomingRequestCacheKeyStore, req, resp)
+
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			s.log.Info(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
@@ -877,6 +886,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				duration := matchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
 				s.modelBasedRoundRobinTracker.SuspendModel(matchedAPI.UUID, matchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 			}
+
+			// HANDLE CACHE
+			// TODO: add cacheStore and incomingRequestCacheKeyStore in server ext_proc_server
+			// TODO: make sure RequestIdentifier exists
+			cache.HandleHTTPResponseBody(metadata.RequestIdentifier, s.cacheStore, s.incomingRequestCacheKeyStore, req, resp)
+
 		default:
 			s.log.Info(fmt.Sprintf("Unknown Request type %v\n", v))
 		}
@@ -951,6 +966,9 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 			if matchedSubscriptionKey, exists := extProcMetadata.Fields[matchedSubscriptionMetadataKey]; exists {
 				externalProcessingEnvoyMetadata.MatchedSubscriptionIdentifier = matchedSubscriptionKey.GetStringValue()
 			}
+			if requestID, exists := extProcMetadata.Fields[requestIDMetadataKey]; exists {
+				externalProcessingEnvoyMetadata.RequestIdentifier = requestID.GetStringValue()
+			}
 
 		}
 		return externalProcessingEnvoyMetadata, nil
@@ -997,6 +1015,11 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 	if field, ok := fields["request.method"]; ok {
 		method := field.GetStringValue()
 		attributes.RequestMethod = method
+	}
+
+	if field, ok := fields["request.id"]; ok {
+		id := field.GetStringValue()
+		attributes.RequestID = id
 	}
 
 	// We need to navigate through the nested fields to get the actual values

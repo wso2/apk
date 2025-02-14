@@ -23,6 +23,7 @@ type ExternalProcessingEnvoyMetadata struct {
 	MatchedResourceIdentifier     string                 `json:"matchedResourceIdentifier"`
 	MatchedSubscriptionIdentifier string                 `json:"matchedSubscriptionIdentifier"`
 	MatchedApplicationIdentifier  string                 `json:"matchedApplicationIdentifier"`
+	RequestIdentifier             string                 `json:"requestIdentifier"`
 }
 
 // JwtAuthenticationData represents the JWT authentication data.
