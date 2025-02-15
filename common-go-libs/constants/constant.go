@@ -17,7 +17,7 @@
 
 package constants
 
-// Controller related constants
+// Controller related constants.
 const (
 	RatelimitController          string = "RatelimitController"
 	AIRatelimitController        string = "AIRatelimitController"
