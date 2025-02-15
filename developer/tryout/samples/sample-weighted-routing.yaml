@@ -1,0 +1,262 @@
+# --------------------------------------------------------------------
+# Copyright (c) 2025, WSO2 LLC. (http://wso2.com) All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# -----------------------------------------------------------------------
+
+# Demo API 1 for Weighted Routing
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-1-service
+  namespace: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 81
+      targetPort: 81
+  selector:
+    app: demo-api-1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-1-deployment
+  namespace: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-api-1
+  template:
+    metadata:
+      labels:
+        app: demo-api-1
+    spec:
+      containers:
+        - name: demo-api-1-container
+          image: vinupathenuka/demo-api-1:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 81
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+---
+# Demo API 2 for Weighted Routing
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-2-service
+  namespace: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 43
+      targetPort: 43
+  selector:
+    app: demo-api-2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-2-deployment
+  namespace: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-api-2
+  template:
+    metadata:
+      labels:
+        app: demo-api-2
+    spec:
+      containers:
+        - name: demo-api-2-container
+          image: vinupathenuka/demo-api-2:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 43
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+---
+# Demo API 3 for Weighted Routing
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-3-service
+  namespace: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8081
+      targetPort: 8081
+  selector:
+    app: demo-api-3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-3-deployment
+  namespace: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-api-3
+  template:
+    metadata:
+      labels:
+        app: demo-api-3
+    spec:
+      containers:
+        - name: demo-api-3-container
+          image: vinupathenuka/demo-api-3:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+---
+kind: "API"
+apiVersion: "dp.wso2.com/v1alpha2"
+metadata:
+  name: "backend-service-api"
+  namespace: apk
+  labels:
+    api-name: "backend-service-api"
+    api-version: "1.0"
+spec:
+  apiName: "backend-service-api"
+  apiType: "REST"
+  apiVersion: "1.0"
+  basePath: "/backend-service/1.0"
+  organization: "default"
+  isDefaultVersion: false
+  definitionFileRef: "configmap"
+  production:
+  - routeRefs:
+    - "http-route"
+  sandbox: null
+  apiProperties: []
+status: null
+---
+apiVersion: "gateway.networking.k8s.io/v1beta1"
+kind: "HTTPRoute"
+metadata:
+  name: "http-route"
+  namespace: apk
+  labels:
+    api-name: "backend-service-api"
+    api-version: "1.0"
+spec:
+  hostnames:
+  - "default.gw.wso2.com"
+  rules:
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/demo"
+      method: "GET"
+    filters:
+    - type: "URLRewrite"
+      urlRewrite:
+        path:
+          type: "ReplaceFullPath"
+          replaceFullPath: "/demo"
+    backendRefs:
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend-1-api"
+      weight: 30
+    - group: "dp.wso2.com"
+      kind: "Backend"
+      name: "backend-2-api"
+      weight: 10
+    - group: "dp.wso2.com"  
+      kind: "Backend"
+      name: "backend-3-api"
+      weight: 60
+  parentRefs:
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: "wso2-apk-default"
+    sectionName: "httpslistener"
+---
+apiVersion: "dp.wso2.com/v1alpha2"
+kind: "Backend"
+metadata:
+  name: "backend-1-api"
+  namespace: apk
+  labels:
+    api-name: "backend-1-api"
+spec:
+  services:
+  - host: "demo-api-1-service.backend.svc.cluster.local"
+    port: 81
+  basePath: ""
+  protocol: "http"
+---
+apiVersion: "dp.wso2.com/v1alpha2"
+kind: "Backend"
+metadata:
+  name: "backend-2-api"
+  namespace: apk
+  labels:
+    api-name: "backend-2-api"
+spec:
+  services:
+  - host: "demo-api-2-service.backend.svc.cluster.local"
+    port: 43
+  basePath: ""
+  protocol: "http"
+---
+apiVersion: "dp.wso2.com/v1alpha2"
+kind: "Backend"
+metadata:
+  name: "backend-3-api"
+  namespace: apk
+  labels:
+    api-name: "backend-3-api"
+spec:
+  services:
+  - host: "demo-api-3-service.backend.svc.cluster.local"
+    port: 8081
+  basePath: ""
+  protocol: "http"
+---
+kind: "ConfigMap"
+apiVersion: "v1"
+metadata:
+  name: "configmap"
+  namespace: apk
+  labels:
+    api-name: "backend-service-api"
+    api-version: "1.0"
+binaryData:
+  definition: "ewogICJvcGVuYXBpIjogIjMuMC4xIiwKICAiaW5mbyI6IHsKICAgICJ0aXRsZSI6ICJCYWNrZW5kU2VydmljZUFQSSIsCiAgICAidmVyc2lvbiI6ICIxLjAiCiAgfSwKICAic2VydmVycyI6IFsKICAgIHsKICAgICAgInVybCI6ICJodHRwOi8vZGVtby1hcGktMS1zZXJ2aWNlLmJhY2tlbmQuc3ZjLmNsdXN0ZXIubG9jYWw6ODEiLAogICAgICAiZGVzY3JpcHRpb24iOiAiQmFja2VuZCAxIFNlcnZlciBVUkwiCiAgICB9LAogICAgewogICAgICAidXJsIjogImh0dHA6Ly9kZW1vLWFwaS0yLXNlcnZpY2UuYmFja2VuZC5zdmMuY2x1c3Rlci5sb2NhbDo0MyIsCiAgICAgICJkZXNjcmlwdGlvbiI6ICJCYWNrZW5kIDIgU2VydmVyIFVSTCIKICAgIH0sCiAgICB7CiAgICAgICJ1cmwiOiAiaHR0cDovL2RlbW8tYXBpLTMtc2VydmljZS5iYWNrZW5kLnN2Yy5jbHVzdGVyLmxvY2FsOjgwODEiLAogICAgICAiZGVzY3JpcHRpb24iOiAiQmFja2VuZCAzIFNlcnZlciBVUkwiCiAgICB9CiAgXSwKICAic2VjdXJpdHkiOiBbCiAgICB7CiAgICAgICJkZWZhdWx0IjogW10KICAgIH0KICBdLAogICJwYXRocyI6IHsKICAgICIvZGVtbyI6IHsKICAgICAgImdldCI6IHsKICAgICAgICAidGFncyI6IFsiYmFja2VuZC1jb250cm9sbGVyIl0sCiAgICAgICAgIm9wZXJhdGlvbklkIjogImdldERlbW9EZXRhaWxzIiwKICAgICAgICAicGFyYW1ldGVycyI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgIm5hbWUiOiAiaWQiLAogICAgICAgICAgICAiaW4iOiAicXVlcnkiLAogICAgICAgICAgICAicmVxdWlyZWQiOiB0cnVlLAogICAgICAgICAgICAic3R5bGUiOiAiZm9ybSIsCiAgICAgICAgICAgICJleHBsb2RlIjogdHJ1ZSwKICAgICAgICAgICAgInNjaGVtYSI6IHsKICAgICAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAgICAgIH0KICAgICAgICAgIH0KICAgICAgICBdLAogICAgICAgICJyZXNwb25zZXMiOiB7CiAgICAgICAgICAiMjAwIjogewogICAgICAgICAgICAiZGVzY3JpcHRpb24iOiAiZGVmYXVsdCByZXNwb25zZSIsCiAgICAgICAgICAgICJjb250ZW50IjogewogICAgICAgICAgICAgICJhcHBsaWNhdGlvbi9qc29uIjogewogICAgICAgICAgICAgICAgInNjaGVtYSI6IHsKICAgICAgICAgICAgICAgICAgInR5cGUiOiAiYXJyYXkiLAogICAgICAgICAgICAgICAgICAiaXRlbXMiOiB7CiAgICAgICAgICAgICAgICAgICAgIiRyZWYiOiAiIy9jb21wb25lbnRzL3NjaGVtYXMvQmFja2VuZCIKICAgICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgICAgfQogICAgICAgICAgICAgIH0KICAgICAgICAgICAgfQogICAgICAgICAgfQogICAgICAgIH0sCiAgICAgICAgInNlY3VyaXR5IjogWwogICAgICAgICAgewogICAgICAgICAgICAiZGVmYXVsdCI6IFtdCiAgICAgICAgICB9CiAgICAgICAgXQogICAgICB9CiAgICB9CiAgfSwKICAiY29tcG9uZW50cyI6IHsKICAgICJzY2hlbWFzIjogewogICAgICAiQmFja2VuZCI6IHsKICAgICAgICAidHlwZSI6ICJvYmplY3QiLAogICAgICAgICJwcm9wZXJ0aWVzIjogewogICAgICAgICAgIkFQSV92ZXJzaW9uIjogewogICAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAgICB9LAogICAgICAgICAgIk1lc3NhZ2UiOiB7CiAgICAgICAgICAgICJ0eXBlIjogInN0cmluZyIKICAgICAgICAgIH0sCiAgICAgICAgICAiTmFtZXNwYWNlIjogewogICAgICAgICAgICAidHlwZSI6ICJzdHJpbmciCiAgICAgICAgICB9LAogICAgICAgICAgIlBvcnQiOiB7CiAgICAgICAgICAgICJ0eXBlIjogImludGVnZXIiCiAgICAgICAgICB9CiAgICAgICAgfQogICAgICB9CiAgICB9LAogICAgInNlY3VyaXR5U2NoZW1lcyI6IHsKICAgICAgImRlZmF1bHQiOiB7CiAgICAgICAgInR5cGUiOiAib2F1dGgyIiwKICAgICAgICAiZmxvd3MiOiB7CiAgICAgICAgICAiaW1wbGljaXQiOiB7CiAgICAgICAgICAgICJhdXRob3JpemF0aW9uVXJsIjogImh0dHBzOi8vdGVzdC5jb20iLAogICAgICAgICAgICAic2NvcGVzIjoge30KICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIH0KICAgIH0KICB9Cn0K"
