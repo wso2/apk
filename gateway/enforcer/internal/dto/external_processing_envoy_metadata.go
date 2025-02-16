@@ -27,13 +27,18 @@ type ExternalProcessingEnvoyMetadata struct {
 
 // JwtAuthenticationData represents the JWT authentication data.
 type JwtAuthenticationData struct {
-	Status *Status                `json:"status"`
+	SucessData map[string]*JWTAuthenticationSuccessData `json:"sucessData"`
+	FailedData map[string]*JWTAuthenticationFailureData `json:"failedData"`
+}
+
+// JWTAuthenticationSuccessData represents the success data of the JWT authentication.
+type JWTAuthenticationSuccessData struct {
 	Issuer string                 `json:"issuer"`
 	Claims map[string]interface{} `json:"claims"`
 }
 
-// Status represents the status of the JWT authentication.
-type Status struct {
+// JWTAuthenticationFailureData represents the status of the JWT authentication.
+type JWTAuthenticationFailureData struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }

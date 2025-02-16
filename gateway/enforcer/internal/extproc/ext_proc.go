@@ -26,6 +26,7 @@ import (
 	"io"
 	"io/ioutil"
 	"strconv"
+	"strings"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
@@ -227,7 +228,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			dynamicMetadataKeyValuePairs[analytics.APIContextKey] = requestConfigHolder.MatchedAPI.BasePath
 			dynamicMetadataKeyValuePairs[analytics.APIOrganizationIDKey] = requestConfigHolder.MatchedAPI.OrganizationID
 			dynamicMetadataKeyValuePairs[analytics.APICreatorTenantDomainKey] = requestConfigHolder.MatchedAPI.OrganizationID
-
 
 			if requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {
 				definitionPath := requestConfigHolder.MatchedAPI.APIDefinitionPath
@@ -975,43 +975,52 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 	if filterMatadata != nil {
 		externalProcessingEnvoyMetadata := &dto.ExternalProcessingEnvoyMetadata{}
 		jwtFilterdata := filterMatadata["envoy.filters.http.jwt_authn"]
+		authenticationData := &dto.JwtAuthenticationData{}
 		if jwtFilterdata != nil {
-			jwtFields, exists := jwtFilterdata.Fields["payload_in_metadata"]
-			authenticationData := &dto.JwtAuthenticationData{}
-			if exists {
-				jwtPayload := jwtFields.GetStructValue()
-				if jwtPayload != nil {
-					claims := make(map[string]interface{})
-					for key, value := range jwtPayload.GetFields() {
-						if value != nil {
-							if key == "iss" {
-								authenticationData.Issuer = value.GetStringValue()
-							}
-							switch value.Kind.(type) {
-							case *structpb.Value_StringValue:
-								claims[key] = value.GetStringValue()
-							case *structpb.Value_NumberValue:
-								claims[key] = value.GetNumberValue()
-							case *structpb.Value_BoolValue:
-								claims[key] = value.GetBoolValue()
-							case *structpb.Value_ListValue:
-								claims[key] = value.GetListValue()
+			for key, structValue := range jwtFilterdata.Fields {
+				if strings.HasSuffix(key, "-payload") {
+					sucessData := dto.JWTAuthenticationSuccessData{}
+					jwtPayload := structValue.GetStructValue()
+					if jwtPayload != nil {
+						claims := make(map[string]interface{})
+						for key, value := range jwtPayload.GetFields() {
+							if value != nil {
+								if key == "iss" {
+									sucessData.Issuer = value.GetStringValue()
+								}
+								switch value.Kind.(type) {
+								case *structpb.Value_StringValue:
+									claims[key] = value.GetStringValue()
+								case *structpb.Value_NumberValue:
+									claims[key] = value.GetNumberValue()
+								case *structpb.Value_BoolValue:
+									claims[key] = value.GetBoolValue()
+								case *structpb.Value_ListValue:
+									claims[key] = value.GetListValue()
+								}
 							}
 						}
+						sucessData.Claims = claims
 					}
-					authenticationData.Claims = claims
-					fmt.Printf("claims: %v\n", claims)
+					if authenticationData.SucessData == nil {
+						authenticationData.SucessData = make(map[string]*dto.JWTAuthenticationSuccessData)
+					}
+					authenticationData.SucessData[key] = &sucessData
+				}
+				if strings.HasSuffix(key, "-failed") {
+					failureStatusStruct := structValue.GetStructValue()
+					if failureStatusStruct != nil {
+						code := failureStatusStruct.Fields["code"].GetNumberValue()
+						message := failureStatusStruct.Fields["message"].GetStringValue()
+						authenticationFailureData := &dto.JWTAuthenticationFailureData{Code: int(code), Message: message}
+						if authenticationData.FailedData == nil {
+							authenticationData.FailedData = make(map[string]*dto.JWTAuthenticationFailureData)
+						}
+						authenticationData.FailedData[key] = authenticationFailureData
+					}
 				}
 			}
-			failureStatusFields, exists := jwtFilterdata.Fields["failed_status"]
-			if exists {
-				failureStatusStruct := failureStatusFields.GetStructValue()
-				if failureStatusStruct != nil {
-					code := failureStatusStruct.Fields["code"].GetNumberValue()
-					message := failureStatusStruct.Fields["message"].GetStringValue()
-					authenticationData.Status = &dto.Status{Code: int(code), Message: message}
-				}
-			}
+
 			externalProcessingEnvoyMetadata.JwtAuthenticationData = authenticationData
 		}
 		if extProcMetadata, exists := filterMatadata[externalProessingMetadataContextKey]; exists {

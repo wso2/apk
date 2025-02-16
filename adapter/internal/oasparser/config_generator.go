@@ -522,8 +522,8 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 	jwtProvider := &jwt.JwtProvider{
 		Issuer:                 tokenIssuer.Issuer,
 		Forward:                true,
-		FailedStatusInMetadata: "failed_status",
-		PayloadInMetadata:      "payload_in_metadata",
+		FailedStatusInMetadata: tokenIssuer.Issuer + "-failed",
+		PayloadInMetadata:      tokenIssuer.Issuer + "-payload",
 	}
 	if tokenIssuer.SignatureValidation.JWKS != nil {
 		logger.LoggerOasparser.Infof("JWKS URL: %s", tokenIssuer.SignatureValidation.JWKS.URL)
