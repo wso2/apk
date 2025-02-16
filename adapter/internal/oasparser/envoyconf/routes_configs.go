@@ -48,7 +48,7 @@ const (
 	DescriptorKeyForPolicy       = "policy"
 	DescriptorKeyForOrganization = "organization"
 	extAuthzFilterName           = "envoy.filters.http.ext_authz"
-	extProcFilterName           = "envoy.filters.http.ext_proc"
+	extProcFilterName            = "envoy.filters.http.ext_proc"
 
 	descriptorMetadataKeyForSubscription          = "ratelimit:subscription"
 	descriptorMetadataKeyForUsagePolicy           = "ratelimit:usage-policy"
@@ -77,13 +77,13 @@ const (
 	DescriptorKeyForAISubscription                         = "subscription"
 )
 
-func generateRouteConfig(routeName string, method *string, match *routev3.RouteMatch, action *routev3.Route_Route, redirectAction *routev3.Route_Redirect,
+func generateRouteConfig(apiType string, routeName string, method *string, match *routev3.RouteMatch, action *routev3.Route_Route, redirectAction *routev3.Route_Redirect,
 	metadata *corev3.Metadata, decorator *routev3.Decorator, typedPerFilterConfig map[string]*anypb.Any,
 	requestHeadersToAdd []*corev3.HeaderValueOption, requestHeadersToRemove []string,
 	responseHeadersToAdd []*corev3.HeaderValueOption, responseHeadersToRemove []string, authentication *model.Authentication) *routev3.Route {
 	cloneTypedPerFilterConfig := cloneTypedPerFilterConfig(typedPerFilterConfig)
 	//todo: need to fix it in proper way
-	if authentication == nil || (authentication != nil && (authentication.Disabled || authentication.Oauth2 == nil)) || (method != nil && strings.ToUpper(*method) == "OPTIONS") {
+	if apiType == constants.REST && (authentication == nil || (authentication != nil && (authentication.Disabled || authentication.Oauth2 == nil)) || (method != nil && strings.ToUpper(*method) == "OPTIONS")) {
 		logger.LoggerOasparser.Infof("routename%v", routeName)
 		logger.LoggerOasparser.Infof("authentication is nill %v", authentication == nil)
 		if authentication != nil {
@@ -128,7 +128,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 }
 
 func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria, mirrorClusterNames []string, isBackendBasedAIRatelimitEnabled bool, descriptorValueForBackendBasedAIRatelimit string, weightedCluster *routev3.WeightedCluster_ClusterWeight, isWeighted bool) (action *routev3.Route_Route) {
-	
+
 	if isWeighted {
 		// check if weightedCluster is already in the list
 		exists := false
@@ -145,7 +145,7 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 
 		// if not existing, add to the list
 		if !exists {
-			weightedClusters = append(weightedClusters, weightedCluster)		
+			weightedClusters = append(weightedClusters, weightedCluster)
 		}
 		action = &routev3.Route_Route{
 			Route: &routev3.RouteAction{
@@ -163,7 +163,7 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 				},
 			},
 		}
-    } else {
+	} else {
 		action = &routev3.Route_Route{
 			Route: &routev3.RouteAction{
 				HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -189,9 +189,9 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 			RetryBackOff: &routev3.RetryPolicy_RetryBackOff{
 				BaseInterval: durationpb.New(time.Duration(routeConfig.RetryConfig.BaseIntervalInMillis) * time.Millisecond),
 			},
-			RetryOn: "retriable-status-codes",
+			RetryOn:              "retriable-status-codes",
 			RetriableStatusCodes: routeConfig.RetryConfig.StatusCodes,
-			NumRetries: 		 &wrapperspb.UInt32Value{Value: uint32(routeConfig.RetryConfig.Count)},
+			NumRetries:           &wrapperspb.UInt32Value{Value: uint32(routeConfig.RetryConfig.Count)},
 		}
 		action.Route.RetryPolicy = retryPolicy
 	}

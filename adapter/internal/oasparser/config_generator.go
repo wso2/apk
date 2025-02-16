@@ -463,13 +463,7 @@ func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[str
 			selectedIssuers = append(selectedIssuers, issuserName)
 		}
 	}
-	if len(selectedIssuers) == 1 {
-		return &jwt.JwtRequirement{
-			RequiresType: &jwt.JwtRequirement_ProviderName{
-				ProviderName: selectedIssuers[0],
-			},
-		}
-	} else if len(selectedIssuers) > 1 {
+	if len(selectedIssuers) >= 1 {
 		return &jwt.JwtRequirement{
 			RequiresType: &jwt.JwtRequirement_RequiresAny{
 				RequiresAny: &jwt.JwtRequirementOrList{
@@ -482,11 +476,13 @@ func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[str
 								},
 							})
 						}
+						requirements = append(requirements, &jwt.JwtRequirement{
+							RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
+						})
 						return requirements
 					}(),
 				},
-			},
-		}
+			}}
 	}
 	return nil
 }
@@ -526,8 +522,8 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 	jwtProvider := &jwt.JwtProvider{
 		Issuer:                 tokenIssuer.Issuer,
 		Forward:                true,
-		FailedStatusInMetadata: "failed_status",
-		PayloadInMetadata:      "payload_in_metadata",
+		FailedStatusInMetadata: tokenIssuer.Issuer + "-failed",
+		PayloadInMetadata:      tokenIssuer.Issuer + "-payload",
 	}
 	if tokenIssuer.SignatureValidation.JWKS != nil {
 		logger.LoggerOasparser.Infof("JWKS URL: %s", tokenIssuer.SignatureValidation.JWKS.URL)

@@ -19,70 +19,76 @@ func NewJWTTransformer(jwtIssuerDatastore *datastore.JWTIssuerStore) *JWTTransfo
 }
 
 // TransformJWTClaims transforms the JWT claims
-func (transformer *JWTTransformer) TransformJWTClaims(organization string, externalProcessingEnvoyMetadata *dto.ExternalProcessingEnvoyMetadata) dto.JWTValidationInfo {
-	if externalProcessingEnvoyMetadata == nil {
-		fmt.Printf("External processing envoy metadata is nil\n")
-		return dto.JWTValidationInfo{}
-	}
-	if externalProcessingEnvoyMetadata.JwtAuthenticationData == nil {
+func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAuthenticationData *dto.JwtAuthenticationData) *dto.JWTValidationInfo {
+	if jwtAuthenticationData == nil {
 		fmt.Printf("JWT authentication data is nil\n")
-		return dto.JWTValidationInfo{}
+		return nil
 	}
-	if externalProcessingEnvoyMetadata.JwtAuthenticationData.Claims == nil {
-		fmt.Printf("JWT claims are nil\n")
-		return dto.JWTValidationInfo{}
+	tokenissuers := transformer.tokenissuerStore.GetJWTISsuersByOrganization(organization)
+	if tokenissuers == nil {
+		fmt.Printf("Token issuers are nil\n")
+		return nil
 	}
-	fmt.Printf("Organization: %v\n", organization)
-	fmt.Printf("External processing envoy metadata: %v\n", externalProcessingEnvoyMetadata)
-	fmt.Printf("JWT authentication data: %v\n", externalProcessingEnvoyMetadata.JwtAuthenticationData)
-	tokenIssuer := transformer.tokenissuerStore.GetJWTIssuerByOrganizationAndIssuer(organization, externalProcessingEnvoyMetadata.JwtAuthenticationData.Issuer)
-	jwtValidationInfo := dto.JWTValidationInfo{Issuer: externalProcessingEnvoyMetadata.JwtAuthenticationData.Issuer, Claims: make(map[string]interface{})}
-	if tokenIssuer != nil {
-		fmt.Printf("Token issuer: %v\n", tokenIssuer)
-		remoteClaims := externalProcessingEnvoyMetadata.JwtAuthenticationData.Claims
-		if remoteClaims != nil {
-			fmt.Printf("Remote claims: %v\n", remoteClaims)
-			audienceClaim := remoteClaims["aud"]
-			if audienceClaim != nil {
-				fmt.Printf("Audience claim: %v\n", audienceClaim)
-				switch audienceClaim.(type) {
-				case string:
-					audiences := []string{remoteClaims["aud"].(string)}
-					jwtValidationInfo.Audiences = audiences
-				case []string:
-					audiences := remoteClaims["aud"].([]string)
-					jwtValidationInfo.Audiences = audiences
+	var jwtValidationInfo dto.JWTValidationInfo
+	for _, tokenissuer := range tokenissuers {
+		fmt.Printf("Token issuer: %v\n", tokenissuer)
+		jwtAuthenticationDataSuccess, exists := jwtAuthenticationData.SucessData[tokenissuer.Issuer+"-payload"]
+		if exists {
+			jwtValidationInfo = dto.JWTValidationInfo{Valid: true, Issuer: jwtAuthenticationDataSuccess.Issuer, Claims: make(map[string]interface{})}
+			remoteClaims := jwtAuthenticationDataSuccess.Claims
+			if remoteClaims != nil {
+				issuedTime := remoteClaims["iat"]
+				if issuedTime != nil {
+					jwtValidationInfo.IssuedTime = int64(issuedTime.(float64))
+				}
+				expiryTime := remoteClaims["exp"]
+				if expiryTime != nil {
+					jwtValidationInfo.ExpiryTime = int64(expiryTime.(float64))
+				}
+				jti := remoteClaims["jti"]
+				if jti != nil {
+					jwtValidationInfo.JTI = jti.(string)
+				}
+				audienceClaim := remoteClaims["aud"]
+				if audienceClaim != nil {
+					switch audienceClaim.(type) {
+					case string:
+						audiences := []string{remoteClaims["aud"].(string)}
+						jwtValidationInfo.Audiences = audiences
+					case []string:
+						audiences := remoteClaims["aud"].([]string)
+						jwtValidationInfo.Audiences = audiences
+					}
+				}
+				remoteScopes := remoteClaims[tokenissuer.ScopesClaim]
+				if remoteScopes != nil {
+					switch remoteScopes := remoteScopes.(type) {
+					case string:
+						scopes := strings.Split(remoteScopes, " ")
+						jwtValidationInfo.Scopes = scopes
+					case []string:
+						scopes := remoteScopes
+						jwtValidationInfo.Scopes = scopes
+					}
+				}
+				remoteClientID := remoteClaims[tokenissuer.ConsumerKeyClaim]
+				if remoteClientID != nil {
+					jwtValidationInfo.ClientID = remoteClientID.(string)
+				}
+				for claimKey, claimValue := range remoteClaims {
+					if localClaim, ok := tokenissuer.ClaimMapping[claimKey]; ok {
+						jwtValidationInfo.Claims[localClaim] = claimValue
+					} else {
+						jwtValidationInfo.Claims[claimKey] = claimValue
+					}
 				}
 			}
-			remoteScopes := remoteClaims[tokenIssuer.ScopesClaim]
-			if remoteScopes != nil {
-				fmt.Printf("Remote scopes: %v\n", remoteScopes)
-				switch remoteScopes := remoteScopes.(type) {
-				case string:
-					scopes := strings.Split(remoteScopes, " ")
-					jwtValidationInfo.Scopes = scopes
-				case []string:
-					scopes := remoteScopes
-					jwtValidationInfo.Scopes = scopes
-				}
-			}
-			remoteClientID := remoteClaims[tokenIssuer.ConsumerKeyClaim]
-			if remoteClientID != nil {
-				fmt.Printf("Remote client ID: %v\n", remoteClientID)
-				jwtValidationInfo.ClientID = remoteClientID.(string)
-			}
-			for claimKey, claimValue := range remoteClaims {
-				fmt.Printf("Claim key: %v, Claim value: %v\n", claimKey, claimValue)
-				if localClaim, ok := tokenIssuer.ClaimMapping[claimKey]; ok {
-					jwtValidationInfo.Claims[localClaim] = claimValue
-				} else {
-					jwtValidationInfo.Claims[claimKey] = claimValue
-				}
-			}
+			return &jwtValidationInfo
 		}
-	} else {
-		fmt.Printf("Token issuer is nil\n")
+		jwtAuthenticationDataFailure, exists := jwtAuthenticationData.FailedData[tokenissuer.Issuer+"-failed"]
+		if exists {
+			jwtValidationInfo = dto.JWTValidationInfo{Valid: false, ValidationCode: jwtAuthenticationDataFailure.Code, ValidationMessage: jwtAuthenticationDataFailure.Message}
+		}
 	}
-	fmt.Printf("JWT validation info: %v\n", jwtValidationInfo)
-	return jwtValidationInfo
+	return &jwtValidationInfo
 }

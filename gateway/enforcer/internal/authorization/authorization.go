@@ -20,14 +20,19 @@ package authorization
 import (
 	"fmt"
 
+	"github.com/wso2/apk/gateway/enforcer/internal/authentication"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
+	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 )
 
 // Validate performs the authorization.
-func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server) *dto.ImmediateResponse {
+func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, jwtTransformer *transformer.JWTTransformer) *dto.ImmediateResponse {
+	if immediateResponse := authentication.ValidateToken(rch, jwtTransformer); immediateResponse != nil {
+		return immediateResponse
+	}
 	if immediateResponse := ValidateScopes(rch, subAppDataStore, cfg); immediateResponse != nil {
 		return immediateResponse
 	}
@@ -36,6 +41,6 @@ func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.Subscription
 		return immediateResponse
 	}
 	cfg.Logger.Info(fmt.Sprintf("Subscription validation successful for the request: %s", rch.MatchedResource.Path))
-	
+
 	return nil
 }
