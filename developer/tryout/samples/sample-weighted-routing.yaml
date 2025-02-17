@@ -147,7 +147,7 @@ kind: "API"
 apiVersion: "dp.wso2.com/v1alpha2"
 metadata:
   name: "backend-service-api"
-  namespace: apk
+  namespace: default
   labels:
     api-name: "backend-service-api"
     api-version: "1.0"
@@ -170,7 +170,7 @@ apiVersion: "gateway.networking.k8s.io/v1beta1"
 kind: "HTTPRoute"
 metadata:
   name: "http-route"
-  namespace: apk
+  namespace: default
   labels:
     api-name: "backend-service-api"
     api-version: "1.0"
@@ -212,7 +212,7 @@ apiVersion: "dp.wso2.com/v1alpha2"
 kind: "Backend"
 metadata:
   name: "backend-1-api"
-  namespace: apk
+  namespace: default
   labels:
     api-name: "backend-1-api"
 spec:
@@ -226,7 +226,7 @@ apiVersion: "dp.wso2.com/v1alpha2"
 kind: "Backend"
 metadata:
   name: "backend-2-api"
-  namespace: apk
+  namespace: default
   labels:
     api-name: "backend-2-api"
 spec:
@@ -240,7 +240,7 @@ apiVersion: "dp.wso2.com/v1alpha2"
 kind: "Backend"
 metadata:
   name: "backend-3-api"
-  namespace: apk
+  namespace: default
   labels:
     api-name: "backend-3-api"
 spec:
@@ -254,7 +254,7 @@ kind: "ConfigMap"
 apiVersion: "v1"
 metadata:
   name: "configmap"
-  namespace: apk
+  namespace: default
   labels:
     api-name: "backend-service-api"
     api-version: "1.0"
