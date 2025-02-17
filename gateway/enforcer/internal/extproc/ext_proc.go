@@ -67,6 +67,7 @@ type ExternalProcessingServer struct {
 	cfg                              *config.Server
 	jwtTransformer                   *transformer.JWTTransformer
 	modelBasedRoundRobinTracker      *datastore.ModelBasedRoundRobinTracker
+	revokedJTIStore                  *datastore.RevokedJTIStore
 }
 
 const (
@@ -109,7 +110,7 @@ var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 //     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
-func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, jwtTransformer *transformer.JWTTransformer, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker) {
+func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, jwtTransformer *transformer.JWTTransformer, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker, revokedJTIStore *datastore.RevokedJTIStore) {
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
@@ -124,7 +125,15 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 
 	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
-	envoy_service_proc_v3.RegisterExternalProcessorServer(server, &ExternalProcessingServer{cfg.Logger, apiStore, subAppDatastore, ratelimitHelper, cfg, jwtTransformer, modelBasedRoundRobinTracker})
+	envoy_service_proc_v3.RegisterExternalProcessorServer(server, 
+		&ExternalProcessingServer{cfg.Logger, 
+			apiStore, 
+			subAppDatastore, 
+			ratelimitHelper, 
+			cfg, 
+			jwtTransformer, 
+			modelBasedRoundRobinTracker, 
+			revokedJTIStore})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -309,7 +318,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
 			s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", requestConfigHolder, s))
 			if requestConfigHolder.MatchedResource != nil && requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !requestConfigHolder.MatchedAPI.DisableAuthentication {
-				if immediateResponse := authorization.Validate(requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg, s.jwtTransformer); immediateResponse != nil {
+				if immediateResponse := authorization.Validate(requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg, s.jwtTransformer, s.revokedJTIStore); immediateResponse != nil {
 					// Update the Content-Type header
 					headers := &envoy_service_proc_v3.HeaderMutation{
 						SetHeaders: []*corev3.HeaderValueOption{
@@ -440,7 +449,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			rch.MatchedAPI = matchedAPI
 			rch.ExternalProcessingEnvoyMetadata = metadata
 			if matchedAPI.IsGraphQLAPI() {
-				if immediateResponse := graphql.ValidateGraphQLOperation(rch, metadata, s.subscriptionApplicationDatastore, s.cfg, string(req.GetRequestBody().Body), s.jwtTransformer); immediateResponse != nil {
+				if immediateResponse := graphql.ValidateGraphQLOperation(rch, metadata, s.subscriptionApplicationDatastore, s.cfg, string(req.GetRequestBody().Body), s.jwtTransformer, s.revokedJTIStore); immediateResponse != nil {
 					headers := &envoy_service_proc_v3.HeaderMutation{
 						SetHeaders: []*corev3.HeaderValueOption{
 							{

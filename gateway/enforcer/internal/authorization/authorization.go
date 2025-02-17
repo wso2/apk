@@ -29,8 +29,8 @@ import (
 )
 
 // Validate performs the authorization.
-func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, jwtTransformer *transformer.JWTTransformer) *dto.ImmediateResponse {
-	if immediateResponse := authentication.ValidateToken(rch, jwtTransformer); immediateResponse != nil {
+func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, jwtTransformer *transformer.JWTTransformer, revokedJTIStore *datastore.RevokedJTIStore) *dto.ImmediateResponse {
+	if immediateResponse := authentication.ValidateToken(rch, jwtTransformer, revokedJTIStore); immediateResponse != nil {
 		return immediateResponse
 	}
 	if immediateResponse := ValidateScopes(rch, subAppDataStore, cfg); immediateResponse != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/grpc"
 	metrics "github.com/wso2/apk/gateway/enforcer/internal/metrics"
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
+	"github.com/wso2/apk/gateway/enforcer/internal/tokenrevocation"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"github.com/wso2/apk/gateway/enforcer/internal/xds"
 )
@@ -41,8 +42,18 @@ func main() {
 	apiStore, configStore, jwtIssuerDatastore, modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
 	// NewJWTTransformer creates a new instance of JWTTransformer.
 	jwtTransformer := transformer.NewJWTTransformer(jwtIssuerDatastore)
+	var revokedJTIStore *datastore.RevokedJTIStore
+	if cfg.TokenRevocationEnabled {
+		revokedJTIStore = datastore.NewRevokedJTIStore()
+		revokedJTIStore.StartRevokedJTIStoreCleanup(time.Duration(cfg.RevokedTokenCleanupInterval) * time.Second)
+		if cfg.IsRedisTLSEnabled {
+			tokenrevocation.NewRevokedTokenFetcher(cfg, revokedJTIStore, tlsConfig).Start()
+		} else {
+			tokenrevocation.NewRevokedTokenFetcher(cfg, revokedJTIStore, nil).Start()
+		}
+	}
 	// Start the external processing server
-	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker)
+	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker, revokedJTIStore)
 
 	// Wait for the config to be loaded
 	cfg.Logger.Info("Waiting for the config to be loaded")
@@ -56,7 +67,6 @@ func main() {
 	if cfg.Metrics.Enabled && strings.EqualFold(cfg.Metrics.Type, "prometheus") {
 		go metrics.StartPrometheusMetricsServer(cfg.Metrics.Port)
 	}
-
 	// Wait forever
 	select {}
 }

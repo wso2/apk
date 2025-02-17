@@ -250,6 +250,8 @@ wso2:
               sslHostname: "enforcer"
 #            logging:
 #              level: DEBUG
+            env:
+              TOKEN_REVOCATION_ENABLED: "true" 
             configs:
              javaOpts: "-Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2"
 #              tls:

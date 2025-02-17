@@ -58,6 +58,7 @@ type Server struct {
 	RedisCertFile                    string `envconfig:"REDIS_CERT_FILE" default:"/home/wso2/security/redis/redis.crt"`
 	RedisCaCertFile                  string `envconfig:"REDIS_CA_CERT_FILE" default:"/home/wso2/security/redis/ca.crt"`
 	RevokedTokenCleanupInterval      int    `envconfig:"REVOKED_TOKEN_CLEANUP_INTERVAL" default:"3600"` // seconds
+	TokenRevocationEnabled           bool   `envconfig:"TOKEN_REVOCATION_ENABLED" default:"false"`
 	ChoreoAnalyticsAuthToken         string `envconfig:"CHOREO_ANALYTICS_AUTH_TOKEN" default:""`
 	ChoreoAnalyticsAuthURL           string `envconfig:"CHOREO_ANALYTICS_AUTH_URL" default:""`
 	MoesifToken                      string `envconfig:"MOESIF_TOKEN" default:""`
