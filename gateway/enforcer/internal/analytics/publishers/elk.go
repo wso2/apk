@@ -8,6 +8,10 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
+const (
+	timeFormat = "2006-01-02T15:04:05.000Z"
+)
+
 // ELK represents the ELK publisher
 type ELK struct {
 	logLevel string
@@ -62,15 +66,15 @@ func (e *ELK) publishEvent(event *dto.Event) {
 		BackendLatency:           event.Latencies.BackendLatency,
 		RequestMediationLatency:  event.Latencies.RequestMediationLatency,
 		ResponseMediationLatency: event.Latencies.ResponseMediationLatency,
-		KeyType:                  event.Application.KeyType,
-		ApplicationID:            event.Application.ApplicationID,
-		ApplicationName:          event.Application.ApplicationName,
-		ApplicationOwner:         event.Application.ApplicationOwner,
-		UserAgentHeader:          event.UserAgentHeader,
-		UserName:                 event.UserName,
-		UserIP:                   event.UserIP,
-		RequestTimestamp:         event.RequestTimestamp,
-		Properties:               event.Properties,
+		KeyType: event.Application.KeyType,
+		ApplicationID: event.Application.ApplicationID,
+		ApplicationName: event.Application.ApplicationName,
+		ApplicationOwner: event.Application.ApplicationOwner,
+		UserAgentHeader: event.UserAgentHeader,
+		UserName: event.UserName,
+		UserIP: event.UserIP,
+		RequestTimestamp: event.RequestTimestamp.Format(timeFormat),
+		Properties: event.Properties,
 	}
 
 	jsonString, err := util.ToJSONString(elkResponseEvent)
@@ -88,23 +92,23 @@ func (e *ELK) publishFault(event *dto.Event) {
 		APIType:                event.API.APIType,
 		APIVersion:             event.API.APIVersion,
 		APICreatorTenantDomain: event.API.APICreatorTenantDomain,
-		APIMethod:              event.Operation.APIMethod,
-		TargetResponseCode:     event.Target.TargetResponseCode,
-		ProxyResponseCode:      event.ProxyResponseCode,
-		CorrelationID:          event.MetaInfo.CorrelationID,
-		RegionID:               event.MetaInfo.RegionID,
-		GatewayType:            event.MetaInfo.GatewayType,
-		KeyType:                event.Application.KeyType,
-		ApplicationID:          event.Application.ApplicationID,
-		ApplicationName:        event.Application.ApplicationName,
-		ApplicationOwner:       event.Application.ApplicationOwner,
-		UserAgentHeader:        event.UserAgentHeader,
-		UserIP:                 event.UserIP,
-		RequestTimestamp:       event.RequestTimestamp,
-		Properties:             event.Properties,
-		ErrorType:              "",
-		ErrorCode:              event.Target.TargetResponseCode,
-		ErrorMessage:           event.Target.ResponseCodeDetail,
+		APIMethod: event.Operation.APIMethod,
+		TargetResponseCode: event.Target.TargetResponseCode,
+		ProxyResponseCode: event.ProxyResponseCode,
+		CorrelationID: event.MetaInfo.CorrelationID,
+		RegionID: event.MetaInfo.RegionID,
+		GatewayType: event.MetaInfo.GatewayType,
+		KeyType: event.Application.KeyType,
+		ApplicationID: event.Application.ApplicationID,
+		ApplicationName: event.Application.ApplicationName,
+		ApplicationOwner: event.Application.ApplicationOwner,
+		UserAgentHeader: event.UserAgentHeader,
+		UserIP: event.UserIP,
+		RequestTimestamp: event.RequestTimestamp.Format(timeFormat),
+		Properties: event.Properties,
+		ErrorType: "",
+		ErrorCode: event.Target.TargetResponseCode,
+		ErrorMessage: event.Target.ResponseCodeDetail,
 	}
 
 	jsonString, err := util.ToJSONString(elkResponseEvent)
