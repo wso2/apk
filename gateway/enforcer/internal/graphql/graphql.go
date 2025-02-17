@@ -28,7 +28,7 @@ type GQLRequest struct {
 }
 
 // ValidateGraphQLOperation validates/authenticates the incoming GraphQL request.
-func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadata *dto.ExternalProcessingEnvoyMetadata, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, requestBody string, jwtTransformer *transformer.JWTTransformer) *dto.ImmediateResponse {
+func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadata *dto.ExternalProcessingEnvoyMetadata, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, requestBody string, jwtTransformer *transformer.JWTTransformer, revokedJTIStore *datastore.RevokedJTIStore) *dto.ImmediateResponse {
 	matchedapi := requestConfigHolder.MatchedAPI
 	schemaBytes := matchedapi.APIDefinition
 	var sdl string
@@ -100,7 +100,7 @@ func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadat
 			}
 			requestConfigHolder.MatchedResource = res
 			if res.AuthenticationConfig != nil && !res.AuthenticationConfig.Disabled && !matchedapi.DisableAuthentication {
-				immediateResponse := authorization.Validate(requestConfigHolder, subAppDataStore, cfg, jwtTransformer)
+				immediateResponse := authorization.Validate(requestConfigHolder, subAppDataStore, cfg, jwtTransformer, revokedJTIStore)
 				if immediateResponse != nil {
 					return immediateResponse
 				}

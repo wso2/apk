@@ -90,6 +90,7 @@ func (r *RevokedTokenFetcher) fetchRevokedTokens() {
 				r.cfg.Logger.Error(err, fmt.Sprintf("Error parsing expiration time for key %s", key))
 				continue
 			}
+			r.cfg.Logger.Info(fmt.Sprintf("Fetched revoked token: key=%s, expirationTime=%d", key, expirationTime))
 			r.jtiDatastore.AddJTI(key, time.Unix(expirationTime, 0))
 		}
 		if cursor == 0 {
@@ -124,6 +125,7 @@ func (r *RevokedTokenFetcher) subscribe() {
 			r.cfg.Logger.Error(err, fmt.Sprintf("Error parsing expiration time for JTI %s", jti))
 			continue
 		}
+		r.cfg.Logger.Info(fmt.Sprintf("Received revoked token: jti=%s, expirationTime=%d", jti, expirationTime))
 		r.jtiDatastore.AddJTI(jti, time.Unix(expirationTime, 0))
 	}
 
