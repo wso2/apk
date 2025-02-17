@@ -28,7 +28,7 @@ type Choreo struct {
 	hub            *azeventhubs.ProducerClient
 	hashedToken    string
 	eventDataBatch *azeventhubs.EventDataBatch
-	mu      sync.Mutex
+	mu             sync.Mutex
 }
 
 type tokenResponse struct {
@@ -139,7 +139,7 @@ func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
 		for {
 			time.Sleep(time.Duration(cfg.EventhubPublishInterval) * time.Second)
 			choreo.mu.Lock()
-			if choreo.eventDataBatch != nil && choreo.eventDataBatch.NumBytes() > 0{
+			if choreo.eventDataBatch != nil && choreo.eventDataBatch.NumBytes() > 0 {
 				err = hub.SendEventDataBatch(context.TODO(), choreo.eventDataBatch, nil)
 				if err != nil {
 					cfg.Logger.Error(err, "Error while sending batch")
@@ -269,10 +269,17 @@ func (e *Choreo) publishFault(event *dto.Event) {
 		UserAgentHeader:        event.UserAgentHeader,
 		UserIP:                 event.UserIP,
 		RequestTimestamp:       event.RequestTimestamp,
-		Properties:             event.Properties,
-		ErrorType:              "",
+		ErrorType:              "TARGET_CONNECTIVITY",
 		ErrorCode:              event.Target.TargetResponseCode,
 		ErrorMessage:           event.Target.ResponseCodeDetail,
+		OrganizationID:         event.API.OrganizationID,
+		ResponseCacheHit:       event.Target.ResponseCacheHit,
+		EventType:              "fault",
+		APIResourceTemplate:    event.Operation.APIResourceTemplate,
+		APIContext:             event.API.APIContext,
+	}
+	if event.Target.TargetResponseCode == 404 {
+		choreoResponseEvent.ErrorType = "OTHER"
 	}
 
 	choreoResponseEvent.EnvironmentID = "Default"
