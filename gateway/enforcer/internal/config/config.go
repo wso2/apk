@@ -71,6 +71,7 @@ type Server struct {
 	Metrics                          metrics
 	JWTGeneratorPublicKeyPath        string `envconfig:"JWT_GENERATOR_PUBLIC_CERTIFICATE_PATH" default:"/home/wso2/security/keystore/mg.pem"`
 	JWTGeneratorPrivateKeyPath       string `envconfig:"JWT_GENERATOR_PRIVATE_KEY_PATH" default:"/home/wso2/security/keystore/mg.key"`
+	EventhubPublishInterval          int    `envconfig:"EVENTHUB_PUBLISH_INTERVAL" default:"5"` // seconds
 }
 
 type metrics struct {

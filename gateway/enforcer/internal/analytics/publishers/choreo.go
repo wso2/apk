@@ -4,9 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
-	"log"
 	"reflect"
+	"sync"
 
 	"fmt"
 	"net/url"
@@ -23,9 +24,11 @@ import (
 
 // Choreo represents the ELK publisher
 type Choreo struct {
-	cfg         *config.Server
-	hub         *azeventhubs.ProducerClient
-	hashedToken string
+	cfg            *config.Server
+	hub            *azeventhubs.ProducerClient
+	hashedToken    string
+	eventDataBatch *azeventhubs.EventDataBatch
+	mu      sync.Mutex
 }
 
 type tokenResponse struct {
@@ -60,7 +63,6 @@ func (c *CustomCredential) GetToken(ctx context.Context, opts policy.TokenReques
 	if err := json.Unmarshal(body, &result); err != nil {
 		return azcore.AccessToken{}, err
 	}
-	log.Println("Applications: ", result)
 	token := result.Token
 	expiresOn := time.Now().Add(1 * time.Hour) // Token validity duration
 
@@ -127,11 +129,35 @@ func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
 		return nil
 	}
 	cfg.Logger.Info(fmt.Sprintf("Hashed token: %s", util.ComputeSHA256Hash(token)))
-	return &Choreo{
+	choreo := &Choreo{
 		cfg:         cfg,
 		hub:         hub,
 		hashedToken: util.ComputeSHA256Hash(token),
+		mu:          sync.Mutex{},
 	}
+	go func() {
+		for {
+			time.Sleep(time.Duration(cfg.EventhubPublishInterval) * time.Second)
+			choreo.mu.Lock()
+			if choreo.eventDataBatch != nil && choreo.eventDataBatch.NumBytes() > 0{
+				err = hub.SendEventDataBatch(context.TODO(), choreo.eventDataBatch, nil)
+				if err != nil {
+					cfg.Logger.Error(err, "Error while sending batch")
+				} else {
+					cfg.Logger.Info("Batch of events sent to Choreo successfully")
+					newBatchOptions := &azeventhubs.EventDataBatchOptions{}
+					batch, err := hub.NewEventDataBatch(context.TODO(), newBatchOptions)
+					if err != nil {
+						cfg.Logger.Error(err, "Error while creating new batch")
+						return
+					}
+					choreo.eventDataBatch = batch
+				}
+			}
+			choreo.mu.Unlock()
+		}
+	}()
+	return choreo
 }
 
 // Publish publishes the event to ELK
@@ -209,14 +235,6 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 		return
 	}
 	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
-
-	newBatchOptions := &azeventhubs.EventDataBatchOptions{}
-
-	batch, err := e.hub.NewEventDataBatch(context.TODO(), newBatchOptions)
-	if err != nil {
-		e.cfg.Logger.Error(err, "Error while creating new batch")
-		return
-	}
 	eventData := &azeventhubs.EventData{
 		Body: []byte(jsonString),
 	}
@@ -226,18 +244,8 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 	eventData.Properties["token-hash"] = e.hashedToken
 	eventData.CorrelationID = event.MetaInfo.CorrelationID
 	eventData.MessageID = &event.MetaInfo.CorrelationID
-	err = batch.AddEventData(eventData, nil)
-	if err != nil {
-		e.cfg.Logger.Error(err, "Error while adding event to batch")
-		return
-	}
-	e.cfg.Logger.Info(fmt.Sprintf("Batch: %+v\n json string : %+v \n\n\n %+v", batch, jsonString, eventData))
-	err = e.hub.SendEventDataBatch(context.TODO(), batch, nil)
-	if err != nil {
-		e.cfg.Logger.Error(err, "Error while sending batch")
-		return
-	}
-	e.cfg.Logger.Info("Event sent successfully")
+	e.addEvent(eventData)
+	e.cfg.Logger.Info("Success event added to batch successfully")
 
 }
 
@@ -281,14 +289,6 @@ func (e *Choreo) publishFault(event *dto.Event) {
 		return
 	}
 	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
-
-	newBatchOptions := &azeventhubs.EventDataBatchOptions{}
-
-	batch, err := e.hub.NewEventDataBatch(context.TODO(), newBatchOptions)
-	if err != nil {
-		e.cfg.Logger.Error(err, "Error while creating new batch")
-		return
-	}
 	eventData := &azeventhubs.EventData{
 		Body: []byte(jsonString),
 	}
@@ -298,18 +298,31 @@ func (e *Choreo) publishFault(event *dto.Event) {
 	eventData.Properties["token-hash"] = e.hashedToken
 	eventData.CorrelationID = event.MetaInfo.CorrelationID
 	eventData.MessageID = &event.MetaInfo.CorrelationID
-	err = batch.AddEventData(eventData, nil)
-	if err != nil {
-		e.cfg.Logger.Error(err, "Error while adding event to batch")
-		return
+	e.addEvent(eventData)
+	e.cfg.Logger.Info("Fault event added to batch successfully")
+}
+
+func (e *Choreo) addEvent(event *azeventhubs.EventData) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	if e.eventDataBatch == nil {
+		newBatchOptions := &azeventhubs.EventDataBatchOptions{}
+		batch, err := e.hub.NewEventDataBatch(context.TODO(), newBatchOptions)
+		if err != nil {
+			e.cfg.Logger.Error(err, "Error while creating new batch")
+			return
+		}
+		e.eventDataBatch = batch
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("Batch: %+v\n json string : %+v \n\n\n %+v", batch, jsonString, eventData))
-	err = e.hub.SendEventDataBatch(context.TODO(), batch, nil)
-	if err != nil {
-		e.cfg.Logger.Error(err, "Error while sending batch")
-		return
+	err := e.eventDataBatch.AddEventData(event, nil)
+	if errors.Is(err, azeventhubs.ErrEventDataTooLarge) {
+		err = e.hub.SendEventDataBatch(context.TODO(), e.eventDataBatch, nil)
+		if err != nil {
+			e.cfg.Logger.Error(err, "Error while sending batch")
+			return
+		}
+		e.cfg.Logger.Info("Batch of events sent to Choreo successfully")
 	}
-	e.cfg.Logger.Info("Event sent successfully")
 }
 
 func (e *Choreo) isFault(event *dto.Event) bool {
