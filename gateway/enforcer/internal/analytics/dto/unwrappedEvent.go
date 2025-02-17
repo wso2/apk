@@ -48,7 +48,7 @@ type DefaultFaultEvent struct {
 	APIName                string                 `json:"apiName"`
 	APIVersion             string                 `json:"apiVersion"`
 	APIMethod              string                 `json:"apiMethod"`
-	APICreation            string                 `json:"apiCreation"`
+	APICreator             string                 `json:"apiCreator"`
 	APICreatorTenantDomain string                 `json:"apiCreatorTenantDomain"`
 	ApplicationID          string                 `json:"applicationID"`
 	ApplicationName        string                 `json:"applicationName"`
@@ -62,7 +62,12 @@ type DefaultFaultEvent struct {
 	ResponseLatency        int64                  `json:"responseLatency"`
 	UserIP                 string                 `json:"userIP"`
 	UserAgentHeader        string                 `json:"userAgentHeader"`
-	Properties             map[string]interface{} `json:"properties"`
+	ResponseCacheHit       bool                   `json:"responseCacheHit"`
+	BackendLatency		 int64                  `json:"backendLatency"`
+	EventType 			string                 `json:"eventType"`
+	APIResourceTemplate string `json:"apiResourceTemplate"`
+	ResponseMediationLatency int64 `json:"responseMediationLatency"`
+	APIContext string `json:"apiContext"`
 }
 
 // ELKFaultEvent represents the ELK fault event data.
@@ -125,7 +130,7 @@ type DefaultResponseEvent struct {
 	ResponseMediationLatency int64  `json:"responseMediationLatency"`
 	UserIP                   string `json:"userIP"`
 	EventType                string `json:"eventType"`
-	Platform 				string `json:"platform"`
+	Platform                 string `json:"platform"`
 
 	// Properties               map[string]interface{} `json:"properties"`
 }
