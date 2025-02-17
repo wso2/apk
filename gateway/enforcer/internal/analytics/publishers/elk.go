@@ -8,6 +8,10 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
+const (
+	timeFormat = "2006-01-02T15:04:05.000Z"
+)
+
 // ELK represents the ELK publisher
 type ELK struct {
 	logLevel string
@@ -69,7 +73,7 @@ func (e *ELK) publishEvent(event *dto.Event) {
 		UserAgentHeader: event.UserAgentHeader,
 		UserName: event.UserName,
 		UserIP: event.UserIP,
-		RequestTimestamp: event.RequestTimestamp,
+		RequestTimestamp: event.RequestTimestamp.Format(timeFormat),
 		Properties: event.Properties,
 	}
 
@@ -100,7 +104,7 @@ func (e *ELK) publishFault(event *dto.Event) {
 		ApplicationOwner: event.Application.ApplicationOwner,
 		UserAgentHeader: event.UserAgentHeader,
 		UserIP: event.UserIP,
-		RequestTimestamp: event.RequestTimestamp,
+		RequestTimestamp: event.RequestTimestamp.Format(timeFormat),
 		Properties: event.Properties,
 		ErrorType: "",
 		ErrorCode: event.Target.TargetResponseCode,

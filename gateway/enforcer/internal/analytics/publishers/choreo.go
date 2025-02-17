@@ -190,7 +190,7 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 		UserAgentHeader:          event.UserAgentHeader,
 		UserName:                 event.UserName,
 		UserIP:                   event.UserIP,
-		RequestTimestamp:         event.RequestTimestamp,
+		RequestTimestamp:         event.RequestTimestamp.Format(timeFormat),
 		EventType:                "response",
 		// Properties:               event.Properties,
 	}
@@ -260,7 +260,7 @@ func (e *Choreo) publishFault(event *dto.Event) {
 		ApplicationOwner:       event.Application.ApplicationOwner,
 		UserAgentHeader:        event.UserAgentHeader,
 		UserIP:                 event.UserIP,
-		RequestTimestamp:       event.RequestTimestamp,
+		RequestTimestamp:       event.RequestTimestamp.Format(timeFormat),
 		Properties:             event.Properties,
 		ErrorType:              "",
 		ErrorCode:              event.Target.TargetResponseCode,
