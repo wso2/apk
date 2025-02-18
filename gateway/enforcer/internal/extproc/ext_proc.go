@@ -999,8 +999,8 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 	if filterMatadata != nil {
 		externalProcessingEnvoyMetadata := &dto.ExternalProcessingEnvoyMetadata{}
 		jwtFilterdata := filterMatadata["envoy.filters.http.jwt_authn"]
-		authenticationData := &dto.JwtAuthenticationData{}
 		if jwtFilterdata != nil {
+			authenticationData := &dto.JwtAuthenticationData{}
 			for key, structValue := range jwtFilterdata.Fields {
 				if strings.HasSuffix(key, "-payload") {
 					sucessData := dto.JWTAuthenticationSuccessData{}
@@ -1044,7 +1044,6 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 					}
 				}
 			}
-
 			externalProcessingEnvoyMetadata.JwtAuthenticationData = authenticationData
 		}
 		if extProcMetadata, exists := filterMatadata[externalProessingMetadataContextKey]; exists {
@@ -1064,7 +1063,7 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 		}
 		return externalProcessingEnvoyMetadata, nil
 	}
-	return nil, fmt.Errorf("could not find the filter metadata")
+	return nil, nil
 }
 
 // ReadGzip decompresses a GZIP-compressed byte slice and returns the string output

@@ -463,6 +463,12 @@ func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[str
 			selectedIssuers = append(selectedIssuers, issuserName)
 		}
 	}
+	return GetAPILevelJWTRequirements(adapterAPI, selectedIssuers)
+
+}
+
+// GetAPILevelJWTRequirements returns the jwt requirements for the resource
+func GetAPILevelJWTRequirements(adapterAPI *model.AdapterInternalAPI, selectedIssuers []string) *jwt.JwtRequirement {
 	if len(selectedIssuers) >= 1 {
 		return &jwt.JwtRequirement{
 			RequiresType: &jwt.JwtRequirement_RequiresAny{
@@ -487,8 +493,44 @@ func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[str
 	return nil
 }
 
+// GenerateAPILevelJWTPRoviders generates the jwt provider for the resource
+func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer, adapterAPI *model.AdapterInternalAPI, authorizationHeader *string, sendTokenToUpStream *bool) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, *jwt.JwtRequirement, error) {
+	jwtProviders := map[string]*jwt.JwtProvider{}
+	var clusters []*clusterv3.Cluster
+	var addresses []*corev3.Address
+	var selectedIssuers []string
+	for issuerMappingName, jwtIssuer := range jwtIssuers {
+		providerName := adapterAPI.UUID + "-" + issuerMappingName
+		var seleced bool
+		if contains(jwtIssuer.Environments, "*") {
+			selectedIssuers = append(selectedIssuers, providerName)
+			seleced = true
+		} else if contains(jwtIssuer.Environments, adapterAPI.GetEnvironment()) {
+			selectedIssuers = append(selectedIssuers, providerName)
+			seleced = true
+		}
+		if seleced {
+			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, providerName)
+			if err != nil {
+				return nil, nil, nil, nil, err
+			}
+			if authorizationHeader != nil {
+				provider.FromHeaders = []*jwt.JwtHeader{{Name: *authorizationHeader, ValuePrefix: "Bearer "}}
+			}
+			if sendTokenToUpStream != nil {
+				provider.Forward = *sendTokenToUpStream
+			}
+			jwtProviders[providerName] = provider
+			clusters = append(clusters, cluster...)
+			addresses = append(addresses, address...)
+		}
+	}
+	requirements := GetAPILevelJWTRequirements(adapterAPI, selectedIssuers)
+	return jwtProviders, clusters, addresses, requirements, nil
+}
+
 // GenerateJWTPRoviderv3 generates the jwt provider for the resource
-func GenerateJWTPRoviders(jwtProviderMap map[string]map[string]*v1alpha1.ResolvedJWTIssuer) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, error) {
+func GenerateJWTPRoviderv3(jwtProviderMap map[string]map[string]*v1alpha1.ResolvedJWTIssuer) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, error) {
 	jwtProviders := map[string]*jwt.JwtProvider{}
 	var clusters []*clusterv3.Cluster
 	var addresses []*corev3.Address
@@ -517,13 +559,17 @@ func contains(arr []string, str string) bool {
 	return false
 }
 func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName string) (*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, error) {
+	conf := config.ReadConfigs()
+
 	jwksClusters := make([]*clusterv3.Cluster, 0)
 	jwksAddresses := make([]*corev3.Address, 0)
 	jwtProvider := &jwt.JwtProvider{
 		Issuer:                 tokenIssuer.Issuer,
-		Forward:                true,
 		FailedStatusInMetadata: tokenIssuer.Issuer + "-failed",
 		PayloadInMetadata:      tokenIssuer.Issuer + "-payload",
+	}
+	if conf.Enforcer.Cache.Enabled {
+		jwtProvider.JwtCacheConfig = &jwt.JwtCacheConfig{JwtCacheSize: uint32(conf.Enforcer.Cache.MaximumSize)}
 	}
 	if tokenIssuer.SignatureValidation.JWKS != nil {
 		logger.LoggerOasparser.Infof("JWKS URL: %s", tokenIssuer.SignatureValidation.JWKS.URL)
