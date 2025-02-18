@@ -1146,11 +1146,6 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 				}
 			}
 		}
-
-		// Print extracted values
-		for key, value := range extractedValues {
-			fmt.Printf("%s: %s\n", key, value)
-		}
 		// Return the populated struct
 		return attributes, nil
 	}
