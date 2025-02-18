@@ -737,7 +737,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				remainingRequestCount := 100
 				status := 200
 				for _, headerValue := range headerValues {
-					if headerValue.Key == "x-ratelimit-remaining-tokens" {
+					if headerValue.Key == "x-ratelimit-remaining-tokens" || headerValue.Key == "x-ratelimit-remaining" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
 							s.log.Error(err, "Unable to retrieve remaining token count by header")
