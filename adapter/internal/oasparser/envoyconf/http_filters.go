@@ -259,6 +259,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 		RequestAttributes:  []string{"xds.route_metadata", "request.method", "request.id"},
 		ResponseAttributes: []string{"xds.route_metadata"},
 		MessageTimeout:     durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
+		AllowModeOverride: true,
 	}
 	ext, err2 := anypb.New(externalProcessor)
 	if err2 != nil {
