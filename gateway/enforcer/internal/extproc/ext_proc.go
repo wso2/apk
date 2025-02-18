@@ -185,7 +185,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		dynamicMetadataKeyValuePairs := make(map[string]string)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
-			s.log.Sugar().Info("Request Headers Flow")
+			// s.log.Sugar().Info("Request Headers Flow")
 			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if err != nil {
@@ -223,22 +223,22 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				RequestHeaders: rhq,
 			}
 			resp.ModeOverride = &v31.ProcessingMode{
-				RequestBodyMode: v31.ProcessingMode_NONE,
+				RequestBodyMode:    v31.ProcessingMode_NONE,
 				ResponseHeaderMode: v31.ProcessingMode_HeaderSendMode(v31.ProcessingMode_SKIP),
-				ResponseBodyMode: v31.ProcessingMode_NONE,
+				ResponseBodyMode:   v31.ProcessingMode_NONE,
 			}
 			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
 			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
-			
+
 			// Do not remove or modify this nil check. It is necessary to avoid nil pointer dereference.
 			if requestConfigHolder.MatchedAPI == nil {
 				break
 			}
 			if requestConfigHolder.MatchedAPI.IsGraphQLAPI() {
-				s.cfg.Logger.Sugar().Info("111")
+				// s.cfg.Logger.Sugar().Info("111")
 				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
-			
+
 			dynamicMetadataKeyValuePairs[customOrgMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
 
 			dynamicMetadataKeyValuePairs[matchedAPIMetadataKey] = apiKey
@@ -251,8 +251,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			dynamicMetadataKeyValuePairs[analytics.APICreatorTenantDomainKey] = requestConfigHolder.MatchedAPI.OrganizationID
 
 			if requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {
-				definitionPath := requestConfigHolder.MatchedAPI.APIDefinitionPath
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("definition Path: %v", definitionPath))
+				// definitionPath := requestConfigHolder.MatchedAPI.APIDefinitionPath
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("definition Path: %v", definitionPath))
 				fullPath := requestConfigHolder.MatchedAPI.BasePath + requestConfigHolder.MatchedAPI.APIDefinitionPath
 				if attributes.Path == fullPath {
 					definition := requestConfigHolder.MatchedAPI.APIDefinition
@@ -270,7 +270,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						decompressedData, _ := io.ReadAll(reader)
 						responseBody, _ = base64.StdEncoding.DecodeString(string(decompressedData))
 					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("decompressed definition: %v", decompressedStr))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("decompressed definition: %v", decompressedStr))
 					if definition != nil {
 						resp = &envoy_service_proc_v3.ProcessingResponse{
 							Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
@@ -302,10 +302,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					}
 				}
 			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Metadata context : %+v", req.GetMetadataContext()))
-			
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Metadata context : %+v", req.GetMetadataContext()))
+
 			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
-			
+
 			// Do not remove or modify this nil check. It is necessary to avoid nil pointer dereference.
 			if requestConfigHolder.MatchedResource == nil {
 				break
@@ -315,8 +315,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin == nil &&
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
-					s.cfg.Logger.Sugar().Info("222")
-					resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
+				// s.cfg.Logger.Sugar().Info("222")
+				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
@@ -324,8 +324,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-					s.cfg.Logger.Sugar().Info("333")
-					resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
+				// s.cfg.Logger.Sugar().Info("333")
+				resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
@@ -333,8 +333,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
-					s.cfg.Logger.Sugar().Info("444")
-					resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SKIP
+				// s.cfg.Logger.Sugar().Info("444")
+				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SKIP
 			}
 
 			requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
@@ -404,7 +404,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						RawValue: []byte(backendJWT),
 					},
 				})
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Added backend JWT to the header: %s, header name: %s", backendJWT, requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Added backend JWT to the header: %s, header name: %s", backendJWT, requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader))
 			}
 			if requestConfigHolder.MatchedApplication != nil {
 				dynamicMetadataKeyValuePairs[matchedApplicationMetadataKey] = requestConfigHolder.MatchedApplication.UUID
@@ -414,11 +414,11 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 			if requestConfigHolder.MatchedAPI.EndpointSecurity != nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Inside API Level Endpoint Security: %+v", requestConfigHolder.MatchedAPI.EndpointSecurity))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Inside API Level Endpoint Security: %+v", requestConfigHolder.MatchedAPI.EndpointSecurity))
 				for _, es := range requestConfigHolder.MatchedAPI.EndpointSecurity {
 					if es.Enabled {
-						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Enabled API Level Endpoint Security: %+v", es))
-						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Enabled API Level Security Type: %s", es.SecurityType))
+						//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Enabled API Level Endpoint Security: %+v", es))
+						//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Enabled API Level Security Type: %s", es.SecurityType))
 						if es.SecurityType == "Basic" {
 							basicValue := fmt.Sprintf("Basic %s", util.Base64Encode([]byte(fmt.Sprintf("%s:%s", es.Username, es.Password))))
 							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
@@ -440,11 +440,11 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 			if requestConfigHolder.MatchedResource.EndpointSecurity != nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Endpoint Security: %+v", requestConfigHolder.MatchedResource.EndpointSecurity))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Endpoint Security: %+v", requestConfigHolder.MatchedResource.EndpointSecurity))
 				for _, es := range requestConfigHolder.MatchedResource.EndpointSecurity {
 					if es.Enabled {
-						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Endpoint Security: %+v", es))
-						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Security Type: %s", es.SecurityType))
+						//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Endpoint Security: %+v", es))
+						//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Security Type: %s", es.SecurityType))
 						if es.SecurityType == "Basic" {
 							basicValue := fmt.Sprintf("Basic %s", util.Base64Encode([]byte(fmt.Sprintf("%s:%s", es.Username, es.Password))))
 							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
@@ -466,9 +466,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
-			s.log.Sugar().Info("Request Body Flow")
+			// s.log.Sugar().Info("Request Body Flow")
 			// httpBody := req.GetRequestBody()
-			s.log.Sugar().Debug("Request Body Flow")
+			// s.log.Sugar().Debug("Request Body Flow")
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
 				RequestBody: &envoy_service_proc_v3.BodyResponse{
 					Response: &envoy_service_proc_v3.CommonResponse{},
@@ -480,10 +480,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Error(err, "failed to extract context metadata")
 				break
 			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
 			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
 			if matchedAPI == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
 				break
 			}
 			rch := &requestconfig.Holder{}
@@ -517,19 +517,19 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
 			if matchedResource == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
 				break
 			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
 
 			if matchedAPI.AiProvider != nil &&
 				matchedAPI.AiProvider.SupportedModels != nil &&
 				matchedAPI.AIModelBasedRoundRobin != nil &&
 				matchedAPI.AIModelBasedRoundRobin.Enabled {
-				s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
+				//s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
 				supportedModels := matchedAPI.AiProvider.SupportedModels
 				onQuotaExceedSuspendDuration := matchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("EnvType :%+v", matchedAPI.EnvType))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("EnvType :%+v", matchedAPI.EnvType))
 				var modelWeight []dto.ModelWeight
 				if matchedAPI.EnvType != "" && matchedAPI.EnvType == "PRODUCTION" {
 					modelWeight = matchedAPI.AIModelBasedRoundRobin.ProductionModels
@@ -549,14 +549,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
 				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
 				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(matchedAPI.UUID, matchedResource.Path, modelWeights)
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
 				if selectedModel == "" || selectedEndpoint == "" {
-					s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
+					//s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
 				} else {
 					// change request body to model to selected model
 					httpBody := req.GetRequestBody().Body
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body before %+v\n", httpBody))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body before %+v\n", httpBody))
 					// Define a map to hold the JSON data
 					var jsonData map[string]interface{}
 					// Unmarshal the JSON data into the map
@@ -564,7 +564,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					if err != nil {
 						s.log.Error(err, "Error unmarshaling JSON Reuqest Body")
 					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
 					// Change the model to the selected model
 					jsonData["model"] = selectedModel
 					// Convert the JSON object to a []byte
@@ -575,7 +575,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 					// Calculate the new body length
 					newBodyLength := len(newHTTPBody)
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("new body length: %d\n", newBodyLength))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("new body length: %d\n", newBodyLength))
 
 					// Update the Content-Length header
 					headers := &envoy_service_proc_v3.HeaderMutation{
@@ -606,13 +606,13 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							},
 						},
 					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("rbq %+v\n", rbq))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("rbq %+v\n", rbq))
 					resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
 						RequestBody: rbq,
 					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("resp %+v\n", resp))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("resp %+v\n", resp))
 					//req.GetRequestBody().Body = newHTTPBody
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body after %+v\n", newHTTPBody))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body after %+v\n", newHTTPBody))
 				}
 			}
 			if matchedAPI.AiProvider != nil &&
@@ -620,10 +620,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AIModelBasedRoundRobin == nil &&
 				matchedResource.AIModelBasedRoundRobin != nil &&
 				matchedResource.AIModelBasedRoundRobin.Enabled {
-				s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
+				//s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
 				supportedModels := matchedAPI.AiProvider.SupportedModels
 				onQuotaExceedSuspendDuration := matchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("EnvType :%+v", matchedAPI.EnvType))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("EnvType :%+v", matchedAPI.EnvType))
 				var modelWeight []dto.ModelWeight
 				if matchedAPI.EnvType != "" && matchedAPI.EnvType == "PRODUCTION" {
 					modelWeight = matchedResource.AIModelBasedRoundRobin.ProductionModels
@@ -643,14 +643,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
 				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
 				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(matchedAPI.UUID, matchedResource.Path, modelWeights)
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
 				if selectedModel == "" || selectedEndpoint == "" {
-					s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
+					//s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
 				} else {
 					// change request body to model to selected model
 					httpBody := req.GetRequestBody().Body
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body before %+v\n", httpBody))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body before %+v\n", httpBody))
 					// Define a map to hold the JSON data
 					var jsonData map[string]interface{}
 					// Unmarshal the JSON data into the map
@@ -658,7 +658,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					if err != nil {
 						s.log.Error(err, "Error unmarshaling JSON Reuqest Body")
 					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
 					// Change the model to the selected model
 					jsonData["model"] = selectedModel
 					// Convert the JSON object to a []byte
@@ -669,7 +669,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 					// Calculate the new body length
 					newBodyLength := len(newHTTPBody)
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("new body length: %d\n", newBodyLength))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("new body length: %d\n", newBodyLength))
 
 					// Update the Content-Length header
 					headers := &envoy_service_proc_v3.HeaderMutation{
@@ -700,18 +700,18 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							},
 						},
 					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("rbq %+v\n", rbq))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("rbq %+v\n", rbq))
 					resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
 						RequestBody: rbq,
 					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("resp %+v\n", resp))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("resp %+v\n", resp))
 					//req.GetRequestBody().Body = newHTTPBody
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body after %+v\n", newHTTPBody))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body after %+v\n", newHTTPBody))
 				}
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
-			s.log.Sugar().Info("Response Headers Flow")
+			// s.log.Sugar().Info("Response Headers Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -726,18 +726,18 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Error(err, "failed to extract context metadata")
 				break
 			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %+v", metadata))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %+v", metadata))
 			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
 			if matchedAPI == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
 				break
 			}
 			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
 			if matchedResource == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
 				break
 			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
 			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 			if matchedAPI.AiProvider != nil &&
@@ -849,10 +849,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
-			s.log.Sugar().Info("Response Body Flow")
+			// s.log.Sugar().Info("Response Body Flow")
 			// httpBody := req.GetResponseBody()
 			// s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
-			s.log.Sugar().Debug("Response Body Flow")
+			// s.log.Sugar().Debug("Response Body Flow")
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -867,19 +867,19 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Error(err, "failed to extract context metadata")
 				break
 			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
 			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
 			if matchedAPI == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
 				break
 			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API: %+v", matchedAPI))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API: %+v", matchedAPI))
 			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
 			if matchedResource == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
 				break
 			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched resource: %+v", matchedResource))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched resource: %+v", matchedResource))
 			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 			if matchedAPI.AiProvider != nil &&
@@ -916,7 +916,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AIModelBasedRoundRobin != nil &&
 				matchedAPI.AIModelBasedRoundRobin.Enabled &&
 				matchedResource.RouteMetadataAttributes.SuspendAIModel == "true" {
-				s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
+				//s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
 				httpBody := req.GetResponseBody().Body
 				// Define a map to hold the JSON data
 				var jsonData map[string]interface{}
@@ -925,7 +925,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.cfg.Logger.Error(err, "Error unmarshaling JSON Response Body")
 				}
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
 				// Retrieve Model from the JSON data
 				model := ""
 				if modelValue, ok := jsonData["model"].(string); ok {
@@ -933,7 +933,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				} else {
 					s.cfg.Logger.Error(fmt.Errorf("model is not a string"), "failed to extract model from JSON data")
 				}
-				s.cfg.Logger.Sugar().Debug("Suspending model: " + model)
+				//s.cfg.Logger.Sugar().Debug("Suspending model: " + model)
 				duration := matchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
 				s.modelBasedRoundRobinTracker.SuspendModel(matchedAPI.UUID, matchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 			}
@@ -943,7 +943,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedResource.AIModelBasedRoundRobin != nil &&
 				matchedResource.AIModelBasedRoundRobin.Enabled &&
 				matchedResource.RouteMetadataAttributes.SuspendAIModel == "true" {
-				s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
+				//s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
 				httpBody := req.GetResponseBody().Body
 				// Define a map to hold the JSON data
 				var jsonData map[string]interface{}
@@ -952,7 +952,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if err != nil {
 					s.cfg.Logger.Error(err, "Error unmarshaling JSON Response Body")
 				}
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
 				// Retrieve Model from the JSON data
 				model := ""
 				if modelValue, ok := jsonData["model"].(string); ok {
@@ -960,14 +960,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				} else {
 					s.cfg.Logger.Error(fmt.Errorf("model is not a string"), "failed to extract model from JSON data")
 				}
-				s.cfg.Logger.Sugar().Debug("Suspending model: " + model)
+				//s.cfg.Logger.Sugar().Debug("Suspending model: " + model)
 				duration := matchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
 				s.modelBasedRoundRobinTracker.SuspendModel(matchedAPI.UUID, matchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 			}
 		default:
 			s.log.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
 		}
-		s.cfg.Logger.Sugar().Info(fmt.Sprintf("mode %+v\n", resp.ModeOverride))
+		// s.cfg.Logger.Sugar().Info(fmt.Sprintf("mode %+v\n", resp.ModeOverride))
 		// Set dynamic metadata
 		dynamicMetadata, err := buildDynamicMetadata(prepareMetadataKeyValuePairAndAddTo(dynamicMetadataKeyValuePairs, requestConfigHolder, s.cfg))
 		if err != nil {
