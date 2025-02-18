@@ -241,12 +241,12 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 		},
 		FailureModeAllow: true,
 		ProcessingMode: &ext_process.ProcessingMode{
-			ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
+			// ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
 			RequestHeaderMode:  ext_process.ProcessingMode_SEND,
-			ResponseHeaderMode: ext_process.ProcessingMode_SEND,
+			ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
 			// RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
 			// ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
-			RequestBodyMode: ext_process.ProcessingMode_BUFFERED,
+			// RequestBodyMode: ext_process.ProcessingMode_BUFFERED,
 		},
 		MetadataOptions: &ext_process.MetadataOptions{
 			ForwardingNamespaces: &ext_process.MetadataOptions_MetadataNamespaces{
