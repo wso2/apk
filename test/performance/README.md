@@ -109,7 +109,7 @@ export JAVA_HOME=/opt/temurin/jdk-11.0.26+4
 export PATH=\$JAVA_HOME/bin:\$PATH
 EOF
 sudo chmod +x /etc/profile.d/temurin.sh
-source /etc/profile.d/temurin.s
+source /etc/profile.d/temurin.sh
 java -version
 sudo snap install kubectl --classic
 wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.5.tgz
