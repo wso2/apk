@@ -967,6 +967,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		default:
 			s.log.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
 		}
+		s.cfg.Logger.Sugar().Info(fmt.Sprintf("mode %+v\n", resp.ModeOverride))
 		// Set dynamic metadata
 		dynamicMetadata, err := buildDynamicMetadata(prepareMetadataKeyValuePairAndAddTo(dynamicMetadataKeyValuePairs, requestConfigHolder, s.cfg))
 		if err != nil {
