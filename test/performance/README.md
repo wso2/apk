@@ -101,7 +101,16 @@ Before setting up the JMeter servers, ensure the following prerequisites are met
 Run following commands in JMeter VMs;
 
 ```bash
-sudo apt install openjdk-11-jre-headless
+wget "https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.26%2B4/OpenJDK11U-jdk_x64_linux_hotspot_11.0.26_4.tar.gz"
+sudo mkdir -p /opt/temurin
+sudo tar -xzf OpenJDK11U-jdk_x64_linux_hotspot_11.0.26_4.tar.gz -C /opt/temurin
+sudo tee /etc/profile.d/temurin.sh <<EOF
+export JAVA_HOME=/opt/temurin/jdk-11.0.26+4
+export PATH=\$JAVA_HOME/bin:\$PATH
+EOF
+sudo chmod +x /etc/profile.d/temurin.sh
+source /etc/profile.d/temurin.s
+java -version
 sudo snap install kubectl --classic
 wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.5.tgz
 tar -xvzf  apache-jmeter-5.5.tgz apache-jmeter-5.5
