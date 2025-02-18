@@ -115,18 +115,11 @@ func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
 	resourceURI := getResourceURI(tokenFromChoreo.Token)
 	ns := getNamespace(resourceURI)
 	eventHubName := getEventHubName(resourceURI)
-
-	// cfg.Logger.Info(fmt.Sprintf("Resource URI: %s", resourceURI))
-	// cfg.Logger.Info(fmt.Sprintf("Namespace: %s", ns))
-	// cfg.Logger.Info(fmt.Sprintf("Event Hub Name: %s", eventHubName))
-	// cred := azcore.NewSASCredential(tokenFromChoreo)
 	hub, err := azeventhubs.NewProducerClient(ns, eventHubName, ctp, nil)
-	// hub, err := eventhub.NewHub(ns, eventHubName, ctp)
 	if err != nil {
 		cfg.Logger.Error(err, "Error while creating event hub")
 		return nil
 	}
-	cfg.Logger.Info(fmt.Sprintf("Hashed token: %s", util.ComputeSHA256Hash(token)))
 	return &Choreo{
 		cfg:         cfg,
 		hub:         hub,
@@ -136,7 +129,7 @@ func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
 
 // Publish publishes the event to ELK
 func (e *Choreo) Publish(event *dto.Event) {
-	e.cfg.Logger.Info(fmt.Sprintf("Publishing event to Choreo: %+v", event))
+	e.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Publishing event to Choreo: %+v", event))
 	defer func() {
 		if r := recover(); r != nil {
 			e.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic: %v", r))
@@ -208,7 +201,6 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
 
 	newBatchOptions := &azeventhubs.EventDataBatchOptions{}
 
@@ -231,13 +223,12 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while adding event to batch")
 		return
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("Batch: %+v\n json string : %+v \n\n\n %+v", batch, jsonString, eventData))
 	err = e.hub.SendEventDataBatch(context.TODO(), batch, nil)
 	if err != nil {
 		e.cfg.Logger.Error(err, "Error while sending batch")
 		return
 	}
-	e.cfg.Logger.Info("Event sent successfully")
+	e.cfg.Logger.Sugar().Debugf("Event sent successfully")
 
 }
 
@@ -280,7 +271,6 @@ func (e *Choreo) publishFault(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
 
 	newBatchOptions := &azeventhubs.EventDataBatchOptions{}
 
@@ -303,13 +293,12 @@ func (e *Choreo) publishFault(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while adding event to batch")
 		return
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("Batch: %+v\n json string : %+v \n\n\n %+v", batch, jsonString, eventData))
 	err = e.hub.SendEventDataBatch(context.TODO(), batch, nil)
 	if err != nil {
 		e.cfg.Logger.Error(err, "Error while sending batch")
 		return
 	}
-	e.cfg.Logger.Info("Event sent successfully")
+	e.cfg.Logger.Sugar().Debugf("Event sent successfully")
 }
 
 func (e *Choreo) isFault(event *dto.Event) bool {

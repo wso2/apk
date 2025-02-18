@@ -24,7 +24,7 @@ func NewELK(cfg *config.Server, logLevel string) *ELK {
 
 // Publish publishes the event to ELK
 func (e *ELK) Publish(event *dto.Event) {
-	e.cfg.Logger.Info(fmt.Sprintf("Publishing event to ELK: %v", event))
+	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("Publishing event to ELK: %v", event))
 	defer func() {
 		if r := recover(); r != nil {
 			e.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic: %v", r))
