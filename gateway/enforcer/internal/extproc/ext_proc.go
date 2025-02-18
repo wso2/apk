@@ -185,6 +185,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		dynamicMetadataKeyValuePairs := make(map[string]string)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
+			s.log.Sugar().Info("Request Headers Flow")
 			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if err != nil {
@@ -461,6 +462,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
+			s.log.Sugar().Info("Request Body Flow")
 			// httpBody := req.GetRequestBody()
 			s.log.Sugar().Debug("Request Body Flow")
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
@@ -705,6 +707,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
+			s.log.Sugar().Info("Response Headers Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -842,6 +845,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
+			s.log.Sugar().Info("Response Body Flow")
 			// httpBody := req.GetResponseBody()
 			// s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
 			s.log.Sugar().Debug("Response Body Flow")
