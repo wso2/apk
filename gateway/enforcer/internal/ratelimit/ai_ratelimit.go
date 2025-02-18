@@ -65,10 +65,10 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount TokenCountAndModel, doBa
 			airl.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic, %+v", r))
 		}
 	}()
-	airl.cfg.Logger.Info(fmt.Sprintf("Performing AI rate limiting with token count: %+v", tokenCount))
+	airl.cfg.Logger.Sugar().Debug(fmt.Sprintf("Performing AI rate limiting with token count: %+v", tokenCount))
 	configs := []*keyValueHitsAddend{}
 	if doBackendBasedAIRatelimit {
-		airl.cfg.Logger.Info("Performing backend based AI rate limiting")
+		airl.cfg.Logger.Sugar().Debug("Performing backend based AI rate limiting")
 		// For promt token count
 		configs = append(configs, &keyValueHitsAddend{
 			Key:        DescriptorKeyForAIPromtTokenCount,
@@ -89,7 +89,7 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount TokenCountAndModel, doBa
 		})
 	}
 	if doSubscriptionBasedAIRatelimit && subscription != nil && application != nil {
-		airl.cfg.Logger.Info("Performing subscription based AI rate limiting")
+		airl.cfg.Logger.Sugar().Debug("Performing subscription based AI rate limiting")
 		// For promt token count
 		configs = append(configs, &keyValueHitsAddend{
 			Key:   DescriptorKeyForSubscriptionBasedAIRequestTokenCount,
@@ -121,7 +121,7 @@ func (airl *AIRatelimitHelper) DoAIRatelimit(tokenCount TokenCountAndModel, doBa
 			},
 		})
 	}
-	airl.cfg.Logger.Info(fmt.Sprintf("AI rate limiting configs: %+v", configs))
+	airl.cfg.Logger.Sugar().Debug(fmt.Sprintf("AI rate limiting configs: %+v", configs))
 	airl.rlClient.shouldRatelimit(configs)
 }
 

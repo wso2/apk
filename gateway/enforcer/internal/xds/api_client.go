@@ -134,7 +134,7 @@ func (c *APIXDSClient) InitiateAPIXDSConnection() {
 }
 
 func (c *APIXDSClient) waitAndRetry() {
-	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
+	c.log.Sugar().Debug(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
 	// Wait for a while before retrying the connection
 	time.Sleep(c.retryInterval)
 	go c.InitiateAPIXDSConnection()
@@ -161,12 +161,12 @@ func (c *APIXDSClient) handleResponse(response *v3.DiscoveryResponse) error {
 	for _, res := range response.GetResources() {
 		var apiResource api.Api
 		if err := proto.Unmarshal(res.GetValue(), &apiResource); err != nil {
-			c.log.Info(fmt.Sprintf("Failed to unmarshal API resource: %v", err))
+			c.log.Sugar().Debug(fmt.Sprintf("Failed to unmarshal API resource: %v", err))
 			return err
 		}
 		apis = append(apis, &apiResource)
 	}
 	c.apiDatastore.AddAPIs(apis)
-	c.log.Info(fmt.Sprintf("Number of APIs received: %d", len(apis)))
+	c.log.Sugar().Debug(fmt.Sprintf("Number of APIs received: %d", len(apis)))
 	return nil
 }

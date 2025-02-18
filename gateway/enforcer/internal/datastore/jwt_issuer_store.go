@@ -18,7 +18,6 @@
 package datastore
 
 import (
-	"fmt"
 	"sync"
 
 	subscription "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/subscription"
@@ -44,13 +43,11 @@ func (s *JWTIssuerStore) AddJWTIssuers(apis []*subscription.JWTIssuer) {
 	defer s.mu.Unlock()
 	orgWizeJWTIssuers := make(map[string]map[string]*subscription.JWTIssuer)
 	for _, api := range apis {
-		fmt.Printf("Adding JWT Issuer: %v\n", api)
 		if _, ok := orgWizeJWTIssuers[api.Organization]; !ok {
 			orgWizeJWTIssuers[api.Organization] = make(map[string]*subscription.JWTIssuer)
 		}
 		orgWizeJWTIssuers[api.Organization][api.Issuer] = api
 	}
-	fmt.Printf("JWT Issuers: %v\n", orgWizeJWTIssuers)
 	s.jwtIssuers = orgWizeJWTIssuers
 }
 

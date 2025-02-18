@@ -43,8 +43,8 @@ type AccessLogServiceServer struct {
 func newAccessLogServiceServer(cfg *config.Server, configStore *datastore.ConfigStore) *AccessLogServiceServer {
 	analytics := analytics.NewAnalytics(cfg, configStore)
 	return &AccessLogServiceServer{
-		cfg: cfg,
-		analytics: analytics,
+		cfg:         cfg,
+		analytics:   analytics,
 		configStore: configStore,
 	}
 }
@@ -52,7 +52,7 @@ func newAccessLogServiceServer(cfg *config.Server, configStore *datastore.Config
 // StreamAccessLogs streams access logs to the server.
 func (s *AccessLogServiceServer) StreamAccessLogs(stream v3.AccessLogService_StreamAccessLogsServer) error {
 	for {
-		s.cfg.Logger.Info("Received a stream of access logs")
+		s.cfg.Logger.Sugar().Debug("Received a stream of access logs")
 		in, err := stream.Recv()
 		if err == io.EOF {
 			return nil
@@ -90,7 +90,7 @@ func StartAccessLogServiceServer(cfg *config.Server, configStore *datastore.Conf
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.AccessLogServiceServerPort))
 	}
-	cfg.Logger.Info("Starting to serve access log service server")
+	cfg.Logger.Sugar().Debug("Starting to serve access log service server")
 	if err := server.Serve(listener); err != nil {
 		cfg.Logger.Error(err, "Failed to serve access log service server")
 	}

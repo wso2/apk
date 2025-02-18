@@ -155,7 +155,7 @@ func (c *JWTIssuerXDSClient) handleResponse(response *v3.DiscoveryResponse) erro
 	for _, res := range response.GetResources() {
 		var jwtIssuerResource subscription.JWTIssuerList
 		if err := proto.Unmarshal(res.GetValue(), &jwtIssuerResource); err != nil {
-			c.log.Info(fmt.Sprintf("tFailed to unmarshal jwt issuers resource: %v", err))
+			c.log.Sugar().Debug(fmt.Sprintf("tFailed to unmarshal jwt issuers resource: %v", err))
 			return err
 		}
 		jwtIssuerLists = append(jwtIssuerLists, &jwtIssuerResource)
@@ -165,12 +165,12 @@ func (c *JWTIssuerXDSClient) handleResponse(response *v3.DiscoveryResponse) erro
 		jwtIssuers = append(jwtIssuers, jwtIssuerList.GetList()...)
 	}
 	c.jwtIssuersDatastore.AddJWTIssuers(jwtIssuers)
-	c.log.Info(fmt.Sprintf("Number of jwt issuers received: %d", len(jwtIssuerLists)))
+	c.log.Sugar().Debug(fmt.Sprintf("Number of jwt issuers received: %d", len(jwtIssuerLists)))
 	return nil
 }
 
 func (c *JWTIssuerXDSClient) waitAndRetry() {
-	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
+	c.log.Sugar().Debug(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
 	// Wait for a while before retrying the connection
 	time.Sleep(c.retryInterval)
 	go c.InitiateSubscriptionXDSConnection()

@@ -36,11 +36,11 @@ func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.Subscription
 	if immediateResponse := ValidateScopes(rch, subAppDataStore, cfg); immediateResponse != nil {
 		return immediateResponse
 	}
-	cfg.Logger.Info(fmt.Sprintf("Scope validation successful for the request: %s", rch.MatchedResource.Path))
+	cfg.Logger.Sugar().Debug(fmt.Sprintf("Scope validation successful for the request: %s", rch.MatchedResource.Path))
 	if immediateResponse := ValidateSubscription(rch, subAppDataStore, cfg); immediateResponse != nil {
 		return immediateResponse
 	}
-	cfg.Logger.Info(fmt.Sprintf("Subscription validation successful for the request: %s", rch.MatchedResource.Path))
+	cfg.Logger.Sugar().Debug(fmt.Sprintf("Subscription validation successful for the request: %s", rch.MatchedResource.Path))
 
 	return nil
 }

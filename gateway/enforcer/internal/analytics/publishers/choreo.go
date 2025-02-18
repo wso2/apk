@@ -128,7 +128,7 @@ func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
 		cfg.Logger.Error(err, "Error while creating event hub")
 		return nil
 	}
-	cfg.Logger.Info(fmt.Sprintf("Hashed token: %s", util.ComputeSHA256Hash(token)))
+	cfg.Logger.Sugar().Debug(fmt.Sprintf("Hashed token: %s", util.ComputeSHA256Hash(token)))
 	choreo := &Choreo{
 		cfg:         cfg,
 		hub:         hub,
@@ -162,7 +162,7 @@ func NewChoreo(cfg *config.Server, authURL, token string) *Choreo {
 
 // Publish publishes the event to ELK
 func (e *Choreo) Publish(event *dto.Event) {
-	e.cfg.Logger.Info(fmt.Sprintf("Publishing event to Choreo: %+v", event))
+	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("Publishing event to Choreo: %+v", event))
 	defer func() {
 		if r := recover(); r != nil {
 			e.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic: %v", r))
@@ -234,7 +234,7 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
+	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("JSON string: %s", jsonString))
 	eventData := &azeventhubs.EventData{
 		Body: []byte(jsonString),
 	}
@@ -295,7 +295,7 @@ func (e *Choreo) publishFault(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("JSON string: %s", jsonString))
+	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("JSON string: %s", jsonString))
 	eventData := &azeventhubs.EventData{
 		Body: []byte(jsonString),
 	}

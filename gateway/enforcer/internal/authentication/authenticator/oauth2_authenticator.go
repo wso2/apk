@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package authenticator
 
 import "fmt"
@@ -30,11 +30,9 @@ func (o OAuth2Authenticator) CanAuthenticate(data map[string]string) bool {
 
 // Authenticate validates the OAuth2 token.
 func (o OAuth2Authenticator) Authenticate(data map[string]string) (bool, error) {
-	token, exists := data["oauth2Token"]
+	_, exists := data["oauth2Token"]
 	if !exists {
 		return false, fmt.Errorf("no OAuth2 token found")
 	}
-	// Add actual OAuth2 token validation logic here.
-	fmt.Println("Validating OAuth2 token:", token)
 	return true, nil
 }

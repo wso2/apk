@@ -88,13 +88,13 @@ func (r *client) shouldRatelimit(configs []*keyValueHitsAddend) {
 			HitsAddend: uint32(hitsAddend),
 		}
 
-		r.log.Info(fmt.Sprintf("Rate limit request: %v", rateLimitRequest))
+		r.log.Sugar().Debug(fmt.Sprintf("Rate limit request: %v", rateLimitRequest))
 		response, err := r.rlsClient.ShouldRateLimit(context.Background(), rateLimitRequest)
 		if err != nil {
-			r.log.Info(fmt.Sprintf("Error while calling rate limiter: %v", err))
+			r.log.Sugar().Debug(fmt.Sprintf("Error while calling rate limiter: %v", err))
 			continue
 		}
 
-		r.log.Info(fmt.Sprintf("Rate limit response: %v", response))
+		r.log.Sugar().Debug(fmt.Sprintf("Rate limit response: %v", response))
 	}
 }

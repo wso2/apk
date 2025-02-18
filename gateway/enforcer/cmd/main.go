@@ -10,8 +10,8 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/extproc"
 	"github.com/wso2/apk/gateway/enforcer/internal/grpc"
 	metrics "github.com/wso2/apk/gateway/enforcer/internal/metrics"
-	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/tokenrevocation"
+	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"github.com/wso2/apk/gateway/enforcer/internal/xds"
 )
@@ -56,7 +56,7 @@ func main() {
 	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker, revokedJTIStore)
 
 	// Wait for the config to be loaded
-	cfg.Logger.Info("Waiting for the config to be loaded")
+	cfg.Logger.Sugar().Debug("Waiting for the config to be loaded")
 	<-configStore.Notify
 	cfg.Logger.Info("Config loaded successfully")
 	if len(configStore.GetConfigs()) > 0 && configStore.GetConfigs()[0].Analytics != nil && configStore.GetConfigs()[0].Analytics.Enabled {
