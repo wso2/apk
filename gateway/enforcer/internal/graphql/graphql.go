@@ -32,9 +32,7 @@ func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadat
 	matchedapi := requestConfigHolder.MatchedAPI
 	schemaBytes := matchedapi.APIDefinition
 	var sdl string
-	if schemaString, err := unzipGzip(schemaBytes); err != nil {
-		fmt.Println("unzip gzip not working")
-	} else {
+	if schemaString, err := unzipGzip(schemaBytes); err == nil {
 		sdl = schemaString
 	}
 
@@ -48,7 +46,6 @@ func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadat
 	// Parse the schema into a graphql object
 	schema, err := gqlparser.LoadSchema(&ast.Source{Input: sdl})
 	if err != nil {
-		fmt.Printf("error while parsing the GraphQL SDL: %v", err)
 		return &dto.ImmediateResponse{
 			StatusCode: 500,
 			Message:    "error while parsing the GraphQL SDL",
@@ -105,7 +102,7 @@ func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadat
 					return immediateResponse
 				}
 			} else {
-				cfg.Logger.Info(fmt.Sprintf("Skipping authentication for the resource: %s", requestConfigHolder.MatchedResource.Path))
+				cfg.Logger.Sugar().Debug(fmt.Sprintf("Skipping authentication for the resource: %s", requestConfigHolder.MatchedResource.Path))
 			}
 		}
 	}

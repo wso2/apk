@@ -36,7 +36,6 @@ func ConvertStringToInt(input string) (int, error) {
 // ComputeSHA256Hash computes the SHA-256 hash of the input text and returns it as an uppercase hexadecimal string.
 func ComputeSHA256Hash(text string) string {
 	if text == "" {
-		fmt.Println("The text trying to hash is empty.")
 		return ""
 	}
 	hash := sha256.Sum256([]byte(text))

@@ -74,7 +74,7 @@ func (r *RevokedTokenFetcher) fetchRevokedTokens() {
 		if err != nil {
 			r.cfg.Logger.Error(err, "Error fetching revoked tokens")
 			time.Sleep(r.retryInterval)
-			r.cfg.Logger.Info("Retrying to fetch revoked tokens")
+			r.cfg.Logger.Sugar().Debug("Retrying to fetch revoked tokens")
 			r.fetchRevokedTokens()
 			return
 		}
@@ -90,7 +90,7 @@ func (r *RevokedTokenFetcher) fetchRevokedTokens() {
 				r.cfg.Logger.Error(err, fmt.Sprintf("Error parsing expiration time for key %s", key))
 				continue
 			}
-			r.cfg.Logger.Info(fmt.Sprintf("Fetched revoked token: key=%s, expirationTime=%d", key, expirationTime))
+			r.cfg.Logger.Sugar().Debug(fmt.Sprintf("Fetched revoked token: key=%s, expirationTime=%d", key, expirationTime))
 			r.jtiDatastore.AddJTI(key, time.Unix(expirationTime, 0))
 		}
 		if cursor == 0 {
@@ -110,10 +110,10 @@ func (r *RevokedTokenFetcher) subscribe() {
 			r.cfg.Logger.Error(err, "Error receiving message from the Redis channel")
 			client.Close()
 			time.Sleep(r.retryInterval)
-			r.cfg.Logger.Info("Retrying to subscribe to the Redis channel")
+			r.cfg.Logger.Sugar().Debug("Retrying to subscribe to the Redis channel")
 			r.subscribe()
 		}
-		r.cfg.Logger.Info(fmt.Sprintf("Received message: %s", msg.Payload))
+		r.cfg.Logger.Sugar().Debug(fmt.Sprintf("Received message: %s", msg.Payload))
 		parts := strings.Split(msg.Payload, jtiTimeStampSeperator)
 		if len(parts) != 2 {
 			r.cfg.Logger.Error(fmt.Errorf("invalid message format"), "Error splitting message payload")
@@ -125,7 +125,7 @@ func (r *RevokedTokenFetcher) subscribe() {
 			r.cfg.Logger.Error(err, fmt.Sprintf("Error parsing expiration time for JTI %s", jti))
 			continue
 		}
-		r.cfg.Logger.Info(fmt.Sprintf("Received revoked token: jti=%s, expirationTime=%d", jti, expirationTime))
+		r.cfg.Logger.Sugar().Debug(fmt.Sprintf("Received revoked token: jti=%s, expirationTime=%d", jti, expirationTime))
 		r.jtiDatastore.AddJTI(jti, time.Unix(expirationTime, 0))
 	}
 

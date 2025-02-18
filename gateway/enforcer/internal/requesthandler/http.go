@@ -18,7 +18,6 @@
 package requesthandler
 
 import (
-	"fmt"
 
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
@@ -33,11 +32,7 @@ type HTTP struct {
 func (h *HTTP) GetMatchedResource(api *requestconfig.API, epa dto.ExternalProcessingEnvoyAttributes) *requestconfig.Resource {
 	method := epa.RequestMethod
 	pathTemplate := util.NormalizePath(epa.Path)
-	fmt.Println("Method: ", method)
-	fmt.Println("Path: ", pathTemplate)
 	for _, resource := range api.Resources {
-		fmt.Println("Resource Method: ", resource.Method)
-		fmt.Println("Resource Path: ", resource.Path)
 		if string(resource.Method) == method && resource.Path == pathTemplate {
 			return resource
 		}

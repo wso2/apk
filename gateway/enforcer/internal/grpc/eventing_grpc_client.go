@@ -75,9 +75,6 @@ func (c *EventingGRPCClient) InitiateEventingGRPCConnection() {
 	md := metadata.New(map[string]string{"enforcer-uuid": connectionID})
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	// Log the connection ID for debugging
-	c.log.Info(fmt.Sprintf("Sending request with metadata: enforcer-uuid=%s", connectionID))
-
 	// Create a gRPC connection
 	grpcConn := util.CreateGRPCConnectionWithRetryAndPanic(nil, c.Host, c.Port, c.tlsConfig, c.maxRetries, c.retryInterval)
 	c.grpcConn = grpcConn
@@ -103,7 +100,7 @@ func (c *EventingGRPCClient) InitiateEventingGRPCConnection() {
 				c.waitAndRetry()
 				return
 			}
-			c.log.Info(fmt.Sprintf("Received config: %v", resp))
+			c.log.Sugar().Debug(fmt.Sprintf("Received config: %v", resp))
 			c.HandleNotificationEvent(resp)
 		}
 	}()
@@ -138,7 +135,7 @@ func (c *EventingGRPCClient) HandleNotificationEvent(event *subscription_proto_m
 }
 
 func (c *EventingGRPCClient) waitAndRetry() {
-	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
+	c.log.Sugar().Debug(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
 	// Wait for a while before retrying the connection
 	time.Sleep(c.retryInterval)
 	go c.InitiateEventingGRPCConnection()

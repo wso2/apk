@@ -1,7 +1,6 @@
 package transformer
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
@@ -21,17 +20,14 @@ func NewJWTTransformer(jwtIssuerDatastore *datastore.JWTIssuerStore) *JWTTransfo
 // TransformJWTClaims transforms the JWT claims
 func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAuthenticationData *dto.JwtAuthenticationData) *dto.JWTValidationInfo {
 	if jwtAuthenticationData == nil {
-		fmt.Printf("JWT authentication data is nil\n")
 		return nil
 	}
 	tokenissuers := transformer.tokenissuerStore.GetJWTISsuersByOrganization(organization)
 	if tokenissuers == nil {
-		fmt.Printf("Token issuers are nil\n")
 		return nil
 	}
 	var jwtValidationInfo dto.JWTValidationInfo
 	for _, tokenissuer := range tokenissuers {
-		fmt.Printf("Token issuer: %v\n", tokenissuer)
 		jwtAuthenticationDataSuccess, exists := jwtAuthenticationData.SucessData[tokenissuer.Issuer+"-payload"]
 		if exists {
 			jwtValidationInfo = dto.JWTValidationInfo{Valid: true, Issuer: jwtAuthenticationDataSuccess.Issuer, Claims: make(map[string]interface{})}
