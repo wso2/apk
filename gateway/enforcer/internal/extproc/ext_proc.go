@@ -235,6 +235,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 			if requestConfigHolder.MatchedAPI.IsGraphQLAPI() {
+				s.log.Sugar().Info("111")
 				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			
@@ -314,7 +315,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin == nil &&
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
-				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
+					s.log.Sugar().Info("222")
+					resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
@@ -322,6 +324,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
+					s.log.Sugar().Info("333")
 					resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
@@ -330,6 +333,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
+					s.log.Sugar().Info("444")
 					resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SKIP
 			}
 
