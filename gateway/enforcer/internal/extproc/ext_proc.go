@@ -181,9 +181,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
 		requestConfigHolder := &requestconfig.Holder{}
 		// log req.Attributes
-		s.log.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
+		//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
 		dynamicMetadataKeyValuePairs := make(map[string]string)
-		switch v := req.Request.(type) {
+		switch req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
 			// s.log.Sugar().Info("Request Headers Flow")
 			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
@@ -340,7 +340,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 			dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
 			dynamicMetadataKeyValuePairs[analytics.APIResourceTemplateKey] = requestConfigHolder.MatchedResource.Path
-			s.log.Sugar().Debug(fmt.Sprintf("Matched Resource Endpoints: %+v", requestConfigHolder.MatchedResource.Endpoints))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource Endpoints: %+v", requestConfigHolder.MatchedResource.Endpoints))
 			if requestConfigHolder.MatchedResource.Endpoints != nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
 				dynamicMetadataKeyValuePairs[analytics.DestinationKey] = requestConfigHolder.MatchedResource.Endpoints.URLs[0]
 			}
@@ -356,7 +356,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
 			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
 			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
-			s.log.Sugar().Debug(fmt.Sprintf("req holderrr: %+v\n s: %+v", requestConfigHolder, s))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("req holderrr: %+v\n s: %+v", requestConfigHolder, s))
 			if requestConfigHolder.MatchedResource != nil && requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !requestConfigHolder.MatchedAPI.DisableAuthentication {
 				if immediateResponse := authorization.Validate(requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg, s.jwtTransformer, s.revokedJTIStore); immediateResponse != nil {
 					// Update the Content-Type header
@@ -384,7 +384,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					break
 				}
 				if requestConfigHolder.MatchedSubscription != nil && requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
-					s.log.Sugar().Debug(fmt.Sprintf("Ratelimit Tier: %s", requestConfigHolder.MatchedSubscription.RatelimitTier))
+					//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Ratelimit Tier: %s", requestConfigHolder.MatchedSubscription.RatelimitTier))
 					dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = fmt.Sprintf("%s:%s%s", requestConfigHolder.MatchedSubscription.SubscribedAPI.Name, requestConfigHolder.MatchedApplication.UUID, requestConfigHolder.MatchedSubscription.UUID)
 					dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = requestConfigHolder.MatchedSubscription.RatelimitTier
 					dynamicMetadataKeyValuePairs[organizationMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
@@ -394,7 +394,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			backendJWT := ""
 			if requestConfigHolder.MatchedAPI.BackendJwtConfiguration != nil && requestConfigHolder.MatchedAPI.BackendJwtConfiguration.Enabled {
 				backendJWT = jwtbackend.CreateBackendJWT(requestConfigHolder, s.cfg)
-				s.log.Sugar().Debug("generated backendJWT==%v", backendJWT)
+				//s.cfg.Logger.Sugar().Debug("generated backendJWT==%v", backendJWT)
 			}
 
 			if backendJWT != "" {
@@ -468,13 +468,13 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// s.log.Sugar().Info("Request Body Flow")
 			// httpBody := req.GetRequestBody()
-			// s.log.Sugar().Debug("Request Body Flow")
+			// //s.cfg.Logger.Sugar().Debug("Request Body Flow")
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
 				RequestBody: &envoy_service_proc_v3.BodyResponse{
 					Response: &envoy_service_proc_v3.CommonResponse{},
 				},
 			}
-			s.log.Sugar().Debug("Request Body Flow")
+			//s.cfg.Logger.Sugar().Debug("Request Body Flow")
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
 				s.log.Error(err, "failed to extract context metadata")
@@ -527,8 +527,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AIModelBasedRoundRobin != nil &&
 				matchedAPI.AIModelBasedRoundRobin.Enabled {
 				//s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
-				supportedModels := matchedAPI.AiProvider.SupportedModels
-				onQuotaExceedSuspendDuration := matchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
+				// supportedModels := matchedAPI.AiProvider.SupportedModels
+				// onQuotaExceedSuspendDuration := matchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("EnvType :%+v", matchedAPI.EnvType))
 				var modelWeight []dto.ModelWeight
 				if matchedAPI.EnvType != "" && matchedAPI.EnvType == "PRODUCTION" {
@@ -545,9 +545,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						Weight:   model.Weight,
 					})
 				}
-				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
-				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
-				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
+				//s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
+				//s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
+				//s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
 				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(matchedAPI.UUID, matchedResource.Path, modelWeights)
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
@@ -621,8 +621,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedResource.AIModelBasedRoundRobin != nil &&
 				matchedResource.AIModelBasedRoundRobin.Enabled {
 				//s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
-				supportedModels := matchedAPI.AiProvider.SupportedModels
-				onQuotaExceedSuspendDuration := matchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
+				// supportedModels := matchedAPI.AiProvider.SupportedModels
+				// onQuotaExceedSuspendDuration := matchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("EnvType :%+v", matchedAPI.EnvType))
 				var modelWeight []dto.ModelWeight
 				if matchedAPI.EnvType != "" && matchedAPI.EnvType == "PRODUCTION" {
@@ -639,9 +639,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						Weight:   model.Weight,
 					})
 				}
-				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
-				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
-				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
+				//s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
+				//s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
+				//s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
 				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(matchedAPI.UUID, matchedResource.Path, modelWeights)
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
@@ -712,7 +712,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			// s.log.Sugar().Info("Response Headers Flow")
-			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
@@ -747,7 +747,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedResource.RouteMetadataAttributes != nil &&
 				matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true" &&
 				matchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
-				s.log.Sugar().Debug("Backend based AI rate limit enabled using headers")
+				//s.cfg.Logger.Sugar().Debug("Backend based AI rate limit enabled using headers")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(),
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
@@ -773,9 +773,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AiProvider.SupportedModels != nil &&
 				matchedAPI.AIModelBasedRoundRobin != nil &&
 				matchedAPI.AIModelBasedRoundRobin.Enabled {
-				s.log.Sugar().Debug("API Level Model Based Round Robin enabled")
+				//s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
 				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
-				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
 				remainingTokenCount := 100
 				remainingRequestCount := 100
 				status := 200
@@ -802,7 +802,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					}
 				}
 				if remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
-					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
+					//s.cfg.Logger.Sugar().Debug("Token/request are exhausted. Suspending the model")
 					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
 					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
 					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
@@ -813,9 +813,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AIModelBasedRoundRobin == nil &&
 				matchedResource.AIModelBasedRoundRobin != nil &&
 				matchedResource.AIModelBasedRoundRobin.Enabled {
-				s.log.Sugar().Debug("Resource Level Model Based Round Robin enabled")
+				//s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
 				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
-				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
+				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
 				remainingTokenCount := 100
 				remainingRequestCount := 100
 				status := 200
@@ -842,7 +842,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					}
 				}
 				if remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
-					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
+					//s.cfg.Logger.Sugar().Debug("Token/request are exhausted. Suspending the model")
 					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
 					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
 					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
@@ -852,7 +852,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			// s.log.Sugar().Info("Response Body Flow")
 			// httpBody := req.GetResponseBody()
 			// s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
-			// s.log.Sugar().Debug("Response Body Flow")
+			// //s.cfg.Logger.Sugar().Debug("Response Body Flow")
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -888,7 +888,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AiProvider.TotalToken != nil &&
 				matchedResource.RouteMetadataAttributes != nil &&
 				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-				s.log.Sugar().Debug("AI rate limit enabled using body")
+				//s.cfg.Logger.Sugar().Debug("AI rate limit enabled using body")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
@@ -965,7 +965,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.modelBasedRoundRobinTracker.SuspendModel(matchedAPI.UUID, matchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 			}
 		default:
-			s.log.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
 		}
 		// s.cfg.Logger.Sugar().Info(fmt.Sprintf("mode %+v\n", resp.ModeOverride))
 		// Set dynamic metadata
@@ -976,7 +976,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			resp.DynamicMetadata = dynamicMetadata
 		}
 		if err := srv.Send(resp); err != nil {
-			s.log.Sugar().Debug(fmt.Sprintf("send error %v", err))
+			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
 		}
 	}
 }
