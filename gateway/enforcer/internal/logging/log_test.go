@@ -39,14 +39,13 @@ func TestZapLogLevel(t *testing.T) {
 	core := zapcore.NewCore(zapcore.NewConsoleEncoder(zc.EncoderConfig), zapcore.AddSync(os.Stdout), zap.NewAtomicLevelAt(level))
 	zapLogger := zap.New(core, zap.AddCaller())
 	log := zapLogger.Sugar()
-	log.Info("ok", "k1", "v1")
 	log.Error(errors.New("new error"), "error")
 }
 
 func TestLogger(t *testing.T) {
 	logger := NewLogger(egv1a1.DefaultEnvoyGatewayLogging())
-	logger.Info("kv msg", "key", "value")
-	logger.Sugar().Infof("template %s %d", "string", 123)
+	logger.Sugar().Debug("kv msg", "key", "value")
+	logger.Sugar().Debug("template %s %d", "string", 123)
 
 	logger.WithName(string(egv1a1.LogComponentGlobalRateLimitRunner)).WithValues("runner", egv1a1.LogComponentGlobalRateLimitRunner).Info("msg", "k", "v")
 

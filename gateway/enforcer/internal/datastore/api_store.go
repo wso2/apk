@@ -105,7 +105,7 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			}
 
 		}
-		s.cfg.Logger.Info(fmt.Sprintf("Adding API: %+v", customAPI.BackendJwtConfiguration))
+		s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Adding API: %+v", customAPI.BackendJwtConfiguration))
 		s.apis[util.PrepareAPIKey(api.Vhost, api.BasePath, api.Version)] = &customAPI
 	}
 }

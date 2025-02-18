@@ -105,7 +105,7 @@ func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadat
 					return immediateResponse
 				}
 			} else {
-				cfg.Logger.Info(fmt.Sprintf("Skipping authentication for the resource: %s", requestConfigHolder.MatchedResource.Path))
+				cfg.Logger.Sugar().Debug(fmt.Sprintf("Skipping authentication for the resource: %s", requestConfigHolder.MatchedResource.Path))
 			}
 		}
 	}

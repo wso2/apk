@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package authenticator
 
 import "fmt"
@@ -30,11 +30,9 @@ func (a APIKeyAuthenticator) CanAuthenticate(data map[string]string) bool {
 
 // Authenticate validates the API key.
 func (a APIKeyAuthenticator) Authenticate(data map[string]string) (bool, error) {
-	key, exists := data["apiKey"]
+	_, exists := data["apiKey"]
 	if !exists {
 		return false, fmt.Errorf("no API key found")
 	}
-	// Add actual API key validation logic here.
-	fmt.Println("Validating API key:", key)
 	return true, nil
 }

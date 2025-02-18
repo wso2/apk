@@ -87,7 +87,7 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 		config := configStore.GetConfigs()[0]
 		if config.Analytics.Enabled {
 			for _, pub := range config.Analytics.AnalyticsPublisher {
-				cfg.Logger.Info(fmt.Sprintf("Publisher type: %s", pub.Type))
+				cfg.Logger.Sugar().Debug(fmt.Sprintf("Publisher type: %s", pub.Type))
 				switch strings.ToLower(pub.Type) {
 				case strings.ToLower(ELKAnalyticsPublisher):
 					logLevel := "INFO"
@@ -95,7 +95,7 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 						logLevel = level
 					}
 					publishers = append(publishers, analytics_publisher.NewELK(cfg, logLevel))
-					cfg.Logger.Info(fmt.Sprintf("ELK publisher added with log level: %s", logLevel))
+					cfg.Logger.Sugar().Debug(fmt.Sprintf("ELK publisher added with log level: %s", logLevel))
 				case strings.ToLower(MoesifAnalyticsPublisher):
 					// publisher := publishers.NewMoesif(cfg, pub.LogLevel)
 				case strings.ToLower(DefaultAnalyticsPublisher):
@@ -111,7 +111,7 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 		}
 	}
 	if len(publishers) == 0 {
-		cfg.Logger.Info("No analytics publishers found. Analytics will not be published.")
+		cfg.Logger.Sugar().Debug("No analytics publishers found. Analytics will not be published.")
 	}
 	return &Analytics{
 		cfg:         cfg,
@@ -147,11 +147,11 @@ func (c *Analytics) GetFaultType() FaultCategory {
 
 func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.Event {
 	keyValuePairsFromMetadata := make(map[string]string)
-	c.cfg.Logger.Info(fmt.Sprintf("log entry, %+v", logEntry))
+	c.cfg.Logger.Sugar().Debug(fmt.Sprintf("log entry, %+v", logEntry))
 	if logEntry.CommonProperties != nil && logEntry.CommonProperties.Metadata != nil && logEntry.CommonProperties.Metadata.FilterMetadata != nil {
 		if sv, exists := logEntry.CommonProperties.Metadata.FilterMetadata[ExtProcMetadataContextKey]; exists {
 			if sv.Fields != nil {
-				c.cfg.Logger.Info(fmt.Sprintf("Filter metadata: %+v", sv))
+				c.cfg.Logger.Sugar().Debug(fmt.Sprintf("Filter metadata: %+v", sv))
 				for key, value := range sv.Fields {
 					if value != nil {
 						keyValuePairsFromMetadata[key] = value.GetStringValue()
@@ -162,7 +162,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	}
 	event := &dto.Event{}
 	for key, value := range keyValuePairsFromMetadata {
-		c.cfg.Logger.Info(fmt.Sprintf("Metadata key: %s, value: %s", key, value))
+		c.cfg.Logger.Sugar().Debug(fmt.Sprintf("Metadata key: %s, value: %s", key, value))
 	}
 	// Prepare extended API
 	extendedAPI := dto.ExtendedAPI{}

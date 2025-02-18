@@ -156,18 +156,18 @@ func (c *ConfigXDSClient) handleResponse(response *v3.DiscoveryResponse) error {
 	for _, res := range response.GetResources() {
 		var configResource config_from_adapter.Config
 		if err := proto.Unmarshal(res.GetValue(), &configResource); err != nil {
-			c.log.Info(fmt.Sprintf("Failed to unmarshal Config resource: %v", err))
+			c.log.Sugar().Debug(fmt.Sprintf("Failed to unmarshal Config resource: %v", err))
 			return err
 		}
 		configs = append(configs, &configResource)
 	}
 	c.configDatastore.AddConfigs(configs)
-	c.log.Info(fmt.Sprintf("Number of Configs received: %d", len(configs)))
+	c.log.Sugar().Debug(fmt.Sprintf("Number of Configs received: %d", len(configs)))
 	return nil
 }
 
 func (c *ConfigXDSClient) waitAndRetry() {
-	c.log.Info(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
+	c.log.Sugar().Debug(fmt.Sprintf("Waiting for %d ms before retrying the connection", c.retryInterval.Milliseconds()))
 	// Wait for a while before retrying the connection
 	time.Sleep(c.retryInterval)
 	go c.InitiateConfigXDSConnection()
