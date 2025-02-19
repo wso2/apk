@@ -144,6 +144,8 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 }
 
+var count = 1
+
 // Process handles the external processing server stream. It continuously receives
 // requests from the stream, processes them, and sends back appropriate responses.
 // The function supports different types of processing requests including request headers,
@@ -171,6 +173,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		default:
 		}
 		req, err := srv.Recv()
+		count = count + 1
+		startTime := time.Now().UnixNano()
+		
+			
 		if err == io.EOF {
 			return nil
 		}
@@ -977,6 +983,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		}
 		if err := srv.Send(resp); err != nil {
 			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
+		}
+		if count%10000 == 0 {
+			endTime := time.Now().UnixNano()
+			s.log.Info(fmt.Sprintf("Processing time: %d ns", endTime-startTime))
 		}
 	}
 }
