@@ -1,13 +1,10 @@
 package main
 
 import (
-	"log"
 	"time"
 
 	"strings"
 
-	"net/http"
-	_ "net/http/pprof"
 
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
@@ -21,9 +18,6 @@ import (
 )
 
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
 	cfg := config.GetConfig()
 	port := cfg.CommonControllerXdsPort
 	host := cfg.CommonControllerHostname
