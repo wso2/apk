@@ -46,7 +46,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/requesthandler"
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
-	"golang.org/x/exp/rand"
+	"math/rand"
 
 	"net"
 	"time"
