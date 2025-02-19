@@ -397,7 +397,7 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 		}
 		virtualHosts = append(virtualHosts, virtualHost)
 	}
-	loggers.LoggerOasparser.Infof("VirtualHosts: %+v", virtualHosts)
+	loggers.LoggerOasparser.Debugf("VirtualHosts: %+v", virtualHosts)
 	return virtualHosts
 }
 

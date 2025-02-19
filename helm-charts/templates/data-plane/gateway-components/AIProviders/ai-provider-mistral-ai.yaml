@@ -8,9 +8,9 @@ spec:
   providerAPIVersion : "v1"
   organization : "default"
   supportedModels:
-    - "gpt-4o"
-    - "gpt-3.5"
-    - "gpt-4.5"
+    - "mistral-small-latest"
+    - "open-mistral-nemo"
+    - "mistral-large-latest"
   requestModel:
     in: "Body"
     value: "model"

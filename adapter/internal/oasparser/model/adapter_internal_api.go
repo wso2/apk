@@ -980,7 +980,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				vhost = string(hostName)
 			}
 			var modelBasedRoundRobin *InternalModelBasedRoundRobin
-			if extracted := extractModelBasedRoundRobinFromPolicy(resourceAPIPolicy, resourceParams.BackendMapping, adapterInternalAPI, resourcePath, vhost); extracted != nil {
+			if extracted := extractModelBasedRoundRobinFromPolicy(resourceAPIPolicy, resourceParams.BackendMapping, adapterInternalAPI, resourcePath, vhost, httpRoute.Namespace); extracted != nil {
 				loggers.LoggerAPI.Debugf("ModelBasedRoundRobin extracted %v", extracted)
 				modelBasedRoundRobin = extracted
 			}
@@ -1081,7 +1081,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 }
 
 // ExtractModelBasedRoundRobinFromPolicy extracts the ModelBasedRoundRobin from the API Policy
-func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, backendMapping map[string]*dpv1alpha2.ResolvedBackend, adapterInternalAPI *AdapterInternalAPI, resourcePath string, vHost string) *InternalModelBasedRoundRobin {
+func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, backendMapping map[string]*dpv1alpha2.ResolvedBackend, adapterInternalAPI *AdapterInternalAPI, resourcePath string, vHost string, namespace string) *InternalModelBasedRoundRobin {
 	if apiPolicy == nil {
 		return nil
 	}
@@ -1101,10 +1101,9 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 			productionModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.ProductionModels
 			for _, model := range productionModels {
 				if model.BackendRef.Name != "" {
-					namespace := ""
-					if apiPolicy.Namespace == "" {
+					if namespace == "" {
 						namespace = "default"
-					} else {
+					} else if apiPolicy.Namespace != "" {
 						namespace = apiPolicy.Namespace
 					}
 					backendNamespacedName := types.NamespacedName{
@@ -1133,10 +1132,9 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 			sandboxModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.SandboxModels
 			for _, model := range sandboxModels {
 				if model.BackendRef.Name != "" {
-					namespace := ""
-					if apiPolicy.Namespace == "" {
+					if namespace == "" {
 						namespace = "default"
-					} else {
+					} else if apiPolicy.Namespace != "" {
 						namespace = apiPolicy.Namespace
 					}
 					backendNamespacedName := types.NamespacedName{
@@ -1175,10 +1173,9 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 			productionModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.ProductionModels
 			for _, model := range productionModels {
 				if model.BackendRef.Name != "" {
-					namespace := ""
-					if apiPolicy.Namespace == "" {
+					if namespace == "" {
 						namespace = "default"
-					} else {
+					} else if apiPolicy.Namespace != "" {
 						namespace = apiPolicy.Namespace
 					}
 					backendNamespacedName := types.NamespacedName{
@@ -1207,10 +1204,9 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 			sandboxModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.SandboxModels
 			for _, model := range sandboxModels {
 				if model.BackendRef.Name != "" {
-					namespace := ""
-					if apiPolicy.Namespace == "" {
+					if namespace == "" {
 						namespace = "default"
-					} else {
+					} else if apiPolicy.Namespace != "" {
 						namespace = apiPolicy.Namespace
 					}
 					backendNamespacedName := types.NamespacedName{
