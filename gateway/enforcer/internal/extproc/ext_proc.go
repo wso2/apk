@@ -353,7 +353,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
+				// s.log.Error(err, "failed to extract context metadata")
 				// return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
 				break
 			}
