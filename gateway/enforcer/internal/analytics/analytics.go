@@ -97,7 +97,9 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 					publishers = append(publishers, analytics_publisher.NewELK(cfg, logLevel))
 					cfg.Logger.Sugar().Debug(fmt.Sprintf("ELK publisher added with log level: %s", logLevel))
 				case strings.ToLower(MoesifAnalyticsPublisher):
-					// publisher := publishers.NewMoesif(cfg, pub.LogLevel)
+					publisher := analytics_publisher.NewMoesif(cfg)
+					publishers = append(publishers, publisher)
+					cfg.Logger.Info("Moesif publisher added")
 				case strings.ToLower(DefaultAnalyticsPublisher):
 					publisher := analytics_publisher.NewChoreo(cfg, cfg.ChoreoAnalyticsAuthURL, cfg.ChoreoAnalyticsAuthToken)
 					if publisher == nil {
@@ -246,7 +248,7 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	event.UserName = userName
 	event.UserIP = userIP
 	event.ProxyResponseCode = int(logEntry.GetResponse().GetResponseCode().Value)
-	event.RequestTimestamp = logEntry.GetCommonProperties().GetStartTime().AsTime().Format(RFC3339Millis)
+	event.RequestTimestamp = logEntry.GetCommonProperties().GetStartTime().AsTime()
 	event.Properties = make(map[string]interface{}, 0)
 
 	aiMetadata := dto.AIMetadata{}
