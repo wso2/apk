@@ -1,11 +1,11 @@
 module github.com/wso2/apk/gateway/enforcer
 
-go 1.23.2
+go 1.24.0
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.13.0
 	github.com/Azure/azure-sdk-for-go/sdk/messaging/azeventhubs v1.2.3
-	github.com/envoyproxy/gateway v1.2.3
+	github.com/envoyproxy/gateway v1.2.6
 	github.com/envoyproxy/go-control-plane v0.13.1
 	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/zapr v1.3.0
