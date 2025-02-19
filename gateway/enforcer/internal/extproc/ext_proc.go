@@ -169,6 +169,13 @@ var count uint64
 //
 // If an unknown request type is received, it logs the unknown request type.
 func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalProcessor_ProcessServer) error {
+	startTime := time.Now().UnixNano()
+	defer func() {
+		if rand.Intn(10000) == 0 {
+			endTime := time.Now().UnixNano()
+			s.log.Info(fmt.Sprintf("Processing time: %d ns", endTime-startTime))
+		}
+	}()
 	ctx := srv.Context()
 	for {
 		select {
@@ -177,7 +184,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		default:
 		}
 		req, err := srv.Recv()
-		startTime := time.Now().UnixNano()
+		
 
 		if err == io.EOF {
 			return nil
@@ -986,10 +993,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		if err := srv.Send(resp); err != nil {
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
 		}
-		if rand.Intn(10000) == 0 {
-			endTime := time.Now().UnixNano()
-			s.log.Info(fmt.Sprintf("Processing time: %d ns", endTime-startTime))
-		}
+		
 	}
 }
 
