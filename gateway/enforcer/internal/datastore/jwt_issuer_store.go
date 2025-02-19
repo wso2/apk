@@ -74,3 +74,14 @@ func (s *JWTIssuerStore) GetJWTISsuersByOrganization(organization string) map[st
 	}
 	return nil
 }
+
+// GetJWTIssuerCount obtains the total token issuer count for metrics purposes.
+func (s *JWTIssuerStore) GetJWTIssuerCount() int {
+	count := 0
+	if s.jwtIssuers != nil {
+		for _, orgWiseIssuers := range s.jwtIssuers {
+			count += len(orgWiseIssuers)
+		}
+	}
+	return count
+}
