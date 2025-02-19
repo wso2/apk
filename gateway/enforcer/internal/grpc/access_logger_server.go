@@ -52,7 +52,7 @@ func newAccessLogServiceServer(cfg *config.Server, configStore *datastore.Config
 // StreamAccessLogs streams access logs to the server.
 func (s *AccessLogServiceServer) StreamAccessLogs(stream v3.AccessLogService_StreamAccessLogsServer) error {
 	for {
-		s.cfg.Logger.Sugar().Debug("Received a stream of access logs")
+		//s.cfg.Logger.Sugar().Debug("Received a stream of access logs")
 		in, err := stream.Recv()
 		if err == io.EOF {
 			return nil
