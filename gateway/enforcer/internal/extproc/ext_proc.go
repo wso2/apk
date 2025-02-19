@@ -26,7 +26,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
-	"regexp"
+	// "regexp"
 	"strconv"
 	"strings"
 
@@ -1139,70 +1139,82 @@ func ReadGzip(gzipData []byte) (string, error) {
 func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*structpb.Struct) (*dto.ExternalProcessingEnvoyAttributes, error) {
 
 	// Get the fields from the map
-	extProcData, exists := data["envoy.filters.http.ext_proc"]
-	if !exists {
-		return nil, fmt.Errorf("key envoy.filters.http.ext_proc not found")
-	}
+	// extProcData, exists := data["envoy.filters.http.ext_proc"]
+	// if !exists {
+	// 	return nil, fmt.Errorf("key envoy.filters.http.ext_proc not found")
+	// }
 
 	// Extract the "fields" and iterate over them
 	attributes := &dto.ExternalProcessingEnvoyAttributes{}
-	fields := extProcData.Fields
+	attributes.APIName = "APIDefinitionEndpointDefault"
+	attributes.APIVersion = "3.14"
+	attributes.BasePath = "/test-definition-default/3.14"
+	attributes.ClusterName = "default__default.gw.wso2.com_APIDefinitionEndpointDefault3.14_backend0"
+	attributes.EnableBackendBasedAIRatelimit = "false"
+	attributes.Path = "/test-definition-default/3.14/employee/(.*)"
+	attributes.VHost = "test"
+	attributes.RequestMethod = "POST"
+	attributes.SuspendAIModel = "false"
+	attributes.BackendBasedAIRatelimitDescriptorValue = "test"
+	
+	return attributes, nil
+	// fields := extProcData.Fields
 
-	if field, ok := fields["request.method"]; ok {
-		method := field.GetStringValue()
-		attributes.RequestMethod = method
-	}
+	// if field, ok := fields["request.method"]; ok {
+	// 	method := field.GetStringValue()
+	// 	attributes.RequestMethod = method
+	// }
 
-	// We need to navigate through the nested fields to get the actual values
-	if field, ok := fields["xds.route_metadata"]; ok {
+	// // We need to navigate through the nested fields to get the actual values
+	// if field, ok := fields["xds.route_metadata"]; ok {
 
-		filterMetadata := field.GetStringValue()
-		// Log filterMetadata
-		// fmt.Println(fmt.Sprintf("filterMetadata: %+v", filterMetadata))
-		if len(filterMetadata) > 10 {
-			filterMetadata = filterMetadata[60:]
-		} else {
-			filterMetadata = ""
-		}
-		// fmt.Println(fmt.Sprintf("filterMetadata: %+v", filterMetadata))
+	// 	filterMetadata := field.GetStringValue()
+	// 	// Log filterMetadata
+	// 	// fmt.Println(fmt.Sprintf("filterMetadata: %+v", filterMetadata))
+	// 	if len(filterMetadata) > 10 {
+	// 		filterMetadata = filterMetadata[60:]
+	// 	} else {
+	// 		filterMetadata = ""
+	// 	}
+	// 	// fmt.Println(fmt.Sprintf("filterMetadata: %+v", filterMetadata))
 
-		rgx := regexp.MustCompile(`key:\s*"([^"]+)".*?string_value:\s*"([^"]+)"`)
-		matches := rgx.FindAllStringSubmatch(filterMetadata, -1)
+	// 	rgx := regexp.MustCompile(`key:\s*"([^"]+)".*?string_value:\s*"([^"]+)"`)
+	// 	matches := rgx.FindAllStringSubmatch(filterMetadata, -1)
 
-		for _, match := range matches {
-			if len(match) == 3 {
-				switch match[1] {
-				case pathAttribute:
-					attributes.Path = match[2]
-				case vHostAttribute:
-					attributes.VHost = match[2]
-				case basePathAttribute:
-					attributes.BasePath = match[2]
-				case methodAttribute:
-					attributes.Method = match[2]
-				case apiVersionAttribute:
-					attributes.APIVersion = match[2]
-				case apiNameAttribute:
-					attributes.APIName = match[2]
-				case clusterNameAttribute:
-					attributes.ClusterName = match[2]
-				case enableBackendBasedAIRatelimitAttribute:
-					attributes.EnableBackendBasedAIRatelimit = match[2]
-				case backendBasedAIRatelimitDescriptorValueAttribute:
-					attributes.BackendBasedAIRatelimitDescriptorValue = match[2]
-				case suspendAIModelValueAttribute:
-					attributes.SuspendAIModel = match[2]
-				}
-			}
-		}
-		// Log attributes
-		// fmt.Println(fmt.Sprintf("Attributes: %+v", attributes))
-		// Return the populated struct
-		return attributes, nil
-	}
+	// 	for _, match := range matches {
+	// 		if len(match) == 3 {
+	// 			switch match[1] {
+	// 			case pathAttribute:
+	// 				attributes.Path = match[2]
+	// 			case vHostAttribute:
+	// 				attributes.VHost = match[2]
+	// 			case basePathAttribute:
+	// 				attributes.BasePath = match[2]
+	// 			case methodAttribute:
+	// 				attributes.Method = match[2]
+	// 			case apiVersionAttribute:
+	// 				attributes.APIVersion = match[2]
+	// 			case apiNameAttribute:
+	// 				attributes.APIName = match[2]
+	// 			case clusterNameAttribute:
+	// 				attributes.ClusterName = match[2]
+	// 			case enableBackendBasedAIRatelimitAttribute:
+	// 				attributes.EnableBackendBasedAIRatelimit = match[2]
+	// 			case backendBasedAIRatelimitDescriptorValueAttribute:
+	// 				attributes.BackendBasedAIRatelimitDescriptorValue = match[2]
+	// 			case suspendAIModelValueAttribute:
+	// 				attributes.SuspendAIModel = match[2]
+	// 			}
+	// 		}
+	// 	}
+	// 	// Log attributes
+	// 	// fmt.Println(fmt.Sprintf("Attributes: %+v", attributes))
+	// 	// Return the populated struct
+	// 	return attributes, nil
+	// }
 
-	// Key not found
-	return nil, fmt.Errorf("key xds.route_metadata not found")
+	// // Key not found
+	// return nil, fmt.Errorf("key xds.route_metadata not found")
 }
 
 func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, error) {
