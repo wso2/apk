@@ -26,8 +26,11 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
+
+	// "math/rand"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
@@ -46,7 +49,6 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/requesthandler"
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
-	"math/rand"
 
 	"net"
 	"time"
@@ -55,7 +57,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/encoding/prototext"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
@@ -169,13 +170,13 @@ var count uint64
 //
 // If an unknown request type is received, it logs the unknown request type.
 func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalProcessor_ProcessServer) error {
-	startTime := time.Now().UnixNano()
-	defer func() {
-		if rand.Intn(10000) == 0 {
-			endTime := time.Now().UnixNano()
-			s.log.Info(fmt.Sprintf("Processing time: %d ns", endTime-startTime))
-		}
-	}()
+	// startTime := time.Now().UnixNano()
+	// defer func() {
+	// 	if rand.Intn(10000) == 0 {
+	// 		endTime := time.Now().UnixNano()
+	// 		s.log.Info(fmt.Sprintf("Processing time: %d ns", endTime-startTime))
+	// 	}
+	// }()
 	ctx := srv.Context()
 	for {
 		select {
@@ -184,7 +185,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		default:
 		}
 		req, err := srv.Recv()
-		
 
 		if err == io.EOF {
 			return nil
@@ -993,7 +993,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		if err := srv.Send(resp); err != nil {
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
 		}
-		
+
 	}
 }
 
@@ -1157,56 +1157,46 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 	if field, ok := fields["xds.route_metadata"]; ok {
 
 		filterMetadata := field.GetStringValue()
-		var structData corev3.Metadata
-		err := prototext.Unmarshal([]byte(filterMetadata), &structData)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse Protobuf text: %v", err)
+		// Log filterMetadata
+		// fmt.Println(fmt.Sprintf("filterMetadata: %+v", filterMetadata))
+		if len(filterMetadata) > 10 {
+			filterMetadata = filterMetadata[60:]
+		} else {
+			filterMetadata = ""
 		}
+		// fmt.Println(fmt.Sprintf("filterMetadata: %+v", filterMetadata))
 
-		// Extract values for predefined keys
-		extractedValues := make(map[string]string)
+		rgx := regexp.MustCompile(`key:\s*"([^"]+)".*?string_value:\s*"([^"]+)"`)
+		matches := rgx.FindAllStringSubmatch(filterMetadata, -1)
 
-		keysToExtract := []string{
-			pathAttribute,
-			vHostAttribute,
-			basePathAttribute,
-			methodAttribute,
-			apiVersionAttribute,
-			apiNameAttribute,
-			clusterNameAttribute,
-			enableBackendBasedAIRatelimitAttribute,
-			backendBasedAIRatelimitDescriptorValueAttribute,
-			suspendAIModelValueAttribute,
-		}
-
-		for _, key := range keysToExtract {
-			if field, exists := structData.FilterMetadata["envoy.filters.http.ext_proc"]; exists {
-				extractedValues[key] = field.Fields[key].GetStringValue()
-				// case condition to populate ExternalProcessingEnvoyAttributes
-				switch key {
+		for _, match := range matches {
+			if len(match) == 3 {
+				switch match[1] {
 				case pathAttribute:
-					attributes.Path = extractedValues[key]
+					attributes.Path = match[2]
 				case vHostAttribute:
-					attributes.VHost = extractedValues[key]
+					attributes.VHost = match[2]
 				case basePathAttribute:
-					attributes.BasePath = extractedValues[key]
+					attributes.BasePath = match[2]
 				case methodAttribute:
-					attributes.Method = extractedValues[key]
+					attributes.Method = match[2]
 				case apiVersionAttribute:
-					attributes.APIVersion = extractedValues[key]
+					attributes.APIVersion = match[2]
 				case apiNameAttribute:
-					attributes.APIName = extractedValues[key]
+					attributes.APIName = match[2]
 				case clusterNameAttribute:
-					attributes.ClusterName = extractedValues[key]
+					attributes.ClusterName = match[2]
 				case enableBackendBasedAIRatelimitAttribute:
-					attributes.EnableBackendBasedAIRatelimit = extractedValues[key]
+					attributes.EnableBackendBasedAIRatelimit = match[2]
 				case backendBasedAIRatelimitDescriptorValueAttribute:
-					attributes.BackendBasedAIRatelimitDescriptorValue = extractedValues[key]
+					attributes.BackendBasedAIRatelimitDescriptorValue = match[2]
 				case suspendAIModelValueAttribute:
-					attributes.SuspendAIModel = extractedValues[key]
+					attributes.SuspendAIModel = match[2]
 				}
 			}
 		}
+		// Log attributes
+		// fmt.Println(fmt.Sprintf("Attributes: %+v", attributes))
 		// Return the populated struct
 		return attributes, nil
 	}
