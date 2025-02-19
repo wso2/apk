@@ -1068,11 +1068,12 @@ public class APIClient {
                         log:printError("Mirror filter cannot be appended as a response policy.");
                     }
                     string host = self.getHost(url);
+                    string path = self.getPath(url);
                     int|error port = self.getPort(url);
                     if port is int {
                         model:Backend backendService = {
                             metadata: {
-                                name: self.getBackendServiceUid(apkConf, apiOperation, "", host, organization),
+                                name: self.getBackendServiceUid(apkConf, apiOperation, "", host, path, organization),
                                 labels: self.getLabels(apkConf, organization)
                             },
                             spec: {
@@ -1209,7 +1210,13 @@ public class APIClient {
         return generatedPath;
     }
 
-    isolated function getPath(string url) returns string {
+    isolated function getPath(string|K8sService endpoint) returns string {
+        string url;
+        if endpoint is string {
+            url = endpoint;
+        } else {
+            url = self.constructURlFromK8sService(endpoint);
+        }
         string host = "";
         if url.startsWith("https://") {
             host = url.substring(8, url.length());
@@ -1464,7 +1471,7 @@ public class APIClient {
         EndpointSecurity? endpointSecurity = endpointConfig?.endpointSecurity;
         model:Backend backendService = {
             metadata: {
-                name: self.getBackendServiceUid(apkConf, apiOperation, endpointType, self.getHost(endpointConfig.endpoint), organization),
+                name: self.getBackendServiceUid(apkConf, apiOperation, endpointType, self.getHost(endpointConfig.endpoint),  self.getPath(endpointConfig.endpoint), organization),
                 labels: self.getLabels(apkConf, organization)
             },
             spec: {
@@ -1650,10 +1657,11 @@ public class APIClient {
                             string url = model.endpoint;
                             string host = self.getHost(url);
                             int|error port = self.getPort(url);
+                            string path = self.getPath(url);
                             if port is int {
                                 model:Backend backendService = {
                                     metadata: {
-                                        name: self.getBackendServiceUid(apkConf, operations, PRODUCTION_TYPE, host, organization),
+                                        name: self.getBackendServiceUid(apkConf, operations, PRODUCTION_TYPE, host, path, organization),
                                         labels: self.getLabels(apkConf, organization)
                                     },
                                     spec: {
@@ -1686,10 +1694,11 @@ public class APIClient {
                             string url = model.endpoint;
                             string host = self.getHost(url);
                             int|error port = self.getPort(url);
+                            string path = self.getPath(url);
                             if port is int {
                                 model:Backend backendService = {
                                     metadata: {
-                                        name: self.getBackendServiceUid(apkConf, operations, SANDBOX_TYPE, host, organization),
+                                        name: self.getBackendServiceUid(apkConf, operations, SANDBOX_TYPE, host, path, organization),
                                         labels: self.getLabels(apkConf, organization)
                                     },
                                     spec: {
@@ -2005,12 +2014,12 @@ public class APIClient {
         }
     }
 
-    public isolated function getBackendServiceUid(APKConf apkConf, APKOperations? apiOperation, string endpointType, string endpointHost, commons:Organization organization) returns string {
+    public isolated function getBackendServiceUid(APKConf apkConf, APKOperations? apiOperation, string endpointType, string endpointHost, string endpointPath, commons:Organization organization) returns string {
         string concatanatedString = uuid:createType1AsString();
         if (apiOperation is APKOperations && apiOperation.endpointConfigurations is EndpointConfigurations) {
             return "backend-" + concatanatedString + "-resource";
         } else {
-            concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version, endpointType, endpointHost);
+            concatanatedString = string:'join("-", organization.name, apkConf.name, 'apkConf.'version, endpointType, endpointHost, endpointPath);
             byte[] hashedValue = crypto:hashSha1(concatanatedString.toBytes());
             concatanatedString = hashedValue.toBase16();
             return "backend-" + concatanatedString + "-api";
