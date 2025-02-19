@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"strconv"
 	"strings"
 
@@ -119,7 +120,9 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 		cfg.EnforcerPrivateKeyPath,
 		grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize),
 		grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)),
-		grpc.KeepaliveParams(kaParams))
+		grpc.KeepaliveParams(kaParams),
+		grpc.MaxConcurrentStreams(math.MaxUint32),
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -165,14 +168,17 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 //
 // If an unknown request type is received, it logs the unknown request type.
 func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalProcessor_ProcessServer) error {
+	s.log.Info("111")
 	ctx := srv.Context()
 	for {
+		s.log.Info("222")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
 		}
 		req, err := srv.Recv()
+		s.log.Info("333")
 		// count = count + 1
 		// var startTime int64 
 		// if count%2 == 0 {
@@ -561,7 +567,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
 				if selectedModel == "" || selectedEndpoint == "" {
-					//s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
+					s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
 				} else {
 					// change request body to model to selected model
 					httpBody := req.GetRequestBody().Body
@@ -655,7 +661,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
 				//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
 				if selectedModel == "" || selectedEndpoint == "" {
-					//s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
+					s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
 				} else {
 					// change request body to model to selected model
 					httpBody := req.GetRequestBody().Body
@@ -985,7 +991,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			resp.DynamicMetadata = dynamicMetadata
 		}
 		if err := srv.Send(resp); err != nil {
-			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
+			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
 		}
 		// if count%2 == 0 {
 		// 	endTime := time.Now().UnixNano()
