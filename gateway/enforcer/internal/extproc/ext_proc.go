@@ -175,7 +175,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		req, err := srv.Recv()
 		count = count + 1
 		var startTime int64 
-		if count%1000 == 0 {
+		if count%2 == 0 {
 			startTime = time.Now().UnixNano()
 		}
 		
@@ -987,7 +987,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		if err := srv.Send(resp); err != nil {
 			//s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
 		}
-		if count%10000 == 0 {
+		if count%2 == 0 {
 			endTime := time.Now().UnixNano()
 			s.log.Info(fmt.Sprintf("Processing time: %d ns", endTime-startTime))
 		}
