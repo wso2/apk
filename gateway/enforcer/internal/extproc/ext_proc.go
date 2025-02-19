@@ -46,6 +46,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/requesthandler"
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
+	"golang.org/x/exp/rand"
 
 	"net"
 	"time"
@@ -147,7 +148,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	}
 }
 
-// var count = 1
+var count uint64
 
 // Process handles the external processing server stream. It continuously receives
 // requests from the stream, processes them, and sends back appropriate responses.
@@ -168,24 +169,16 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 //
 // If an unknown request type is received, it logs the unknown request type.
 func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalProcessor_ProcessServer) error {
-	s.log.Info("111")
 	ctx := srv.Context()
 	for {
-		s.log.Info("222")
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
 		}
 		req, err := srv.Recv()
-		s.log.Info("333")
-		// count = count + 1
-		// var startTime int64 
-		// if count%2 == 0 {
-		// 	startTime = time.Now().UnixNano()
-		// }
-		
-			
+		startTime := time.Now().UnixNano()
+
 		if err == io.EOF {
 			return nil
 		}
@@ -993,10 +986,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		if err := srv.Send(resp); err != nil {
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
 		}
-		// if count%2 == 0 {
-		// 	endTime := time.Now().UnixNano()
-		// 	s.log.Info(fmt.Sprintf("Processing time: %d ns", endTime-startTime))
-		// }
+		if rand.Intn(10000) == 0 {
+			endTime := time.Now().UnixNano()
+			s.log.Info(fmt.Sprintf("Processing time: %d ns", endTime-startTime))
+		}
 	}
 }
 
