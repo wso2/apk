@@ -213,7 +213,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
 			if existingClusterName == "" {
-				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, endpoint.Endpoints[0].Host)
+				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, endpoint.Endpoints[0].Host+endpoint.Endpoints[0].Basepath)
 				cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, nil)
 				if err != nil {
 					logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
@@ -269,7 +269,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 
 			//existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
-			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, ep.Host)
+			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, ep.Host+ep.Basepath)
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, &ep)
 			if err != nil {
 				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
@@ -288,7 +288,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 							existingMirrorClusterName := getExistingClusterName(*mirrorEndpointCluster, processedEndpoints)
 							var mirrorClusterName string
 							if existingMirrorClusterName == "" {
-								mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, mirrorEndpoint.Host)
+								mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, mirrorEndpoint.Host+mirrorEndpoint.Basepath)
 								mirrorCluster, mirrorAddress, err := processEndpoints(mirrorClusterName, mirrorEndpointCluster, timeout, mirrorBasepath, &mirrorEndpoint)
 								if err != nil {
 									logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level mirror filter endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
@@ -1993,7 +1993,7 @@ func createInterceptorAPIClusters(adapterInternalAPI *model.AdapterInternalAPI, 
 	if apiRequestInterceptor.Enable {
 		logger.LoggerOasparser.Debugf("API level request interceptors found for %v : %v", apiTitle, apiVersion)
 		apiRequestInterceptor.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost,
-			apiTitle, apiVersion, apiRequestInterceptor.EndpointCluster.Endpoints[0].Host)
+			apiTitle, apiVersion, apiRequestInterceptor.EndpointCluster.Endpoints[0].Host+apiRequestInterceptor.EndpointCluster.Endpoints[0].Basepath)
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiRequestInterceptor)
 		if err != nil {
 			apiRequestInterceptor = model.InterceptEndpoint{}
@@ -2008,7 +2008,7 @@ func createInterceptorAPIClusters(adapterInternalAPI *model.AdapterInternalAPI, 
 	if apiResponseInterceptor.Enable {
 		logger.LoggerOasparser.Debugln("API level response interceptors found for " + apiTitle)
 		apiResponseInterceptor.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost,
-			apiTitle, apiVersion, apiResponseInterceptor.EndpointCluster.Endpoints[0].Host)
+			apiTitle, apiVersion, apiResponseInterceptor.EndpointCluster.Endpoints[0].Host+apiResponseInterceptor.EndpointCluster.Endpoints[0].Basepath)
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, apiResponseInterceptor)
 		if err != nil {
 			apiResponseInterceptor = model.InterceptEndpoint{}
@@ -2036,7 +2036,7 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 	if reqInterceptorVal.Enable {
 		logger.LoggerOasparser.Debugf("Resource level request interceptors found for %v:%v-%v", apiTitle, apiVersion, resource.GetPath())
 		reqInterceptorVal.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost,
-			apiTitle, apiVersion, reqInterceptorVal.EndpointCluster.Endpoints[0].Host)
+			apiTitle, apiVersion, reqInterceptorVal.EndpointCluster.Endpoints[0].Host+reqInterceptorVal.EndpointCluster.Endpoints[0].Host)
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, reqInterceptorVal)
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2244, logging.MAJOR, "Error while adding resource level request intercept external cluster for %s. %v", apiTitle, err.Error()))
@@ -2054,7 +2054,7 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 			logger.LoggerOasparser.Debugf("Operation level request interceptors found for %v:%v-%v-%v", apiTitle, apiVersion, resource.GetPath(),
 				opI.ClusterName)
 			opID := opI.ClusterName
-			opI.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opI.EndpointCluster.Endpoints[0].Host)
+			opI.ClusterName = getClusterName(requestInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opI.EndpointCluster.Endpoints[0].Host+opI.EndpointCluster.Endpoints[0].Host)
 			operationalReqInterceptors[method] = opI // since cluster name is updated
 			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
 			if err != nil {
@@ -2073,7 +2073,7 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 	if respInterceptorVal.Enable {
 		logger.LoggerOasparser.Debugf("Resource level response interceptors found for %v:%v-%v"+apiTitle, apiVersion, resource.GetPath())
 		respInterceptorVal.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID,
-			vHost, apiTitle, apiVersion, respInterceptorVal.EndpointCluster.Endpoints[0].Host)
+			vHost, apiTitle, apiVersion, respInterceptorVal.EndpointCluster.Endpoints[0].Host+respInterceptorVal.EndpointCluster.Endpoints[0].Basepath)
 		cluster, addresses, err := CreateLuaCluster(interceptorCerts, respInterceptorVal)
 		if err != nil {
 			logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2246, logging.MAJOR, "Error while adding resource level response intercept external cluster for %s. %v", apiTitle, err.Error()))
@@ -2092,7 +2092,7 @@ func createInterceptorResourceClusters(adapterInternalAPI *model.AdapterInternal
 			logger.LoggerOasparser.Debugf("Operational level response interceptors found for %v:%v-%v-%v", apiTitle, apiVersion, resource.GetPath(),
 				opI.ClusterName)
 			opID := opI.ClusterName
-			opI.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opI.EndpointCluster.Endpoints[0].Host)
+			opI.ClusterName = getClusterName(responseInterceptClustersNamePrefix, organizationID, vHost, apiTitle, apiVersion, opI.EndpointCluster.Endpoints[0].Host+opI.EndpointCluster.Endpoints[0].Basepath)
 			operationalRespInterceptorVal[method] = opI // since cluster name is updated
 			cluster, addresses, err := CreateLuaCluster(interceptorCerts, opI)
 			if err != nil {

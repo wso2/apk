@@ -145,7 +145,7 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 			for _, hostName := range httpRouteState.HTTPRouteCombined.Spec.Hostnames {
 				vhost = string(hostName)
 			}
-			clusternName := getClusterName(endpointCluster.EndpointPrefix, adapterInternalAPI.GetOrganizationID(), vhost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+			clusternName := getClusterName(endpointCluster.EndpointPrefix, adapterInternalAPI.GetOrganizationID(), vhost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host+endpoints[0].Basepath)
 			productionModels = append(productionModels, model.InternalModelWeight{
 				Model:               aiModel.Model,
 				EndpointClusterName: clusternName,
@@ -161,7 +161,7 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 			for _, hostName := range httpRouteState.HTTPRouteCombined.Spec.Hostnames {
 				vhost = string(hostName)
 			}
-			clusternName := getClusterName(endpointCluster.EndpointPrefix, adapterInternalAPI.GetOrganizationID(), vhost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+			clusternName := getClusterName(endpointCluster.EndpointPrefix, adapterInternalAPI.GetOrganizationID(), vhost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host+endpoints[0].Basepath)
 			sandboxModels = append(sandboxModels, model.InternalModelWeight{
 				Model:               aiModel.Model,
 				EndpointClusterName: clusternName,

@@ -1117,7 +1117,7 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 					}
 					endpoints := GetEndpoints(backendNamespacedName, backendMapping)
 
-					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host+endpoints[0].Basepath)
 
 					resolvedModelWeight := InternalModelWeight{
 						Model:               model.Model,
@@ -1148,7 +1148,7 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 					}
 					endpoints := GetEndpoints(backendNamespacedName, backendMapping)
 
-					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host+endpoints[0].Basepath)
 
 					resolvedModelWeight := InternalModelWeight{
 						Model:               model.Model,
@@ -1188,7 +1188,7 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 					}
 					endpoints := GetEndpoints(backendNamespacedName, backendMapping)
 
-					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host+endpoints[0].Basepath)
 
 					resolvedModelWeight := InternalModelWeight{
 						Model:               model.Model,
@@ -1219,7 +1219,7 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 					}
 					endpoints := GetEndpoints(backendNamespacedName, backendMapping)
 
-					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host)
+					clusternName := getClusterName("", adapterInternalAPI.GetOrganizationID(), vHost, adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), endpoints[0].Host+endpoints[0].Basepath)
 
 					resolvedModelWeight := InternalModelWeight{
 						Model:               model.Model,

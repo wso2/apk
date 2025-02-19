@@ -735,46 +735,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
 				remainingTokenCount := 100
 				remainingRequestCount := 100
-				status := 200
-				for _, headerValue := range headerValues {
-					if headerValue.Key == "x-ratelimit-remaining-tokens" || headerValue.Key == "x-ratelimit-remaining" {
-						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining token count by header")
-						}
-						remainingTokenCount = value
-					}
-					if headerValue.Key == "x-ratelimit-remaining-requests" {
-						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining request count by header")
-						}
-						remainingRequestCount = value
-					}
-					if headerValue.Key == "status" {
-						status, err = util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve status code by header")
-						}
-					}
-				}
-				if remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
-					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
-					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
-					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
-					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
-				}
-			}
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.SupportedModels != nil &&
-				matchedAPI.AIModelBasedRoundRobin == nil &&
-				matchedResource.AIModelBasedRoundRobin != nil &&
-				matchedResource.AIModelBasedRoundRobin.Enabled {
-				s.log.Sugar().Debug("Resource Level Model Based Round Robin enabled")
-				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
-				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
-				remainingTokenCount := 100
-				remainingRequestCount := 100
+				remainingCount := 100
 				status := 200
 				for _, headerValue := range headerValues {
 					if headerValue.Key == "x-ratelimit-remaining-tokens" {
@@ -797,8 +758,63 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							s.log.Error(err, "Unable to retrieve status code by header")
 						}
 					}
+					if headerValue.Key == "x-ratelimit-remaining" {
+						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve remaining count by header")
+						}
+						remainingCount = value
+					}
 				}
-				if remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
+				if remainingCount <= 0 || remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
+					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
+					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
+					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
+					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
+				}
+			}
+			if matchedAPI.AiProvider != nil &&
+				matchedAPI.AiProvider.SupportedModels != nil &&
+				matchedAPI.AIModelBasedRoundRobin == nil &&
+				matchedResource.AIModelBasedRoundRobin != nil &&
+				matchedResource.AIModelBasedRoundRobin.Enabled {
+				s.log.Sugar().Debug("Resource Level Model Based Round Robin enabled")
+				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
+				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
+				remainingTokenCount := 100
+				remainingRequestCount := 100
+				remainingCount := 100
+				status := 200
+				for _, headerValue := range headerValues {
+					if headerValue.Key == "x-ratelimit-remaining-tokens" {
+						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve remaining token count by header")
+						}
+						remainingTokenCount = value
+					}
+					if headerValue.Key == "x-ratelimit-remaining-requests" {
+						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve remaining request count by header")
+						}
+						remainingRequestCount = value
+					}
+					if headerValue.Key == "status" {
+						status, err = util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve status code by header")
+						}
+					}
+					if headerValue.Key == "x-ratelimit-remaining" {
+						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
+						if err != nil {
+							s.log.Error(err, "Unable to retrieve remaining count by header")
+						}
+						remainingCount = value
+					}
+				}
+				if remainingCount <= 0 || remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
 					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
 					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
 					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
