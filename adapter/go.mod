@@ -1,6 +1,6 @@
 module github.com/wso2/apk/adapter
 
-go 1.23
+go 1.24
 
 require (
 	github.com/cncf/xds/go v0.0.0-20240905190251-b4127c9b8d78
@@ -16,7 +16,7 @@ require (
 	github.com/prometheus/client_golang v1.20.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/telepresenceio/watchable v0.0.0-20220726211108-9bb86f92afa7
-	github.com/wso2/apk/common-go-libs v0.0.0-20241016075419-fc842057860d
+	github.com/wso2/apk/common-go-libs v0.0.0-20250220102334-eb9f1ea4f8a7
 	go.opentelemetry.io/proto/otlp v1.3.1
 	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	google.golang.org/grpc v1.67.1
