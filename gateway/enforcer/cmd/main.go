@@ -9,6 +9,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/extproc"
 	"github.com/wso2/apk/gateway/enforcer/internal/grpc"
+	"github.com/wso2/apk/gateway/enforcer/internal/jwtbackend"
 	metrics "github.com/wso2/apk/gateway/enforcer/internal/metrics"
 	"github.com/wso2/apk/gateway/enforcer/internal/tokenrevocation"
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
@@ -54,7 +55,7 @@ func main() {
 	}
 	// Start the external processing server
 	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker, revokedJTIStore)
-
+	go jwtbackend.StartJWKSServer(cfg)
 	// Wait for the config to be loaded
 	cfg.Logger.Sugar().Debug("Waiting for the config to be loaded")
 	<-configStore.Notify

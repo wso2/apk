@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	apiGatewayID   = "wso2.org/products/am"
-	dialectURI     = "http://wso2.org/claims/"
+	apiGatewayID  = "wso2.org/products/am"
+	dialectURI    = "http://wso2.org/claims/"
 	sha256WithRSA = "SHA256withRSA"
 )
+
 var restrictedClaims = []string{"iss", "sub", "aud", "exp", "nbf", "iat", "jti", "application", "tierInfo", "subscribedAPIs", "aut"}
 
 // CreateBackendJWT creates a JWT token for the backend.
@@ -103,7 +104,7 @@ func CreateBackendJWT(rch *requestconfig.Holder, cfg *config.Server) string {
 
 		}
 		signatureAlgorithm := bjc.SignatureAlgorithm
-		if signatureAlgorithm !=  "NONE" && signatureAlgorithm != sha256WithRSA {
+		if signatureAlgorithm != "NONE" && signatureAlgorithm != sha256WithRSA {
 			signatureAlgorithm = sha256WithRSA
 		}
 
