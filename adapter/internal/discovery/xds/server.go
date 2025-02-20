@@ -273,6 +273,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	}
 	orgwizeJWTProviders := envoyGatewayConfig.jwtProviders
 	jwtRequirementMap := make(map[string]*jwt.JwtRequirement)
+	jwtProviderMap := make(map[string]*jwt.JwtProvider)
 	for organizationID, entityMap := range orgAPIMap {
 		for apiKey, envoyInternalAPI := range entityMap {
 			if _, exists := envoyInternalAPI.envoyLabels[gatewayName]; !exists {
@@ -280,9 +281,41 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				continue
 			}
 			if !envoyInternalAPI.adapterInternalAPI.GetDisableAuthentications() {
-				jwtRequirements := oasParser.GetJWTRequirements(envoyInternalAPI.adapterInternalAPI, orgwizeJWTProviders[organizationID])
-				if jwtRequirements != nil {
-					jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirements
+				var authorizationHeader *string
+				var sendTokenToUpstream *bool
+				if envoyInternalAPI.adapterInternalAPI != nil && envoyInternalAPI.adapterInternalAPI.GetResources() != nil {
+					for _, resource := range envoyInternalAPI.adapterInternalAPI.GetResources() {
+						if resource.GetMethod() != nil {
+							for _, method := range resource.GetMethod() {
+								if method.GetAuthentication() != nil {
+									if !method.GetAuthentication().Disabled && method.GetAuthentication().Oauth2 != nil {
+										authorizationHeader = &method.GetAuthentication().Oauth2.Header
+										sendTokenToUpstream = &method.GetAuthentication().Oauth2.SendTokenToUpstream
+										break
+									}
+								}
+							}
+						}
+					}
+				}
+				if authorizationHeader != nil || sendTokenToUpstream != nil {
+					jwtProviders, jwtclusters, jwtaddress, jwtRequirement, err := oasParser.GenerateAPILevelJWTPRoviders(orgwizeJWTProviders[organizationID], envoyInternalAPI.adapterInternalAPI, authorizationHeader, sendTokenToUpstream)
+					if err != nil {
+						logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2301, logging.MAJOR, "Error generating JWT Providers: %v", err))
+					}
+					clusterArray = append(clusterArray, jwtclusters...)
+					endpointArray = append(endpointArray, jwtaddress...)
+					for key, value := range jwtProviders {
+						jwtProviderMap[key] = value
+					}
+					if jwtRequirement != nil {
+						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirement
+					}
+				} else {
+					jwtRequirements := oasParser.GetJWTRequirements(envoyInternalAPI.adapterInternalAPI, orgwizeJWTProviders[organizationID])
+					if jwtRequirements != nil {
+						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirements
+					}
 				}
 			}
 			vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
@@ -320,13 +353,17 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 		readynessEndpoint := envoyconf.CreateReadyEndpoint()
 		vhostToRouteArrayMap[systemHost] = append(vhostToRouteArrayMap[systemHost], readynessEndpoint)
 	}
-	jwtProviders, jwtclusters, jwtaddress, err := oasParser.GenerateJWTPRoviders(orgwizeJWTProviders)
+	jwtProviders, jwtclusters, jwtaddress, err := oasParser.GenerateJWTPRoviderv3(orgwizeJWTProviders)
 	if err != nil {
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1100, logging.MAJOR, "Error generating JWT Providers: %v", err))
 	}
+	for key, value := range jwtProviders {
+		jwtProviderMap[key] = value
+	}
+
 	clusterArray = append(clusterArray, jwtclusters...)
 	endpointArray = append(endpointArray, jwtaddress...)
-	jwtFilter, err := oasParser.GetJWTFilter(jwtRequirementMap, jwtProviders)
+	jwtFilter, err := oasParser.GetJWTFilter(jwtRequirementMap, jwtProviderMap)
 	listeners := envoyGatewayConfig.listeners
 	if !config.ReadConfigs().Adapter.EnableGatewayClassController && len(listeners) < 1 {
 		return nil, nil, nil, nil, nil

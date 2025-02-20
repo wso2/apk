@@ -123,6 +123,7 @@ const (
 	Error2248 = 2248
 	Error2249 = 2249
 	Error2250 = 2250
+	Error2301 = 2301
 )
 
 // Error Log RateLimiter callbacks(2300-2399) Config Constants
@@ -417,5 +418,9 @@ var Mapper = map[int]logging.ErrorDetails{
 	Error2300: {
 		ErrorCode: Error2300,
 		Message:   "Error in Stream request.",
+	},
+	Error2301: {
+		ErrorCode: Error2301,
+		Message:   "Error while generating JWTProviders",
 	},
 }
