@@ -546,6 +546,10 @@
         "aiRatelimit": {
           "$ref": "#/schemas/AIRatelimit",
           "description": "AI ratelimit configuration for the API endpoint."
+        },
+        "weight": {
+          "type": "integer",
+          "description": "The weight configuration for the API endpoint."
         }
       },
       "additionalProperties": false

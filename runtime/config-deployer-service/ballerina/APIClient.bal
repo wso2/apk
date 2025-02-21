@@ -250,7 +250,8 @@ public class APIClient {
                     model:Endpoint endpoint = {
                         name: backendService.metadata.name,
                         serviceEntry: false,
-                        url: self.constructURlFromService(sandboxEndpointConfig.endpoint)
+                        url: self.constructURlFromService(sandboxEndpointConfig.endpoint),
+                        weight: sandboxEndpointConfig.weight
                     };
                     sandboxEndpoints.push(endpoint);
                     AIRatelimit? aiRatelimit = sandboxEndpointConfig.aiRatelimit;
@@ -273,7 +274,8 @@ public class APIClient {
                     model:Endpoint endpoint = {
                         name: backendService.metadata.name,
                         serviceEntry: false,
-                        url: self.constructURlFromService(productionEndpointConfig.endpoint)
+                        url: self.constructURlFromService(productionEndpointConfig.endpoint),
+                        weight: productionEndpointConfig.weight
                     };
                     productionEndpoints.push(endpoint);
                     AIRatelimit? aiRatelimit = productionEndpointConfig.aiRatelimit;
@@ -1268,6 +1270,9 @@ public class APIClient {
                     name: <string>endpointItem.name,
                     group: "dp.wso2.com"
                 };
+                if endpointItem.weight != () {
+                    httpBackend.weight = <int>endpointItem.weight;
+                }
                 httpBackendRefs.push(httpBackend);
             }
         }

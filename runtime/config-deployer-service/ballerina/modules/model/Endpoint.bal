@@ -3,5 +3,6 @@ string url?;
 string namespace?;
 string name?;
 boolean serviceEntry = false;
+int weight?;
 
 |};
