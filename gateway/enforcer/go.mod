@@ -18,8 +18,8 @@ require (
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/stretchr/testify v1.10.0
 	github.com/vektah/gqlparser/v2 v2.5.17
-	github.com/wso2/apk/adapter v0.0.0-20241016075419-fc842057860d
-	github.com/wso2/apk/common-go-libs v0.0.0-20241016075419-fc842057860d
+	github.com/wso2/apk/adapter v0.0.0-20250220102334-eb9f1ea4f8a7
+	github.com/wso2/apk/common-go-libs v0.0.0-20250220102334-eb9f1ea4f8a7
 	go.uber.org/zap v1.27.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241007155032-5fefd90f89a9
 	google.golang.org/grpc v1.67.1
