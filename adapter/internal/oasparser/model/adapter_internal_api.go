@@ -591,8 +591,8 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 			loggers.LoggerAPI.Debugf("Could not find AIratelimit for ruleId: %d, len of map: %d, related api: %s", ruleID, len(ruleIdxToAiRatelimitPolicyMapping), adapterInternalAPI.UUID)
 		}
 
-		backendBasePath := ""
 		for _, backend := range rule.BackendRefs {
+			backendBasePath := ""
 			backendName := types.NamespacedName{
 				Name:      string(backend.Name),
 				Namespace: utils.GetNamespace(backend.Namespace, httpRoute.Namespace),
@@ -660,383 +660,387 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 			} else {
 				return fmt.Errorf("backend: %s has not been resolved", backendName)
 			}
-		}
-		for _, filter := range rule.Filters {
-			switch filter.Type {
-			case gwapiv1.HTTPRouteFilterURLRewrite:
-				policyParameters := make(map[string]interface{})
-				policyParameters[constants.RewritePathType] = filter.URLRewrite.Path.Type
-				policyParameters[constants.IncludeQueryParams] = true
 
-				switch filter.URLRewrite.Path.Type {
-				case gwapiv1.FullPathHTTPPathModifier:
-					policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplaceFullPath
-				case gwapiv1.PrefixMatchHTTPPathModifier:
-					policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplacePrefixMatch
-				}
+			for _, filter := range rule.Filters {
+				switch filter.Type {
+				case gwapiv1.HTTPRouteFilterURLRewrite:
+					policyParameters := make(map[string]interface{})
+					policyParameters[constants.RewritePathType] = filter.URLRewrite.Path.Type
+					policyParameters[constants.IncludeQueryParams] = true
 
-				policies.Request = append(policies.Request, Policy{
-					PolicyName: string(gwapiv1.HTTPRouteFilterURLRewrite),
-					Action:     constants.ActionRewritePath,
-					Parameters: policyParameters,
-				})
-				hasURLRewritePolicy = true
-			case gwapiv1.HTTPRouteFilterExtensionRef:
-				if filter.ExtensionRef.Kind == constants.KindAuthentication {
-					if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
-						Name:      string(filter.ExtensionRef.Name),
-						Namespace: httpRoute.Namespace,
-					}.String()]; found {
-						resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
-					} else {
-						return fmt.Errorf(`auth scheme: %s has not been resolved, spec.targetRef.kind should be 
+					switch filter.URLRewrite.Path.Type {
+					case gwapiv1.FullPathHTTPPathModifier:
+						policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplaceFullPath
+						policyParameters[constants.BackendBasePath] = backendBasePath
+					case gwapiv1.PrefixMatchHTTPPathModifier:
+						policyParameters[constants.RewritePathResourcePath] = backendBasePath + *filter.URLRewrite.Path.ReplacePrefixMatch
+						policyParameters[constants.BackendBasePath] = backendBasePath
+					}
+
+					policies.Request = append(policies.Request, Policy{
+						PolicyName: string(gwapiv1.HTTPRouteFilterURLRewrite),
+						Action:     constants.ActionRewritePath,
+						Parameters: policyParameters,
+					})
+					hasURLRewritePolicy = true
+				case gwapiv1.HTTPRouteFilterExtensionRef:
+					if filter.ExtensionRef.Kind == constants.KindAuthentication {
+						if ref, found := resourceParams.ResourceAuthSchemes[types.NamespacedName{
+							Name:      string(filter.ExtensionRef.Name),
+							Namespace: httpRoute.Namespace,
+						}.String()]; found {
+							resourceAuthScheme = concatAuthSchemes(authScheme, &ref)
+						} else {
+							return fmt.Errorf(`auth scheme: %s has not been resolved, spec.targetRef.kind should be 
 						 'Resource' in resource level Authentications`, filter.ExtensionRef.Name)
+						}
 					}
-				}
-				if filter.ExtensionRef.Kind == constants.KindAPIPolicy {
-					if ref, found := resourceParams.ResourceAPIPolicies[types.NamespacedName{
-						Name:      string(filter.ExtensionRef.Name),
-						Namespace: httpRoute.Namespace,
-					}.String()]; found {
-						resourceAPIPolicy = concatAPIPolicies(apiPolicy, &ref)
-					} else {
-						return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
+					if filter.ExtensionRef.Kind == constants.KindAPIPolicy {
+						if ref, found := resourceParams.ResourceAPIPolicies[types.NamespacedName{
+							Name:      string(filter.ExtensionRef.Name),
+							Namespace: httpRoute.Namespace,
+						}.String()]; found {
+							resourceAPIPolicy = concatAPIPolicies(apiPolicy, &ref)
+						} else {
+							return fmt.Errorf(`apipolicy: %s has not been resolved, spec.targetRef.kind should be 
 						 'Resource' in resource level APIPolicies`, filter.ExtensionRef.Name)
+						}
 					}
-				}
-				if filter.ExtensionRef.Kind == constants.KindScope {
-					if ref, found := resourceParams.ResourceScopes[types.NamespacedName{
-						Name:      string(filter.ExtensionRef.Name),
-						Namespace: httpRoute.Namespace,
-					}.String()]; found {
-						scopes = ref.Spec.Names
-						disableScopes = false
-					} else {
-						return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, httpRoute.Namespace)
+					if filter.ExtensionRef.Kind == constants.KindScope {
+						if ref, found := resourceParams.ResourceScopes[types.NamespacedName{
+							Name:      string(filter.ExtensionRef.Name),
+							Namespace: httpRoute.Namespace,
+						}.String()]; found {
+							scopes = ref.Spec.Names
+							disableScopes = false
+						} else {
+							return fmt.Errorf("scope: %s has not been resolved in namespace %s", filter.ExtensionRef.Name, httpRoute.Namespace)
+						}
 					}
-				}
-				if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
-					if ref, found := resourceParams.ResourceRateLimitPolicies[types.NamespacedName{
-						Name:      string(filter.ExtensionRef.Name),
-						Namespace: httpRoute.Namespace,
-					}.String()]; found {
-						resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
-					} else {
-						return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
+					if filter.ExtensionRef.Kind == constants.KindRateLimitPolicy {
+						if ref, found := resourceParams.ResourceRateLimitPolicies[types.NamespacedName{
+							Name:      string(filter.ExtensionRef.Name),
+							Namespace: httpRoute.Namespace,
+						}.String()]; found {
+							resourceRatelimitPolicy = concatRateLimitPolicies(ratelimitPolicy, &ref)
+						} else {
+							return fmt.Errorf(`ratelimitpolicy: %s has not been resolved, spec.targetRef.kind should be 
 						 'Resource' in resource level RateLimitPolicies`, filter.ExtensionRef.Name)
+						}
 					}
-				}
-			case gwapiv1.HTTPRouteFilterRequestHeaderModifier:
-				for _, header := range filter.RequestHeaderModifier.Add {
+				case gwapiv1.HTTPRouteFilterRequestHeaderModifier:
+					for _, header := range filter.RequestHeaderModifier.Add {
+						policyParameters := make(map[string]interface{})
+						policyParameters[constants.HeaderName] = string(header.Name)
+						policyParameters[constants.HeaderValue] = string(header.Value)
+
+						policies.Request = append(policies.Request, Policy{
+							PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
+							Action:     constants.ActionHeaderAdd,
+							Parameters: policyParameters,
+						})
+					}
+					for _, header := range filter.RequestHeaderModifier.Remove {
+						policyParameters := make(map[string]interface{})
+						policyParameters[constants.HeaderName] = string(header)
+
+						policies.Request = append(policies.Request, Policy{
+							PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
+							Action:     constants.ActionHeaderRemove,
+							Parameters: policyParameters,
+						})
+					}
+					for _, header := range filter.RequestHeaderModifier.Set {
+						policyParameters := make(map[string]interface{})
+						policyParameters[constants.HeaderName] = string(header.Name)
+						policyParameters[constants.HeaderValue] = string(header.Value)
+
+						policies.Request = append(policies.Request, Policy{
+							PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
+							Action:     constants.ActionHeaderAdd,
+							Parameters: policyParameters,
+						})
+					}
+				case gwapiv1.HTTPRouteFilterResponseHeaderModifier:
+					for _, header := range filter.ResponseHeaderModifier.Add {
+						policyParameters := make(map[string]interface{})
+						policyParameters[constants.HeaderName] = string(header.Name)
+						policyParameters[constants.HeaderValue] = string(header.Value)
+
+						policies.Response = append(policies.Response, Policy{
+							PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
+							Action:     constants.ActionHeaderAdd,
+							Parameters: policyParameters,
+						})
+					}
+					for _, header := range filter.ResponseHeaderModifier.Remove {
+						policyParameters := make(map[string]interface{})
+						policyParameters[constants.HeaderName] = string(header)
+
+						policies.Response = append(policies.Response, Policy{
+							PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
+							Action:     constants.ActionHeaderRemove,
+							Parameters: policyParameters,
+						})
+					}
+					for _, header := range filter.ResponseHeaderModifier.Set {
+						policyParameters := make(map[string]interface{})
+						policyParameters[constants.HeaderName] = string(header.Name)
+						policyParameters[constants.HeaderValue] = string(header.Value)
+
+						policies.Response = append(policies.Response, Policy{
+							PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
+							Action:     constants.ActionHeaderAdd,
+							Parameters: policyParameters,
+						})
+					}
+				case gwapiv1.HTTPRouteFilterRequestRedirect:
+					var requestRedirectEndpoint Endpoint
+					hasRequestRedirectPolicy = true
 					policyParameters := make(map[string]interface{})
-					policyParameters[constants.HeaderName] = string(header.Name)
-					policyParameters[constants.HeaderValue] = string(header.Value)
+					scheme := *filter.RequestRedirect.Scheme
+					host := string(*filter.RequestRedirect.Hostname)
+					port := filter.RequestRedirect.Port
+					code := filter.RequestRedirect.StatusCode
+
+					policyParameters[constants.RedirectScheme] = scheme
+					requestRedirectEndpoint.URLType = scheme
+					policyParameters[constants.RedirectHostname] = host
+					requestRedirectEndpoint.Host = host
+
+					if port != nil {
+						policyParameters[constants.RedirectPort] = strconv.Itoa(int(*port))
+						requestRedirectEndpoint.Port = uint32(*port)
+					} else {
+						if requestRedirectEndpoint.URLType == "http" {
+							requestRedirectEndpoint.Port = 80
+						} else if requestRedirectEndpoint.URLType == "https" {
+							requestRedirectEndpoint.Port = 443
+						}
+					}
+
+					if code != nil {
+						policyParameters[constants.RedirectStatusCode] = *code
+					}
+
+					switch filter.RequestRedirect.Path.Type {
+					case gwapiv1.FullPathHTTPPathModifier:
+						policyParameters[constants.RedirectPath] = backendBasePath + *filter.RequestRedirect.Path.ReplaceFullPath
+					case gwapiv1.PrefixMatchHTTPPathModifier:
+						policyParameters[constants.RedirectPath] = backendBasePath + *filter.RequestRedirect.Path.ReplacePrefixMatch
+					}
+					requestRedirectEndpoint.Basepath = policyParameters[constants.RedirectPath].(string)
 
 					policies.Request = append(policies.Request, Policy{
-						PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
-						Action:     constants.ActionHeaderAdd,
+						PolicyName: string(gwapiv1.HTTPRouteFilterRequestRedirect),
+						Action:     constants.ActionRedirectRequest,
 						Parameters: policyParameters,
 					})
-				}
-				for _, header := range filter.RequestHeaderModifier.Remove {
-					policyParameters := make(map[string]interface{})
-					policyParameters[constants.HeaderName] = string(header)
+					endPoints = append(endPoints, requestRedirectEndpoint)
 
+				case gwapiv1.HTTPRouteFilterRequestMirror:
+					var mirrorTimeoutInMillis uint32
+					var mirrorIdleTimeoutInSeconds uint32
+					var mirrorCircuitBreaker *dpv1alpha1.CircuitBreaker
+					var mirrorHealthCheck *dpv1alpha1.HealthCheck
+					isMirrorRetryConfig := false
+					isMirrorRouteTimeout := false
+					var mirrorBackendRetryCount uint32
+					var mirrorStatusCodes []uint32
+					mirrorStatusCodes = append(mirrorStatusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
+					var mirrorBaseIntervalInMillis uint32
+					policyParameters := make(map[string]interface{})
+					mirrorBackend := &filter.RequestMirror.BackendRef
+					mirrorBackendName := types.NamespacedName{
+						Name:      string(mirrorBackend.Name),
+						Namespace: utils.GetNamespace(mirrorBackend.Namespace, httpRoute.Namespace),
+					}
+					resolvedMirrorBackend, ok := resourceParams.BackendMapping[mirrorBackendName.String()]
+
+					if ok {
+						if resolvedMirrorBackend.CircuitBreaker != nil {
+							mirrorCircuitBreaker = &dpv1alpha1.CircuitBreaker{
+								MaxConnections:     resolvedMirrorBackend.CircuitBreaker.MaxConnections,
+								MaxPendingRequests: resolvedMirrorBackend.CircuitBreaker.MaxPendingRequests,
+								MaxRequests:        resolvedMirrorBackend.CircuitBreaker.MaxRequests,
+								MaxRetries:         resolvedMirrorBackend.CircuitBreaker.MaxRetries,
+								MaxConnectionPools: resolvedMirrorBackend.CircuitBreaker.MaxConnectionPools,
+							}
+						}
+
+						if resolvedMirrorBackend.Timeout != nil {
+							isMirrorRouteTimeout = true
+							mirrorTimeoutInMillis = resolvedMirrorBackend.Timeout.UpstreamResponseTimeout * 1000
+							mirrorIdleTimeoutInSeconds = resolvedMirrorBackend.Timeout.DownstreamRequestIdleTimeout
+						}
+
+						if resolvedMirrorBackend.Retry != nil {
+							isMirrorRetryConfig = true
+							mirrorBackendRetryCount = resolvedMirrorBackend.Retry.Count
+							mirrorBaseIntervalInMillis = resolvedMirrorBackend.Retry.BaseIntervalMillis
+							if len(resolvedMirrorBackend.Retry.StatusCodes) > 0 {
+								mirrorStatusCodes = resolvedMirrorBackend.Retry.StatusCodes
+							}
+						}
+
+						if resolvedMirrorBackend.HealthCheck != nil {
+							mirrorHealthCheck = &dpv1alpha1.HealthCheck{
+								Interval:           resolvedMirrorBackend.HealthCheck.Interval,
+								Timeout:            resolvedMirrorBackend.HealthCheck.Timeout,
+								UnhealthyThreshold: resolvedMirrorBackend.HealthCheck.UnhealthyThreshold,
+								HealthyThreshold:   resolvedMirrorBackend.HealthCheck.HealthyThreshold,
+							}
+						}
+					} else {
+						return fmt.Errorf("backend: %s has not been resolved", mirrorBackendName)
+					}
+
+					mirrorEndpoints := GetEndpoints(mirrorBackendName, resourceParams.BackendMapping)
+					if len(mirrorEndpoints) > 0 {
+						mirrorEndpointCluster := &EndpointCluster{
+							Endpoints: mirrorEndpoints,
+						}
+						mirrorEndpointConfig := &EndpointConfig{}
+						if isMirrorRouteTimeout {
+							mirrorEndpointConfig.TimeoutInMillis = mirrorTimeoutInMillis
+							mirrorEndpointConfig.IdleTimeoutInSeconds = mirrorIdleTimeoutInSeconds
+						}
+						if mirrorCircuitBreaker != nil {
+							mirrorEndpointConfig.CircuitBreakers = &CircuitBreakers{
+								MaxConnections:     int32(mirrorCircuitBreaker.MaxConnections),
+								MaxRequests:        int32(mirrorCircuitBreaker.MaxRequests),
+								MaxPendingRequests: int32(mirrorCircuitBreaker.MaxPendingRequests),
+								MaxRetries:         int32(mirrorCircuitBreaker.MaxRetries),
+								MaxConnectionPools: int32(mirrorCircuitBreaker.MaxConnectionPools),
+							}
+						}
+						if isMirrorRetryConfig {
+							mirrorEndpointConfig.RetryConfig = &RetryConfig{
+								Count:                int32(mirrorBackendRetryCount),
+								StatusCodes:          mirrorStatusCodes,
+								BaseIntervalInMillis: int32(mirrorBaseIntervalInMillis),
+							}
+						}
+						if mirrorHealthCheck != nil {
+							mirrorEndpointCluster.HealthCheck = &HealthCheck{
+								Interval:           mirrorHealthCheck.Interval,
+								Timeout:            mirrorHealthCheck.Timeout,
+								UnhealthyThreshold: mirrorHealthCheck.UnhealthyThreshold,
+								HealthyThreshold:   mirrorHealthCheck.HealthyThreshold,
+							}
+						}
+						if isMirrorRouteTimeout || mirrorCircuitBreaker != nil || mirrorHealthCheck != nil || isMirrorRetryConfig {
+							mirrorEndpointCluster.Config = mirrorEndpointConfig
+						}
+						mirrorEndpointClusters = append(mirrorEndpointClusters, mirrorEndpointCluster)
+					}
 					policies.Request = append(policies.Request, Policy{
-						PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
-						Action:     constants.ActionHeaderRemove,
+						PolicyName: string(gwapiv1.HTTPRouteFilterRequestMirror),
+						Action:     constants.ActionMirrorRequest,
 						Parameters: policyParameters,
 					})
 				}
-				for _, header := range filter.RequestHeaderModifier.Set {
-					policyParameters := make(map[string]interface{})
-					policyParameters[constants.HeaderName] = string(header.Name)
-					policyParameters[constants.HeaderValue] = string(header.Value)
+			}
+			resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
+			resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
+			resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
+			addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
 
+			loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
+			apiAuth := getSecurity(resourceAuthScheme)
+
+			if !hasRequestRedirectPolicy && len(rule.BackendRefs) < 1 {
+				return fmt.Errorf("no backendref were provided")
+			}
+
+			for matchID, match := range rule.Matches {
+				if hasURLRewritePolicy && hasRequestRedirectPolicy {
+					return fmt.Errorf("cannot have URL Rewrite and Request Redirect under the same rule")
+				}
+				if !hasURLRewritePolicy {
+					policyParameters := make(map[string]interface{})
+					if *match.Path.Type == gwapiv1.PathMatchPathPrefix {
+						policyParameters[constants.RewritePathType] = gwapiv1.PrefixMatchHTTPPathModifier
+					} else {
+						policyParameters[constants.RewritePathType] = gwapiv1.FullPathHTTPPathModifier
+					}
+					policyParameters[constants.IncludeQueryParams] = true
+					policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value
+					policyParameters[constants.BackendBasePath] = backendBasePath
 					policies.Request = append(policies.Request, Policy{
-						PolicyName: string(gwapiv1.HTTPRouteFilterRequestHeaderModifier),
-						Action:     constants.ActionHeaderAdd,
+						PolicyName: string(gwapiv1.HTTPRouteFilterURLRewrite),
+						Action:     constants.ActionRewritePath,
 						Parameters: policyParameters,
 					})
 				}
-			case gwapiv1.HTTPRouteFilterResponseHeaderModifier:
-				for _, header := range filter.ResponseHeaderModifier.Add {
-					policyParameters := make(map[string]interface{})
-					policyParameters[constants.HeaderName] = string(header.Name)
-					policyParameters[constants.HeaderValue] = string(header.Value)
+				resourcePath := adapterInternalAPI.xWso2Basepath + *match.Path.Value
+				matchID := getMatchID(httpRoute.Namespace, httpRoute.Name, ruleID, matchID)
+				operations := getAllowedOperations(matchID, match.Method, policies, apiAuth,
+					parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
 
-					policies.Response = append(policies.Response, Policy{
-						PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
-						Action:     constants.ActionHeaderAdd,
-						Parameters: policyParameters,
-					})
+				vhost := ""
+				for _, hostName := range httpRoute.Spec.Hostnames {
+					vhost = string(hostName)
 				}
-				for _, header := range filter.ResponseHeaderModifier.Remove {
-					policyParameters := make(map[string]interface{})
-					policyParameters[constants.HeaderName] = string(header)
-
-					policies.Response = append(policies.Response, Policy{
-						PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
-						Action:     constants.ActionHeaderRemove,
-						Parameters: policyParameters,
-					})
+				var modelBasedRoundRobin *InternalModelBasedRoundRobin
+				if extracted := extractModelBasedRoundRobinFromPolicy(resourceAPIPolicy, resourceParams.BackendMapping, adapterInternalAPI, resourcePath, vhost, httpRoute.Namespace); extracted != nil {
+					loggers.LoggerAPI.Debugf("ModelBasedRoundRobin extracted %v", extracted)
+					modelBasedRoundRobin = extracted
 				}
-				for _, header := range filter.ResponseHeaderModifier.Set {
-					policyParameters := make(map[string]interface{})
-					policyParameters[constants.HeaderName] = string(header.Name)
-					policyParameters[constants.HeaderValue] = string(header.Value)
 
-					policies.Response = append(policies.Response, Policy{
-						PolicyName: string(gwapiv1.HTTPRouteFilterResponseHeaderModifier),
-						Action:     constants.ActionHeaderAdd,
-						Parameters: policyParameters,
-					})
+				resource := &Resource{
+					path:                                   resourcePath,
+					methods:                                operations,
+					pathMatchType:                          *match.Path.Type,
+					hasPolicies:                            true,
+					iD:                                     uuid.New().String(),
+					hasRequestRedirectFilter:               hasRequestRedirectPolicy,
+					enableBackendBasedAIRatelimit:          enableBackendBasedAIRatelimit,
+					backendBasedAIRatelimitDescriptorValue: descriptorValue,
+					extractTokenFrom:                       extractTokenFrom,
+					AIModelBasedRoundRobin:                 modelBasedRoundRobin,
 				}
-			case gwapiv1.HTTPRouteFilterRequestRedirect:
-				var requestRedirectEndpoint Endpoint
-				hasRequestRedirectPolicy = true
-				policyParameters := make(map[string]interface{})
-				scheme := *filter.RequestRedirect.Scheme
-				host := string(*filter.RequestRedirect.Hostname)
-				port := filter.RequestRedirect.Port
-				code := filter.RequestRedirect.StatusCode
 
-				policyParameters[constants.RedirectScheme] = scheme
-				requestRedirectEndpoint.URLType = scheme
-				policyParameters[constants.RedirectHostname] = host
-				requestRedirectEndpoint.Host = host
+				resource.endpoints = &EndpointCluster{
+					Endpoints: endPoints,
+				}
 
-				if port != nil {
-					policyParameters[constants.RedirectPort] = strconv.Itoa(int(*port))
-					requestRedirectEndpoint.Port = uint32(*port)
-				} else {
-					if requestRedirectEndpoint.URLType == "http" {
-						requestRedirectEndpoint.Port = 80
-					} else if requestRedirectEndpoint.URLType == "https" {
-						requestRedirectEndpoint.Port = 443
+				endpointConfig := &EndpointConfig{}
+
+				if isRouteTimeout {
+					endpointConfig.TimeoutInMillis = timeoutInMillis
+					endpointConfig.IdleTimeoutInSeconds = idleTimeoutInSeconds
+				}
+				if circuitBreaker != nil {
+					endpointConfig.CircuitBreakers = &CircuitBreakers{
+						MaxConnections:     int32(circuitBreaker.MaxConnections),
+						MaxRequests:        int32(circuitBreaker.MaxRequests),
+						MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
+						MaxRetries:         int32(circuitBreaker.MaxRetries),
+						MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
 					}
 				}
-
-				if code != nil {
-					policyParameters[constants.RedirectStatusCode] = *code
+				if isRetryConfig {
+					endpointConfig.RetryConfig = &RetryConfig{
+						Count:                int32(backendRetryCount),
+						StatusCodes:          statusCodes,
+						BaseIntervalInMillis: int32(baseIntervalInMillis),
+					}
 				}
-
-				switch filter.RequestRedirect.Path.Type {
-				case gwapiv1.FullPathHTTPPathModifier:
-					policyParameters[constants.RedirectPath] = backendBasePath + *filter.RequestRedirect.Path.ReplaceFullPath
-				case gwapiv1.PrefixMatchHTTPPathModifier:
-					policyParameters[constants.RedirectPath] = backendBasePath + *filter.RequestRedirect.Path.ReplacePrefixMatch
+				if healthCheck != nil {
+					resource.endpoints.HealthCheck = &HealthCheck{
+						Interval:           healthCheck.Interval,
+						Timeout:            healthCheck.Timeout,
+						UnhealthyThreshold: healthCheck.UnhealthyThreshold,
+						HealthyThreshold:   healthCheck.HealthyThreshold,
+					}
 				}
-				requestRedirectEndpoint.Basepath = policyParameters[constants.RedirectPath].(string)
-
-				policies.Request = append(policies.Request, Policy{
-					PolicyName: string(gwapiv1.HTTPRouteFilterRequestRedirect),
-					Action:     constants.ActionRedirectRequest,
-					Parameters: policyParameters,
-				})
-				endPoints = append(endPoints, requestRedirectEndpoint)
-
-			case gwapiv1.HTTPRouteFilterRequestMirror:
-				var mirrorTimeoutInMillis uint32
-				var mirrorIdleTimeoutInSeconds uint32
-				var mirrorCircuitBreaker *dpv1alpha1.CircuitBreaker
-				var mirrorHealthCheck *dpv1alpha1.HealthCheck
-				isMirrorRetryConfig := false
-				isMirrorRouteTimeout := false
-				var mirrorBackendRetryCount uint32
-				var mirrorStatusCodes []uint32
-				mirrorStatusCodes = append(mirrorStatusCodes, config.Envoy.Upstream.Retry.StatusCodes...)
-				var mirrorBaseIntervalInMillis uint32
-				policyParameters := make(map[string]interface{})
-				mirrorBackend := &filter.RequestMirror.BackendRef
-				mirrorBackendName := types.NamespacedName{
-					Name:      string(mirrorBackend.Name),
-					Namespace: utils.GetNamespace(mirrorBackend.Namespace, httpRoute.Namespace),
+				if isRouteTimeout || circuitBreaker != nil || healthCheck != nil || isRetryConfig {
+					resource.endpoints.Config = endpointConfig
 				}
-				resolvedMirrorBackend, ok := resourceParams.BackendMapping[mirrorBackendName.String()]
-
-				if ok {
-					if resolvedMirrorBackend.CircuitBreaker != nil {
-						mirrorCircuitBreaker = &dpv1alpha1.CircuitBreaker{
-							MaxConnections:     resolvedMirrorBackend.CircuitBreaker.MaxConnections,
-							MaxPendingRequests: resolvedMirrorBackend.CircuitBreaker.MaxPendingRequests,
-							MaxRequests:        resolvedMirrorBackend.CircuitBreaker.MaxRequests,
-							MaxRetries:         resolvedMirrorBackend.CircuitBreaker.MaxRetries,
-							MaxConnectionPools: resolvedMirrorBackend.CircuitBreaker.MaxConnectionPools,
-						}
-					}
-
-					if resolvedMirrorBackend.Timeout != nil {
-						isMirrorRouteTimeout = true
-						mirrorTimeoutInMillis = resolvedMirrorBackend.Timeout.UpstreamResponseTimeout * 1000
-						mirrorIdleTimeoutInSeconds = resolvedMirrorBackend.Timeout.DownstreamRequestIdleTimeout
-					}
-
-					if resolvedMirrorBackend.Retry != nil {
-						isMirrorRetryConfig = true
-						mirrorBackendRetryCount = resolvedMirrorBackend.Retry.Count
-						mirrorBaseIntervalInMillis = resolvedMirrorBackend.Retry.BaseIntervalMillis
-						if len(resolvedMirrorBackend.Retry.StatusCodes) > 0 {
-							mirrorStatusCodes = resolvedMirrorBackend.Retry.StatusCodes
-						}
-					}
-
-					if resolvedMirrorBackend.HealthCheck != nil {
-						mirrorHealthCheck = &dpv1alpha1.HealthCheck{
-							Interval:           resolvedMirrorBackend.HealthCheck.Interval,
-							Timeout:            resolvedMirrorBackend.HealthCheck.Timeout,
-							UnhealthyThreshold: resolvedMirrorBackend.HealthCheck.UnhealthyThreshold,
-							HealthyThreshold:   resolvedMirrorBackend.HealthCheck.HealthyThreshold,
-						}
-					}
-				} else {
-					return fmt.Errorf("backend: %s has not been resolved", mirrorBackendName)
-				}
-
-				mirrorEndpoints := GetEndpoints(mirrorBackendName, resourceParams.BackendMapping)
-				if len(mirrorEndpoints) > 0 {
-					mirrorEndpointCluster := &EndpointCluster{
-						Endpoints: mirrorEndpoints,
-					}
-					mirrorEndpointConfig := &EndpointConfig{}
-					if isMirrorRouteTimeout {
-						mirrorEndpointConfig.TimeoutInMillis = mirrorTimeoutInMillis
-						mirrorEndpointConfig.IdleTimeoutInSeconds = mirrorIdleTimeoutInSeconds
-					}
-					if mirrorCircuitBreaker != nil {
-						mirrorEndpointConfig.CircuitBreakers = &CircuitBreakers{
-							MaxConnections:     int32(mirrorCircuitBreaker.MaxConnections),
-							MaxRequests:        int32(mirrorCircuitBreaker.MaxRequests),
-							MaxPendingRequests: int32(mirrorCircuitBreaker.MaxPendingRequests),
-							MaxRetries:         int32(mirrorCircuitBreaker.MaxRetries),
-							MaxConnectionPools: int32(mirrorCircuitBreaker.MaxConnectionPools),
-						}
-					}
-					if isMirrorRetryConfig {
-						mirrorEndpointConfig.RetryConfig = &RetryConfig{
-							Count:                int32(mirrorBackendRetryCount),
-							StatusCodes:          mirrorStatusCodes,
-							BaseIntervalInMillis: int32(mirrorBaseIntervalInMillis),
-						}
-					}
-					if mirrorHealthCheck != nil {
-						mirrorEndpointCluster.HealthCheck = &HealthCheck{
-							Interval:           mirrorHealthCheck.Interval,
-							Timeout:            mirrorHealthCheck.Timeout,
-							UnhealthyThreshold: mirrorHealthCheck.UnhealthyThreshold,
-							HealthyThreshold:   mirrorHealthCheck.HealthyThreshold,
-						}
-					}
-					if isMirrorRouteTimeout || mirrorCircuitBreaker != nil || mirrorHealthCheck != nil || isMirrorRetryConfig {
-						mirrorEndpointCluster.Config = mirrorEndpointConfig
-					}
-					mirrorEndpointClusters = append(mirrorEndpointClusters, mirrorEndpointCluster)
-				}
-				policies.Request = append(policies.Request, Policy{
-					PolicyName: string(gwapiv1.HTTPRouteFilterRequestMirror),
-					Action:     constants.ActionMirrorRequest,
-					Parameters: policyParameters,
-				})
+				resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
+				resources = append(resources, resource)
 			}
-		}
-		resourceAPIPolicy = concatAPIPolicies(resourceAPIPolicy, nil)
-		resourceAuthScheme = concatAuthSchemes(resourceAuthScheme, nil)
-		resourceRatelimitPolicy = concatRateLimitPolicies(resourceRatelimitPolicy, nil)
-		addOperationLevelInterceptors(&policies, resourceAPIPolicy, resourceParams.InterceptorServiceMapping, resourceParams.BackendMapping, httpRoute.Namespace)
-
-		loggers.LoggerOasparser.Debugf("Calculating auths for API ..., API_UUID = %v", adapterInternalAPI.UUID)
-		apiAuth := getSecurity(resourceAuthScheme)
-
-		if !hasRequestRedirectPolicy && len(rule.BackendRefs) < 1 {
-			return fmt.Errorf("no backendref were provided")
-		}
-
-		for matchID, match := range rule.Matches {
-			if hasURLRewritePolicy && hasRequestRedirectPolicy {
-				return fmt.Errorf("cannot have URL Rewrite and Request Redirect under the same rule")
-			}
-			if !hasURLRewritePolicy {
-				policyParameters := make(map[string]interface{})
-				if *match.Path.Type == gwapiv1.PathMatchPathPrefix {
-					policyParameters[constants.RewritePathType] = gwapiv1.PrefixMatchHTTPPathModifier
-				} else {
-					policyParameters[constants.RewritePathType] = gwapiv1.FullPathHTTPPathModifier
-				}
-				policyParameters[constants.IncludeQueryParams] = true
-				policyParameters[constants.RewritePathResourcePath] = strings.TrimSuffix(backendBasePath, "/") + *match.Path.Value
-				policies.Request = append(policies.Request, Policy{
-					PolicyName: string(gwapiv1.HTTPRouteFilterURLRewrite),
-					Action:     constants.ActionRewritePath,
-					Parameters: policyParameters,
-				})
-			}
-			resourcePath := adapterInternalAPI.xWso2Basepath + *match.Path.Value
-			matchID := getMatchID(httpRoute.Namespace, httpRoute.Name, ruleID, matchID)
-			operations := getAllowedOperations(matchID, match.Method, policies, apiAuth,
-				parseRateLimitPolicyToInternal(resourceRatelimitPolicy), scopes, mirrorEndpointClusters)
-
-			vhost := ""
-			for _, hostName := range httpRoute.Spec.Hostnames {
-				vhost = string(hostName)
-			}
-			var modelBasedRoundRobin *InternalModelBasedRoundRobin
-			if extracted := extractModelBasedRoundRobinFromPolicy(resourceAPIPolicy, resourceParams.BackendMapping, adapterInternalAPI, resourcePath, vhost, httpRoute.Namespace); extracted != nil {
-				loggers.LoggerAPI.Debugf("ModelBasedRoundRobin extracted %v", extracted)
-				modelBasedRoundRobin = extracted
-			}
-
-			resource := &Resource{
-				path:                                   resourcePath,
-				methods:                                operations,
-				pathMatchType:                          *match.Path.Type,
-				hasPolicies:                            true,
-				iD:                                     uuid.New().String(),
-				hasRequestRedirectFilter:               hasRequestRedirectPolicy,
-				enableBackendBasedAIRatelimit:          enableBackendBasedAIRatelimit,
-				backendBasedAIRatelimitDescriptorValue: descriptorValue,
-				extractTokenFrom:                       extractTokenFrom,
-				AIModelBasedRoundRobin:                 modelBasedRoundRobin,
-			}
-
-			resource.endpoints = &EndpointCluster{
-				Endpoints: endPoints,
-			}
-
-			endpointConfig := &EndpointConfig{}
-
-			if isRouteTimeout {
-				endpointConfig.TimeoutInMillis = timeoutInMillis
-				endpointConfig.IdleTimeoutInSeconds = idleTimeoutInSeconds
-			}
-			if circuitBreaker != nil {
-				endpointConfig.CircuitBreakers = &CircuitBreakers{
-					MaxConnections:     int32(circuitBreaker.MaxConnections),
-					MaxRequests:        int32(circuitBreaker.MaxRequests),
-					MaxPendingRequests: int32(circuitBreaker.MaxPendingRequests),
-					MaxRetries:         int32(circuitBreaker.MaxRetries),
-					MaxConnectionPools: int32(circuitBreaker.MaxConnectionPools),
-				}
-			}
-			if isRetryConfig {
-				endpointConfig.RetryConfig = &RetryConfig{
-					Count:                int32(backendRetryCount),
-					StatusCodes:          statusCodes,
-					BaseIntervalInMillis: int32(baseIntervalInMillis),
-				}
-			}
-			if healthCheck != nil {
-				resource.endpoints.HealthCheck = &HealthCheck{
-					Interval:           healthCheck.Interval,
-					Timeout:            healthCheck.Timeout,
-					UnhealthyThreshold: healthCheck.UnhealthyThreshold,
-					HealthyThreshold:   healthCheck.HealthyThreshold,
-				}
-			}
-			if isRouteTimeout || circuitBreaker != nil || healthCheck != nil || isRetryConfig {
-				resource.endpoints.Config = endpointConfig
-			}
-			resource.endpointSecurity = utils.GetPtrSlice(securityConfig)
-			resources = append(resources, resource)
 		}
 	}
 

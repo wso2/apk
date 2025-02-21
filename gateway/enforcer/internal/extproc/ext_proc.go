@@ -887,6 +887,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AiProvider.SupportedModels != nil &&
 				matchedAPI.AIModelBasedRoundRobin != nil &&
 				matchedAPI.AIModelBasedRoundRobin.Enabled &&
+				matchedResource.RouteMetadataAttributes != nil &&
 				matchedResource.RouteMetadataAttributes.SuspendAIModel == "true" {
 				s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
 				httpBody := req.GetResponseBody().Body
@@ -914,6 +915,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AIModelBasedRoundRobin == nil &&
 				matchedResource.AIModelBasedRoundRobin != nil &&
 				matchedResource.AIModelBasedRoundRobin.Enabled &&
+				matchedResource.RouteMetadataAttributes != nil &&
 				matchedResource.RouteMetadataAttributes.SuspendAIModel == "true" {
 				s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
 				httpBody := req.GetResponseBody().Body

@@ -261,15 +261,17 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 	for _, resource := range adapterInternalAPI.GetResources() {
 		var clusterName string
 		mirrorClusterNames := map[string][]string{}
-		resourcePath := resource.GetPath()
 		endpoint := resource.GetEndpoints()
 		for _, ep := range endpoint.Endpoints {
+			resourcePath := resource.GetPath()
+			logger.LoggerOasparser.Infof("My Resource Path %s", resourcePath)
 			basePath := ""
 			basePath = strings.TrimSuffix(ep.Basepath, "/")
 
 			//existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
 
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, ep.Host+ep.Basepath)
+			logger.LoggerOasparser.Infof("My Cluster Name %s", clusterName)
 			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, &ep)
 			if err != nil {
 				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
@@ -316,7 +318,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			endpoints = append(endpoints, endpointsI...)
 			routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
 				false, false, mirrorClusterNames)
-
+			// Test
 			routeP, err := createRoutes(routeParams)
 			if err != nil {
 				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
@@ -830,6 +832,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	basePath := strings.TrimSuffix(xWso2Basepath, "/")
 
 	resourcePath := resource.GetPath()
+	logger.LoggerOasparser.Infof("2nd Resource Path %s", resourcePath)
 	resourceMethods := resource.GetMethodList()
 	pathMatchType := resource.GetPathMatchType()
 
@@ -1092,10 +1095,12 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 
+	logger.LoggerOasparser.Infof("Before Resource Path %s", resourcePath)
 	if pathMatchType != gwapiv1.PathMatchExact {
 		resourcePath = strings.Replace(resourcePath, basePath, regexp.QuoteMeta(basePath), 1)
 	}
 	routePath := generateRoutePath(resourcePath, pathMatchType)
+	logger.LoggerOasparser.Infof("After Resource Path %s", resourcePath)
 
 	// route path could be empty only if there is no basePath for API or the endpoint available,
 	// and resourcePath is also an empty string.
@@ -1200,17 +1205,32 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					requestHeadersToRemove = append(requestHeadersToRemove, requestHeaderToRemove)
 
 				case constants.ActionRewritePath:
-					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
-						constants.ActionRewritePath, resourcePath, operation.GetMethod())
-					regexRewrite, err := generateRewritePathRouteConfig(routePath, requestPolicy.Parameters, pathMatchType,
-						isDefaultVersion)
-					if err != nil {
-						errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
-							constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
-						logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2212, logging.MAJOR, "Error adding request policy %s to operation %s of resource %s. %v", constants.ActionRewritePath, operation.GetMethod(), resourcePath, err))
-						return nil, errors.New(errMsg)
+					var paramsToSetHeader map[string]interface{}
+					var ok bool
+					var backendPath string
+					if paramsToSetHeader, ok = requestPolicy.Parameters.(map[string]interface{}); !ok {
+						return nil, fmt.Errorf("error while processing policy parameter map. Map: %v", requestPolicy.Parameters)
 					}
-					pathRewriteConfig = regexRewrite
+					if backendPath, ok = paramsToSetHeader[constants.BackendBasePath].(string); !ok {
+						return nil, errors.New("policy parameter map must include rewritePath")
+					}
+					logger.LoggerOasparser.Infof("Params to Set Header %s ", paramsToSetHeader)
+					logger.LoggerOasparser.Infof("Rewrite Path %s ", backendPath)
+					logger.LoggerOasparser.Infof("Endpoint Path %s ", params.endpointBasePath)
+					if params.endpointBasePath == backendPath {
+						logger.LoggerOasparser.Infof("Endpoint Path and Rewrite Path are same")
+						logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
+							constants.ActionRewritePath, resourcePath, operation.GetMethod())
+						regexRewrite, err := generateRewritePathRouteConfig(routePath, requestPolicy.Parameters, pathMatchType,
+							isDefaultVersion)
+						if err != nil {
+							errMsg := fmt.Sprintf("Error adding request policy %s to operation %s of resource %s. %v",
+								constants.ActionRewritePath, operation.GetMethod(), resourcePath, err)
+							logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2212, logging.MAJOR, "Error adding request policy %s to operation %s of resource %s. %v", constants.ActionRewritePath, operation.GetMethod(), resourcePath, err))
+							return nil, errors.New(errMsg)
+						}
+						pathRewriteConfig = regexRewrite
+					}
 
 				case constants.ActionRewriteMethod:
 					logger.LoggerOasparser.Debugf("Adding %s policy to request flow for %s %s",
@@ -1297,8 +1317,10 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				// Create route2 for new method.
 				// Add all policies to route config. Do not send via enforcer.
 				if pathRewriteConfig != nil {
+					logger.LoggerOasparser.Infof("My New Resource %s", resourcePath)
 					action2.Route.RegexRewrite = pathRewriteConfig
 				} else {
+					logger.LoggerOasparser.Infof("My New Resource %s", resourcePath)
 					action2.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				configToSkipEnforcer := generateFilterConfigToSkipEnforcer()
@@ -1320,6 +1342,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				if pathRewriteConfig != nil && requestRedirectAction == nil {
 					action.Route.RegexRewrite = pathRewriteConfig
 				} else if requestRedirectAction == nil {
+					logger.LoggerOasparser.Infof("My 2nd New Resource %s", resourcePath)
 					action.Route.RegexRewrite = generateRegexMatchAndSubstitute(routePath, resourcePath, pathMatchType)
 				}
 				method := operation.GetMethod()
@@ -1339,7 +1362,10 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
 		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
+		// new
+		logger.LoggerOasparser.Infof("3rd resource %s is %s", resourcePath, rewritePath)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
+		logger.LoggerOasparser.Infof("4th Regex Rewrite %s", action.Route.RegexRewrite)
 		requestHeadersToRemove := make([]string, 0)
 
 		if apiType == constants.GRPC {
