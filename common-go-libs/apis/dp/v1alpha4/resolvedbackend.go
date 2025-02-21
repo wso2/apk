@@ -15,20 +15,25 @@
  *
  */
 
-package v1alpha2
+package v1alpha4
+
+import (
+	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+)
 
 // ResolvedBackend holds backend properties
 type ResolvedBackend struct {
-	Backend        Backend
-	Services       []Service
-	Protocol       BackendProtocolType
+	Backend        dpv1alpha2.Backend
+	Services       []dpv1alpha2.Service
+	Protocol       dpv1alpha2.BackendProtocolType
 	TLS            ResolvedTLSConfig
 	Security       ResolvedSecurityConfig
-	CircuitBreaker *CircuitBreaker
-	Timeout        *Timeout
-	Retry          *RetryConfig
+	CircuitBreaker *dpv1alpha2.CircuitBreaker
+	Timeout        *dpv1alpha2.Timeout
+	Retry          *dpv1alpha2.RetryConfig
 	BasePath       string `json:"basePath"`
-	HealthCheck    *HealthCheck
+	HealthCheck    *dpv1alpha2.HealthCheck
+	Weight 	   	   int32
 }
 
 // ResolvedTLSConfig defines enpoint TLS configurations

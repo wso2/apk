@@ -658,7 +658,7 @@ func (apiReconciler *APIReconciler) concatGRPCRoutes(ctx context.Context, grpcRo
 	}
 	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
 	if resolvedBackend != nil {
-		grpcRouteState.BackendMapping = map[string]*dpv1alpha2.ResolvedBackend{
+		grpcRouteState.BackendMapping = map[string]*dpv1alpha4.ResolvedBackend{
 			backendNamespacedName.String(): resolvedBackend,
 		}
 		return grpcRouteState, nil
@@ -692,7 +692,7 @@ func (apiReconciler *APIReconciler) concatGQLRoutes(ctx context.Context, gqlRout
 	}
 	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
 	if resolvedBackend != nil {
-		gqlRouteState.BackendMapping = map[string]*dpv1alpha2.ResolvedBackend{
+		gqlRouteState.BackendMapping = map[string]*dpv1alpha4.ResolvedBackend{
 			backendNamespacedName.String(): resolvedBackend,
 		}
 		return gqlRouteState, nil
@@ -994,7 +994,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 		}
 	}
 	for _, apiPolicy := range apiPolicies {
-		backendMapping := make(map[string]*dpv1alpha2.ResolvedBackend)
+		backendMapping := make(map[string]*dpv1alpha4.ResolvedBackend)
 		if apiPolicy.Spec.Default != nil {
 			if apiPolicy.Spec.Default.ModelBasedRoundRobin != nil {
 				loggers.LoggerAPKOperator.Infof("ModelBasedRoundRobin Default found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
@@ -1006,7 +1006,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					loggers.LoggerAPKOperator.Infof("ProductionModels Default found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.ProductionModels)
 					productionModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.ProductionModels
 					for _, model := range productionModels {
-						resolvedBackend := &dpv1alpha2.ResolvedBackend{}
+						resolvedBackend := &dpv1alpha4.ResolvedBackend{}
 						if model.BackendRef.Name != "" {
 							backendNamespacedName := types.NamespacedName{
 								Name:      string(model.BackendRef.Name),
@@ -1035,7 +1035,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					loggers.LoggerAPKOperator.Infof("SandboxModels Default found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.SandboxModels)
 					sandboxModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.SandboxModels
 					for _, model := range sandboxModels {
-						resolvedBackend := &dpv1alpha2.ResolvedBackend{}
+						resolvedBackend := &dpv1alpha4.ResolvedBackend{}
 						if model.BackendRef.Name != "" {
 							backendNamespacedName := types.NamespacedName{
 								Name:      string(model.BackendRef.Name),
@@ -1073,7 +1073,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					loggers.LoggerAPKOperator.Infof("ProductionModels override found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.ProductionModels)
 					productionModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.ProductionModels
 					for _, model := range productionModels {
-						resolvedBackend := &dpv1alpha2.ResolvedBackend{}
+						resolvedBackend := &dpv1alpha4.ResolvedBackend{}
 						if model.BackendRef.Name != "" {
 							backendNamespacedName := types.NamespacedName{
 								Name:      string(model.BackendRef.Name),
@@ -1102,7 +1102,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					loggers.LoggerAPKOperator.Infof("SandboxModels override found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.SandboxModels)
 					sandboxModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.SandboxModels
 					for _, model := range sandboxModels {
-						resolvedBackend := &dpv1alpha2.ResolvedBackend{}
+						resolvedBackend := &dpv1alpha4.ResolvedBackend{}
 						if model.BackendRef.Name != "" {
 							backendNamespacedName := types.NamespacedName{
 								Name:      string(model.BackendRef.Name),
@@ -1147,8 +1147,8 @@ func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha3.API) (map[string]*dpv1alpha2.ResolvedBackend, *dpv1alpha3.AIRateLimitPolicy, error) {
-	backendMapping := make(map[string]*dpv1alpha2.ResolvedBackend)
+	api dpv1alpha3.API) (map[string]*dpv1alpha4.ResolvedBackend, *dpv1alpha3.AIRateLimitPolicy, error) {
+	backendMapping := make(map[string]*dpv1alpha4.ResolvedBackend)
 	var airl *dpv1alpha3.AIRateLimitPolicy
 	// Resolve backends in HTTPRoute
 	httpRoute := httpRouteState.HTTPRouteCombined
@@ -1230,8 +1230,8 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMappingForGRPC(ctx context.Context,
 	grpcRouteState *synchronizer.GRPCRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha3.API) (map[string]*dpv1alpha2.ResolvedBackend, error) {
-	backendMapping := make(map[string]*dpv1alpha2.ResolvedBackend)
+	api dpv1alpha3.API) (map[string]*dpv1alpha4.ResolvedBackend, error) {
+	backendMapping := make(map[string]*dpv1alpha4.ResolvedBackend)
 	grpcRoute := grpcRouteState.GRPCRouteCombined
 
 	for _, rule := range grpcRoute.Spec.Rules {
