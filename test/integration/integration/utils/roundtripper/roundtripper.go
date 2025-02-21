@@ -184,7 +184,7 @@ func (d *DefaultRoundTripper) CaptureRoundTrip(request Request) (*CapturedReques
 		ContentLength: resp.ContentLength,
 		Protocol:      resp.Proto,
 		Headers:       resp.Header,
-		APIDefinition: cReq.APIDefinition,
+		APIDefinition: string(body),
 		IsError:       cReq.IsError,
 		ErrorMsg:      cReq.ErrorMsg,
 	}
