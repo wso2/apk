@@ -84,6 +84,7 @@ type AdapterInternalAPI struct {
 	AIProvider             InternalAIProvider
 	AIModelBasedRoundRobin InternalModelBasedRoundRobin
 	HTTPRouteIDs           []string
+	RemoveJWTRequirements  bool
 }
 
 // InternalModelBasedRoundRobin holds the model based round robin configurations

@@ -490,6 +490,7 @@ func GetAPILevelJWTRequirements(adapterAPI *model.AdapterInternalAPI, selectedIs
 				},
 			}}
 	}
+	adapterAPI.RemoveJWTRequirements = true
 	return nil
 }
 
