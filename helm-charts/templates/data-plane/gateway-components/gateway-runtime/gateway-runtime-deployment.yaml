@@ -101,6 +101,10 @@ spec:
               value: "3"
             - name: enforcer_admin_pwd
               value: admin
+            {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+            - name: METRICS_ENABLED
+              value: "true"
+            {{- end }}
             - name: JAVA_OPTS
               value: {{ include "apk.javaOptions" . }}
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers }}
@@ -186,11 +190,6 @@ spec:
               subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | default "tls.key" }}
             {{- else }}
               subPath: tls.key
-            {{- end }}
-            {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-            - name: prometheus-jmx-config-volume
-              mountPath: /tmp/metrics/prometheus-jmx-config-enforcer.yml
-              subPath: prometheus-jmx-config-enforcer.yml
             {{- end }}
             - name: enforcer-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/enforcer.crt
@@ -440,11 +439,6 @@ spec:
         #     secretName: {{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
         #   {{- end }}
         #     defaultMode: 420
-        {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-        - name: prometheus-jmx-config-volume
-          configMap: 
-            name: prometheus-jmx-config-enforcer
-        {{- end }}
         - name: enforcer-keystore-secret-volume
           secret: 
           {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.tls }}

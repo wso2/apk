@@ -88,3 +88,8 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAu
 	}
 	return &jwtValidationInfo
 }
+
+// GetTokenIssuerCount obtains the total token issuer count for metrics purposes.
+func (transformer *JWTTransformer) GetTokenIssuerCount() int {
+	return transformer.tokenissuerStore.GetJWTIssuerCount()
+}

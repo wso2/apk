@@ -66,6 +66,7 @@ func main() {
 	}
 	// Start the metrics server
 	if cfg.Metrics.Enabled && strings.EqualFold(cfg.Metrics.Type, "prometheus") {
+		metrics.RegisterDataSources(jwtTransformer, subAppDatastore)
 		go metrics.StartPrometheusMetricsServer(cfg.Metrics.Port)
 	}
 	// Wait forever

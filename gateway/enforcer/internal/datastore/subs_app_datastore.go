@@ -401,3 +401,14 @@ func GetTLSConfig() (*tls.Config, error) {
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
 	return tlsConfig, nil
 }
+
+// GetTotalSubscriptionCount obtains the total subscription count for metrics purposes.
+func (ds *SubscriptionApplicationDataStore) GetTotalSubscriptionCount() int {
+	ds.mu.Lock()
+	defer ds.mu.Unlock()
+	count := 0
+	for _, subscriptions := range ds.subscriptions {
+		count += len(subscriptions)
+	}
+	return count
+}

@@ -16,7 +16,7 @@
  * under the License.
  */
 
-// Package metrics holds the implementation for exposing adapter metrics to prometheus
+// Package metrics holds the implementation for exposing enforcer metrics to prometheus
 package metrics
 
 import (
@@ -26,13 +26,76 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	metrics "github.com/wso2/apk/common-go-libs/pkg/metrics"
+	commonmetrics "github.com/wso2/apk/common-go-libs/pkg/metrics"
+	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
+	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 )
+
+var (
+	prometheusMetricRegistry = prometheus.NewRegistry()
+)
+
+var jwtTransformer *transformer.JWTTransformer
+var subAppDataStore *datastore.SubscriptionApplicationDataStore
+
+// enforcerCollector contains the descriptions of the custom metrics exposed by the adapter.
+// It also uses the metrics defined in common-go-libs
+type enforcerCollector struct {
+	commonmetrics.Collector
+	tokenIssuers  *prometheus.Desc
+	subscriptions *prometheus.Desc
+}
+
+func enforcerMetricsCollector() *enforcerCollector {
+	return &enforcerCollector{
+		Collector: *commonmetrics.CustomMetricsCollector(),
+		tokenIssuers: prometheus.NewDesc(
+			"token_issuer_count",
+			"Number of token issuers created.",
+			nil, nil,
+		),
+		subscriptions: prometheus.NewDesc(
+			"subscription_count",
+			"Number of subscriptions created.",
+			nil, nil,
+		),
+	}
+}
+
+// Describe sends all the descriptors of the metrics collected by this Collector
+// to the provided channel.
+func (collector *enforcerCollector) Describe(ch chan<- *prometheus.Desc) {
+	collector.Collector.Describe(ch)
+	ch <- collector.tokenIssuers
+	ch <- collector.subscriptions
+}
+
+// Collect collects all the relevant Prometheus metrics when Prometheus requests it
+func (collector *enforcerCollector) Collect(ch chan<- prometheus.Metric) {
+	collector.Collector.Collect(ch)
+	var tokenIssuerCount float64
+	var subscriptionCount float64
+	if jwtTransformer != nil {
+		tokenIssuerCount = float64(jwtTransformer.GetTokenIssuerCount())
+	}
+	if subAppDataStore != nil {
+		subscriptionCount = float64(subAppDataStore.GetTotalSubscriptionCount())
+	}
+
+	ch <- prometheus.MustNewConstMetric(collector.tokenIssuers, prometheus.GaugeValue, tokenIssuerCount)
+	ch <- prometheus.MustNewConstMetric(collector.subscriptions, prometheus.GaugeValue, subscriptionCount)
+}
+
+// RegisterDataSources registers the data sources that the metrics would be scraped from.
+func RegisterDataSources(transformer *transformer.JWTTransformer, dataStore *datastore.SubscriptionApplicationDataStore) {
+	jwtTransformer = transformer
+	subAppDataStore = dataStore
+}
 
 // StartPrometheusMetricsServer initializes and starts the metrics server to expose metrics to prometheus.
 func StartPrometheusMetricsServer(port int32) {
 
-	collector := metrics.CustomMetricsCollector()
+	collector := enforcerMetricsCollector()
 	prometheus.MustRegister(collector)
 	http.Handle("/metrics", promhttp.Handler())
 	err := http.ListenAndServe(":"+strconv.Itoa(int(port)), nil)
