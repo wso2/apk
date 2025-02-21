@@ -318,6 +318,11 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 					}
 				}
 			}
+			if envoyInternalAPI.adapterInternalAPI.RemoveJWTRequirements {
+				for _, route := range envoyInternalAPI.routes {
+					delete(route.TypedPerFilterConfig, envoyconf.EnvoyJWT)
+				}
+			}
 			vhost, err := ExtractVhostFromAPIIdentifier(apiKey)
 			if err != nil {
 				logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1411, logging.MAJOR, "Error extracting vhost from API identifier: %v for Organization %v. Ignore deploying the API, error: %v", apiKey, organizationID, err))
