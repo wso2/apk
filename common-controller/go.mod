@@ -1,6 +1,6 @@
 module github.com/wso2/apk/common-controller
 
-go 1.24
+go 1.23.6
 
 require (
 	github.com/jackc/pgx/v5 v5.7.1
