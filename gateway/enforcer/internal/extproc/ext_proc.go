@@ -310,6 +310,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				// return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
 				break
 			}
+			if metadata == nil {
+				s.log.Error(err, "metadata is nil")
+				break
+			}
 			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
 
 			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
@@ -436,6 +440,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
 				s.log.Error(err, "failed to extract context metadata")
+				break
+			}
+			if metadata == nil {
+				s.log.Error(err, "metadata is nil")
 				break
 			}
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
@@ -683,6 +691,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Error(err, "failed to extract context metadata")
 				break
 			}
+			if metadata == nil {
+				s.log.Error(err, "metadata is nil")
+				break
+			}
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %+v", metadata))
 			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
 			if matchedAPI == nil {
@@ -839,6 +851,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				s.log.Error(err, "failed to extract context metadata")
 				break
 			}
+			if metadata == nil {
+				s.log.Error(err, "metadata is nil")
+				break
+			}
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
 			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
 			if matchedAPI == nil {
@@ -887,6 +903,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AiProvider.SupportedModels != nil &&
 				matchedAPI.AIModelBasedRoundRobin != nil &&
 				matchedAPI.AIModelBasedRoundRobin.Enabled &&
+				matchedResource.RouteMetadataAttributes != nil &&
 				matchedResource.RouteMetadataAttributes.SuspendAIModel == "true" {
 				s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
 				httpBody := req.GetResponseBody().Body
@@ -914,6 +931,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AIModelBasedRoundRobin == nil &&
 				matchedResource.AIModelBasedRoundRobin != nil &&
 				matchedResource.AIModelBasedRoundRobin.Enabled &&
+				matchedResource.RouteMetadataAttributes != nil &&
 				matchedResource.RouteMetadataAttributes.SuspendAIModel == "true" {
 				s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
 				httpBody := req.GetResponseBody().Body
