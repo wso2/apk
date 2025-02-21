@@ -83,6 +83,7 @@ const (
 	PolicyResponseInterceptor string = "PolicyResponseInterceptor"
 
 	RewritePathResourcePath    string = "resourcePath"
+	BackendBasePath            string = "backendBasePath"
 	RewritePathType            string = "rewritePathType"
 	InterceptorServiceURL      string = "interceptorServiceURL"
 	InterceptorEndpoints       string = "interceptorEndpoints"
