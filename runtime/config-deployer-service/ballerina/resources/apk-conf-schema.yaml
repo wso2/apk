@@ -362,6 +362,8 @@ components:
           $ref: "#/components/schemas/Resiliency"
         aiRatelimit:
           $ref: "#/components/schemas/AIRatelimit"
+        weight:
+          type: integer
       additionalProperties: false
     Certificate:
       type: object

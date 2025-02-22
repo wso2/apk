@@ -300,12 +300,14 @@ public type EndpointConfigurations record {
 # + certificate - The certificate configuration for the endpoint.
 # + resiliency - The resiliency configuration for the endpoint.
 # + aiRatelimit - The AIRatelimit configuration for the AI ratelimit.
+# + weight - The weight of the endpoint in weighted routing.
 public type EndpointConfiguration record {
     string|K8sService endpoint;
     EndpointSecurity endpointSecurity?;
     Certificate certificate?;
     Resiliency resiliency?;
     AIRatelimit aiRatelimit?;
+    int weight?;
 };
 
 # Configuration of OAuth2 Authentication type.
