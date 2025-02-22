@@ -1,6 +1,6 @@
 module github.com/wso2/apk/common-controller
 
-go 1.23
+go 1.23.6
 
 require (
 	github.com/jackc/pgx/v5 v5.7.1
@@ -21,8 +21,8 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/redis/go-redis/v9 v9.6.2
-	github.com/wso2/apk/adapter v0.0.0-20241016075419-fc842057860d
-	github.com/wso2/apk/common-go-libs v0.0.0-20241016075419-fc842057860d
+	github.com/wso2/apk/adapter v0.0.0-20250220102334-eb9f1ea4f8a7
+	github.com/wso2/apk/common-go-libs v0.0.0-20250220102334-eb9f1ea4f8a7
 	google.golang.org/grpc v1.67.1
 )
 

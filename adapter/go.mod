@@ -1,6 +1,6 @@
 module github.com/wso2/apk/adapter
 
-go 1.23
+go 1.23.6
 
 require (
 	github.com/cncf/xds/go v0.0.0-20240905190251-b4127c9b8d78
