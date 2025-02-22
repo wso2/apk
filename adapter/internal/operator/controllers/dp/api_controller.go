@@ -3062,6 +3062,15 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		properties[val.Name] = val.Value
 	}
 	prodEndpoint, sandEndpoint, endpointProtocol, prodAPIKeyName, prodAPIKeyIn, prodAPIKeyValue, prodBasicUsername, prodBasicPassword, sandAPIKeyName, sandAPIKeyIn, sandAPIKeyValue, sandBasicUsername, sandBasicPassword, prodEndpointSecurityType, sandEndpointSecurityType, prodEndpointSecurityEnabled, sandEndpointSecurityEnabled := findProdSandEndpoints(&apiState)
+	apiEndpoints := controlplane.APIEndpoints{}
+	if apiState.AIProvider != nil {
+		if apiState.AIProvider.Spec.ProviderName != "" {
+			loggers.LoggerAPKOperator.Infof("AIProvider is found")
+			apiEndpoints = findProdSandEndpointsAIAPIs(&apiState)
+			loggers.LoggerAPKOperator.Infof("APIEndpoints: %+v", apiEndpoints)
+		}
+	}
+
 	corsPolicy := pickOneCorsForCP(&apiState)
 	vhost := getProdVhost(&apiState)
 	sandVhost := geSandVhost(&apiState)
@@ -3173,7 +3182,9 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 		SandAIRL:             sandAIRLToAgent,
 		ProdAIRL:             prodAIRLToAgent,
 		AIConfiguration:      aiConfiguration,
+		MultiEndpoints:       apiEndpoints,
 	}
+	loggers.LoggerAPKOperator.Infof("CP API: %+v", api)
 	apiCPEvent.API = api
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
 	apiCPEvent.CRNamespace = apiState.APIDefinition.ObjectMeta.Namespace
@@ -3460,6 +3471,65 @@ func findProdSandEndpoints(apiState *synchronizer.APIState) (string, string, str
 		}
 	}
 	return prodEndpoint, sandEndpoint, endpointProtocol, prodAPIKeyName, prodAPIKeyIn, prodAPIKeyValue, prodBasicUsername, prodBasicPassword, sandAPIKeyName, sandAPIKeyIn, sandAPIKeyValue, sandBasicUsername, sandBasicPassword, prodEndpointSecurityType, sandEndpointSecurityType, prodEndpointSecurityEnabled, sandEndpointSecurityEnabled
+}
+
+func findProdSandEndpointsAIAPIs(apiState *synchronizer.APIState) controlplane.APIEndpoints {
+
+	apiEndpoints := &controlplane.APIEndpoints{}
+	prodEndpoints := []controlplane.EndpointConfig{}
+	sandEndpoints := []controlplane.EndpointConfig{}
+	endpointProtocol := ""
+
+	if apiState.ProdHTTPRoute != nil {
+		for _, backend := range apiState.ProdHTTPRoute.BackendMapping {
+			prodEndpoint := controlplane.EndpointConfig{}
+			if len(backend.Backend.Spec.Services) > 0 {
+				prodEndpoint.URL = fmt.Sprintf("%s:%d%s", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port, backend.Backend.Spec.BasePath)
+				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+			if backend.Security.Basic.Username != "" && backend.Security.Basic.Password != "" {
+				prodEndpoint.SecurityEnabled = true
+				prodEndpoint.SecurityType = "basic"
+				prodEndpoint.BasicUsername = backend.Security.Basic.Username
+				prodEndpoint.BasicPassword = backend.Security.Basic.Password
+			}
+			if backend.Security.APIKey.Name != "" && backend.Security.APIKey.Value != "" && backend.Security.APIKey.In != "" {
+				prodEndpoint.SecurityEnabled = true
+				prodEndpoint.SecurityType = "apikey"
+				prodEndpoint.APIKeyName = backend.Security.APIKey.Name
+				prodEndpoint.APIKeyIn = string(backend.Security.APIKey.In)
+				prodEndpoint.APIKeyValue = backend.Security.APIKey.Value
+			}
+			prodEndpoints = append(prodEndpoints, prodEndpoint)
+		}
+	}
+	if apiState.SandHTTPRoute != nil {
+		for _, backend := range apiState.SandHTTPRoute.BackendMapping {
+			sandEndpoint := controlplane.EndpointConfig{}
+			if len(backend.Backend.Spec.Services) > 0 {
+				sandEndpoint.URL = fmt.Sprintf("%s:%d%s", backend.Backend.Spec.Services[0].Host, backend.Backend.Spec.Services[0].Port, backend.Backend.Spec.BasePath)
+				endpointProtocol = string(backend.Backend.Spec.Protocol)
+			}
+			if backend.Security.Basic.Username != "" && backend.Security.Basic.Password != "" {
+				sandEndpoint.SecurityEnabled = true
+				sandEndpoint.SecurityType = "basic"
+				sandEndpoint.BasicUsername = backend.Security.Basic.Username
+				sandEndpoint.BasicPassword = backend.Security.Basic.Password
+			}
+			if backend.Security.APIKey.Name != "" && backend.Security.APIKey.Value != "" && backend.Security.APIKey.In != "" {
+				sandEndpoint.SecurityEnabled = true
+				sandEndpoint.SecurityType = "apikey"
+				sandEndpoint.APIKeyName = backend.Security.APIKey.Name
+				sandEndpoint.APIKeyIn = string(backend.Security.APIKey.In)
+				sandEndpoint.APIKeyValue = backend.Security.APIKey.Value
+			}
+			sandEndpoints = append(sandEndpoints, sandEndpoint)
+		}
+	}
+	apiEndpoints.Protocol = endpointProtocol
+	apiEndpoints.ProdEndpoints = prodEndpoints
+	apiEndpoints.SandEndpoints = sandEndpoints
+	return *apiEndpoints
 }
 
 func pickOneCorsForCP(apiState *synchronizer.APIState) *controlplane.CORSPolicy {

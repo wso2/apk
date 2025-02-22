@@ -105,6 +105,7 @@ type API struct {
 	APIHash              string            `json:"-"`
 	SandAIRL             *AIRL             `json:"sandAIRL"`
 	ProdAIRL             *AIRL             `json:"prodAIRL"`
+	MultiEndpoints       APIEndpoints      `json:"multiEndpoints"`
 }
 
 // AIRL holds AI ratelimit related data
@@ -125,6 +126,25 @@ type EndpointSecurity struct {
 	APIKeyIn      string `json:"apiKeyIn"`
 	BasicUsername string `json:"basicUsername"`
 	BasicPassword string `json:"basicPassword"`
+}
+
+// EndpointConfig holds endpoint-specific settings.
+type EndpointConfig struct { // "prod" or "sand"
+	URL             string
+	SecurityType    string
+	SecurityEnabled bool
+	APIKeyName      string
+	APIKeyIn        string
+	APIKeyValue     string
+	BasicUsername   string
+	BasicPassword   string
+}
+
+// APIEndpoints holds the common protocol and a list of endpoint configurations.
+type APIEndpoints struct {
+	Protocol      string
+	ProdEndpoints []EndpointConfig
+	SandEndpoints []EndpointConfig
 }
 
 // AIConfiguration holds the AI configuration
