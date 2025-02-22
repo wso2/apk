@@ -310,10 +310,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				// return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
 				break
 			}
-			if metadata == nil {
-				s.log.Error(err, "metadata is nil")
-				break
-			}
 			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
 
 			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
