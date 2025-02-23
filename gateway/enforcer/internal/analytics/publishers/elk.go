@@ -82,7 +82,7 @@ func (e *ELK) publishEvent(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("apimMetrics: %s, properties: %s", "apim:response", jsonString))
+	e.cfg.Logger.Info(fmt.Sprintf("apimMetrics: %s, properties: %s", "apim:response", jsonString))
 }
 
 func (e *ELK) publishFault(event *dto.Event) {
@@ -116,7 +116,7 @@ func (e *ELK) publishFault(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("apimMetrics: %s, properties: %s", "apim:faulty", jsonString))
+	e.cfg.Logger.Info(fmt.Sprintf("apimMetrics: %s, properties: %s", "apim:faulty", jsonString))
 }
 
 func (e *ELK) isFault(event *dto.Event) bool {
