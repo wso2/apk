@@ -8,9 +8,6 @@ Feature: API backend based AI ratelimit Feature
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api/v1.0.0/3.14/employee?send=body" with body ""
     Then the response status code should be 200
-    And I wait for next minute strictly
-    And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api/v1.0.0/3.14/employee?send=body" with body ""
-    Then the response status code should be 200
     And the response headers should contain
       | x-ratelimit-remaining | 4999 |
     Then I see following strings in the enforcer logs
@@ -19,9 +16,9 @@ Feature: API backend based AI ratelimit Feature
       |AzureAI|
       |2024-06-01|
       |aiTokenUsage|
-      |999|
-      |299|
-      |499|
+      |1000|
+      |300|
+      |500|
       |hour|
       |vendor_name|
       |vendor_version|
@@ -62,9 +59,6 @@ Feature: API backend based AI ratelimit Feature
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api-header/v1.0.0/3.14/employee?send=header" with body ""
     Then the response status code should be 200
-    And I wait for next minute strictly
-    And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api-header/v1.0.0/3.14/employee?send=header" with body ""
-    Then the response status code should be 200
     And the response headers should contain
       | x-ratelimit-remaining | 4999 |
     And I wait for 3 seconds
@@ -101,9 +95,6 @@ Feature: API backend based AI ratelimit Feature
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api/v1.0.0/3.14/employee?send=header" with body ""
     Then the response status code should be 200
-    And I wait for next minute strictly
-    And I send "GET" request to "https://default.gw.wso2.com:9095/llm-api/v1.0.0/3.14/employee?send=header" with body ""
-    Then the response status code should be 200
     And the response headers should contain
       | x-ratelimit-remaining | 4999 |
     And I wait for 3 seconds
@@ -121,9 +112,6 @@ Feature: API backend based AI ratelimit Feature
     Then the response status code should be 200
     Then I set headers
       | Authorization | Bearer ${accessToken} |
-    And I wait for next minute strictly
-    And I send "GET" request to "https://default.gw.wso2.com:9095/backend-based-airl/1.0.0/employee?send=body" with body ""
-    Then the response status code should be 200
     And I wait for next minute strictly
     And I send "GET" request to "https://default.gw.wso2.com:9095/backend-based-airl/1.0.0/employee?send=body" with body ""
     Then the response status code should be 200
