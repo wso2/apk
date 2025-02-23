@@ -11,11 +11,11 @@ import (
 
 // ValidateToken validates the JWT token.
 func ValidateToken(rch *requestconfig.Holder, jwtTransformer *transformer.JWTTransformer, revokedJTIStore *datastore.RevokedJTIStore) *dto.ImmediateResponse {
-	if rch != nil && rch.ExternalProcessingEnvoyMetadata != nil && rch.ExternalProcessingEnvoyMetadata.JwtAuthenticationData != nil {
-		jwtValidationInfo := jwtTransformer.TransformJWTClaims(rch.MatchedAPI.OrganizationID, rch.ExternalProcessingEnvoyMetadata.JwtAuthenticationData)
+	if rch != nil && rch.ExternalProcessingEnvoyMetadata != nil && rch.ExternalProcessingEnvoyMetadata.AuthenticationData != nil {
+		jwtValidationInfo := jwtTransformer.TransformJWTClaims(rch.MatchedAPI.OrganizationID, rch.ExternalProcessingEnvoyMetadata.AuthenticationData)
 		if jwtValidationInfo != nil {
 			if revokedJTIStore != nil && revokedJTIStore.IsJTIRevoked(jwtValidationInfo.JTI) {
-				errorResponse := &dto.ErrorResponse{ErrorMessage: "Invalid Credentials", Code: "900901", ErrorDescription: "Make sure you have provided the correct security credentials"}
+				errorResponse := &dto.ErrorResponse{ErrorMessage: "Invalid Credentials", Code: 900901, ErrorDescription: "Make sure you have provided the correct security credentials"}
 				jsonData, _ := json.MarshalIndent(errorResponse, "", "  ")
 				return &dto.ImmediateResponse{StatusCode: 401, Message: string(jsonData)}
 			}
@@ -25,7 +25,7 @@ func ValidateToken(rch *requestconfig.Holder, jwtTransformer *transformer.JWTTra
 			}
 		}
 	}
-	errorResponse := &dto.ErrorResponse{ErrorMessage: "Invalid Credentials", Code: "900901", ErrorDescription: "Make sure you have provided the correct security credentials"}
+	errorResponse := &dto.ErrorResponse{ErrorMessage: "Invalid Credentials", Code: 900901, ErrorDescription: "Make sure you have provided the correct security credentials"}
 	jsonData, _ := json.MarshalIndent(errorResponse, "", "  ")
 	return &dto.ImmediateResponse{StatusCode: 401, Message: string(jsonData)}
 }

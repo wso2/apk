@@ -124,6 +124,7 @@ const (
 	Error2249 = 2249
 	Error2250 = 2250
 	Error2301 = 2301
+	Error2302 = 2302
 )
 
 // Error Log RateLimiter callbacks(2300-2399) Config Constants
@@ -422,5 +423,9 @@ var Mapper = map[int]logging.ErrorDetails{
 	Error2301: {
 		ErrorCode: Error2301,
 		Message:   "Error while generating JWTProviders",
+	},
+	Error2302: {
+		ErrorCode: Error2302,
+		Message:   "Error while generating APIKey JWTProvider",
 	},
 }

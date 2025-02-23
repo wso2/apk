@@ -280,17 +280,36 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				// do nothing if the gateway is not found in the envoyInternalAPI
 				continue
 			}
+			removeJWTRequirements := false
 			if !envoyInternalAPI.adapterInternalAPI.GetDisableAuthentications() {
+				var jwtRequirements []*jwt.JwtRequirement
 				var authorizationHeader *string
 				var sendTokenToUpstream *bool
+				var apiKeyHeader *string
+				var apiKeyQueryParam *string
+				sendApikeyToUpstream := false
+				config := config.ReadConfigs()
 				if envoyInternalAPI.adapterInternalAPI != nil && envoyInternalAPI.adapterInternalAPI.GetResources() != nil {
 					for _, resource := range envoyInternalAPI.adapterInternalAPI.GetResources() {
 						if resource.GetMethod() != nil {
 							for _, method := range resource.GetMethod() {
 								if method.GetAuthentication() != nil {
-									if !method.GetAuthentication().Disabled && method.GetAuthentication().Oauth2 != nil {
-										authorizationHeader = &method.GetAuthentication().Oauth2.Header
-										sendTokenToUpstream = &method.GetAuthentication().Oauth2.SendTokenToUpstream
+									if !method.GetAuthentication().Disabled {
+										if method.GetAuthentication().Oauth2 != nil {
+											authorizationHeader = &method.GetAuthentication().Oauth2.Header
+											sendTokenToUpstream = &method.GetAuthentication().Oauth2.SendTokenToUpstream
+										}
+										if method.GetAuthentication().APIKey != nil && len(method.GetAuthentication().APIKey) > 0 {
+											for _, apiKeyConfig := range method.GetAuthentication().APIKey {
+												if apiKeyConfig.In == "Header" {
+													apiKeyHeader = &apiKeyConfig.Name
+													sendApikeyToUpstream = sendApikeyToUpstream || apiKeyConfig.SendTokenToUpstream
+												} else if apiKeyConfig.In == "Query" {
+													apiKeyQueryParam = &apiKeyConfig.Name
+													sendApikeyToUpstream = sendApikeyToUpstream || apiKeyConfig.SendTokenToUpstream
+												}
+											}
+										}
 										break
 									}
 								}
@@ -309,16 +328,41 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 						jwtProviderMap[key] = value
 					}
 					if jwtRequirement != nil {
-						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirement
+						jwtRequirements = append(jwtRequirements, jwtRequirement...)
 					}
 				} else {
-					jwtRequirements := oasParser.GetJWTRequirements(envoyInternalAPI.adapterInternalAPI, orgwizeJWTProviders[organizationID])
-					if jwtRequirements != nil {
-						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirements
+					jwtRequirement := oasParser.GetJWTRequirements(envoyInternalAPI.adapterInternalAPI, orgwizeJWTProviders[organizationID])
+					if jwtRequirement != nil {
+						jwtRequirements = append(jwtRequirements, jwtRequirement...)
 					}
 				}
+				logger.LoggerAPKOperator.Infof("API Key header is enabled for the API: %v", apiKeyHeader)
+				logger.LoggerAPKOperator.Infof("API Key query param is enabled for the API: %v", apiKeyQueryParam)
+				if config.Enforcer.Security.APIkey.Enabled && (apiKeyHeader != nil || apiKeyQueryParam != nil) {
+					apiKeyProviders, apiKeyClusters, apiKeyAddress, apiKeyRequirements, err := oasParser.GenerateAPIKeyProviders(envoyInternalAPI.adapterInternalAPI, apiKeyHeader, apiKeyQueryParam, &sendApikeyToUpstream)
+					if err != nil {
+						logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2302, logging.MAJOR, "Error generating API Key Providers: %v", err))
+					}
+					logger.LoggerAPKOperator.Infof("API Key Providers: %+v", apiKeyProviders)
+					logger.LoggerAPKOperator.Infof("API Key Clusters: %+v", apiKeyClusters)
+					clusterArray = append(clusterArray, apiKeyClusters...)
+					endpointArray = append(endpointArray, apiKeyAddress...)
+					for key, value := range apiKeyProviders {
+						jwtProviderMap[key] = value
+					}
+					if apiKeyRequirements != nil {
+						jwtRequirements = append(jwtRequirements, apiKeyRequirements...)
+					}
+				}
+				if len(jwtRequirements) > 0 {
+					jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{RequiresType: &jwt.JwtRequirement_RequiresAny{RequiresAny: &jwt.JwtRequirementOrList{Requirements: append(jwtRequirements, &jwt.JwtRequirement{
+						RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
+					})}}}
+				} else {
+					removeJWTRequirements = true
+				}
 			}
-			if envoyInternalAPI.adapterInternalAPI.RemoveJWTRequirements {
+			if removeJWTRequirements {
 				for _, route := range envoyInternalAPI.routes {
 					delete(route.TypedPerFilterConfig, envoyconf.EnvoyJWT)
 				}

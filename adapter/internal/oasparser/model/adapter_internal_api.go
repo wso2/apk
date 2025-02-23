@@ -84,7 +84,6 @@ type AdapterInternalAPI struct {
 	AIProvider             InternalAIProvider
 	AIModelBasedRoundRobin InternalModelBasedRoundRobin
 	HTTPRouteIDs           []string
-	RemoveJWTRequirements  bool
 }
 
 // InternalModelBasedRoundRobin holds the model based round robin configurations
@@ -1401,6 +1400,20 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 	adapterInternalAPI.xWso2Cors = getCorsConfigFromAPIPolicy(apiPolicy)
 	if authScheme.Spec.Override != nil && authScheme.Spec.Override.Disabled != nil {
 		adapterInternalAPI.disableAuthentications = *authScheme.Spec.Override.Disabled
+	}
+	authSpec := utils.SelectPolicy(&authScheme.Spec.Override, &authScheme.Spec.Default, nil, nil)
+	if authSpec != nil && authSpec.AuthTypes != nil {
+		if authSpec.AuthTypes.OAuth2.Required != "" {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, authSpec.AuthTypes.OAuth2.Required == "mandatory")
+		} else {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
+		}
+
+		if authSpec.AuthTypes.APIKey != nil {
+			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
+		}
+	} else {
+		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
 	}
 	adapterInternalAPI.disableScopes = disableScopes
 	return nil

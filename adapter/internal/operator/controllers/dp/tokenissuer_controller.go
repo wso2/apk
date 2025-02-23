@@ -19,12 +19,8 @@ package dp
 
 import (
 	"context"
-	"crypto/x509"
-	"encoding/json"
-	"encoding/pem"
 	"strings"
 
-	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
@@ -81,7 +77,7 @@ func GetJWTIssuers(ctx context.Context, client k8client.Client, gateway gwapiv1.
 					continue
 				}
 
-				signatureValidation.Certificate = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: convertPemCertificatetoJWK(tlsCertificate)}
+				signatureValidation.Certificate = &dpv1alpha1.ResolvedTLSConfig{ResolvedCertificate: utils.ConvertPemCertificatetoJWK(tlsCertificate)}
 			}
 			resolvedJwtIssuer.SignatureValidation = signatureValidation
 			if jwtIssuer.Spec.ClaimMappings != nil {
@@ -114,35 +110,4 @@ func getTokenIssuerEnvironments(environments []string) []string {
 	}
 
 	return resolvedEnvironments
-}
-func convertPemCertificatetoJWK(cert string) string {
-	// Decode the PEM data
-	block, _ := pem.Decode([]byte(cert))
-	if block == nil || block.Type != "CERTIFICATE" {
-		loggers.LoggerAPKOperator.Errorf("failed to decode PEM block containing certificate")
-	}
-
-	// Parse the certificate
-	parsedCert, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("failed to parse certificate: %s", err)
-	}
-
-	// Extract the public key from the certificate
-	pubKey := parsedCert.PublicKey
-
-	// Convert the public key to a JWK
-	jwkKey, err := jwk.FromRaw(pubKey)
-	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("failed to create JWK: %s", err)
-	}
-	jwks := jwk.NewSet()
-	jwks.AddKey(jwkKey)
-	// Marshal the JWK to JSON
-	jwkJSON, err := json.MarshalIndent(jwks, "", "  ")
-	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("failed to marshal JWK to JSON: %s", err)
-	}
-	loggers.LoggerAPKOperator.Infof("JWK: %s", string(jwkJSON))
-	return string(jwkJSON)
 }

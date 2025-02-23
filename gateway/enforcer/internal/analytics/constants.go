@@ -130,7 +130,7 @@ const (
 	APIResourceTemplateKey = Wso2MetadataPrefix + "api-resource-template"
 
 	// DestinationKey is the key for the destination.
-	DestinationKey         = Wso2MetadataPrefix + "destination"
+	DestinationKey = Wso2MetadataPrefix + "destination"
 	// DefaultForUnknown is the default value used for unassigned properties.
 	DefaultForUnknown = "UNKNOWN"
 

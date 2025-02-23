@@ -42,7 +42,7 @@ func main() {
 	// Create the XDS clients
 	apiStore, configStore, jwtIssuerDatastore, modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
 	// NewJWTTransformer creates a new instance of JWTTransformer.
-	jwtTransformer := transformer.NewJWTTransformer(jwtIssuerDatastore)
+	jwtTransformer := transformer.NewJWTTransformer(cfg, jwtIssuerDatastore)
 	var revokedJTIStore *datastore.RevokedJTIStore
 	if cfg.TokenRevocationEnabled {
 		revokedJTIStore = datastore.NewRevokedJTIStore()

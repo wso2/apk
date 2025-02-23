@@ -12,6 +12,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 	"github.com/vektah/gqlparser/v2/parser"
 	"github.com/vektah/gqlparser/v2/validator"
+	"github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
 	"github.com/wso2/apk/gateway/enforcer/internal/authorization"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
@@ -28,7 +29,7 @@ type GQLRequest struct {
 }
 
 // ValidateGraphQLOperation validates/authenticates the incoming GraphQL request.
-func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadata *dto.ExternalProcessingEnvoyMetadata, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, requestBody string, jwtTransformer *transformer.JWTTransformer, revokedJTIStore *datastore.RevokedJTIStore) *dto.ImmediateResponse {
+func ValidateGraphQLOperation(authenticator *authenticator.Authenticator, requestConfigHolder *requestconfig.Holder, metadata *dto.ExternalProcessingEnvoyMetadata, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, requestBody string, jwtTransformer *transformer.JWTTransformer, revokedJTIStore *datastore.RevokedJTIStore) *dto.ImmediateResponse {
 	matchedapi := requestConfigHolder.MatchedAPI
 	schemaBytes := matchedapi.APIDefinition
 	var sdl string
@@ -100,7 +101,7 @@ func ValidateGraphQLOperation(requestConfigHolder *requestconfig.Holder, metadat
 			}
 			requestConfigHolder.MatchedResource = res
 			if res.AuthenticationConfig != nil && !res.AuthenticationConfig.Disabled && !matchedapi.DisableAuthentication {
-				immediateResponse := authorization.Validate(requestConfigHolder, subAppDataStore, cfg, jwtTransformer, revokedJTIStore)
+				immediateResponse := authorization.Validate(authenticator, requestConfigHolder, subAppDataStore, cfg)
 				if immediateResponse != nil {
 					return immediateResponse
 				}
