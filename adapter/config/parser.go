@@ -69,7 +69,7 @@ func ReadConfigs() *Config {
 		}
 		parseErr := toml.Unmarshal(content, adapterConfig)
 		if parseErr != nil {
-			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error parsing the configurations, error: %v", parseErr.Error()))
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error parsing the configurations, error: %v", parseErr))
 			return
 		}
 
@@ -81,7 +81,7 @@ func ReadConfigs() *Config {
 		// validate the analytics configuration values
 		validationErr := validateAnalyticsConfigs(adapterConfig)
 		if validationErr != nil {
-			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error validating the configurations, error: %v", parseErr.Error()))
+			loggerConfig.ErrorC(logging.PrintError(logging.Error1002, logging.BLOCKER, "Error validating the configurations, error: %v", parseErr))
 			return
 		}
 	})

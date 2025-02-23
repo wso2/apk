@@ -20,17 +20,16 @@ package authorization
 import (
 	"fmt"
 
-	"github.com/wso2/apk/gateway/enforcer/internal/authentication"
+	"github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
-	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 )
 
 // Validate performs the authorization.
-func Validate(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server, jwtTransformer *transformer.JWTTransformer, revokedJTIStore *datastore.RevokedJTIStore) *dto.ImmediateResponse {
-	if immediateResponse := authentication.ValidateToken(rch, jwtTransformer, revokedJTIStore); immediateResponse != nil {
+func Validate(authenticator *authenticator.Authenticator, rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server) *dto.ImmediateResponse {
+	if immediateResponse := authenticator.Authenticate(rch); immediateResponse != nil {
 		return immediateResponse
 	}
 	if immediateResponse := ValidateScopes(rch, subAppDataStore, cfg); immediateResponse != nil {

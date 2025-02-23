@@ -32,6 +32,7 @@ import (
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
+	"github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
 	"github.com/wso2/apk/gateway/enforcer/internal/authorization"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
@@ -67,6 +68,7 @@ type ExternalProcessingServer struct {
 	jwtTransformer                   *transformer.JWTTransformer
 	modelBasedRoundRobinTracker      *datastore.ModelBasedRoundRobinTracker
 	revokedJTIStore                  *datastore.RevokedJTIStore
+	authenticator                    *authenticator.Authenticator
 }
 
 const (
@@ -132,7 +134,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 			cfg,
 			jwtTransformer,
 			modelBasedRoundRobinTracker,
-			revokedJTIStore})
+			revokedJTIStore, authenticator.NewAuthenticator(cfg, subAppDatastore, jwtTransformer, revokedJTIStore)})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -317,7 +319,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
 			s.log.Sugar().Debug(fmt.Sprintf("req holderrr: %+v\n s: %+v", requestConfigHolder, s))
 			if requestConfigHolder.MatchedResource != nil && requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !requestConfigHolder.MatchedAPI.DisableAuthentication {
-				if immediateResponse := authorization.Validate(requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg, s.jwtTransformer, s.revokedJTIStore); immediateResponse != nil {
+				if immediateResponse := authorization.Validate(s.authenticator, requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
 					// Update the Content-Type header
 					headers := &envoy_service_proc_v3.HeaderMutation{
 						SetHeaders: []*corev3.HeaderValueOption{
@@ -452,7 +454,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			rch.MatchedAPI = matchedAPI
 			rch.ExternalProcessingEnvoyMetadata = metadata
 			if matchedAPI.IsGraphQLAPI() {
-				if immediateResponse := graphql.ValidateGraphQLOperation(rch, metadata, s.subscriptionApplicationDatastore, s.cfg, string(req.GetRequestBody().Body), s.jwtTransformer, s.revokedJTIStore); immediateResponse != nil {
+				if immediateResponse := graphql.ValidateGraphQLOperation(s.authenticator, rch, metadata, s.subscriptionApplicationDatastore, s.cfg, string(req.GetRequestBody().Body), s.jwtTransformer, s.revokedJTIStore); immediateResponse != nil {
 					headers := &envoy_service_proc_v3.HeaderMutation{
 						SetHeaders: []*corev3.HeaderValueOption{
 							{
@@ -1014,10 +1016,11 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 		externalProcessingEnvoyMetadata := &dto.ExternalProcessingEnvoyMetadata{}
 		jwtFilterdata := filterMatadata["envoy.filters.http.jwt_authn"]
 		if jwtFilterdata != nil {
-			authenticationData := &dto.JwtAuthenticationData{}
+			authenticationData := &dto.AuthenticationData{}
+
 			for key, structValue := range jwtFilterdata.Fields {
 				if strings.HasSuffix(key, "-payload") {
-					sucessData := dto.JWTAuthenticationSuccessData{}
+					sucessData := dto.AuthenticationSuccessData{}
 					jwtPayload := structValue.GetStructValue()
 					if jwtPayload != nil {
 						claims := make(map[string]interface{})
@@ -1034,14 +1037,34 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 								case *structpb.Value_BoolValue:
 									claims[key] = value.GetBoolValue()
 								case *structpb.Value_ListValue:
-									claims[key] = value.GetListValue()
+									jsonData, err := value.MarshalJSON()
+									if err != nil {
+										return nil, err
+									}
+									var list []interface{}
+									err = json.Unmarshal(jsonData, &list)
+									if err != nil {
+										return nil, err
+									}
+									claims[key] = list
+								case *structpb.Value_StructValue:
+									jsonData, err := value.MarshalJSON()
+									if err != nil {
+										return nil, err
+									}
+									var mapData map[string]interface{}
+									err = json.Unmarshal(jsonData, &mapData)
+									if err != nil {
+										return nil, err
+									}
+									claims[key] = mapData
 								}
 							}
 						}
 						sucessData.Claims = claims
 					}
 					if authenticationData.SucessData == nil {
-						authenticationData.SucessData = make(map[string]*dto.JWTAuthenticationSuccessData)
+						authenticationData.SucessData = make(map[string]*dto.AuthenticationSuccessData)
 					}
 					authenticationData.SucessData[key] = &sucessData
 				}
@@ -1050,15 +1073,15 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 					if failureStatusStruct != nil {
 						code := failureStatusStruct.Fields["code"].GetNumberValue()
 						message := failureStatusStruct.Fields["message"].GetStringValue()
-						authenticationFailureData := &dto.JWTAuthenticationFailureData{Code: int(code), Message: message}
+						authenticationFailureData := &dto.AuthenticationFailureData{Code: int(code), Message: message}
 						if authenticationData.FailedData == nil {
-							authenticationData.FailedData = make(map[string]*dto.JWTAuthenticationFailureData)
+							authenticationData.FailedData = make(map[string]*dto.AuthenticationFailureData)
 						}
 						authenticationData.FailedData[key] = authenticationFailureData
 					}
 				}
 			}
-			externalProcessingEnvoyMetadata.JwtAuthenticationData = authenticationData
+			externalProcessingEnvoyMetadata.AuthenticationData = authenticationData
 		}
 		if extProcMetadata, exists := filterMatadata[externalProessingMetadataContextKey]; exists {
 			if matchedAPIKey, exists := extProcMetadata.Fields[matchedAPIMetadataKey]; exists {
@@ -1078,6 +1101,10 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 		return externalProcessingEnvoyMetadata, nil
 	}
 	return nil, nil
+}
+
+func readStructData() {
+
 }
 
 // ReadGzip decompresses a GZIP-compressed byte slice and returns the string output

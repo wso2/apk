@@ -18,27 +18,27 @@ package dto
 
 // ExternalProcessingEnvoyMetadata represents the metadata extracted from the external processing request.
 type ExternalProcessingEnvoyMetadata struct {
-	JwtAuthenticationData         *JwtAuthenticationData `json:"jwtAuthenticationData"`
-	MatchedAPIIdentifier          string                 `json:"matchedAPIIdentifier"`
-	MatchedResourceIdentifier     string                 `json:"matchedResourceIdentifier"`
-	MatchedSubscriptionIdentifier string                 `json:"matchedSubscriptionIdentifier"`
-	MatchedApplicationIdentifier  string                 `json:"matchedApplicationIdentifier"`
+	AuthenticationData            *AuthenticationData `json:"authenticationData"`
+	MatchedAPIIdentifier          string              `json:"matchedAPIIdentifier"`
+	MatchedResourceIdentifier     string              `json:"matchedResourceIdentifier"`
+	MatchedSubscriptionIdentifier string              `json:"matchedSubscriptionIdentifier"`
+	MatchedApplicationIdentifier  string              `json:"matchedApplicationIdentifier"`
 }
 
-// JwtAuthenticationData represents the JWT authentication data.
-type JwtAuthenticationData struct {
-	SucessData map[string]*JWTAuthenticationSuccessData `json:"sucessData"`
-	FailedData map[string]*JWTAuthenticationFailureData `json:"failedData"`
+// AuthenticationData represents the authentication data.
+type AuthenticationData struct {
+	SucessData map[string]*AuthenticationSuccessData `json:"sucessData"`
+	FailedData map[string]*AuthenticationFailureData `json:"failedData"`
 }
 
-// JWTAuthenticationSuccessData represents the success data of the JWT authentication.
-type JWTAuthenticationSuccessData struct {
+// AuthenticationSuccessData represents the success data of the JWT authentication filter.
+type AuthenticationSuccessData struct {
 	Issuer string                 `json:"issuer"`
 	Claims map[string]interface{} `json:"claims"`
 }
 
-// JWTAuthenticationFailureData represents the status of the JWT authentication.
-type JWTAuthenticationFailureData struct {
+// AuthenticationFailureData represents the status of the JWT authentication filyrt.
+type AuthenticationFailureData struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 }

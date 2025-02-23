@@ -3,6 +3,7 @@ package transformer
 import (
 	"strings"
 
+	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 )
@@ -10,15 +11,16 @@ import (
 // JWTTransformer represents the JWT transformer.
 type JWTTransformer struct {
 	tokenissuerStore *datastore.JWTIssuerStore
+	cfg              *config.Server
 }
 
 // NewJWTTransformer creates a new instance of JWTIssuerStore.
-func NewJWTTransformer(jwtIssuerDatastore *datastore.JWTIssuerStore) *JWTTransformer {
-	return &JWTTransformer{tokenissuerStore: jwtIssuerDatastore}
+func NewJWTTransformer(cfg *config.Server, jwtIssuerDatastore *datastore.JWTIssuerStore) *JWTTransformer {
+	return &JWTTransformer{cfg: cfg, tokenissuerStore: jwtIssuerDatastore}
 }
 
 // TransformJWTClaims transforms the JWT claims
-func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAuthenticationData *dto.JwtAuthenticationData) *dto.JWTValidationInfo {
+func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAuthenticationData *dto.AuthenticationData) *dto.JWTValidationInfo {
 	if jwtAuthenticationData == nil {
 		return nil
 	}
@@ -26,34 +28,35 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAu
 	if tokenissuers == nil {
 		return nil
 	}
-	var jwtValidationInfo dto.JWTValidationInfo
+	var jwtValidationInfoSucess *dto.JWTValidationInfo
+	var jwtValidationInfoFailure *dto.JWTValidationInfo
 	for _, tokenissuer := range tokenissuers {
 		jwtAuthenticationDataSuccess, exists := jwtAuthenticationData.SucessData[tokenissuer.Issuer+"-payload"]
 		if exists {
-			jwtValidationInfo = dto.JWTValidationInfo{Valid: true, Issuer: jwtAuthenticationDataSuccess.Issuer, Claims: make(map[string]interface{})}
+			jwtValidationInfoSucess = &dto.JWTValidationInfo{Valid: true, Issuer: jwtAuthenticationDataSuccess.Issuer, Claims: make(map[string]interface{})}
 			remoteClaims := jwtAuthenticationDataSuccess.Claims
 			if remoteClaims != nil {
 				issuedTime := remoteClaims["iat"]
 				if issuedTime != nil {
-					jwtValidationInfo.IssuedTime = int64(issuedTime.(float64))
+					jwtValidationInfoSucess.IssuedTime = int64(issuedTime.(float64))
 				}
 				expiryTime := remoteClaims["exp"]
 				if expiryTime != nil {
-					jwtValidationInfo.ExpiryTime = int64(expiryTime.(float64))
+					jwtValidationInfoSucess.ExpiryTime = int64(expiryTime.(float64))
 				}
 				jti := remoteClaims["jti"]
 				if jti != nil {
-					jwtValidationInfo.JTI = jti.(string)
+					jwtValidationInfoSucess.JTI = jti.(string)
 				}
 				audienceClaim := remoteClaims["aud"]
 				if audienceClaim != nil {
 					switch audienceClaim.(type) {
 					case string:
 						audiences := []string{remoteClaims["aud"].(string)}
-						jwtValidationInfo.Audiences = audiences
+						jwtValidationInfoSucess.Audiences = audiences
 					case []string:
 						audiences := remoteClaims["aud"].([]string)
-						jwtValidationInfo.Audiences = audiences
+						jwtValidationInfoSucess.Audiences = audiences
 					}
 				}
 				remoteScopes := remoteClaims[tokenissuer.ScopesClaim]
@@ -61,32 +64,36 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAu
 					switch remoteScopes := remoteScopes.(type) {
 					case string:
 						scopes := strings.Split(remoteScopes, " ")
-						jwtValidationInfo.Scopes = scopes
+						jwtValidationInfoSucess.Scopes = scopes
 					case []string:
 						scopes := remoteScopes
-						jwtValidationInfo.Scopes = scopes
+						jwtValidationInfoSucess.Scopes = scopes
 					}
 				}
 				remoteClientID := remoteClaims[tokenissuer.ConsumerKeyClaim]
 				if remoteClientID != nil {
-					jwtValidationInfo.ClientID = remoteClientID.(string)
+					jwtValidationInfoSucess.ClientID = remoteClientID.(string)
 				}
 				for claimKey, claimValue := range remoteClaims {
 					if localClaim, ok := tokenissuer.ClaimMapping[claimKey]; ok {
-						jwtValidationInfo.Claims[localClaim] = claimValue
+						jwtValidationInfoSucess.Claims[localClaim] = claimValue
 					} else {
-						jwtValidationInfo.Claims[claimKey] = claimValue
+						jwtValidationInfoSucess.Claims[claimKey] = claimValue
 					}
 				}
 			}
-			return &jwtValidationInfo
+			transformer.cfg.Logger.Sugar().Debugf("JWT validation success for the issuer %s", jwtValidationInfoSucess)
+			return jwtValidationInfoSucess
 		}
 		jwtAuthenticationDataFailure, exists := jwtAuthenticationData.FailedData[tokenissuer.Issuer+"-failed"]
 		if exists {
-			jwtValidationInfo = dto.JWTValidationInfo{Valid: false, ValidationCode: jwtAuthenticationDataFailure.Code, ValidationMessage: jwtAuthenticationDataFailure.Message}
+			jwtValidationInfoFailure = &dto.JWTValidationInfo{Valid: false, ValidationCode: jwtAuthenticationDataFailure.Code, ValidationMessage: jwtAuthenticationDataFailure.Message}
 		}
 	}
-	return &jwtValidationInfo
+	if jwtValidationInfoFailure != nil {
+		return jwtValidationInfoFailure
+	}
+	return nil
 }
 
 // GetTokenIssuerCount obtains the total token issuer count for metrics purposes.

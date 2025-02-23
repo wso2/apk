@@ -29,6 +29,7 @@ type Holder struct {
 	ExternalProcessingEnvoyAttributes *dto.ExternalProcessingEnvoyAttributes
 	ExternalProcessingEnvoyMetadata   *dto.ExternalProcessingEnvoyMetadata
 	JWTValidationInfo                 *dto.JWTValidationInfo
+	APIKeyAuthenticationInfo          *dto.APIKeyAuthenticationInfo
 	MatchedSubscription               *subscription_model.Subscription
 	MatchedApplication                *subscription_model.Application
 }

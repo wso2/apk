@@ -6,20 +6,20 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 )
 
-// OAuth2Authenticator is the main authenticator.
-type OAuth2Authenticator struct {
+// JWTAuthenticator is the main authenticator.
+type JWTAuthenticator struct {
 	mandatory       bool
 	jwtTransformer  *transformer.JWTTransformer
 	revokedJTIStore *datastore.RevokedJTIStore
 }
 
-// NewOAuth2Authenticator creates a new OAuth2Authenticator.
-func NewOAuth2Authenticator(jwtTransformer *transformer.JWTTransformer, revokedJTIStore *datastore.RevokedJTIStore, mandatory bool) *OAuth2Authenticator {
-	return &OAuth2Authenticator{jwtTransformer: jwtTransformer, mandatory: mandatory, revokedJTIStore: revokedJTIStore}
+// NewJWTAuthenticator creates a new JWTAuthenticator.
+func NewJWTAuthenticator(jwtTransformer *transformer.JWTTransformer, revokedJTIStore *datastore.RevokedJTIStore, mandatory bool) *JWTAuthenticator {
+	return &JWTAuthenticator{jwtTransformer: jwtTransformer, mandatory: mandatory, revokedJTIStore: revokedJTIStore}
 }
 
 // Authenticate performs the authentication.
-func (authenticator *OAuth2Authenticator) Authenticate(rch *requestconfig.Holder) AuthenticationResponse {
+func (authenticator *JWTAuthenticator) Authenticate(rch *requestconfig.Holder) AuthenticationResponse {
 	if rch != nil && rch.ExternalProcessingEnvoyMetadata != nil && rch.ExternalProcessingEnvoyMetadata.AuthenticationData != nil {
 		jwtValidationInfo := authenticator.jwtTransformer.TransformJWTClaims(rch.MatchedAPI.OrganizationID, rch.ExternalProcessingEnvoyMetadata.AuthenticationData)
 		if jwtValidationInfo != nil {
@@ -33,5 +33,5 @@ func (authenticator *OAuth2Authenticator) Authenticate(rch *requestconfig.Holder
 			return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ContinueToNextAuthenticator: false, ErrorCode: InvalidCredentials, ErrorMessage: InvalidCredentialsMessage}
 		}
 	}
-	return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: MissingCredentials, ErrorMessage: MissingCredentialsMesage, ContinueToNextAuthenticator: !authenticator.mandatory}
+	return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: MissingCredentials, ErrorMessage: MissingCredentialsMesage, ContinueToNextAuthenticator: true}
 }

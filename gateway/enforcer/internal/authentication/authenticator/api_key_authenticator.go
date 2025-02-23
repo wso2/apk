@@ -1,38 +1,91 @@
-/*
- *  Copyright (c) 2025, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *
- */
-
 package authenticator
 
-import "fmt"
+import (
+	"strings"
 
-// APIKeyAuthenticator implements Authenticator for API keys.
-type APIKeyAuthenticator struct{}
+	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
+)
 
-// CanAuthenticate checks if the data contains an API key.
-func (a APIKeyAuthenticator) CanAuthenticate(data map[string]string) bool {
-	_, exists := data["apiKey"]
-	return exists
+// APIKeyAuthenticator is the main authenticator.
+type APIKeyAuthenticator struct {
+	mandatory bool
 }
 
-// Authenticate validates the API key.
-func (a APIKeyAuthenticator) Authenticate(data map[string]string) (bool, error) {
-	_, exists := data["apiKey"]
-	if !exists {
-		return false, fmt.Errorf("no API key found")
+// NewAPIKeyAuthenticator creates a new APIKeyAuthenticator.
+func NewAPIKeyAuthenticator(mandatory bool) *APIKeyAuthenticator {
+	return &APIKeyAuthenticator{mandatory: mandatory}
+}
+
+// Authenticate performs the authentication.
+func (authenticator *APIKeyAuthenticator) Authenticate(rch *requestconfig.Holder) AuthenticationResponse {
+	if rch != nil && rch.ExternalProcessingEnvoyMetadata != nil && rch.ExternalProcessingEnvoyMetadata.AuthenticationData != nil {
+		if rch.ExternalProcessingEnvoyMetadata.AuthenticationData.SucessData != nil && len(rch.ExternalProcessingEnvoyMetadata.AuthenticationData.SucessData) > 0 {
+			apiKeyAuthenticationSucessData, exists := rch.ExternalProcessingEnvoyMetadata.AuthenticationData.SucessData["apikey-payload"]
+			if exists {
+				apiKeyInfo := extractAPIKeyAuthenticationInfo(apiKeyAuthenticationSucessData, nil)
+				rch.APIKeyAuthenticationInfo = &apiKeyInfo
+				return AuthenticationResponse{Authenticated: true, MandatoryAuthentication: authenticator.mandatory, ContinueToNextAuthenticator: false}
+			}
+		} else if rch.ExternalProcessingEnvoyMetadata.AuthenticationData.FailedData != nil && len(rch.ExternalProcessingEnvoyMetadata.AuthenticationData.FailedData) > 0 {
+			apiKeyAuthenticationFailedData, exists := rch.ExternalProcessingEnvoyMetadata.AuthenticationData.FailedData["apikey-failed"]
+			if exists {
+				apiKeyInfo := extractAPIKeyAuthenticationInfo(nil, apiKeyAuthenticationFailedData)
+				rch.APIKeyAuthenticationInfo = &apiKeyInfo
+				return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: InvalidCredentials, ErrorMessage: InvalidCredentialsMessage, ContinueToNextAuthenticator: false}
+			}
+		}
+
 	}
-	return true, nil
+	return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: MissingCredentials, ErrorMessage: MissingCredentialsMesage, ContinueToNextAuthenticator: true}
+}
+
+func extractAPIKeyAuthenticationInfo(authenticationData *dto.AuthenticationSuccessData, authenticationFailureData *dto.AuthenticationFailureData) dto.APIKeyAuthenticationInfo {
+	apiKeyAuthenticationInfo := dto.APIKeyAuthenticationInfo{}
+	if authenticationData != nil {
+		keyType, exists := authenticationData.Claims["keytype"]
+		if exists {
+			if keyTypeStr, ok := keyType.(string); ok {
+				apiKeyAuthenticationInfo.Keytype = keyTypeStr
+			}
+		}
+		issuedTime, exists := authenticationData.Claims["iat"]
+		if exists {
+			if issuedTimeFloat, ok := issuedTime.(float64); ok {
+				apiKeyAuthenticationInfo.IssuedTime = int64(issuedTimeFloat)
+			}
+		}
+		expiryTime, exists := authenticationData.Claims["exp"]
+		if exists {
+			if expiryTimeFloat, ok := expiryTime.(float64); ok {
+				apiKeyAuthenticationInfo.ExpiryTime = int64(expiryTimeFloat)
+			}
+		}
+		permittedIP, exists := authenticationData.Claims["permittedIP"]
+		if exists {
+			if permittedIPStr, ok := permittedIP.(string); ok {
+				apiKeyAuthenticationInfo.PermittedIP = strings.Split(permittedIPStr, ",")
+			}
+		}
+		permittedReferer, exists := authenticationData.Claims["permittedReferer"]
+		if exists {
+			if permittedRefererStr, ok := permittedReferer.(string); ok {
+				apiKeyAuthenticationInfo.PermittedReferer = strings.Split(permittedRefererStr, ",")
+			}
+		}
+		application := authenticationData.Claims["application"]
+		if application != nil {
+			if applicationMap, ok := application.(map[string]interface{}); ok {
+				apiKeyAuthenticationInfo.Application = &dto.ApplicationInfo{
+					ID:   applicationMap["id"].(float64),
+					UUID: applicationMap["uuid"].(string),
+				}
+			}
+		}
+	} else if authenticationFailureData != nil {
+		apiKeyAuthenticationInfo.Valid = false
+		apiKeyAuthenticationInfo.ValidationCode = authenticationFailureData.Code
+		apiKeyAuthenticationInfo.ValidationMessage = authenticationFailureData.Message
+	}
+	return apiKeyAuthenticationInfo
 }

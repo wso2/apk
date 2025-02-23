@@ -174,7 +174,11 @@ data:
       accessControlAllowCredentials = false
       accessControlExposeHeaders = ["*"]
     {{end}}
-
+    {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.apiKey }}
+    [enforcer.security.apiKey]
+    enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.apiKey.enabled | default true }}
+    issuer = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.apiKey.issuer }}"
+    {{- end }}
     [enforcer.jwtGenerator]
       publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
       privateKeyPath = "/home/wso2/security/keystore/mg.key"

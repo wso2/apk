@@ -18,6 +18,8 @@
 package oasparser
 
 import (
+	"fmt"
+	"io/ioutil"
 	"strconv"
 	"strings"
 	"time"
@@ -32,9 +34,9 @@ import (
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/logging"
-	"github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	envoy "github.com/wso2/apk/adapter/internal/oasparser/envoyconf"
 	"github.com/wso2/apk/adapter/internal/oasparser/model"
+	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -454,7 +456,7 @@ func generateRPCEndpointSecurity(inputEndpointSecurity []*model.EndpointSecurity
 
 // GetJWTRequirements returns the jwt requirements for the resource
 
-func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) *jwt.JwtRequirement {
+func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) []*jwt.JwtRequirement {
 	var selectedIssuers []string
 	for issuserName, jwtIssuer := range jwtIssuers {
 		if contains(jwtIssuer.Environments, "*") {
@@ -468,34 +470,22 @@ func GetJWTRequirements(adapterAPI *model.AdapterInternalAPI, jwtIssuers map[str
 }
 
 // GetAPILevelJWTRequirements returns the jwt requirements for the resource
-func GetAPILevelJWTRequirements(adapterAPI *model.AdapterInternalAPI, selectedIssuers []string) *jwt.JwtRequirement {
+func GetAPILevelJWTRequirements(adapterAPI *model.AdapterInternalAPI, selectedIssuers []string) []*jwt.JwtRequirement {
+	var requirements []*jwt.JwtRequirement
 	if len(selectedIssuers) >= 1 {
-		return &jwt.JwtRequirement{
-			RequiresType: &jwt.JwtRequirement_RequiresAny{
-				RequiresAny: &jwt.JwtRequirementOrList{
-					Requirements: func() []*jwt.JwtRequirement {
-						var requirements []*jwt.JwtRequirement
-						for _, issuer := range selectedIssuers {
-							requirements = append(requirements, &jwt.JwtRequirement{
-								RequiresType: &jwt.JwtRequirement_ProviderName{
-									ProviderName: issuer,
-								},
-							})
-						}
-						requirements = append(requirements, &jwt.JwtRequirement{
-							RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
-						})
-						return requirements
-					}(),
+		for _, issuer := range selectedIssuers {
+			requirements = append(requirements, &jwt.JwtRequirement{
+				RequiresType: &jwt.JwtRequirement_ProviderName{
+					ProviderName: issuer,
 				},
-			}}
+			})
+		}
 	}
-	adapterAPI.RemoveJWTRequirements = true
-	return nil
+	return requirements
 }
 
 // GenerateAPILevelJWTPRoviders generates the jwt provider for the resource
-func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer, adapterAPI *model.AdapterInternalAPI, authorizationHeader *string, sendTokenToUpStream *bool) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, *jwt.JwtRequirement, error) {
+func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer, adapterAPI *model.AdapterInternalAPI, authorizationHeader *string, sendTokenToUpStream *bool) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, []*jwt.JwtRequirement, error) {
 	jwtProviders := map[string]*jwt.JwtProvider{}
 	var clusters []*clusterv3.Cluster
 	var addresses []*corev3.Address
@@ -511,7 +501,7 @@ func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIss
 			seleced = true
 		}
 		if seleced {
-			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, providerName)
+			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, providerName, nil)
 			if err != nil {
 				return nil, nil, nil, nil, err
 			}
@@ -530,6 +520,45 @@ func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIss
 	return jwtProviders, clusters, addresses, requirements, nil
 }
 
+// GenerateAPIKeyProviders generates the api key provider for the resource
+func GenerateAPIKeyProviders(adapterAPI *model.AdapterInternalAPI, apiKeyHeader *string, apiKeyQueryParam *string, sendApikeyToUpstream *bool) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, []*jwt.JwtRequirement, error) {
+	config := config.ReadConfigs()
+	providerName := adapterAPI.UUID + "-apikey"
+	certificate, err := LoadCertificate(config.Enforcer.Security.APIkey.CertificateFilePath)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	jwkCertificateContent := utils.ConvertPemCertificatetoJWK(*certificate)
+	var clusters []*clusterv3.Cluster
+	var addresses []*corev3.Address
+	jwtIssuer := &v1alpha1.ResolvedJWTIssuer{
+		Name:                providerName,
+		Issuer:              config.Enforcer.Security.APIkey.Issuer,
+		Organization:        adapterAPI.OrganizationID,
+		SignatureValidation: v1alpha1.ResolvedSignatureValidation{Certificate: &v1alpha1.ResolvedTLSConfig{ResolvedCertificate: jwkCertificateContent}},
+	}
+	keyType := "apikey"
+	provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, providerName, &keyType)
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+	if apiKeyHeader != nil {
+		provider.FromHeaders = []*jwt.JwtHeader{{Name: *apiKeyHeader}}
+	}
+	if apiKeyQueryParam != nil {
+		provider.FromParams = append(provider.FromParams, *apiKeyQueryParam)
+	}
+	if sendApikeyToUpstream != nil {
+		provider.Forward = *sendApikeyToUpstream
+	}
+	jwtProviders := map[string]*jwt.JwtProvider{}
+	jwtProviders[providerName] = provider
+	clusters = append(clusters, cluster...)
+	addresses = append(addresses, address...)
+	requirements := GetAPILevelJWTRequirements(adapterAPI, []string{providerName})
+	return jwtProviders, clusters, addresses, requirements, nil
+}
+
 // GenerateJWTPRoviderv3 generates the jwt provider for the resource
 func GenerateJWTPRoviderv3(jwtProviderMap map[string]map[string]*v1alpha1.ResolvedJWTIssuer) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, error) {
 	jwtProviders := map[string]*jwt.JwtProvider{}
@@ -538,7 +567,7 @@ func GenerateJWTPRoviderv3(jwtProviderMap map[string]map[string]*v1alpha1.Resolv
 
 	for _, orgwizeJWTProviders := range jwtProviderMap {
 		for issuerMappingName, jwtIssuer := range orgwizeJWTProviders {
-			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, issuerMappingName)
+			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, issuerMappingName, nil)
 			if err != nil {
 				return nil, nil, nil, err
 			}
@@ -559,7 +588,7 @@ func contains(arr []string, str string) bool {
 	}
 	return false
 }
-func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName string) (*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, error) {
+func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName string, keyType *string) (*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, error) {
 	conf := config.ReadConfigs()
 
 	jwksClusters := make([]*clusterv3.Cluster, 0)
@@ -568,6 +597,10 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 		Issuer:                 tokenIssuer.Issuer,
 		FailedStatusInMetadata: tokenIssuer.Issuer + "-failed",
 		PayloadInMetadata:      tokenIssuer.Issuer + "-payload",
+	}
+	if keyType != nil {
+		jwtProvider.FailedStatusInMetadata = *keyType + "-failed"
+		jwtProvider.PayloadInMetadata = *keyType + "-payload"
 	}
 	if conf.Enforcer.Cache.Enabled {
 		jwtProvider.JwtCacheConfig = &jwt.JwtCacheConfig{JwtCacheSize: uint32(conf.Enforcer.Cache.MaximumSize)}
@@ -636,9 +669,19 @@ func GetJWTFilter(jwtRequirement map[string]*jwt.JwtRequirement, jwtProviders ma
 		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2250, logging.CRITICAL, "Failed to parse JWTAuthentication %v", err.Error()))
 	}
 	return &hcmv3.HttpFilter{
-		Name: envoyconf.EnvoyJWT,
+		Name: envoy.EnvoyJWT,
 		ConfigType: &hcmv3.HttpFilter_TypedConfig{
 			TypedConfig: typedConfig,
 		},
 	}, nil
+}
+
+// LoadCertificate loads an x509 certificate from a file path
+func LoadCertificate(path string) (*string, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read certificate file: %w", err)
+	}
+	cert := string(data)
+	return &cert, nil
 }

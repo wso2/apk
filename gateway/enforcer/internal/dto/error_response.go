@@ -19,6 +19,6 @@ package dto
 // ErrorResponse represents the error response.
 type ErrorResponse struct {
 	ErrorMessage     string `json:"error_message"`
-	Code             string `json:"code"`
+	Code             int64  `json:"code"`
 	ErrorDescription string `json:"error_description"`
 }

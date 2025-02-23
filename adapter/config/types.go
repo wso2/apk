@@ -154,19 +154,19 @@ type xRateLimitHeaders struct {
 }
 
 type enforcer struct {
-	Security                      security
-	AuthService                   authService
-	JwtGenerator                  jwtGenerator
-	Cache                         cache
-	JwtIssuer                     jwtIssuer
-	Management                    management
+	Security                      security     `toml:"security"`
+	AuthService                   authService  `toml:"authService"`
+	JwtGenerator                  jwtGenerator `toml:"jwtGenerator"`
+	Cache                         cache        `toml:"cache"`
+	JwtIssuer                     jwtIssuer    `toml:"jwtIssuer"`
+	Management                    management   `toml:"management"`
 	RestServer                    restServer
 	Filters                       []filter
 	Metrics                       Metrics
 	MandateSubscriptionValidation bool
 	MandateInternalKeyValidation  bool
 	Client                        httpClient
-	Cors                          cors
+	Cors                          cors `toml:"cors"`
 }
 
 // Cors represents the configurations related to Cross-Origin Resource Sharing
@@ -232,9 +232,9 @@ type upstreamRetry struct {
 }
 
 type security struct {
-	InternalKey internalKey
-	APIkey      apiKey
-	MutualSSL   mutualSSL
+	InternalKey internalKey `toml:"internalKey"`
+	APIkey      apiKey      `toml:"apiKey"`
+	MutualSSL   mutualSSL   `toml:"mutualSSL"`
 }
 type internalKey struct {
 	Enabled             bool
