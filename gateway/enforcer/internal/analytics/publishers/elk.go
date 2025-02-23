@@ -28,7 +28,7 @@ func NewELK(cfg *config.Server, logLevel string) *ELK {
 
 // Publish publishes the event to ELK
 func (e *ELK) Publish(event *dto.Event) {
-	e.cfg.Logger.Info(fmt.Sprintf("Publishing event to ELK: %v", event))
+	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("Publishing event to ELK: %v", event))
 	defer func() {
 		if r := recover(); r != nil {
 			e.cfg.Logger.Error(nil, fmt.Sprintf("Recovered from panic: %v", r))
@@ -82,7 +82,7 @@ func (e *ELK) publishEvent(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("apimMetrics: %s, properties: %s", "apim:response", jsonString))
+	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("apimMetrics: %s, properties: %s", "apim:response", jsonString))
 }
 
 func (e *ELK) publishFault(event *dto.Event) {
@@ -116,7 +116,7 @@ func (e *ELK) publishFault(event *dto.Event) {
 		e.cfg.Logger.Error(err, "Error while converting to JSON string")
 		return
 	}
-	e.cfg.Logger.Info(fmt.Sprintf("apimMetrics: %s, properties: %s", "apim:faulty", jsonString))
+	e.cfg.Logger.Sugar().Debug(fmt.Sprintf("apimMetrics: %s, properties: %s", "apim:faulty", jsonString))
 }
 
 func (e *ELK) isFault(event *dto.Event) bool {
