@@ -288,6 +288,9 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				var apiKeyHeader *string
 				var apiKeyQueryParam *string
 				sendApikeyToUpstream := false
+				var jwtAuthenticationHeader *string
+				var jwtAuthenticationAudiences []string
+				var jwtAuthenticationSendTokenToUpstream *bool
 				config := config.ReadConfigs()
 				if envoyInternalAPI.adapterInternalAPI != nil && envoyInternalAPI.adapterInternalAPI.GetResources() != nil {
 					for _, resource := range envoyInternalAPI.adapterInternalAPI.GetResources() {
@@ -309,6 +312,11 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 													sendApikeyToUpstream = sendApikeyToUpstream || apiKeyConfig.SendTokenToUpstream
 												}
 											}
+										}
+										if method.GetAuthentication().JWT != nil {
+											jwtAuthenticationHeader = &method.GetAuthentication().JWT.Header
+											jwtAuthenticationAudiences = method.GetAuthentication().JWT.Audience
+											jwtAuthenticationSendTokenToUpstream = &method.GetAuthentication().JWT.SendTokenToUpstream
 										}
 										break
 									}
@@ -336,15 +344,15 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 						jwtRequirements = append(jwtRequirements, jwtRequirement...)
 					}
 				}
-				logger.LoggerAPKOperator.Infof("API Key header is enabled for the API: %v", apiKeyHeader)
-				logger.LoggerAPKOperator.Infof("API Key query param is enabled for the API: %v", apiKeyQueryParam)
+				logger.LoggerAPKOperator.Debugf("API Key header is enabled for the API: %v", apiKeyHeader)
+				logger.LoggerAPKOperator.Debugf("API Key query param is enabled for the API: %v", apiKeyQueryParam)
 				if config.Enforcer.Security.APIkey.Enabled && (apiKeyHeader != nil || apiKeyQueryParam != nil) {
 					apiKeyProviders, apiKeyClusters, apiKeyAddress, apiKeyRequirements, err := oasParser.GenerateAPIKeyProviders(envoyInternalAPI.adapterInternalAPI, apiKeyHeader, apiKeyQueryParam, &sendApikeyToUpstream)
 					if err != nil {
 						logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2302, logging.MAJOR, "Error generating API Key Providers: %v", err))
 					}
-					logger.LoggerAPKOperator.Infof("API Key Providers: %+v", apiKeyProviders)
-					logger.LoggerAPKOperator.Infof("API Key Clusters: %+v", apiKeyClusters)
+					logger.LoggerAPKOperator.Debugf("API Key Providers: %+v", apiKeyProviders)
+					logger.LoggerAPKOperator.Debugf("API Key Clusters: %+v", apiKeyClusters)
 					clusterArray = append(clusterArray, apiKeyClusters...)
 					endpointArray = append(endpointArray, apiKeyAddress...)
 					for key, value := range apiKeyProviders {
@@ -354,15 +362,32 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 						jwtRequirements = append(jwtRequirements, apiKeyRequirements...)
 					}
 				}
+				if jwtAuthenticationHeader != nil {
+					jwtProviders, jwtclusters, jwtaddress, jwtRequirement, err := oasParser.GenerateJWTProvidersForJWTAuthentications(orgwizeJWTProviders[organizationID], envoyInternalAPI.adapterInternalAPI, jwtAuthenticationHeader, jwtAuthenticationSendTokenToUpstream, jwtAuthenticationAudiences)
+					if err != nil {
+						logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2302, logging.MAJOR, "Error generating JWT Providers: %v", err))
+					}
+					clusterArray = append(clusterArray, jwtclusters...)
+					endpointArray = append(endpointArray, jwtaddress...)
+					for key, value := range jwtProviders {
+						jwtProviderMap[key] = value
+					}
+					if jwtRequirement != nil {
+						jwtRequirements = append(jwtRequirements, jwtRequirement...)
+					}
+				}
+				logger.LoggerAPKOperator.Debugf("JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirements)
 				if len(jwtRequirements) > 0 {
 					jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{RequiresType: &jwt.JwtRequirement_RequiresAny{RequiresAny: &jwt.JwtRequirementOrList{Requirements: append(jwtRequirements, &jwt.JwtRequirement{
 						RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
 					})}}}
 				} else {
+					logger.LoggerAPKOperator.Debugf("No JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirements)
 					removeJWTRequirements = true
 				}
 			}
 			if removeJWTRequirements {
+				logger.LoggerAPKOperator.Debugf("Removing JWT Requirements for API %+v", envoyInternalAPI.adapterInternalAPI.UUID)
 				for _, route := range envoyInternalAPI.routes {
 					delete(route.TypedPerFilterConfig, envoyconf.EnvoyJWT)
 				}
@@ -488,7 +513,7 @@ func GenerateGlobalClusters(label string) {
 
 // GenerateJWTProviders generates the JWT providers for the given label
 func GenerateJWTProviders(label string, jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) {
-	loggers.LoggerAPKOperator.Infof("Gateway Name: %v", label)
+	loggers.LoggerAPKOperator.Debugf("Gateway Name: %v", label)
 
 	if _, ok := gatewayLabelConfigMap[label]; ok {
 		jwtProviderMap := make(map[string]map[string]*v1alpha1.ResolvedJWTIssuer)
@@ -499,7 +524,7 @@ func GenerateJWTProviders(label string, jwtIssuers map[string]*v1alpha1.Resolved
 			orgwizeMap := jwtProviderMap[jwtIssuer.Organization]
 			orgwizeMap[name] = jwtIssuer
 		}
-		loggers.LoggerAPKOperator.Infof("JWT Providers: %v", jwtProviderMap)
+		loggers.LoggerAPKOperator.Debugf("JWT Providers: %v", jwtProviderMap)
 		gatewayLabelConfigMap[label].jwtProviders = jwtProviderMap
 	}
 }
@@ -646,7 +671,7 @@ func UpdateEnforcerJWTIssuers(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer)
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].jwtIssuers = jwtIssuerList
-	logger.LoggerXds.Infof("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
+	logger.LoggerXds.Debugf("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
 // UpdateXdsCacheWithLock uses mutex and lock to avoid different go routines updating XDS at the same time

@@ -152,4 +152,5 @@ const (
 const (
 	OAuth2 string = "OAuth2"
 	APIKey string = "APIKey"
+	JWT    string = "JWT"
 )

@@ -39,7 +39,7 @@ func GetJWTIssuers(ctx context.Context, client k8client.Client, gateway gwapiv1.
 	if err := client.List(ctx, jwtIssuerList); err != nil {
 		return nil, err
 	}
-	loggers.LoggerAPKOperator.Infof("JWTIssuerList: %v", jwtIssuerList)
+	loggers.LoggerAPKOperator.Debugf("JWTIssuerList: %v", jwtIssuerList)
 	for _, jwtIssuer := range jwtIssuerList.Items {
 		if jwtIssuer.Spec.TargetRef.Kind == constants.KindGateway && jwtIssuer.Spec.TargetRef.Name == gwapiv1.ObjectName(gateway.Name) {
 			resolvedJwtIssuer := dpv1alpha1.ResolvedJWTIssuer{}

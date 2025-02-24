@@ -16,7 +16,7 @@ const (
 func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server) *dto.ImmediateResponse {
 	api := rch.MatchedAPI
 	clientID := rch.JWTValidationInfo.ClientID
-	if rch.MatchedAPI.SubscriptionValidation {
+	if rch.MatchedAPI.SubscriptionValidation && rch.AuthenticatedAuthenticationType == "oauth2" {
 		if rch.JWTValidationInfo.ClientID != "" {
 			appID := getAppIDUsingConsumerKey(clientID, subAppDataStore, api, "OAuth2")
 			if appID != "" {

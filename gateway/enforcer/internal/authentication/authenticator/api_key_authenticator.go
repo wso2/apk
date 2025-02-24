@@ -17,6 +17,11 @@ func NewAPIKeyAuthenticator(mandatory bool) *APIKeyAuthenticator {
 	return &APIKeyAuthenticator{mandatory: mandatory}
 }
 
+const (
+	// APIKeyAuthType is the APIKey authentication type.
+	APIKeyAuthType = "apikey"
+)
+
 // Authenticate performs the authentication.
 func (authenticator *APIKeyAuthenticator) Authenticate(rch *requestconfig.Holder) AuthenticationResponse {
 	if rch != nil && rch.ExternalProcessingEnvoyMetadata != nil && rch.ExternalProcessingEnvoyMetadata.AuthenticationData != nil {
@@ -32,6 +37,7 @@ func (authenticator *APIKeyAuthenticator) Authenticate(rch *requestconfig.Holder
 			if exists {
 				apiKeyInfo := extractAPIKeyAuthenticationInfo(nil, apiKeyAuthenticationFailedData)
 				rch.APIKeyAuthenticationInfo = &apiKeyInfo
+				rch.AuthenticatedAuthenticationType = APIKeyAuthType
 				return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: InvalidCredentials, ErrorMessage: InvalidCredentialsMessage, ContinueToNextAuthenticator: false}
 			}
 		}
