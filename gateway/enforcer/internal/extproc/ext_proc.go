@@ -30,6 +30,7 @@ import (
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
+	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/authorization"
@@ -220,11 +221,19 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
 				RequestHeaders: rhq,
 			}
+			resp.ModeOverride = &v31.ProcessingMode{
+				RequestBodyMode:    v31.ProcessingMode_NONE,
+				ResponseHeaderMode: v31.ProcessingMode_HeaderSendMode(v31.ProcessingMode_SKIP),
+				ResponseBodyMode:   v31.ProcessingMode_NONE,
+			}
 			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
 			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
 			// Do not remove or modify this nil check. It is necessary to avoid nil pointer dereference.
 			if requestConfigHolder.MatchedAPI == nil {
 				break
+			}
+			if requestConfigHolder.MatchedAPI.IsGraphQLAPI() {
+				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			dynamicMetadataKeyValuePairs[customOrgMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
 
@@ -295,6 +304,32 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			// Do not remove or modify this nil check. It is necessary to avoid nil pointer dereference.
 			if requestConfigHolder.MatchedResource == nil {
 				break
+			}
+			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
+				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin == nil &&
+				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
+				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
+				// s.cfg.Logger.Sugar().Info("222")
+				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
+			}
+			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.PromptTokens != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
+				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
+				// s.cfg.Logger.Sugar().Info("333")
+				resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
+			}
+			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.PromptTokens != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
+				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
+				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
+				// s.cfg.Logger.Sugar().Info("444")
+				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SKIP
 			}
 			requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 			dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
