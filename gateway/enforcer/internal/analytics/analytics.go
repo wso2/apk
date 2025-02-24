@@ -124,6 +124,11 @@ func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analy
 
 // Process processes event and publishes the data
 func (c *Analytics) Process(event *v3.HTTPAccessLogEntry) {
+	defer func() {
+		if r := recover(); r != nil {
+			c.cfg.Logger.Error(fmt.Errorf("panic occurred: %v", r), "Recovered from panic in Process method")
+		}
+	}()
 	if c.isInvalid(event) {
 		c.cfg.Logger.Error(nil, "Invalid event received from the access log service")
 		return
