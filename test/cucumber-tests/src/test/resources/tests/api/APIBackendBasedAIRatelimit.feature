@@ -19,9 +19,9 @@ Feature: API backend based AI ratelimit Feature
       |AzureAI|
       |2024-06-01|
       |aiTokenUsage|
-      |1000|
-      |300|
-      |500|
+      |999|
+      |299|
+      |499|
       |hour|
       |vendor_name|
       |vendor_version|
