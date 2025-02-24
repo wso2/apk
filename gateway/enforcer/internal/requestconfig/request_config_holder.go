@@ -32,4 +32,5 @@ type Holder struct {
 	APIKeyAuthenticationInfo          *dto.APIKeyAuthenticationInfo
 	MatchedSubscription               *subscription_model.Subscription
 	MatchedApplication                *subscription_model.Application
+	AuthenticatedAuthenticationType   string
 }

@@ -492,6 +492,7 @@ func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIss
 	var selectedIssuers []string
 	for issuerMappingName, jwtIssuer := range jwtIssuers {
 		providerName := adapterAPI.UUID + "-" + issuerMappingName
+		fieldNamePrefix := jwtIssuer.Issuer + "-" + "oauth2"
 		var seleced bool
 		if contains(jwtIssuer.Environments, "*") {
 			selectedIssuers = append(selectedIssuers, providerName)
@@ -501,7 +502,7 @@ func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIss
 			seleced = true
 		}
 		if seleced {
-			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, providerName, nil)
+			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, providerName, &fieldNamePrefix)
 			if err != nil {
 				return nil, nil, nil, nil, err
 			}
@@ -510,6 +511,46 @@ func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIss
 			}
 			if sendTokenToUpStream != nil {
 				provider.Forward = *sendTokenToUpStream
+			}
+			jwtProviders[providerName] = provider
+			clusters = append(clusters, cluster...)
+			addresses = append(addresses, address...)
+		}
+	}
+	requirements := GetAPILevelJWTRequirements(adapterAPI, selectedIssuers)
+	return jwtProviders, clusters, addresses, requirements, nil
+}
+
+// GenerateJWTProvidersForJWTAuthentications generates the jwt provider for the resource
+func GenerateJWTProvidersForJWTAuthentications(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer, adapterAPI *model.AdapterInternalAPI, authorizationHeader *string, sendTokenToUpStream *bool, audiences []string) (map[string]*jwt.JwtProvider, []*clusterv3.Cluster, []*corev3.Address, []*jwt.JwtRequirement, error) {
+	jwtProviders := map[string]*jwt.JwtProvider{}
+	var clusters []*clusterv3.Cluster
+	var addresses []*corev3.Address
+	var selectedIssuers []string
+	for issuerMappingName, jwtIssuer := range jwtIssuers {
+		providerName := adapterAPI.UUID + "-" + issuerMappingName + "-jwt"
+		fieldNamePrefix := jwtIssuer.Issuer + "-" + "jwt"
+		var seleced bool
+		if contains(jwtIssuer.Environments, "*") {
+			selectedIssuers = append(selectedIssuers, providerName)
+			seleced = true
+		} else if contains(jwtIssuer.Environments, adapterAPI.GetEnvironment()) {
+			selectedIssuers = append(selectedIssuers, providerName)
+			seleced = true
+		}
+		if seleced {
+			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, providerName, &fieldNamePrefix)
+			if err != nil {
+				return nil, nil, nil, nil, err
+			}
+			if authorizationHeader != nil {
+				provider.FromHeaders = []*jwt.JwtHeader{{Name: *authorizationHeader}}
+			}
+			if sendTokenToUpStream != nil {
+				provider.Forward = *sendTokenToUpStream
+			}
+			if len(audiences) > 0 {
+				provider.Audiences = audiences
 			}
 			jwtProviders[providerName] = provider
 			clusters = append(clusters, cluster...)
@@ -567,7 +608,8 @@ func GenerateJWTPRoviderv3(jwtProviderMap map[string]map[string]*v1alpha1.Resolv
 
 	for _, orgwizeJWTProviders := range jwtProviderMap {
 		for issuerMappingName, jwtIssuer := range orgwizeJWTProviders {
-			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, issuerMappingName, nil)
+			fieldNamePrefix := jwtIssuer.Issuer + "-" + "oauth2"
+			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, issuerMappingName, &fieldNamePrefix)
 			if err != nil {
 				return nil, nil, nil, err
 			}
@@ -595,12 +637,8 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 	jwksAddresses := make([]*corev3.Address, 0)
 	jwtProvider := &jwt.JwtProvider{
 		Issuer:                 tokenIssuer.Issuer,
-		FailedStatusInMetadata: tokenIssuer.Issuer + "-failed",
-		PayloadInMetadata:      tokenIssuer.Issuer + "-payload",
-	}
-	if keyType != nil {
-		jwtProvider.FailedStatusInMetadata = *keyType + "-failed"
-		jwtProvider.PayloadInMetadata = *keyType + "-payload"
+		FailedStatusInMetadata: *keyType + "-failed",
+		PayloadInMetadata:      *keyType + "-payload",
 	}
 	if conf.Enforcer.Cache.Enabled {
 		jwtProvider.JwtCacheConfig = &jwt.JwtCacheConfig{JwtCacheSize: uint32(conf.Enforcer.Cache.MaximumSize)}

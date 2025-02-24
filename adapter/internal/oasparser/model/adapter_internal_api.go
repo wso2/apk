@@ -1062,6 +1062,9 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		if authSpec.AuthTypes.APIKey != nil {
 			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
 		}
+		if !*authSpec.AuthTypes.JWT.Disabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.JWT, false)
+		}
 	} else {
 		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
 	}
@@ -1412,6 +1415,9 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 		if authSpec.AuthTypes.APIKey != nil {
 			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
 		}
+		if !*authSpec.AuthTypes.JWT.Disabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.JWT, false)
+		}
 	} else {
 		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
 	}
@@ -1605,6 +1611,9 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 
 		if authSpec.AuthTypes.APIKey != nil {
 			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
+		}
+		if !*authSpec.AuthTypes.JWT.Disabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.JWT, false)
 		}
 	} else {
 		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)

@@ -18,16 +18,22 @@ func NewJWTAuthenticator(jwtTransformer *transformer.JWTTransformer, revokedJTIS
 	return &JWTAuthenticator{jwtTransformer: jwtTransformer, mandatory: mandatory, revokedJTIStore: revokedJTIStore}
 }
 
+const (
+	// JWTAuthType is the JWT authentication type.
+	JWTAuthType = "jwt"
+)
+
 // Authenticate performs the authentication.
 func (authenticator *JWTAuthenticator) Authenticate(rch *requestconfig.Holder) AuthenticationResponse {
 	if rch != nil && rch.ExternalProcessingEnvoyMetadata != nil && rch.ExternalProcessingEnvoyMetadata.AuthenticationData != nil {
-		jwtValidationInfo := authenticator.jwtTransformer.TransformJWTClaims(rch.MatchedAPI.OrganizationID, rch.ExternalProcessingEnvoyMetadata.AuthenticationData)
+		jwtValidationInfo := authenticator.jwtTransformer.TransformJWTClaims(rch.MatchedAPI.OrganizationID, rch.ExternalProcessingEnvoyMetadata.AuthenticationData, JWTAuthType)
 		if jwtValidationInfo != nil {
 			if authenticator.revokedJTIStore != nil && authenticator.revokedJTIStore.IsJTIRevoked(jwtValidationInfo.JTI) {
 				return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: ExpiredToken, ErrorMessage: ExpiredTokenMessage, ContinueToNextAuthenticator: false}
 			}
 			if jwtValidationInfo.Valid {
 				rch.JWTValidationInfo = jwtValidationInfo
+				rch.AuthenticatedAuthenticationType = JWTAuthType
 				return AuthenticationResponse{Authenticated: true, MandatoryAuthentication: authenticator.mandatory, ContinueToNextAuthenticator: false}
 			}
 			return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ContinueToNextAuthenticator: false, ErrorCode: InvalidCredentials, ErrorMessage: InvalidCredentialsMessage}
