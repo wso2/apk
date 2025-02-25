@@ -43,7 +43,7 @@ func (authenticator *APIKeyAuthenticator) Authenticate(rch *requestconfig.Holder
 		}
 
 	}
-	return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: MissingCredentials, ErrorMessage: MissingCredentialsMesage, ContinueToNextAuthenticator: true}
+	return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: MissingCredentials, ErrorMessage: MissingCredentialsMesage, ContinueToNextAuthenticator: !authenticator.mandatory}
 }
 
 func extractAPIKeyAuthenticationInfo(authenticationData *dto.AuthenticationSuccessData, authenticationFailureData *dto.AuthenticationFailureData) dto.APIKeyAuthenticationInfo {
