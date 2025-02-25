@@ -17,6 +17,8 @@
 package jwtbackend
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,21 +28,23 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
+// JWKKEy represents the JWK key.
+var JWKKEy jwk.Key
+
 // StartJWKSServer starts a server that serves JWKS.
 func StartJWKSServer(cfg *config.Server) {
 	r := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
 
 	r.GET("/jwks", func(c *gin.Context) {
-		jwks, err := readAndConvertToJwks(cfg)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate JWKS"})
-			return
-		}
+		jwks := createJWKSSet()
 		c.JSON(http.StatusOK, jwks)
 	})
 	r.RunTLS(":9092", cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
 }
-func readAndConvertToJwks(cfg *config.Server) (jwk.Set, error) {
+
+// ReadAndConvertToJwks reads the public key from the given path and converts it to a JWK.
+func ReadAndConvertToJwks(cfg *config.Server) (jwk.Key, error) {
 	// Decode the PEM data
 	publicCert, _ := util.LoadCertificate(cfg.JWTGeneratorPublicKeyPath)
 
@@ -52,8 +56,13 @@ func readAndConvertToJwks(cfg *config.Server) (jwk.Set, error) {
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("failed to create JWK: %s", err)
 	}
+	hash := sha256.Sum256(publicCert.RawSubjectPublicKeyInfo)
+	kid := base64.RawURLEncoding.EncodeToString(hash[:])
+	jwkKey.Set(jwk.KeyIDKey, kid)
+	return jwkKey, nil
+}
+func createJWKSSet() jwk.Set {
 	jwks := jwk.NewSet()
-	jwks.AddKey(jwkKey)
-
-	return jwks, nil
+	jwks.AddKey(JWKKEy)
+	return jwks
 }

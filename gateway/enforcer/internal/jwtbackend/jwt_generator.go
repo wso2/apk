@@ -1,11 +1,10 @@
 package jwtbackend
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
-	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
@@ -23,92 +22,63 @@ func CreateBackendJWT(rch *requestconfig.Holder, cfg *config.Server) string {
 	api := rch.MatchedAPI
 	application := rch.MatchedApplication
 	subscription := rch.MatchedSubscription
-
+	jwtClaims := jwt.MapClaims{}
 	if api != nil && api.BackendJwtConfiguration != nil && api.BackendJwtConfiguration.Enabled {
 		bjc := api.BackendJwtConfiguration
 		customClaims := bjc.CustomClaims
-		if customClaims == nil {
-			customClaims = make(map[string]*dto.ClaimValue)
-		}
-		customClaims["iss"] = &dto.ClaimValue{
-			Value: apiGatewayID,
-			Type:  "string",
-		}
+		jwtClaims["iss"] = apiGatewayID
 		currentTime := time.Now().Unix()
 		expireIn := currentTime + bjc.TTL
-		customClaims["exp"] = &dto.ClaimValue{
-			Value: fmt.Sprintf("%d", expireIn),
-			Type:  "int",
-		}
-		customClaims["iat"] = &dto.ClaimValue{
-			Value: fmt.Sprintf("%d", currentTime),
-			Type:  "int",
-		}
-		customClaims[dialectURI+"apiname"] = &dto.ClaimValue{
-			Value: api.Name,
-			Type:  "string",
-		}
-		customClaims[dialectURI+"apicontext"] = &dto.ClaimValue{
-			Value: api.BasePath,
-			Type:  "string",
-		}
-		customClaims[dialectURI+"version"] = &dto.ClaimValue{
-			Value: api.Version,
-			Type:  "string",
-		}
-		customClaims[dialectURI+"keytype"] = &dto.ClaimValue{
-			Value: api.EnvType,
-			Type:  "string",
-		}
+		jwtClaims["exp"] = expireIn
+		jwtClaims["iat"] = currentTime
+		jwtClaims[dialectURI+"apiname"] = api.Name
+		jwtClaims[dialectURI+"apicontext"] = api.BasePath
+		jwtClaims[dialectURI+"version"] = api.Version
+		jwtClaims[dialectURI+"keytype"] = api.EnvType
 		if application != nil {
-			customClaims[dialectURI+"subscriber"] = &dto.ClaimValue{
-				Value: application.Owner,
-				Type:  "string",
-			}
-			customClaims[dialectURI+"applicationid"] = &dto.ClaimValue{
-				Value: application.UUID,
-				Type:  "string",
-			}
-			customClaims[dialectURI+"applicationname"] = &dto.ClaimValue{
-				Value: application.Name,
-				Type:  "string",
-			}
-			customClaims[dialectURI+"applicationtier"] = &dto.ClaimValue{
-				Value: subscription.RatelimitTier,
-				Type:  "string",
-			}
+			jwtClaims[dialectURI+"subscriber"] = application.Owner
+			jwtClaims[dialectURI+"applicationid"] = application.UUID
+			jwtClaims[dialectURI+"applicationname"] = application.Name
 		}
 		if subscription != nil {
-			customClaims[dialectURI+"tier"] = &dto.ClaimValue{
-				Value: subscription.RatelimitTier,
-				Type:  "string",
-			}
+			jwtClaims[dialectURI+"tier"] = subscription.RatelimitTier
 		}
 		if rch.JWTValidationInfo != nil {
 			if sub, exists := rch.JWTValidationInfo.Claims["sub"]; exists {
-				customClaims["sub"] = &dto.ClaimValue{
-					Value: sub.(string),
-					Type:  "string",
-				}
+				jwtClaims["sub"] = sub.(string)
 			}
 			for claim, claimValue := range rch.JWTValidationInfo.Claims {
 				if !util.Contains(restrictedClaims, claim) {
 					if claimValue, ok := claimValue.(string); ok {
-						customClaims[claim] = &dto.ClaimValue{
-							Value: claimValue,
-							Type:  "string",
-						}
+						jwtClaims[claim] = claimValue
 					}
 				}
 			}
-
 		}
+		if customClaims != nil {
+			for claim, claimValue := range customClaims {
+				jwtClaims[claim] = claimValue.Value
+			}
+		}
+		var signingMethod jwt.SigningMethod
 		signatureAlgorithm := bjc.SignatureAlgorithm
 		if signatureAlgorithm != "NONE" && signatureAlgorithm != sha256WithRSA {
-			signatureAlgorithm = sha256WithRSA
+			signingMethod = jwt.SigningMethodRS256
+		} else if signatureAlgorithm == sha256WithRSA {
+			signingMethod = jwt.SigningMethodRS256
+		} else {
+			signingMethod = jwt.SigningMethodNone
 		}
-
-		return util.GenerateJWTToken(signatureAlgorithm, true, bjc.PublicCert, customClaims, bjc.PrivateKey)
+		token := jwt.NewWithClaims(signingMethod, jwtClaims)
+		if bjc.UseKid {
+			token.Header["kid"] = JWKKEy.KeyID()
+		}
+		signedToken, err := token.SignedString(bjc.PrivateKey)
+		if err != nil {
+			cfg.Logger.Sugar().Errorf("Failed to sign the JWT token: %v", err)
+			return ""
+		}
+		return signedToken
 	}
 	return ""
 }
