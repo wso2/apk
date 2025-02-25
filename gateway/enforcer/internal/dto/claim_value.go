@@ -14,11 +14,11 @@
  *  limitations under the License.
  *
  */
- 
+
 package dto
 
 // ClaimValue represents the claim value
 type ClaimValue struct {
-    Value string `json:"value"` // Value of the claim (can be any type)
-    Type  string      `json:"type"`  // Type of the claim
+	Value string      `json:"value"` // Value of the claim (can be any type)
+	Type  interface{} `json:"type"`  // Type of the claim
 }

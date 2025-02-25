@@ -54,6 +54,10 @@ func main() {
 		}
 	}
 	// Start the external processing server
+	jwtbackend.JWKKEy, err = jwtbackend.ReadAndConvertToJwks(cfg)
+	if err != nil {
+		cfg.Logger.Sugar().Errorf("Failed to generate JWKS: %v", err)
+	}
 	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker, revokedJTIStore)
 	go jwtbackend.StartJWKSServer(cfg)
 	// Wait for the config to be loaded
