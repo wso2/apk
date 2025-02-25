@@ -329,7 +329,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
 				// s.cfg.Logger.Sugar().Info("444")
-				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SKIP
+				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
 			}
 			requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 			dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
