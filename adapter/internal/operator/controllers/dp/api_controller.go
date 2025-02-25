@@ -81,6 +81,8 @@ const (
 	apiRateLimitResourceIndex = "apiToRateLimitResourceIndex"
 	// gatewayHTTPRouteIndex Index for gateway httproutes
 	gatewayHTTPRouteIndex = "gatewayToHTTPRouteIndex"
+	// gatewayGQLRouteIndex Index for gateway gqlroutes
+	gatewayGQLRouteIndex = "gatewayToGQLRouteIndex"
 	// gatewayGRPCRouteIndex Index for gateway grpcroutes
 	gatewayGRPCRouteIndex = "gatewayToGRPCRouteIndex"
 	// apiAPIPolicyIndex Index for API level apipolicies
@@ -418,7 +420,7 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 		if apiState.APIDefinitionFile, err = apiReconciler.getAPIDefinitionForAPI(ctx, api.Spec.DefinitionFileRef, namespace, api); err != nil {
 			return nil, fmt.Errorf("error while getting api definition file of api %s in namespace : %s with API UUID : %v, %s",
 				apiRef.String(), namespace, string(api.ObjectMeta.UID), err.Error())
-		} else if apiState.APIDefinitionFile == nil && apiState.APIDefinition.Spec.APIType == "GraphQL" {
+		} else if apiState.APIDefinitionFile == nil && apiState.APIDefinition.Spec.APIType == constants.GRAPHQL {
 			return nil, fmt.Errorf("error while getting api definition file of api %s in namespace : %s with API UUID : %v, %s",
 				apiRef.String(), namespace, string(api.ObjectMeta.UID), "api definition file not found")
 		}
@@ -466,18 +468,37 @@ func (apiReconciler *APIReconciler) resolveAPIRefs(ctx context.Context, api dpv1
 	}
 	apiState.SandAIRL = sandAirl
 	// handle gql apis
-	if len(prodRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == "GraphQL" {
+	if len(prodRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == constants.GRAPHQL {
+		apiState.ProdGQLRoute = &synchronizer.GQLRouteState{}
 		if apiState.ProdGQLRoute, err = apiReconciler.resolveGQLRouteRefs(ctx, prodRouteRefs, namespace,
 			api); err != nil {
 			return nil, fmt.Errorf("error while resolving production gqlRouteref %s in namespace :%s has not found. %s",
 				prodRouteRefs, namespace, err.Error())
 		}
+		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
+			Name: string(apiState.ProdGQLRoute.GQLRouteCombined.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.ProdGQLRoute.GQLRouteCombined.Spec.ParentRefs[0].Namespace,
+				apiState.ProdGQLRoute.GQLRouteCombined.Namespace),
+		}) {
+			return nil, fmt.Errorf("no gateway available for gqlRouteref %s in namespace :%s has not found",
+				prodRouteRefs, namespace)
+		}
 	}
-	if len(sandRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == "GraphQL" {
+
+	if len(sandRouteRefs) > 0 && apiState.APIDefinition.Spec.APIType == constants.GRAPHQL {
+		apiState.SandGQLRoute = &synchronizer.GQLRouteState{}
 		if apiState.SandGQLRoute, err = apiReconciler.resolveGQLRouteRefs(ctx, sandRouteRefs, namespace,
 			api); err != nil {
 			return nil, fmt.Errorf("error while resolving sandbox gqlRouteref %s in namespace :%s has not found. %s",
 				sandRouteRefs, namespace, err.Error())
+		}
+		if !apiReconciler.ods.IsGatewayAvailable(types.NamespacedName{
+			Name: string(apiState.SandGQLRoute.GQLRouteCombined.Spec.ParentRefs[0].Name),
+			Namespace: utils.GetNamespace(apiState.SandGQLRoute.GQLRouteCombined.Spec.ParentRefs[0].Namespace,
+				apiState.SandGQLRoute.GQLRouteCombined.Namespace),
+		}) {
+			return nil, fmt.Errorf("no gateway available for gqlRouteref %s in namespace :%s has not found",
+				sandRouteRefs, namespace)
 		}
 	}
 
@@ -1284,7 +1305,9 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForHTTPRoute(ctx
 
 func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForGRPCRoute(ctx context.Context, obj *gwapiv1.GRPCRoute) []reconcile.Request {
 	requests := apiReconciler.getAPIForGRPCRoute(ctx, obj)
-	apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	if len(requests) > 0 {
+		apiReconciler.handleOwnerReference(ctx, obj, &requests)
+	}
 	return requests
 }
 
@@ -2184,6 +2207,14 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj *
 		return []reconcile.Request{}
 	}
 
+	gqlRouteList := &dpv1alpha2.GQLRouteList{}
+	if err := apiReconciler.client.List(ctx, gqlRouteList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(gatewayGQLRouteIndex, utils.NamespacedName(gateway).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2625, logging.CRITICAL, "Unable to find associated GQLRoutes: %s", utils.NamespacedName(gateway).String()))
+		return []reconcile.Request{}
+	}
+
 	grpcRouteList := &gwapiv1.GRPCRouteList{}
 	if err := apiReconciler.client.List(ctx, grpcRouteList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(gatewayGRPCRouteIndex, utils.NamespacedName(gateway).String()),
@@ -2196,6 +2227,10 @@ func (apiReconciler *APIReconciler) getAPIsForGateway(ctx context.Context, obj *
 	for item := range httpRouteList.Items {
 		httpRoute := httpRouteList.Items[item]
 		requests = append(requests, apiReconciler.getAPIForHTTPRoute(ctx, &httpRoute)...)
+	}
+	for item := range gqlRouteList.Items {
+		gqlRoute := gqlRouteList.Items[item]
+		requests = append(requests, apiReconciler.getAPIForGQLRoute(ctx, &gqlRoute)...)
 	}
 	for item := range grpcRouteList.Items {
 		grpcRoute := grpcRouteList.Items[item]
@@ -2425,6 +2460,23 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 				}
 			}
 			return backends
+		}); err != nil {
+		return err
+	}
+
+	// Gateway to GQLRoute indexer
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.GQLRoute{}, gatewayGQLRouteIndex,
+		func(rawObj k8client.Object) []string {
+			httpRoute := rawObj.(*dpv1alpha2.GQLRoute)
+			var gateways []string
+			for _, parentRef := range httpRoute.Spec.ParentRefs {
+				gateways = append(gateways, types.NamespacedName{
+					Namespace: utils.GetNamespace(parentRef.Namespace,
+						httpRoute.Namespace),
+					Name: string(parentRef.Name),
+				}.String())
+			}
+			return gateways
 		}); err != nil {
 		return err
 	}
