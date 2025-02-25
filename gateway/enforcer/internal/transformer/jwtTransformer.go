@@ -85,7 +85,7 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAu
 			transformer.cfg.Logger.Sugar().Debugf("JWT validation success for the issuer %s", jwtValidationInfoSucess)
 			return jwtValidationInfoSucess
 		}
-		jwtAuthenticationDataFailure, exists := jwtAuthenticationData.FailedData[tokenissuer.Issuer+"-oauth2-failed"]
+		jwtAuthenticationDataFailure, exists := jwtAuthenticationData.FailedData[tokenissuer.Issuer+"-"+tokenType+"-failed"]
 		if exists {
 			jwtValidationInfoFailure = &dto.JWTValidationInfo{Valid: false, ValidationCode: jwtAuthenticationDataFailure.Code, ValidationMessage: jwtAuthenticationDataFailure.Message}
 		}

@@ -39,5 +39,5 @@ func (authenticator *JWTAuthenticator) Authenticate(rch *requestconfig.Holder) A
 			return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ContinueToNextAuthenticator: false, ErrorCode: InvalidCredentials, ErrorMessage: InvalidCredentialsMessage}
 		}
 	}
-	return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: MissingCredentials, ErrorMessage: MissingCredentialsMesage, ContinueToNextAuthenticator: true}
+	return AuthenticationResponse{Authenticated: false, MandatoryAuthentication: authenticator.mandatory, ErrorCode: MissingCredentials, ErrorMessage: MissingCredentialsMesage, ContinueToNextAuthenticator: !authenticator.mandatory}
 }
