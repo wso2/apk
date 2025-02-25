@@ -2467,12 +2467,12 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	// Gateway to GQLRoute indexer
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.GQLRoute{}, gatewayGQLRouteIndex,
 		func(rawObj k8client.Object) []string {
-			httpRoute := rawObj.(*dpv1alpha2.GQLRoute)
+			gqlRoute := rawObj.(*dpv1alpha2.GQLRoute)
 			var gateways []string
-			for _, parentRef := range httpRoute.Spec.ParentRefs {
+			for _, parentRef := range gqlRoute.Spec.ParentRefs {
 				gateways = append(gateways, types.NamespacedName{
 					Namespace: utils.GetNamespace(parentRef.Namespace,
-						httpRoute.Namespace),
+						gqlRoute.Namespace),
 					Name: string(parentRef.Name),
 				}.String())
 			}
