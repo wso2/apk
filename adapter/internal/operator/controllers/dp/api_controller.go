@@ -61,6 +61,7 @@ import (
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -3152,37 +3153,49 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	}
 	loggers.LoggerAPKOperator.Debugf("Resolved aiConfiguration: %+v", aiConfiguration)
 
+	aiModelBasedRoundRobin := controlplane.AIModelBasedRoundRobin{}
+	if apiState.ResolvedModelBasedRoundRobin != nil {
+		loggers.LoggerAPKOperator.Infof("AIModelBasedRoundRobin enabled")
+		aiModelBasedRoundRobin = controlplane.AIModelBasedRoundRobin{
+			OnQuotaExceedSuspendDuration: apiState.ResolvedModelBasedRoundRobin.OnQuotaExceedSuspendDuration,
+			ProductionModels:             convertResolvedModelWeights(apiState.ResolvedModelBasedRoundRobin.ProductionModels),
+			SandboxModels:                convertResolvedModelWeights(apiState.ResolvedModelBasedRoundRobin.SandboxModels),
+		}
+	}
+	loggers.LoggerAPKOperator.Infof("Resolved aiModelBasedRoundRobin: %+v", aiModelBasedRoundRobin)
+
 	api := controlplane.API{
-		APIName:              spec.APIName,
-		APIVersion:           spec.APIVersion,
-		IsDefaultVersion:     spec.IsDefaultVersion,
-		APIType:              spec.APIType,
-		APISubType:           subType,
-		BasePath:             spec.BasePath,
-		Organization:         spec.Organization,
-		Environment:          spec.Environment,
-		SystemAPI:            spec.SystemAPI,
-		Definition:           apiDef,
-		APIUUID:              apiUUID,
-		RevisionID:           revisionID,
-		APIProperties:        properties,
-		ProdEndpoint:         prodEndpoint,
-		SandEndpoint:         sandEndpoint,
-		ProdEndpointSecurity: prodEndpointSecurity,
-		SandEndpointSecurity: sandEndpointSecurity,
-		EndpointProtocol:     endpointProtocol,
-		CORSPolicy:           corsPolicy,
-		Vhost:                vhost,
-		SandVhost:            sandVhost,
-		SecurityScheme:       securityScheme,
-		AuthHeader:           authHeader,
-		Operations:           operations,
-		APIHash:              apiHash,
-		APIKeyHeader:         apiKeyHeader,
-		SandAIRL:             sandAIRLToAgent,
-		ProdAIRL:             prodAIRLToAgent,
-		AIConfiguration:      aiConfiguration,
-		MultiEndpoints:       apiEndpoints,
+		APIName:                spec.APIName,
+		APIVersion:             spec.APIVersion,
+		IsDefaultVersion:       spec.IsDefaultVersion,
+		APIType:                spec.APIType,
+		APISubType:             subType,
+		BasePath:               spec.BasePath,
+		Organization:           spec.Organization,
+		Environment:            spec.Environment,
+		SystemAPI:              spec.SystemAPI,
+		Definition:             apiDef,
+		APIUUID:                apiUUID,
+		RevisionID:             revisionID,
+		APIProperties:          properties,
+		ProdEndpoint:           prodEndpoint,
+		SandEndpoint:           sandEndpoint,
+		ProdEndpointSecurity:   prodEndpointSecurity,
+		SandEndpointSecurity:   sandEndpointSecurity,
+		EndpointProtocol:       endpointProtocol,
+		CORSPolicy:             corsPolicy,
+		Vhost:                  vhost,
+		SandVhost:              sandVhost,
+		SecurityScheme:         securityScheme,
+		AuthHeader:             authHeader,
+		Operations:             operations,
+		APIHash:                apiHash,
+		APIKeyHeader:           apiKeyHeader,
+		SandAIRL:               sandAIRLToAgent,
+		ProdAIRL:               prodAIRLToAgent,
+		AIConfiguration:        aiConfiguration,
+		MultiEndpoints:         apiEndpoints,
+		AIModelBasedRoundRobin: &aiModelBasedRoundRobin,
 	}
 	loggers.LoggerAPKOperator.Infof("CP API: %+v", api)
 	apiCPEvent.API = api
@@ -3190,6 +3203,33 @@ func (apiReconciler *APIReconciler) convertAPIStateToAPICp(ctx context.Context, 
 	apiCPEvent.CRNamespace = apiState.APIDefinition.ObjectMeta.Namespace
 	return apiCPEvent
 
+}
+
+func convertModelWeights(modelWeights []v1alpha4.ModelWeight, apiState *synchronizer.APIState) []controlplane.AIModelWeight {
+	converted := make([]controlplane.AIModelWeight, len(modelWeights))
+	for i, mw := range modelWeights {
+		backend, found := apiState.ProdHTTPRoute.BackendMapping[types.NamespacedName{Namespace: apiState.ProdHTTPRoute.HTTPRouteCombined.Namespace, Name: string(mw.BackendRef.Name)}.String()]
+		if found {
+			converted[i] = controlplane.AIModelWeight{
+				Model:    mw.Model,
+				Endpoint: string(backend.Protocol) + "://" + backend.Services[0].Host + ":" + strconv.Itoa(int(backend.Services[0].Port)) + backend.BasePath,
+				Weight:   mw.Weight,
+			}
+		}
+	}
+	return converted
+}
+
+func convertResolvedModelWeights(modelWeights []synchronizer.ResolvedModelWeight) []controlplane.AIModelWeight {
+	converted := make([]controlplane.AIModelWeight, len(modelWeights))
+	for i, mw := range modelWeights {
+		converted[i] = controlplane.AIModelWeight{
+			Model:    mw.Model,
+			Endpoint: string(mw.ResolvedBackend.Protocol) + "://" + mw.ResolvedBackend.Backend.Spec.Services[0].Host + ":" + strconv.Itoa(int(mw.ResolvedBackend.Backend.Spec.Services[0].Port)) + mw.ResolvedBackend.Backend.Spec.BasePath,
+			Weight:   mw.Weight,
+		}
+	}
+	return converted
 }
 
 func (apiReconciler *APIReconciler) validateRouteExtRefs(apiState *synchronizer.APIState) error {
@@ -3665,6 +3705,7 @@ func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation
 	if apiState.ProdHTTPRoute != nil && apiState.ProdHTTPRoute.HTTPRouteCombined != nil {
 		for _, rule := range apiState.ProdHTTPRoute.HTTPRouteCombined.Spec.Rules {
 			scopes := []string{}
+			aiModelBasedRoundRobin := controlplane.AIModelBasedRoundRobin{}
 			requestAddHeaders := []controlplane.Header{}
 			responseAddHeaders := []controlplane.Header{}
 			requestRemoveHeaders := []string{}
@@ -3674,6 +3715,18 @@ func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation
 					scope, found := apiState.ProdHTTPRoute.Scopes[types.NamespacedName{Namespace: apiState.APIDefinition.ObjectMeta.Namespace, Name: string(filter.ExtensionRef.Name)}.String()]
 					if found {
 						scopes = append(scopes, scope.Spec.Names...)
+					}
+				}
+				if filter.ExtensionRef != nil && filter.ExtensionRef.Kind == "APIPolicy" {
+					apiPolicy, found := apiState.ResourceAPIPolicies[types.NamespacedName{Namespace: apiState.APIDefinition.ObjectMeta.Namespace, Name: string(filter.ExtensionRef.Name)}.String()]
+					if found {
+						if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ModelBasedRoundRobin != nil {
+							aiModelBasedRoundRobin = controlplane.AIModelBasedRoundRobin{
+								OnQuotaExceedSuspendDuration: apiPolicy.Spec.Override.ModelBasedRoundRobin.OnQuotaExceedSuspendDuration,
+								ProductionModels:             convertModelWeights(apiPolicy.Spec.Override.ModelBasedRoundRobin.ProductionModels, apiState),
+								SandboxModels:                convertModelWeights(apiPolicy.Spec.Override.ModelBasedRoundRobin.SandboxModels, apiState),
+							}
+						}
 					}
 				}
 
@@ -3731,6 +3784,7 @@ func prepareOperations(apiState *synchronizer.APIState) []controlplane.Operation
 							RemoveHeaders: responseRemoveHeaders,
 						},
 					},
+					AIModelBasedRoundRobin: &aiModelBasedRoundRobin,
 				})
 			}
 		}
