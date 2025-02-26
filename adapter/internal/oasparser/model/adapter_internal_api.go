@@ -1053,17 +1053,31 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 
 	authSpec := utils.SelectPolicy(&authScheme.Spec.Override, &authScheme.Spec.Default, nil, nil)
 	if authSpec != nil && authSpec.AuthTypes != nil {
+		var required bool
+		var oauth2Enabled bool
+		var apiKeyEnabled bool
+		var jwtEnabled bool
 		if authSpec.AuthTypes.OAuth2.Required != "" {
-			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, authSpec.AuthTypes.OAuth2.Required == "mandatory")
-		} else {
-			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
+			oauth2Enabled = true
+			required = required || authSpec.AuthTypes.OAuth2.Required == "mandatory"
 		}
 
 		if authSpec.AuthTypes.APIKey != nil {
-			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
+			apiKeyEnabled = true
+			required = required || authSpec.AuthTypes.APIKey.Required == "mandatory"
 		}
 		if !*authSpec.AuthTypes.JWT.Disabled {
+			jwtEnabled = true
+			required = required || false
+		}
+		if jwtEnabled {
 			adapterInternalAPI.SetApplicationSecurity(constants.JWT, false)
+		}
+		if oauth2Enabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, false)
+		}
+		if apiKeyEnabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, false)
 		}
 	} else {
 		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
@@ -1406,17 +1420,31 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 	}
 	authSpec := utils.SelectPolicy(&authScheme.Spec.Override, &authScheme.Spec.Default, nil, nil)
 	if authSpec != nil && authSpec.AuthTypes != nil {
+		var required bool
+		var oauth2Enabled bool
+		var apiKeyEnabled bool
+		var jwtEnabled bool
 		if authSpec.AuthTypes.OAuth2.Required != "" {
-			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, authSpec.AuthTypes.OAuth2.Required == "mandatory")
-		} else {
-			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
+			oauth2Enabled = true
+			required = required || authSpec.AuthTypes.OAuth2.Required == "mandatory"
 		}
-
 		if authSpec.AuthTypes.APIKey != nil {
-			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
+			apiKeyEnabled = true
+			required = required || authSpec.AuthTypes.APIKey.Required == "mandatory"
 		}
 		if !*authSpec.AuthTypes.JWT.Disabled {
+			jwtEnabled = true
+			required = required || false
+		}
+
+		if jwtEnabled {
 			adapterInternalAPI.SetApplicationSecurity(constants.JWT, false)
+		}
+		if oauth2Enabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, false)
+		}
+		if apiKeyEnabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, false)
 		}
 	} else {
 		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
@@ -1603,17 +1631,31 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 	}
 	authSpec := utils.SelectPolicy(&authScheme.Spec.Override, &authScheme.Spec.Default, nil, nil)
 	if authSpec != nil && authSpec.AuthTypes != nil {
+		var required bool
+		var oauth2Enabled bool
+		var apiKeyEnabled bool
+		var jwtEnabled bool
 		if authSpec.AuthTypes.OAuth2.Required != "" {
-			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, authSpec.AuthTypes.OAuth2.Required == "mandatory")
-		} else {
-			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)
+			oauth2Enabled = true
+			required = required || authSpec.AuthTypes.OAuth2.Required == "mandatory"
 		}
 
 		if authSpec.AuthTypes.APIKey != nil {
-			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, authSpec.AuthTypes.APIKey.Required == "mandatory")
+			apiKeyEnabled = true
+			required = required || authSpec.AuthTypes.APIKey.Required == "mandatory"
 		}
 		if !*authSpec.AuthTypes.JWT.Disabled {
+			jwtEnabled = true
+			required = required || false
+		}
+		if jwtEnabled {
 			adapterInternalAPI.SetApplicationSecurity(constants.JWT, false)
+		}
+		if oauth2Enabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, false)
+		}
+		if apiKeyEnabled {
+			adapterInternalAPI.SetApplicationSecurity(constants.APIKey, false)
 		}
 	} else {
 		adapterInternalAPI.SetApplicationSecurity(constants.OAuth2, true)

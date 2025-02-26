@@ -100,5 +100,5 @@ func getError(authenticationResponses []AuthenticationResponse) *dto.ErrorRespon
 	if immediateResponse != nil && missingCredential {
 		return &dto.ErrorResponse{Code: InvalidCredentials, ErrorMessage: InvalidCredentialsMessage, ErrorDescription: "Make sure you have provided the correct security credentials"}
 	}
-	return &dto.ErrorResponse{Code: APIAuthGeneralError, ErrorMessage: APIAuthGeneralErrorMessage, ErrorDescription: "Unclassified Authentication Failure"}
+	return &dto.ErrorResponse{Code: InvalidCredentials, ErrorMessage: InvalidCredentialsMessage, ErrorDescription: "Make sure you have provided the correct security credentials"}
 }
