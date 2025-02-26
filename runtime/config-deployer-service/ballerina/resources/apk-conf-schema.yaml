@@ -261,6 +261,7 @@ components:
         - $ref: "#/components/schemas/HeaderModifierPolicy"
         - $ref: "#/components/schemas/RequestMirrorPolicy"
         - $ref: "#/components/schemas/RequestRedirectPolicy"
+        - $ref: "#/components/schemas/ModelBasedRoundRobinPolicy"
       discriminator:
         propertyName: "policyName"
         mapping:
@@ -271,6 +272,7 @@ components:
           RemoveHeader: "#/components/schemas/HeaderModifierPolicy"
           RequestMirror: "#/components/schemas/RequestMirrorPolicy"
           RequestRedirect: "#/components/schemas/RequestRedirectPolicy"
+          ModelBasedRoundRobin: "#/components/schemas/ModelBasedRoundRobinPolicy"
     APKResponseOperationPolicy:
       title: API Operation Policy
       oneOf:
@@ -299,6 +301,9 @@ components:
             - SetHeader
             - Interceptor
             - BackendJwt
+            - ModelBasedRoundRobin
+            - RequestMirror
+            - RequestRedirect
         policyVersion:
           type: string
           default: "v1"
@@ -339,9 +344,13 @@ components:
       title: Endpoint configs
       properties:
         production:
-          $ref: "#/components/schemas/EndpointConfiguration"
+          type: array
+          items:
+            $ref: "#/components/schemas/EndpointConfiguration"
         sandbox:
-          $ref: "#/components/schemas/EndpointConfiguration"
+          type: array
+          items:
+            $ref: "#/components/schemas/EndpointConfiguration"
       additionalProperties: false
     EndpointConfiguration:
       required:
@@ -526,6 +535,42 @@ components:
               additionalProperties: false
       required:
         - backendUrl
+      additionalProperties: false
+    ModelBasedRoundRobinPolicy:
+      title: "Model Based Round Robin Policy Parameters"
+      type: "object"
+      properties:
+        onQuotaExceedSuspendDuration:
+          type: "integer"
+          description: "The duration for which the model routing is suspended for a particular model upon exceeding the quota for that model."
+        productionModels:
+          type: "array"
+          items:
+            $ref: "#/components/schemas//AIModel"
+        sandboxModels:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AIModel"
+      required:
+        - "onQuotaExceedSuspendDuration"
+        - "productionModels"
+      additionalProperties: false
+    AIModel:
+      title: "AI Model"
+      type: "object"
+      properties:
+        model:
+          type: "string"
+          description: "The Name of the model."
+        endpoint:
+          type: "string"
+          description: "The endpoint of the model."
+        weight:
+          type: "integer"
+          description: "The weight of the model."
+      required:
+        - "model"
+        - "endpoint"
       additionalProperties: false
     BackendJWTPolicy:
       title: Backend JWT Parameters
