@@ -411,7 +411,9 @@ func generateHeaderMatcher(headerName, valueRegex string) *routev3.HeaderMatcher
 
 func generateRegexMatchAndSubstitute(routePath, endpointResourcePath string,
 	pathMatchType gwapiv1.PathMatchType) *envoy_type_matcherv3.RegexMatchAndSubstitute {
+	logger.LoggerOasparser.Infof("endpointResourcePath: %v, pathMatchType: %v", endpointResourcePath, pathMatchType)
 	substitutionString := generateSubstitutionString(endpointResourcePath, pathMatchType)
+	logger.LoggerOasparser.Infof("substitutionString: %v", substitutionString)
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
 			Regex: routePath,
@@ -480,6 +482,8 @@ func generateRewritePathRouteConfig(routePath string, policyParams interface{}, 
 
 	substitutionString := generateSubstitutionStringWithRewritePathType(rewritePath,
 		pathMatchType, rewritePathType, isDefaultVersion)
+
+	logger.LoggerOasparser.Infof("Sampath substitutionString: %v", substitutionString)
 
 	return &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
