@@ -141,7 +141,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 		for label := range oldGatewayNames {
 			updatedLabelsMap[label] = struct{}{}
 		}
-		if apiState.APIDefinition.Spec.APIType == "REST" {
+		if apiState.APIDefinition.Spec.APIType == constants.REST {
 			if apiState.ProdHTTPRoute != nil {
 				_, updatedLabels, err := UpdateInternalMapsFromHTTPRoute(apiState, apiState.ProdHTTPRoute, constants.Production)
 				if err != nil {
@@ -185,7 +185,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 			}
 		}
 
-		if apiState.APIDefinition.Spec.APIType == "GraphQL" {
+		if apiState.APIDefinition.Spec.APIType == constants.GRAPHQL {
 			if apiState.ProdGQLRoute != nil {
 				_, updatedLabels, err := updateInternalMapsFromGQLRoute(apiState, apiState.ProdGQLRoute, constants.Production)
 				if err != nil {
