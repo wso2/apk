@@ -1,6 +1,6 @@
 Feature: Semantic Versioning Based Intelligent Routing
 
-  Scenario: API version with Major and Minor
+  Scenario: API version with Major and Minor version 1.0
       Given The system is ready
       And I have a valid subscription
       When I use the APK Conf file "artifacts/apk-confs/semantic-versioning/sem_api_v1-0.yaml"
@@ -19,10 +19,16 @@ Feature: Semantic Versioning Based Intelligent Routing
       Then the response status code should be 200
       And the response body should contain "\"version\":\"v1.0\""
 
+  Scenario: API version with Major and Minor version 1.1
+      Given The system is ready
+      And I have a valid subscription
       When I use the APK Conf file "artifacts/apk-confs/semantic-versioning/sem_api_v1-1.yaml"
       And the definition file "artifacts/definitions/employees_api.json"
       And make the API deployment request
       Then the response status code should be 200
+      Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120005"
+      Then I set headers
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
       And I send "GET" request to "https://default.gw.wso2.com:9095/sem-api/v1.1/employee/" with body ""
       Then the response status code should be 200
       And the response body should contain "\"version\":\"v1.1\""
@@ -30,10 +36,16 @@ Feature: Semantic Versioning Based Intelligent Routing
       Then the response status code should be 200
       And the response body should contain "\"version\":\"v1.1\""
 
+  Scenario: API version with Major and Minor version 1.5
+      Given The system is ready
+      And I have a valid subscription
       When I use the APK Conf file "artifacts/apk-confs/semantic-versioning/sem_api_v1-5.yaml"
       And the definition file "artifacts/definitions/employees_api.json"
       And make the API deployment request
       Then the response status code should be 200
+      Then I generate JWT token from idp1 with kid "123-456" and consumer_key "45f1c5c8-a92e-11ed-afa1-0242ac120005"
+      Then I set headers
+      |Authorization|Bearer ${idp-1-45f1c5c8-a92e-11ed-afa1-0242ac120005-token}|
       And I send "GET" request to "https://default.gw.wso2.com:9095/sem-api/v1.5/employee/" with body ""
       Then the response status code should be 200
       And the response body should contain "\"version\":\"v1.5\""
