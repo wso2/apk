@@ -1,6 +1,8 @@
 package authorization
 
 import (
+	"regexp"
+
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
@@ -25,10 +27,13 @@ func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.
 					subscriptions := subAppDataStore.GetSubscriptions(api.OrganizationID, appMap.SubscriptionRef)
 					for _, subscription := range subscriptions {
 						subscribedAPI := subscription.SubscribedAPI
-						if subscribedAPI.Name == api.Name && subscribedAPI.Version == api.Version {
-							rch.MatchedSubscription = subscription
-							rch.MatchedApplication = subAppDataStore.GetApplication(api.OrganizationID, appID)
-							return nil
+						if subscribedAPI.Name == api.Name {
+							versionMatched, err := regexp.MatchString(subscribedAPI.Version, api.Version)
+							if err == nil && versionMatched {
+								rch.MatchedSubscription = subscription
+								rch.MatchedApplication = subAppDataStore.GetApplication(api.OrganizationID, appID)
+								return nil
+							}
 						}
 					}
 				}
