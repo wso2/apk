@@ -108,7 +108,14 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 		RateLimitPolicies:         apiState.RateLimitPolicies,
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
-	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRouteState.HTTPRouteCombined, resourceParams, httpRouteState.RuleIdxToAiRatelimitPolicyMapping, apiState.AIProvider.Spec.RateLimitFields.PromptTokens.In); err != nil {
+	sendToEnforcer := false
+	if apiState.MutualSSL != nil {
+		sendToEnforcer = !apiState.MutualSSL.Disabled
+	}
+	if (apiState.AIProvider != nil && apiState.AIProvider.Name != "") || apiState.SubscriptionValidation {
+		sendToEnforcer = true
+	}
+	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRouteState.HTTPRouteCombined, resourceParams, httpRouteState.RuleIdxToAiRatelimitPolicyMapping, apiState.AIProvider.Spec.RateLimitFields.PromptTokens.In, sendToEnforcer); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting HttpRoute CR info to adapterInternalAPI. %v", err))
 		return nil, err
 	}

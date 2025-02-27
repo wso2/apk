@@ -378,9 +378,26 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				}
 				logger.LoggerAPKOperator.Debugf("JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirements)
 				if len(jwtRequirements) > 0 {
-					jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{RequiresType: &jwt.JwtRequirement_RequiresAny{RequiresAny: &jwt.JwtRequirementOrList{Requirements: append(jwtRequirements, &jwt.JwtRequirement{
-						RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
-					})}}}
+					if envoyInternalAPI.adapterInternalAPI.GetAPIType() == "GraphQL" || !envoyInternalAPI.adapterInternalAPI.GetDisableMtls() {
+						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{
+							RequiresType: &jwt.JwtRequirement_RequiresAny{
+								RequiresAny: &jwt.JwtRequirementOrList{
+									Requirements: append(jwtRequirements, &jwt.JwtRequirement{
+										RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
+									}),
+								},
+							},
+						}
+					} else {
+						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{
+							RequiresType: &jwt.JwtRequirement_RequiresAny{
+								RequiresAny: &jwt.JwtRequirementOrList{
+									Requirements: jwtRequirements,
+								},
+							},
+						}
+					}
+					
 				} else {
 					logger.LoggerAPKOperator.Debugf("No JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirements)
 					removeJWTRequirements = true

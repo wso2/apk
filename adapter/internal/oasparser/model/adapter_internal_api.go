@@ -537,7 +537,7 @@ func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
 
 // SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams, ruleIdxToAiRatelimitPolicyMapping map[int]*dpv1alpha3.AIRateLimitPolicy, extractTokenFrom string) error {
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams, ruleIdxToAiRatelimitPolicyMapping map[int]*dpv1alpha3.AIRateLimitPolicy, extractTokenFrom string, sendToEnforcer bool) error {
 	var resources []*Resource
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
@@ -984,7 +984,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				loggers.LoggerAPI.Debugf("ModelBasedRoundRobin extracted %v", extracted)
 				modelBasedRoundRobin = extracted
 			}
-
+			loggers.LoggerAPI.Debugf("resource path %+v methods %+v sendtoenforcer %+v", resourcePath, operations, sendToEnforcer || enableBackendBasedAIRatelimit)
 			resource := &Resource{
 				path:                                   resourcePath,
 				methods:                                operations,
@@ -996,6 +996,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				backendBasedAIRatelimitDescriptorValue: descriptorValue,
 				extractTokenFrom:                       extractTokenFrom,
 				AIModelBasedRoundRobin:                 modelBasedRoundRobin,
+				sendToEnforcer: 					   	sendToEnforcer || enableBackendBasedAIRatelimit,
 			}
 
 			resource.endpoints = &EndpointCluster{
