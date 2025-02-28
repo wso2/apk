@@ -21,7 +21,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v3
         with:
-          go-version: "1.23"
+          go-version: "1.24"
       - name: Install Revive
         shell: sh
         run: |
@@ -31,16 +31,16 @@ jobs:
         id: cache
         with:
           path: "ballerina-dist/*.deb"
-          key: "ballerina-2201.10.2"
+          key: "ballerina-2201.11.0"
       - name: Download Ballerina distribution.
         shell: sh
         run: |
           mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.10.2/ballerina-2201.10.2-swan-lake-linux-x64.deb' -P ballerina-dist
+          wget 'https://dist.ballerina.io/downloads/2201.11.0/ballerina-2201.11.0-swan-lake-linux-x64.deb' -P ballerina-dist
         if: steps.cache.outputs.cache-hit != 'true'
       - name: Install Ballerina distribution.
         shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.10.2-swan-lake-linux-x64.deb"
+        run: "sudo dpkg -i ballerina-dist/ballerina-2201.11.0-swan-lake-linux-x64.deb"
       - name: Verify Ballerina Version
         shell: sh
         run: "bal -v"
