@@ -860,8 +860,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				}
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
-			// httpBody := req.GetResponseBody()
-			s.log.Sugar().Debug("Response body")
 			s.log.Sugar().Debug("Response Body Flow")
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
