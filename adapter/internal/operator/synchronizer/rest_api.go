@@ -109,6 +109,10 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
 	sendToEnforcer := false
+	if config.ReadConfigs().Analytics.Enabled {
+		loggers.LoggerAPKOperator.Infof("Analytics is enabled for API: %v", apiState.APIDefinition.Name)
+		sendToEnforcer = true
+	}
 	if apiState.MutualSSL != nil {
 		sendToEnforcer = !apiState.MutualSSL.Disabled
 	}

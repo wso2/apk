@@ -28,7 +28,7 @@ func NewAuthenticator(cfg *config.Server, subAppDataStore *datastore.Subscriptio
 // Authenticate performs the authentication.
 func (authenticator *Authenticator) Authenticate(rch *requestconfig.Holder) *dto.ImmediateResponse {
 
-	if rch != nil && rch.MatchedAPI != nil {
+	if rch != nil && rch.MatchedAPI != nil && rch.MatchedAPI.IsGraphQLAPI() {
 		applicationSecurity := rch.MatchedAPI.ApplicationSecurity
 		var optionalAuthenticationResponse *AuthenticationResponse
 		var authenticationResponse AuthenticationResponse
@@ -71,11 +71,13 @@ func (authenticator *Authenticator) Authenticate(rch *requestconfig.Holder) *dto
 		}
 		if !authenticated {
 			if mandatoryAuthFailed || optionalAuthenticationResponse == nil {
+				authenticator.cfg.Logger.Sugar().Debugf("Authentication failed for the request. Responses: %+v", authenticationResponses)
 				errorResponse := getError(authenticationResponses)
 				jsonData, _ := json.MarshalIndent(errorResponse, "", "  ")
 				return &dto.ImmediateResponse{StatusCode: 401, Message: string(jsonData)}
 
 			} else if !(optionalAuthenticationResponse.Authenticated) {
+				authenticator.cfg.Logger.Sugar().Debugf("Authentication failed for the request. Responses: %+v", authenticationResponses)
 				errorResponse := &dto.ErrorResponse{ErrorMessage: optionalAuthenticationResponse.ErrorMessage, Code: optionalAuthenticationResponse.ErrorCode, ErrorDescription: "Make sure you have provided the correct security credentials"}
 				jsonData, _ := json.MarshalIndent(errorResponse, "", "  ")
 				return &dto.ImmediateResponse{StatusCode: 401, Message: string(jsonData)}

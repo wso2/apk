@@ -389,13 +389,18 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 							},
 						}
 					} else {
-						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{
-							RequiresType: &jwt.JwtRequirement_RequiresAny{
-								RequiresAny: &jwt.JwtRequirementOrList{
-									Requirements: jwtRequirements,
+						if len(jwtRequirements) == 1 {
+							jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirements[0]
+						} else {
+							jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{
+								RequiresType: &jwt.JwtRequirement_RequiresAny{
+									RequiresAny: &jwt.JwtRequirementOrList{
+										Requirements: jwtRequirements,
+									},
 								},
-							},
+							}
 						}
+						
 					}
 					
 				} else {

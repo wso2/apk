@@ -187,6 +187,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		dynamicMetadataKeyValuePairs := make(map[string]string)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
+			s.log.Sugar().Info("Request Headers Flow")
 			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if err != nil {
@@ -307,12 +308,21 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if requestConfigHolder.MatchedResource == nil {
 				break
 			}
+			s.log.Sugar().Debug(fmt.Sprintf("Matched API: %+v", requestConfigHolder.MatchedAPI))
+			if requestConfigHolder.MatchedAPI.AiProvider != nil {
+				s.log.Sugar().Debug("***111")
+				if requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil {
+					s.log.Sugar().Debug("***222")
+					if requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil {
+						s.log.Sugar().Debug(fmt.Sprintf("Matched rr: %+v", requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin))
+					}
+				}
+			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
-				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin == nil &&
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
-				// s.cfg.Logger.Sugar().Info("222")
+				s.cfg.Logger.Sugar().Info("222")
 				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
@@ -321,7 +331,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-				// s.cfg.Logger.Sugar().Info("333")
+				s.cfg.Logger.Sugar().Info("333")
 				resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
@@ -463,7 +473,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
-			s.log.Sugar().Debug("Request Body Flow")
+			s.log.Sugar().Info("Request Body Flow")
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
 				RequestBody: &envoy_service_proc_v3.BodyResponse{
 					Response: &envoy_service_proc_v3.CommonResponse{},
@@ -710,7 +720,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
-			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
+			s.log.Sugar().Info(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
@@ -868,7 +878,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
-			// s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
+			s.log.Info("Response body")
 			s.log.Sugar().Debug("Response Body Flow")
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
