@@ -309,7 +309,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
-				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin == nil &&
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
 				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
 				// s.cfg.Logger.Sugar().Info("222")
