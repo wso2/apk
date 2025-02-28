@@ -28,7 +28,7 @@ func NewAuthenticator(cfg *config.Server, subAppDataStore *datastore.Subscriptio
 // Authenticate performs the authentication.
 func (authenticator *Authenticator) Authenticate(rch *requestconfig.Holder) *dto.ImmediateResponse {
 
-	if rch != nil && rch.MatchedAPI != nil && rch.MatchedAPI.IsGraphQLAPI() {
+	if rch != nil && rch.MatchedAPI != nil {//&& rch.MatchedAPI.IsGraphQLAPI() {
 		applicationSecurity := rch.MatchedAPI.ApplicationSecurity
 		var optionalAuthenticationResponse *AuthenticationResponse
 		var authenticationResponse AuthenticationResponse
