@@ -378,7 +378,9 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				}
 				logger.LoggerAPKOperator.Debugf("JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirements)
 				if len(jwtRequirements) > 0 {
-					if envoyInternalAPI.adapterInternalAPI.GetAPIType() == "GraphQL" || !envoyInternalAPI.adapterInternalAPI.GetDisableMtls() {
+					if envoyInternalAPI.adapterInternalAPI.GetAPIType() == "GraphQL" ||
+					  envoyInternalAPI.adapterInternalAPI.GetAPIType() == "GRPC" ||
+					  !envoyInternalAPI.adapterInternalAPI.GetDisableMtls() {
 						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{
 							RequiresType: &jwt.JwtRequirement_RequiresAny{
 								RequiresAny: &jwt.JwtRequirementOrList{

@@ -109,8 +109,14 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
 	sendToEnforcer := false
-	if config.ReadConfigs().Analytics.Enabled {
-		loggers.LoggerAPKOperator.Infof("Analytics is enabled for API: %v", apiState.APIDefinition.Name)
+	// if config.ReadConfigs().Analytics.Enabled {
+	// 	loggers.LoggerAPKOperator.Infof("Analytics is enabled for API: %v", apiState.APIDefinition.Name)
+	// 	sendToEnforcer = true
+	// }
+	if  apiState.BackendJWTMapping != nil && len(apiState.BackendJWTMapping) > 0 {
+		sendToEnforcer = true
+	}
+	if apiState.APIDefinition.Spec.APIType == "GRPC" {
 		sendToEnforcer = true
 	}
 	if apiState.MutualSSL != nil {
