@@ -54,10 +54,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.4
+          gradle-version: 8.9
           cache-read-only: false
       - name: Verify Gradle version
-        run: ./gradlew --version
+        run: gradle --version
       - name: Cache Ballerina.
         uses: actions/cache@v3
         id: cache
@@ -100,7 +100,7 @@ jobs:
         run: |
           cd apk-repo/common-bal-libs
           chmod +x gradlew
-          ./gradlew build
+          gradle build
       - name: Run Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         shell: sh
