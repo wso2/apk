@@ -51,6 +51,13 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.4
+          cache-read-only: false
+      - name: Verify Gradle version
+        run: ./gradlew --version
       - name: Cache Ballerina.
         uses: actions/cache@v3
         id: cache
