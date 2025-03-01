@@ -28,6 +28,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SharedContext {
 
@@ -60,12 +62,22 @@ public class SharedContext {
     private HashMap<String, String> headers = new HashMap<>();
     private int grpcStatusCode;
     private int grpcErrorCode;
+    private List<String> responses = new ArrayList<>();
+
 
     public SimpleHTTPClient getHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         if (httpClient == null) {
             httpClient = new SimpleHTTPClient();
         }
         return httpClient;
+    }
+
+    public void addResponse(String response) {
+        responses.add(response);
+    }
+
+    public List<String> getResponses() {
+        return responses;
     }
 
     public int getGrpcStatusCode() {
@@ -138,6 +150,10 @@ public class SharedContext {
     public void setResponseBody(String responseBody) {
 
         this.responseBody = responseBody;
+    }
+
+    public void clearResposes() {
+        responses.clear();
     }
 
     public String getPublisherAccessToken() {

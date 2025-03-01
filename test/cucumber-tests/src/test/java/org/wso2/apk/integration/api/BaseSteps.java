@@ -318,12 +318,25 @@ public class BaseSteps {
         List<Integer> nonAcceptableCodes = dataTable.asList(Integer.class);
         if (sharedContext.getResponse().getStatusLine().getStatusCode() == statusCode) {
             Assert.assertTrue(true);
+            sharedContext.addResponse(sharedContext.getResponseBody());
         } else {
             HttpResponse httpResponse = httpClient.executeLastRequestForEventualConsistentResponse(statusCode,
                     nonAcceptableCodes);
             sharedContext.setResponse(httpResponse);
             Assert.assertEquals(httpResponse.getStatusLine().getStatusCode(), statusCode);
+            sharedContext.addResponse(sharedContext.getResponseBody());
         }
+    }
+
+    @Then("at least one response body should contain {string}")
+    public void atLeastOneResponseBodyShouldContain(String expectedString) {
+        boolean found = sharedContext.getResponses().stream().anyMatch(response -> response.contains(expectedString));
+        Assert.assertTrue(found, "None of the responses contained: " + expectedString);
+    }
+
+    @Then("I clear all stored responses")
+    public void clearAllStoredResponses() {
+        sharedContext.clearResposes();
     }
 
     @Then("I see following strings in the enforcer logs")
