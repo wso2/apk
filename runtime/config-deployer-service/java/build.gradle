@@ -38,7 +38,7 @@ dependencies {
 
 tasks.register('copy_dependencies', Copy) {
     dependsOn create_lib
-    from configurations.default
+    from configurations.runtimeClasspath
     into "$projectDir/../docker/lib"
     finalizedBy build
 }
