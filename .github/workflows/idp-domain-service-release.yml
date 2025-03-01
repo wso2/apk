@@ -95,17 +95,20 @@ jobs:
           git checkout -b idp-domain-service-1.x
           git push origin idp-domain-service-1.x
           cd idp/idp-domain-service
+          chmod +x gradlew
           ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=idp-domain-service-1.x
           ./gradlew :ballerina:commit_toml_files
           git push origin idp-domain-service-1.x
       - name: Run Gradle Build
         run: |
           cd apk-repo/idp/idp-domain-service
+          chmod +x gradlew
           ./gradlew build
       - name: Run Gradle Build
         if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true
         run: |
           cd apk-repo/idp/idp-domain-service
+          chmod +x gradlew
           ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
           ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
       - name: Login to azure.
@@ -118,6 +121,7 @@ jobs:
         run: |
           az acr login -n ${{ secrets.AZURE_ACR_NAME }}
           cd apk-repo/idp/idp-domain-service
+          chmod +x gradlew
           ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true  
       - name: run codecov
         uses: codecov/codecov-action@v3
