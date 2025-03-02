@@ -633,7 +633,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				if backend.Weight != nil {
 					// Extracting weights from HTTPRoute if weights are defined
 					resolvedBackend.Weight = *backend.Weight
-					loggers.LoggerAPI.Infof("Weighted Routing Capability is enabled for the Resolved Backend %s with weight %d", backendName.String(), resolvedBackend.Weight)
+					loggers.LoggerAPI.Debugf("Weighted Routing Capability is enabled for the Resolved Backend %s with weight %d", backendName.String(), resolvedBackend.Weight)
 				}
 
 				endPoints = append(endPoints, GetEndpoints(backendName, resourceParams.BackendMapping)...)

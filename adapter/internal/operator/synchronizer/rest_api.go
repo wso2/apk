@@ -176,8 +176,8 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 		adapterInternalAPI.SetModelBasedRoundRobin(aiModelBasedRoundRobin)
 	}
 
-	loggers.LoggerAPKOperator.Infof("AdapterInternalAPI AI Provider: %+v", adapterInternalAPI.GetAIProvider())
-	loggers.LoggerAPKOperator.Infof("AdapterInternalAPI Model Based Round Robin: %+v", adapterInternalAPI.GetModelBasedRoundRobin())
+	loggers.LoggerAPKOperator.Debugf("AdapterInternalAPI AI Provider: %+v", adapterInternalAPI.GetAIProvider())
+	loggers.LoggerAPKOperator.Debugf("AdapterInternalAPI Model Based Round Robin: %+v", adapterInternalAPI.GetModelBasedRoundRobin())
 
 	return &adapterInternalAPI, nil
 }

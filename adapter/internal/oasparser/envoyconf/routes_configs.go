@@ -84,11 +84,11 @@ func generateRouteConfig(apiType string, routeName string, method *string, match
 	cloneTypedPerFilterConfig := cloneTypedPerFilterConfig(typedPerFilterConfig)
 	//todo: need to fix it in proper way
 	if apiType == constants.REST && (authentication == nil || (authentication != nil && (authentication.Disabled || authentication.Oauth2 == nil)) || (method != nil && strings.ToUpper(*method) == "OPTIONS")) {
-		logger.LoggerOasparser.Infof("routename%v", routeName)
-		logger.LoggerOasparser.Infof("authentication is nill %v", authentication == nil)
+		logger.LoggerOasparser.Debugf("routename%v", routeName)
+		logger.LoggerOasparser.Debugf("authentication is nill %v", authentication == nil)
 		if authentication != nil {
-			logger.LoggerOasparser.Infof("authentication.JWT is nill%v", authentication.JWT == nil)
-			logger.LoggerOasparser.Infof("authentication.Oauth2 is nill%v", authentication.Oauth2 == nil)
+			logger.LoggerOasparser.Debugf("authentication.JWT is nill%v", authentication.JWT == nil)
+			logger.LoggerOasparser.Debugf("authentication.Oauth2 is nill%v", authentication.Oauth2 == nil)
 		}
 		delete(cloneTypedPerFilterConfig, EnvoyJWT)
 	}

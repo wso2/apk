@@ -755,14 +755,14 @@ func ResolveAllmTLSCertificates(ctx context.Context, mutualSSL *dpv1alpha2.Mutua
 // if no value then load the certificate from secretRef using util function called getSecretValue
 func ResolveCertificate(ctx context.Context, client k8client.Client, namespace string, certificateInline *string,
 	configMapRef *dpv1alpha2.RefConfig, secretRef *dpv1alpha2.RefConfig) (string, error) {
-	loggers.LoggerAPKOperator.Infof("Resolving certificate method")
+	loggers.LoggerAPKOperator.Debugf("Resolving certificate method")
 	var certificate string
 	var err error
 	if certificateInline != nil && len(*certificateInline) > 0 {
 		certificate = *certificateInline
-		loggers.LoggerAPKOperator.Infof("certificateInline: %s", certificate)
+		loggers.LoggerAPKOperator.Debugf("certificateInline: %s", certificate)
 	} else if secretRef != nil {
-		loggers.LoggerAPKOperator.Infof("secretRef: %s", secretRef)
+		loggers.LoggerAPKOperator.Debugf("secretRef: %s", secretRef)
 		if certificate, err = getSecretValue(ctx, client,
 			namespace, secretRef.Name, secretRef.Key); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2642, logging.CRITICAL,
@@ -770,7 +770,7 @@ func ResolveCertificate(ctx context.Context, client k8client.Client, namespace s
 			return "", err
 		}
 	} else if configMapRef != nil {
-		loggers.LoggerAPKOperator.Infof("configmapRef: %s", configMapRef)
+		loggers.LoggerAPKOperator.Debugf("configmapRef: %s", configMapRef)
 		if certificate, err = getConfigMapValue(ctx, client,
 			namespace, configMapRef.Name, configMapRef.Key); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2643, logging.CRITICAL,
@@ -778,7 +778,7 @@ func ResolveCertificate(ctx context.Context, client k8client.Client, namespace s
 			return "", err
 		}
 	}
-	loggers.LoggerAPKOperator.Infof("Certificate: %s", certificate)
+	loggers.LoggerAPKOperator.Debugf("Certificate: %s", certificate)
 	if len(certificate) > 0 {
 		block, _ := pem.Decode([]byte(certificate))
 		if block == nil {
@@ -952,6 +952,6 @@ func ConvertPemCertificatetoJWK(cert string) string {
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("failed to marshal JWK to JSON: %s", err)
 	}
-	loggers.LoggerAPKOperator.Infof("JWK: %s", string(jwkJSON))
+	loggers.LoggerAPKOperator.Debugf("JWK: %s", string(jwkJSON))
 	return string(jwkJSON)
 }

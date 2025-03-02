@@ -161,7 +161,7 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 				SandboxModels:                convertModelWeights(modelBasedRoundRobin.SandboxModels),
 			}
 		}
-		logger.LoggerOasparser.Infof("Resource AI Model Based Round Robin: %+v", resource.AiModelBasedRoundRobin)
+		logger.LoggerOasparser.Debugf("Resource AI Model Based Round Robin: %+v", resource.AiModelBasedRoundRobin)
 		resources = append(resources, resource)
 	}
 
@@ -665,7 +665,7 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 			},
 		}
 	} else if tokenIssuer.SignatureValidation.Certificate != nil {
-		logger.LoggerOasparser.Infof("ResolvedCertificate: %s", tokenIssuer.SignatureValidation.Certificate.ResolvedCertificate)
+		logger.LoggerOasparser.Debugf("ResolvedCertificate: %s", tokenIssuer.SignatureValidation.Certificate.ResolvedCertificate)
 		jwtProvider.JwksSourceSpecifier = &jwt.JwtProvider_LocalJwks{
 			LocalJwks: &corev3.DataSource{
 				Specifier: &corev3.DataSource_InlineString{InlineString: tokenIssuer.SignatureValidation.Certificate.ResolvedCertificate},
