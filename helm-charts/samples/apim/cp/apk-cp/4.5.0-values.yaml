@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------------
 #
-# Copyright (c) 2024, WSO2 LLC. (http://www.wso2.com). All Rights Reserved.
+# Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com). All Rights Reserved.
 #
 # This software is the property of WSO2 LLC. and its suppliers, if any.
 # Dissemination of any information or reproduction of any material contained 
@@ -174,7 +174,7 @@ kubernetes:
 wso2:  
   apim:
     # -- APIM version
-    version: "4.3.0"
+    version: "4.5.0"
     # -- Secure vauld enabled
     secureVaultEnabled: false
     # Logging related configurations
@@ -248,7 +248,9 @@ wso2:
       ai:
         enabled: false
         token: ""
+        key: ""
         endpoint: ""
+        token_endpoint: ""
 
       security:
         # -- Kubernetes secret containing the keystores and truststore
@@ -292,29 +294,36 @@ wso2:
           name: "client-truststore.jks"
           # -- Truststore password
           password: "wso2carbon"
-
+      
       gateway:
         # -- APIM Gateway environments
         environments:
-          - name: "Default"
-            type: "hybrid"
-            provider: "wso2"
-            gatewayType: "APK"
-            displayInApiConsole: true
-            description: "This is a hybrid gateway that handles both production and sandbox token traffic."
-            showAsTokenEndpointUrl: true
-            serviceName: "wso2am-gateway-service"
-            servicePort: 9443
-            wsHostname: "websocket.wso2.com"
-            httpHostname: "carbon.super.gw.wso2.com:9095"
-            websubHostname: "websub.wso2.com"
+        - name: "Default"
+          type: "hybrid"
+          provider: "wso2"
+          gatewayType: "APK"
+          displayInApiConsole: true
+          description: "This is a hybrid gateway that handles both production and sandbox token traffic."
+          showAsTokenEndpointUrl: true
+          serviceName: "wso2am-gateway-service"
+          servicePort: 9443
+          wsHostname: "websocket.wso2.com"
+          httpHostname: "carbon.super.gw.wso2.com:9095"
+          websubHostname: "websub.wso2.com"
 
       iskm:
         # -- If Identity Server is used as the Resident KM
         enabled: false
         # -- Kubernetes service name exposing Identity Server
         serviceName: ""
-        # -- Kubernetes service port exposing Identity Serve
+        # -- Kubernetes service port exposing Identity Server
+        servicePort: 9443
+      km:
+        # -- If Key Manager profile is separated
+        enabled: false
+        # -- Kubernetes service name exposing Key Manager
+        serviceName: "wso2am-km-service"
+        # -- Kubernetes service port exposing Key Manager
         servicePort: 9443
 
       publisher:
@@ -323,6 +332,7 @@ wso2:
         supportedDocumentTypes: ""
         enablePortalConfigurationOnlyMode: true
         internalKeyIssuer: "http://am.wso2.com:443/token"
+      
       devportal:
         enableApplicationSharing:
         applicationSharingType:
@@ -347,6 +357,7 @@ wso2:
         # -- List of allow-listed scopes
         allowedScopes: ["^device_.*,openid"]
         oauth2JWKSUrl: "http://apim-wso2am-cp-service:9763/oauth2/jwks"
+      
       # APIM Open Tracing configurations
       # https://apim.docs.wso2.com/en/latest/observe/api-manager/traces/monitoring-with-opentracing/
       openTracer:
@@ -371,8 +382,17 @@ wso2:
         port: ""
 
       keyManager:
-        enableLightweightAPIKeyGeneration: false
+        enableLightweightAPIKeyGeneration: true
         allowSubscriptionValidationDisabling: true
+
+      # APIM governance configurations
+      governance:
+        # -- Override the default values of governance.scheduler if any value exists
+        scheduler:
+          thread_pool_size: ""
+          queue_size: ""
+          task_check_interval_minutes: ""
+          task_cleanup_interval_minutes: ""
 
   deployment:
     # Container image configurations
@@ -380,9 +400,9 @@ wso2:
       # -- Container registry hostname
       registry: "docker.io"
       # -- Azure ACR repository name consisting the image
-      repository: "wso2/wso2am:4.4.0"
+      repository: "kavindasr/wso2am-acp"
       # -- Docker image digest
-      digest: "sha256:40fc82de795ad4e07f5e1791ab05a65106f18f4ef4451617c94ecfe93041b7ab"
+      digest: "sha256:d109231b31a48cc5edd4bd78a61e56e5ed2738741f089b0734866f057198ae89"
       # -- Refer to the Kubernetes documentation on updating images (https://kubernetes.io/docs/concepts/containers/images/#updating-images)
       imagePullPolicy: Always
 
