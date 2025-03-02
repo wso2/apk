@@ -380,8 +380,8 @@ func CreateVirtualHosts(vhostToRouteArrayMap map[string][]*routev3.Route, custom
 		})
 	}
 
-	loggers.LoggerOasparser.Infof("vhostToSubscriptionAIRL: %+v", vhostToSubscriptionAIRL)
-	loggers.LoggerOasparser.Infof("vhostToSubscriptionRL: %+v", vhostToSubscriptionRL)
+	loggers.LoggerOasparser.Debugf("vhostToSubscriptionAIRL: %+v", vhostToSubscriptionAIRL)
+	loggers.LoggerOasparser.Debugf("vhostToSubscriptionRL: %+v", vhostToSubscriptionRL)
 	for vhost, routes := range vhostToRouteArrayMap {
 		if flag, exists := vhostToSubscriptionAIRL[vhost]; exists && flag {
 			rateLimits = append(rateLimits, generateSubscriptionBasedAIRatelimits()...)
