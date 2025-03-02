@@ -412,5 +412,6 @@ redis:
       runAsUser: null
   auth:
     enabled: false
+    usePasswordFiles: false
   image:
     debug: true
