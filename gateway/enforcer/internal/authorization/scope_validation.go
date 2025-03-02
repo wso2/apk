@@ -18,8 +18,9 @@
 package authorization
 
 import (
-	"fmt"
+	"encoding/json"
 
+	"github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
@@ -29,29 +30,37 @@ import (
 // ValidateScopes validates the scopes of the user against the required scopes.
 func ValidateScopes(rch *requestconfig.Holder, subAppDataStore *datastore.SubscriptionApplicationDataStore, cfg *config.Server) *dto.ImmediateResponse {
 	requiredScopes := rch.MatchedResource.Scopes
-	scopes := rch.JWTValidationInfo.Scopes
-	if len(requiredScopes) == 0 {
-		return nil
-	}
-	if len(scopes) == 0 {
-		return &dto.ImmediateResponse{
-			StatusCode: 403,
-			Message:    fmt.Sprintf("User is NOT authorized to access the Resource: %s. Scope validation failed.", rch.MatchedResource.Path),
+	if rch.AuthenticatedAuthenticationType == authenticator.Oauth2AuthType {
+		scopes := rch.JWTValidationInfo.Scopes
+		if len(requiredScopes) == 0 {
+			return nil
 		}
-	}
-	found := false
-	for _, requiredScope := range requiredScopes {
-		for _, scope := range scopes {
-			if requiredScope == scope {
-				found = true
-				break
+		if len(scopes) == 0 {
+			scopeValidationErrorMessage := dto.ErrorResponse{Code: 900910, ErrorMessage: "The access token does not allow you to access the requested resource", ErrorDescription: "User is NOT authorized to access the Resource: " + rch.MatchedResource.Path + ". Scope validation failed."}
+			forbiddenJSONMessage, _ := json.MarshalIndent(scopeValidationErrorMessage, "", "  ")
+
+			return &dto.ImmediateResponse{
+				StatusCode: 403,
+				Message:    string(forbiddenJSONMessage),
 			}
 		}
-	}
-	if !found {
-		return &dto.ImmediateResponse{
-			StatusCode: 403,
-			Message:    fmt.Sprintf("User is NOT authorized to access the Resource: %s. Scope validation failed.", rch.MatchedResource.Path),
+		found := false
+		for _, requiredScope := range requiredScopes {
+			for _, scope := range scopes {
+				if requiredScope == scope {
+					found = true
+					break
+				}
+			}
+		}
+		if !found {
+			scopeValidationErrorMessage := dto.ErrorResponse{Code: 900910, ErrorMessage: "The access token does not allow you to access the requested resource", ErrorDescription: "User is NOT authorized to access the Resource: " + rch.MatchedResource.Path + ". Scope validation failed."}
+			forbiddenJSONMessage, _ := json.MarshalIndent(scopeValidationErrorMessage, "", "  ")
+
+			return &dto.ImmediateResponse{
+				StatusCode: 403,
+				Message:    string(forbiddenJSONMessage),
+			}
 		}
 	}
 	return nil
