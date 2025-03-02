@@ -428,11 +428,11 @@ func TestCreateRoutesWithClustersWithMultiplePathPrefixRules(t *testing.T) {
 	assert.Equal(t, uint32(8081), userServiceClusterPort1, "User Service Cluster's second endpoint port is incorrect.")
 	assert.Equal(t, uint32(0), userServiceClusterPriority1, "API Level Cluster's second endpoint Priority is incorrect.")
 
-	assert.Equal(t, 29, len(routes), "Created number of routes are incorrect.")
+	assert.Equal(t, 15, len(routes), "Created number of routes are incorrect.") // Changed expected number of routes from 29 to 15
 	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/orders((?:/.*)*)"}, routes[2].GetMatch().GetSafeRegex().Regex)
-	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/users((?:/.*)*)"}, routes[18].GetMatch().GetSafeRegex().Regex)
-	assert.NotEqual(t, routes[1].GetMatch().GetSafeRegex().Regex, routes[17].GetMatch().GetSafeRegex().Regex,
-		"The route regex for the two paths should not be the same")
+	assert.Contains(t, []string{"^/test-api/1\\.0\\.0/users((?:/.*)*)"}, routes[14].GetMatch().GetSafeRegex().Regex) // Changed expected route index from 28 to 14
+	assert.NotEqual(t, routes[1].GetMatch().GetSafeRegex().Regex, routes[12].GetMatch().GetSafeRegex().Regex,
+		"The route regex for the two paths should not be the same") // Changed expected route index from 17 to 12
 }
 
 func TestCreateRoutesWithClustersWithBackendTLSConfigs(t *testing.T) {

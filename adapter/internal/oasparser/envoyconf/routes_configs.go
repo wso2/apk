@@ -143,29 +143,12 @@ func generateRouteAction(apiType string,
 	mirrorClusterNames []string, 
 	isBackendBasedAIRatelimitEnabled bool, 
 	descriptorValueForBackendBasedAIRatelimit string, 
-	weightedCluster *routev3.WeightedCluster_ClusterWeight, 
+	weightedCluster *routev3.WeightedCluster, 
 	isWeighted bool,
 	aiRoundRobinEnabled bool, 
 	clusterName string) (action *routev3.Route_Route) {
 
 	if isWeighted {
-		// check if weightedCluster is already in the list
-		exists := false
-		for i, existingWeightedCluster := range weightedClusters {
-			if existingWeightedCluster.Name == weightedCluster.Name {
-				if existingWeightedCluster.Weight.GetValue() == weightedCluster.Weight.GetValue() {
-					exists = true
-				} else {
-					// Remove the existing entry with the same name but different weight
-					weightedClusters = append(weightedClusters[:i], weightedClusters[i+1:]...)
-				}
-			}
-		}
-
-		// if not existing, add to the list
-		if !exists {
-			weightedClusters = append(weightedClusters, weightedCluster)
-		}
 		action = &routev3.Route_Route{
 			Route: &routev3.RouteAction{
 				HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -176,9 +159,7 @@ func generateRouteAction(apiType string,
 				UpgradeConfigs:    getUpgradeConfig(apiType),
 				MaxStreamDuration: getMaxStreamDuration(apiType),
 				ClusterSpecifier: &routev3.RouteAction_WeightedClusters{
-					WeightedClusters: &routev3.WeightedCluster{
-						Clusters: weightedClusters,
-					},
+					WeightedClusters: weightedCluster,
 				},
 			},
 		}
