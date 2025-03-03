@@ -30,6 +30,7 @@ func (authenticator *APIKeyAuthenticator) Authenticate(rch *requestconfig.Holder
 			if exists {
 				apiKeyInfo := extractAPIKeyAuthenticationInfo(apiKeyAuthenticationSucessData, nil)
 				rch.APIKeyAuthenticationInfo = &apiKeyInfo
+				rch.AuthenticatedAuthenticationType = APIKeyAuthType
 				return AuthenticationResponse{Authenticated: true, MandatoryAuthentication: authenticator.mandatory, ContinueToNextAuthenticator: false}
 			}
 		} else if rch.ExternalProcessingEnvoyMetadata.AuthenticationData.FailedData != nil && len(rch.ExternalProcessingEnvoyMetadata.AuthenticationData.FailedData) > 0 {
