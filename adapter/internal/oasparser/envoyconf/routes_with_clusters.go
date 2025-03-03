@@ -263,59 +263,40 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		mirrorClusterNames := map[string][]string{}
 		resourcePath := resource.GetPath()
 		endpoint := resource.GetEndpoints()
+		
+		allWeightsAreOne := true
 		for _, ep := range endpoint.Endpoints {
-			basePath := ""
-			basePath = strings.TrimSuffix(ep.Basepath, "/")
-
-			//existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
-
-			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, ep.Host+ep.Basepath)
-			cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, &ep)
-			if err != nil {
-				logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
-			} else {
-				clusters = append(clusters, cluster...)
-				endpoints = append(endpoints, address...)
+			if ep.Weight != 1 {
+				allWeightsAreOne = false
+				break
 			}
-
-			// Creating clusters for request mirroring endpoints
-			for _, op := range resource.GetOperations() {
-				if op.GetMirrorEndpointClusters() != nil && len(op.GetMirrorEndpointClusters()) > 0 {
-					mirrorEndpointClusters := op.GetMirrorEndpointClusters()
-					for _, mirrorEndpointCluster := range mirrorEndpointClusters {
-						for _, mirrorEndpoint := range mirrorEndpointCluster.Endpoints {
-							mirrorBasepath := strings.TrimSuffix(mirrorEndpoint.Basepath, "/")
-							existingMirrorClusterName := getExistingClusterName(*mirrorEndpointCluster, processedEndpoints)
-							var mirrorClusterName string
-							if existingMirrorClusterName == "" {
-								mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, mirrorEndpoint.Host+mirrorEndpoint.Basepath)
-								mirrorCluster, mirrorAddress, err := processEndpoints(mirrorClusterName, mirrorEndpointCluster, timeout, mirrorBasepath, &mirrorEndpoint)
-								if err != nil {
-									logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level mirror filter endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
-								} else {
-									clusters = append(clusters, mirrorCluster...)
-									endpoints = append(endpoints, mirrorAddress...)
-									processedEndpoints[mirrorClusterName] = *mirrorEndpointCluster
-								}
-							} else {
-								mirrorClusterName = existingMirrorClusterName
-							}
-							if _, exists := mirrorClusterNames[op.GetID()]; !exists {
-								mirrorClusterNames[op.GetID()] = []string{}
-							}
-							mirrorClusterNames[op.GetID()] = append(mirrorClusterNames[op.GetID()], mirrorClusterName)
-						}
-					}
+		}
+		if len(endpoint.Endpoints) > 1 && !allWeightsAreOne {
+			logger.LoggerOasparser.Infof("Multiple endpoints detected with weights that are not all equal to 1 for resource: %s", resourcePath)
+			basePath := ""
+			basePath = strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
+			
+			for _, ep := range endpoint.Endpoints {	
+				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, ep.Host+ep.Basepath)
+				cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, &ep)
+				if err != nil {
+					logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+				} else {
+					clusters = append(clusters, cluster...)
+					endpoints = append(endpoints, address...)
 				}
 			}
 
+			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, endpoint.Endpoints[0].Host+endpoint.Endpoints[0].Basepath)
+			
 			// Create resource level interceptor clusters if required
 			clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
 				interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 			clusters = append(clusters, clustersI...)
 			endpoints = append(endpoints, endpointsI...)
+			
 			routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-				false, false, mirrorClusterNames)
+				false, false, nil)
 
 			routeP, err := createRoutes(routeParams)
 			if err != nil {
@@ -327,14 +308,87 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			routes = append(routes, routeP...)
 			if adapterInternalAPI.IsDefaultVersion {
 				defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
-					false, true, mirrorClusterNames))
+					false, true, nil))
 				if errDefaultPath != nil {
 					logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
 					return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
 				}
 				routes = append(routes, defaultRoutes...)
-			}
+			}			
+		} else {
+			logger.LoggerOasparser.Infof("Single endpoint or mulitple endpoints all with weight equal to 1 detected for resource: %s", resourcePath)
+			for _, ep := range endpoint.Endpoints {
+				basePath := ""
+				basePath = strings.TrimSuffix(ep.Basepath, "/")
 
+				//existingClusterName := getExistingClusterName(*endpoint, processedEndpoints)
+
+				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, ep.Host+ep.Basepath)
+				cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, &ep)
+				if err != nil {
+					logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+				} else {
+					clusters = append(clusters, cluster...)
+					endpoints = append(endpoints, address...)
+				}
+
+				// Creating clusters for request mirroring endpoints
+				for _, op := range resource.GetOperations() {
+					if op.GetMirrorEndpointClusters() != nil && len(op.GetMirrorEndpointClusters()) > 0 {
+						mirrorEndpointClusters := op.GetMirrorEndpointClusters()
+						for _, mirrorEndpointCluster := range mirrorEndpointClusters {
+							for _, mirrorEndpoint := range mirrorEndpointCluster.Endpoints {
+								mirrorBasepath := strings.TrimSuffix(mirrorEndpoint.Basepath, "/")
+								existingMirrorClusterName := getExistingClusterName(*mirrorEndpointCluster, processedEndpoints)
+								var mirrorClusterName string
+								if existingMirrorClusterName == "" {
+									mirrorClusterName = getClusterName(mirrorEndpointCluster.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, mirrorEndpoint.Host+mirrorEndpoint.Basepath)
+									mirrorCluster, mirrorAddress, err := processEndpoints(mirrorClusterName, mirrorEndpointCluster, timeout, mirrorBasepath, &mirrorEndpoint)
+									if err != nil {
+										logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2239, logging.MAJOR, "Error while adding resource level mirror filter endpoints for %s:%v-%v. %v", apiTitle, apiVersion, resourcePath, err.Error()))
+									} else {
+										clusters = append(clusters, mirrorCluster...)
+										endpoints = append(endpoints, mirrorAddress...)
+										processedEndpoints[mirrorClusterName] = *mirrorEndpointCluster
+									}
+								} else {
+									mirrorClusterName = existingMirrorClusterName
+								}
+								if _, exists := mirrorClusterNames[op.GetID()]; !exists {
+									mirrorClusterNames[op.GetID()] = []string{}
+								}
+								mirrorClusterNames[op.GetID()] = append(mirrorClusterNames[op.GetID()], mirrorClusterName)
+							}
+						}
+					}
+				}
+
+				// Create resource level interceptor clusters if required
+				clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
+					interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
+				clusters = append(clusters, clustersI...)
+				endpoints = append(endpoints, endpointsI...)
+				routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+					false, false, mirrorClusterNames)
+
+				routeP, err := createRoutes(routeParams)
+				if err != nil {
+					logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR,
+						"Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(),
+						adapterInternalAPI.GetVersion(), resource.GetPath(), err.Error()))
+					return nil, nil, nil, fmt.Errorf("error while creating routes. %v", err)
+				}
+				routes = append(routes, routeP...)
+				if adapterInternalAPI.IsDefaultVersion {
+					defaultRoutes, errDefaultPath := createRoutes(genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
+						false, true, mirrorClusterNames))
+					if errDefaultPath != nil {
+						logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2231, logging.MAJOR, "Error while creating routes for API %s %s for path: %s Error: %s", adapterInternalAPI.GetTitle(), adapterInternalAPI.GetVersion(), removeFirstOccurrence(resource.GetPath(), adapterInternalAPI.GetVersion()), errDefaultPath.Error()))
+						return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
+					}
+					routes = append(routes, defaultRoutes...)
+				}
+			}
 		}
 	}
 
@@ -1108,17 +1162,15 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 	}
 	routeConfig := resource.GetEndpoints().Config
 
-	// Extract weighted clusters if they are present
+	// Extract Weighted Cluster if present
 	var isWeightedClusters = false
-	routeEndpoints := resource.GetEndpoints().Endpoints
-	var weightedCluster routev3.WeightedCluster_ClusterWeight
+	routeEndpoints := resource.GetEndpoints()
+	var weightedCluster routev3.WeightedCluster
 
 	// Weightmap is used in this case to check if the weights of the endpoints are different from each other.
 	// If the weights are different, then the weighted cluster configuration would be created.
-	// But this would ignore scenarios when the weights are the same.
-	// This logic would need to be modified in order to handle scenarios where the weights of all the endpoints are the same
 	weightMap := make(map[int32]bool)
-	for _, endpoint := range routeEndpoints {
+	for _, endpoint := range routeEndpoints.Endpoints {
 		weightMap[endpoint.Weight] = true
 		if len(weightMap) > 1 {
 			isWeightedClusters = true
@@ -1126,21 +1178,26 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 	}
 
-	// If weighted clusters are present, create the weighted cluster configuration
-	if isWeightedClusters {
-		// Extract the host part from the clusterName
-		parts := strings.Split(clusterName, "_")
-		hostPart := parts[len(parts)-1]
-		// Find the matching endpoint and get its weight
-		var weight uint32
-		for _, endpoint := range routeEndpoints {
-			if strings.Contains(hostPart, endpoint.Host) {
-				weight = uint32(endpoint.Weight)
-				break
-			}
+	// Check whether all weights are equal to one
+	// If all weights are equal to one, then weighted cluster configuration is not applied
+	allWeightsAreEqualtoOne := true
+	for _, endpoint := range routeEndpoints.Endpoints {
+		if endpoint.Weight != 1 {
+			allWeightsAreEqualtoOne = false
+			break
 		}
-		weightedCluster.Name = clusterName
-		weightedCluster.Weight = &wrapperspb.UInt32Value{Value: weight}
+	}
+	if !allWeightsAreEqualtoOne && len(routeEndpoints.Endpoints) > 1 {
+		isWeightedClusters = true
+	}
+	if isWeightedClusters {
+		for _, endpoint := range routeEndpoints.Endpoints {
+			clusterName := getClusterName(routeEndpoints.EndpointPrefix, params.organizationID, params.vHost, params.title, params.version, endpoint.Host+params.endpointBasePath)
+			weightedCluster.Clusters = append(weightedCluster.Clusters, &routev3.WeightedCluster_ClusterWeight{
+				Name: clusterName,
+				Weight: &wrapperspb.UInt32Value{Value: uint32(endpoint.Weight)},
+			})
+		}
 	}
 
 	// } else {
