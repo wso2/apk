@@ -1284,8 +1284,8 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 				metadataValue := operation.GetMethod() + "_to_" + newMethod
 				match2.DynamicMetadata = generateMetadataMatcherForInternalRoutes(metadataValue)
 
-				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
-				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
+				action1 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters, resource.AIModelBasedRoundRobin != nil, clusterName)
+				action2 := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters, resource.AIModelBasedRoundRobin != nil, clusterName)
 
 				requestHeadersToRemove := make([]string, 0)
 				// Create route1 for current method.
@@ -1310,7 +1310,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 			} else {
 				var action *routev3.Route_Route
 				if requestRedirectAction == nil {
-					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
+					action = generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, mirrorClusterNameList, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters, resource.AIModelBasedRoundRobin != nil, clusterName)
 				}
 				logger.LoggerOasparser.Debug("Creating routes for resource with policies", resourcePath, operation.GetMethod())
 				// create route for current method. Add policies to route config. Send via enforcer
@@ -1337,7 +1337,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		}
 		match := generateRouteMatch(routePath)
 		match.Headers = generateHTTPMethodMatcher(methodRegex, clusterName)
-		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters)
+		action := generateRouteAction(apiType, routeConfig, rateLimitPolicyCriteria, nil, resource.GetEnableBackendBasedAIRatelimit() && params.isAiAPI, resource.GetBackendBasedAIRatelimitDescriptorValue(), &weightedCluster, isWeightedClusters, resource.AIModelBasedRoundRobin != nil, clusterName)
 		rewritePath := generateRoutePathForReWrite(basePath, resourcePath, pathMatchType)
 		action.Route.RegexRewrite = generateRegexMatchAndSubstitute(rewritePath, resourcePath, pathMatchType)
 		requestHeadersToRemove := make([]string, 0)

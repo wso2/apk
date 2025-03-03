@@ -123,6 +123,9 @@ data:
     {{end}}
 
     [enforcer]
+    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer }}
+    enforcerDisabled = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.disabled | default false }}
+    {{ end }}
     {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs }}
     mandateSubscriptionValidation = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateSubscriptionValidation | default false }}
     mandateInternalKeyValidation = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateInternalKeyValidation | default false }}

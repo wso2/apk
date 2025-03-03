@@ -64,6 +64,27 @@ func init() {
 
 func getErrorResponseMappers() []*hcmv3.ResponseMapper {
 	responseMappers := []*hcmv3.ResponseMapper{}
+	responseMappers = append(responseMappers, &hcmv3.ResponseMapper{
+		Filter: &access_logv3.AccessLogFilter{
+			FilterSpecifier: &access_logv3.AccessLogFilter_StatusCodeFilter{
+				StatusCodeFilter: &access_logv3.StatusCodeFilter{
+					Comparison: &access_logv3.ComparisonFilter{
+						Op: access_logv3.ComparisonFilter_EQ,
+						Value: &corev3.RuntimeUInt32{
+							DefaultValue: 401,
+							RuntimeKey: "key123",
+						},
+					},
+				},
+			},
+		},
+		StatusCode: wrapperspb.UInt32(401),
+		Body: &corev3.DataSource{
+			Specifier: &corev3.DataSource_InlineBytes{
+				InlineBytes: []byte("{\"error_message\":\"Invalid Credentials\",\"code\":401,\"ErrorDescription\":\"Make sure you have provided the correct security credentials\"}"),
+			},
+		},
+	})
 	conf := config.ReadConfigs()
 	if conf.Adapter.SoapErrorInXMLEnabled {
 		for flag, details := range errorResponseMap {

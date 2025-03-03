@@ -167,6 +167,7 @@ type enforcer struct {
 	MandateInternalKeyValidation  bool
 	Client                        httpClient
 	Cors                          cors `toml:"cors"`
+	EnforcerDisabled			  bool
 }
 
 // Cors represents the configurations related to Cross-Origin Resource Sharing

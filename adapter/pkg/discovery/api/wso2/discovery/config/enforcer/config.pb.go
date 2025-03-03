@@ -42,6 +42,7 @@ type Config struct {
 	HttpClient                    *HttpClient   `protobuf:"bytes,14,opt,name=httpClient,proto3" json:"httpClient,omitempty"`
 	MandateInternalKeyValidation  bool          `protobuf:"varint,15,opt,name=mandateInternalKeyValidation,proto3" json:"mandateInternalKeyValidation,omitempty"`
 	EnableGatewayClassController  bool          `protobuf:"varint,16,opt,name=enableGatewayClassController,proto3" json:"enableGatewayClassController,omitempty"`
+	EnforcerDisabled 			  bool          `protobuf:"varint,17,opt,name=enforcerDisabled,proto3" json:"enforcerDisabled,omitempty"`
 }
 
 func (x *Config) Reset() {
@@ -163,6 +164,13 @@ func (x *Config) GetSoap() *Soap {
 func (x *Config) GetMandateSubscriptionValidation() bool {
 	if x != nil {
 		return x.MandateSubscriptionValidation
+	}
+	return false
+}
+
+func (x *Config) IsEnforcerDisabled() bool {
+	if x != nil {
+		return x.EnforcerDisabled
 	}
 	return false
 }
