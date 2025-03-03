@@ -544,6 +544,8 @@ wso2:
                 # -- Log file name
                 logfile: "/tmp/envoy.access.log"
           enforcer:
+            # -- Enforcer's external processing functionalities are disabled
+            disabled: false
             resources:
               requests:
                 # -- CPU request for the container
