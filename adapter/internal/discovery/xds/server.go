@@ -261,6 +261,7 @@ func SetReady() {
 // This method will list out all APIs mapped to the label. and generate envoy resources for all of these APIs.
 func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	[]types.Resource, []types.Resource, []types.Resource, []types.Resource) {
+	conf := config.ReadConfigs()
 	var clusterArray []*clusterv3.Cluster
 	// Warning: Route order is important. The first route that matches the request will be used.
 	var vhostToRouteArrayMap = make(map[string][]*routev3.Route)
@@ -291,7 +292,6 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				var jwtAuthenticationHeader *string
 				var jwtAuthenticationAudiences []string
 				var jwtAuthenticationSendTokenToUpstream *bool
-				config := config.ReadConfigs()
 				if envoyInternalAPI.adapterInternalAPI != nil && envoyInternalAPI.adapterInternalAPI.GetResources() != nil {
 					for _, resource := range envoyInternalAPI.adapterInternalAPI.GetResources() {
 						if resource.GetMethod() != nil {
@@ -346,7 +346,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				}
 				logger.LoggerAPKOperator.Debugf("API Key header is enabled for the API: %v", apiKeyHeader)
 				logger.LoggerAPKOperator.Debugf("API Key query param is enabled for the API: %v", apiKeyQueryParam)
-				if config.Enforcer.Security.APIkey.Enabled && (apiKeyHeader != nil || apiKeyQueryParam != nil) {
+				if conf.Enforcer.Security.APIkey.Enabled && (apiKeyHeader != nil || apiKeyQueryParam != nil) {
 					apiKeyProviders, apiKeyClusters, apiKeyAddress, apiKeyRequirements, err := oasParser.GenerateAPIKeyProviders(envoyInternalAPI.adapterInternalAPI, apiKeyHeader, apiKeyQueryParam, &sendApikeyToUpstream)
 					if err != nil {
 						logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2302, logging.MAJOR, "Error generating API Key Providers: %v", err))
@@ -378,9 +378,29 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				}
 				logger.LoggerAPKOperator.Debugf("JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirements)
 				if len(jwtRequirements) > 0 {
-					jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{RequiresType: &jwt.JwtRequirement_RequiresAny{RequiresAny: &jwt.JwtRequirementOrList{Requirements: append(jwtRequirements, &jwt.JwtRequirement{
-						RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
-					})}}}
+					if conf.Enforcer.EnforcerDisabled {
+						if len(jwtRequirements) == 1 {
+							jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirements[0]
+						} else {
+							jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{
+								RequiresType: &jwt.JwtRequirement_RequiresAny{
+									RequiresAny: &jwt.JwtRequirementOrList{
+										Requirements: jwtRequirements,
+									},
+								},
+							}
+						}
+					} else {
+						jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = &jwt.JwtRequirement{
+							RequiresType: &jwt.JwtRequirement_RequiresAny{
+								RequiresAny: &jwt.JwtRequirementOrList{
+									Requirements: append(jwtRequirements, &jwt.JwtRequirement{
+										RequiresType: &jwt.JwtRequirement_AllowMissingOrFailed{},
+									}),
+								},
+							},
+						}
+					}
 				} else {
 					logger.LoggerAPKOperator.Debugf("No JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirements)
 					removeJWTRequirements = true
@@ -413,7 +433,6 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	}
 
 	// If the token endpoint is enabled, the token endpoint also needs to be added.
-	conf := config.ReadConfigs()
 	systemHost := conf.Envoy.SystemHost
 
 	logger.LoggerXds.Debugf("System Host : %v", systemHost)
@@ -439,7 +458,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 	endpointArray = append(endpointArray, jwtaddress...)
 	jwtFilter, err := oasParser.GetJWTFilter(jwtRequirementMap, jwtProviderMap)
 	listeners := envoyGatewayConfig.listeners
-	if !config.ReadConfigs().Adapter.EnableGatewayClassController && len(listeners) < 1 {
+	if !conf.Adapter.EnableGatewayClassController && len(listeners) < 1 {
 		return nil, nil, nil, nil, nil
 	}
 

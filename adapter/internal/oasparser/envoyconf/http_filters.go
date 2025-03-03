@@ -20,6 +20,7 @@
 package envoyconf
 
 import (
+	"fmt"
 	"time"
 
 	"strings"
@@ -230,6 +231,12 @@ func getRateLimitFilter() *hcmv3.HttpFilter {
 // getExtProcessHTTPFilter gets ExtAauthz http filter.
 func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 	conf := config.ReadConfigs()
+	sendReqHeadersToEnforcer := ext_process.ProcessingMode_SEND
+	logger.LoggerOasparser.Info(fmt.Sprintf("Enforcer %+v", conf.Enforcer))
+	if conf.Enforcer.EnforcerDisabled {
+		logger.LoggerOasparser.Info("Enforcer is disabled, skipping request headers to enforcer")
+		sendReqHeadersToEnforcer = ext_process.ProcessingMode_SKIP
+	}
 	externalProcessor := &ext_process.ExternalProcessor{
 		GrpcService: &corev3.GrpcService{
 			TargetSpecifier: &corev3.GrpcService_EnvoyGrpc_{
@@ -242,7 +249,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 		FailureModeAllow: true,
 		ProcessingMode: &ext_process.ProcessingMode{
 			// ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
-			RequestHeaderMode:  ext_process.ProcessingMode_SEND,
+			RequestHeaderMode: sendReqHeadersToEnforcer,
 			ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
 			// RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
 			// ResponseHeaderMode: ext_process.ProcessingMode_SKIP,

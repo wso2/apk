@@ -216,6 +216,7 @@ var defaultConfig = &Config{
 		},
 		MandateSubscriptionValidation: false,
 		MandateInternalKeyValidation:  false,
+		EnforcerDisabled:              false,
 	},
 	ManagementServer: managementServer{
 		Enabled:   false,
