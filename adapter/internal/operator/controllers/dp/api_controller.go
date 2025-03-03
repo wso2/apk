@@ -978,6 +978,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 				aiProviderPtr := utils.GetAIProvider(ctx, apiReconciler.client, apiPolicy.Namespace,
 					apiPolicy.Spec.Default.AIProvider.Name, &api)
 				if aiProviderPtr != nil {
+					loggers.LoggerAPKOperator.Debugf("API Name: %s, AI Provider: %+v", api.Spec.APIName, aiProviderPtr)
 					aiProvider = aiProviderPtr
 				}
 			}
@@ -1009,6 +1010,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 				aiProviderPtr := utils.GetAIProvider(ctx, apiReconciler.client, apiPolicy.Namespace,
 					apiPolicy.Spec.Override.AIProvider.Name, &api)
 				if aiProviderPtr != nil {
+					loggers.LoggerAPKOperator.Debugf("API Name: %s, AI Provider: %+v", api.Spec.APIName, aiProviderPtr)
 					aiProvider = aiProviderPtr
 				}
 			}
@@ -1152,6 +1154,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 			}
 		}
 	}
+	loggers.LoggerAPKOperator.Debugf("API Name: %s, AI Provider: %+v", api.Spec.APIName, aiProvider)
 	return interceptorServices, backendJWTs, subscriptionValidation, aiProvider, resolvedModelBasedRoundRobin, nil
 }
 

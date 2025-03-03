@@ -49,6 +49,7 @@ type Resource struct {
 	enableBackendBasedAIRatelimit          bool
 	backendBasedAIRatelimitDescriptorValue string
 	extractTokenFrom                       string
+	sendToEnforcer                         bool
 }
 
 // GetEndpointSecurity returns the endpoint security object of a given resource.
@@ -212,4 +213,9 @@ func (resource *Resource) GetBackendBasedAIRatelimitDescriptorValue() string {
 // GetExtractTokenFromValue returns the value of extractTokenFrom
 func (resource *Resource) GetExtractTokenFromValue() string {
 	return resource.extractTokenFrom
+}
+
+// ShouldSendToEnforcer returns the value of sendToEnforcer
+func (resource *Resource) ShouldSendToEnforcer() bool {
+	return resource.sendToEnforcer
 }

@@ -127,7 +127,7 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	return match
 }
 
-func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria, mirrorClusterNames []string, isBackendBasedAIRatelimitEnabled bool, descriptorValueForBackendBasedAIRatelimit string, weightedCluster *routev3.WeightedCluster_ClusterWeight, isWeighted bool) (action *routev3.Route_Route) {
+func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, ratelimitCriteria *ratelimitCriteria, mirrorClusterNames []string, isBackendBasedAIRatelimitEnabled bool, descriptorValueForBackendBasedAIRatelimit string, weightedCluster *routev3.WeightedCluster_ClusterWeight, isWeighted bool, aiRoundRobinEnabled bool, clusterName string) (action *routev3.Route_Route) {
 
 	if isWeighted {
 		// check if weightedCluster is already in the list
@@ -163,7 +163,7 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 				},
 			},
 		}
-	} else {
+	} else if aiRoundRobinEnabled {
 		action = &routev3.Route_Route{
 			Route: &routev3.RouteAction{
 				HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
@@ -175,6 +175,21 @@ func generateRouteAction(apiType string, routeConfig *model.EndpointConfig, rate
 				MaxStreamDuration: getMaxStreamDuration(apiType),
 				ClusterSpecifier: &routev3.RouteAction_ClusterHeader{
 					ClusterHeader: clusterHeaderName,
+				},
+			},
+		}
+	} else {
+		action = &routev3.Route_Route{
+			Route: &routev3.RouteAction{
+				HostRewriteSpecifier: &routev3.RouteAction_AutoHostRewrite{
+					AutoHostRewrite: &wrapperspb.BoolValue{
+						Value: true,
+					},
+				},
+				UpgradeConfigs:    getUpgradeConfig(apiType),
+				MaxStreamDuration: getMaxStreamDuration(apiType),
+				ClusterSpecifier: &routev3.RouteAction_Cluster{
+					Cluster: clusterName,
 				},
 			},
 		}

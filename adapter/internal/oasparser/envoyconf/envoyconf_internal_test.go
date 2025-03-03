@@ -81,8 +81,8 @@ func TestCreateRoute(t *testing.T) {
 			Value: true,
 		},
 	}
-	clusterSpecifier := &routev3.RouteAction_ClusterHeader{
-		ClusterHeader: clusterHeaderName,
+	clusterSpecifier := &routev3.RouteAction_Cluster{
+		Cluster: "resource_operation_id",
 	}
 	regexRewriteWithXWso2BasePath := &envoy_type_matcherv3.RegexMatchAndSubstitute{
 		Pattern: &envoy_type_matcherv3.RegexMatcher{
@@ -150,9 +150,9 @@ func TestCreateRouteClusterSpecifier(t *testing.T) {
 		&resourceWithGet, clusterName, nil, false))
 	assert.Nil(t, err, "Error while creating route")
 	assert.NotNil(t, route[0], "Route should not be null")
-	assert.NotNil(t, route[0].GetRoute().GetClusterHeader(), "Route Cluster Header should not be null.")
-	assert.Empty(t, route[0].GetRoute().GetCluster(), "Route Cluster Name should be empty.")
-	assert.Equal(t, clusterHeaderName, route[0].GetRoute().GetClusterHeader(), "Route Cluster Name mismatch.")
+	// assert.NotNil(t, route[0].GetRoute().GetClusterHeader(), "Route Cluster Header should not be null.")
+	// assert.Empty(t, route[0].GetRoute().GetCluster(), "Route Cluster Name should be empty.")
+	assert.Equal(t, "cluster", route[0].GetRoute().GetCluster(), "Route Cluster Name mismatch.")
 }
 
 // func TestCreateRouteExtAuthzContext(t *testing.T) {
