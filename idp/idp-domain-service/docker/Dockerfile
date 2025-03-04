@@ -18,7 +18,7 @@
 #
 #---------------------------------------------------------------
 
-    FROM alpine:3.20.3
+    FROM alpine:3.21.3
 
     # Set environment variables
     ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
