@@ -77,28 +77,29 @@ const (
 	DescriptorKeyForAISubscription                         = "subscription"
 )
 
-func generateRouteConfig(apiType string, 
-	routeName string, 
-	method *string, 
-	match *routev3.RouteMatch, 
-	action *routev3.Route_Route, 
+func generateRouteConfig(apiType string,
+	routeName string,
+	method *string,
+	match *routev3.RouteMatch,
+	action *routev3.Route_Route,
 	redirectAction *routev3.Route_Redirect,
-	metadata *corev3.Metadata, 
-	decorator *routev3.Decorator, 
+	metadata *corev3.Metadata,
+	decorator *routev3.Decorator,
 	typedPerFilterConfig map[string]*anypb.Any,
-	requestHeadersToAdd []*corev3.HeaderValueOption, 
+	requestHeadersToAdd []*corev3.HeaderValueOption,
 	requestHeadersToRemove []string,
-	responseHeadersToAdd []*corev3.HeaderValueOption, 
-	responseHeadersToRemove []string, 
+	responseHeadersToAdd []*corev3.HeaderValueOption,
+	responseHeadersToRemove []string,
 	authentication *model.Authentication) *routev3.Route {
 	cloneTypedPerFilterConfig := cloneTypedPerFilterConfig(typedPerFilterConfig)
 	//todo: need to fix it in proper way
-	if apiType == constants.REST && (authentication == nil || (authentication != nil && (authentication.Disabled || authentication.Oauth2 == nil)) || (method != nil && strings.ToUpper(*method) == "OPTIONS")) {
+	if apiType == constants.REST && (authentication == nil || (authentication.Disabled || (authentication.Oauth2 == nil && authentication.JWT == nil && len(authentication.APIKey) == 0)) || (method != nil && strings.ToUpper(*method) == "OPTIONS")) {
 		logger.LoggerOasparser.Debugf("routename%v", routeName)
 		logger.LoggerOasparser.Debugf("authentication is nill %v", authentication == nil)
 		if authentication != nil {
 			logger.LoggerOasparser.Debugf("authentication.JWT is nill%v", authentication.JWT == nil)
 			logger.LoggerOasparser.Debugf("authentication.Oauth2 is nill%v", authentication.Oauth2 == nil)
+			logger.LoggerOasparser.Debugf("authentication.apiKey is nil or empty %+v", authentication.APIKey)
 		}
 		delete(cloneTypedPerFilterConfig, EnvoyJWT)
 	}
@@ -137,15 +138,15 @@ func generateRouteMatch(routeRegex string) *routev3.RouteMatch {
 	return match
 }
 
-func generateRouteAction(apiType string, 
-	routeConfig *model.EndpointConfig, 
-	ratelimitCriteria *ratelimitCriteria, 
-	mirrorClusterNames []string, 
-	isBackendBasedAIRatelimitEnabled bool, 
-	descriptorValueForBackendBasedAIRatelimit string, 
-	weightedCluster *routev3.WeightedCluster, 
+func generateRouteAction(apiType string,
+	routeConfig *model.EndpointConfig,
+	ratelimitCriteria *ratelimitCriteria,
+	mirrorClusterNames []string,
+	isBackendBasedAIRatelimitEnabled bool,
+	descriptorValueForBackendBasedAIRatelimit string,
+	weightedCluster *routev3.WeightedCluster,
 	isWeighted bool,
-	aiRoundRobinEnabled bool, 
+	aiRoundRobinEnabled bool,
 	clusterName string) (action *routev3.Route_Route) {
 
 	if isWeighted {
