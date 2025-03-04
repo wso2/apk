@@ -230,11 +230,11 @@ wso2:
           enforcer:
             resources:
               requests:
+                memory: "128Mi"
+                cpu: "200m"
+              limits:
                 memory: "512Mi"
                 cpu: "500m"
-              limits:
-                memory: "1028Mi"
-                cpu: "1000m"
             readinessProbe:
               initialDelaySeconds: 20
               periodSeconds: 20
@@ -252,8 +252,10 @@ wso2:
 #              level: DEBUG
             env:
               TOKEN_REVOCATION_ENABLED: "true" 
-            configs:
-             javaOpts: "-Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2"
+#            configs:
+#              apiKey:
+#                enabled: true
+#                issuer: "https://localhost:9444/oauth2/token"
 #              tls:
 #                secretName: "router-cert"
 #                certKeyFilename: ""
