@@ -29,8 +29,8 @@ import (
 	"strings"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
@@ -187,6 +187,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		dynamicMetadataKeyValuePairs := make(map[string]string)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
+			s.log.Sugar().Info("Request Headers Flow")
 			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if err != nil {
@@ -199,6 +200,20 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							},
 							Body:    []byte("The requested resource is not available."),
 							Details: "Resource not found",
+						},
+					},
+				}
+				break
+			}
+			// Handling cors
+			if attributes.RequestMethod == "OPTIONS" {
+				s.log.Sugar().Debug("Handling CORS preflight request")
+				resp = &envoy_service_proc_v3.ProcessingResponse{
+					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+							Status: &v32.HttpStatus{
+								Code: v32.StatusCode(200),
+							},
 						},
 					},
 				}
@@ -706,6 +721,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
+			s.log.Sugar().Debug("Response Headers Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},

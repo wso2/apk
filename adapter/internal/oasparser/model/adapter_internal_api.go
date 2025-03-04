@@ -1057,7 +1057,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 		var oauth2Enabled bool
 		var apiKeyEnabled bool
 		var jwtEnabled bool
-		if authSpec.AuthTypes.OAuth2.Required != "" {
+		if authSpec.AuthTypes.OAuth2.Required != "" && authSpec.AuthTypes.OAuth2.Disabled != true {
 			oauth2Enabled = true
 			required = required || authSpec.AuthTypes.OAuth2.Required == "mandatory"
 		}

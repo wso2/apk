@@ -644,7 +644,7 @@ func getjwtAuthFilters(tokenIssuer *v1alpha1.ResolvedJWTIssuer, issuerName strin
 		jwtProvider.JwtCacheConfig = &jwt.JwtCacheConfig{JwtCacheSize: uint32(conf.Enforcer.Cache.MaximumSize)}
 	}
 	if tokenIssuer.SignatureValidation.JWKS != nil {
-		logger.LoggerOasparser.Infof("JWKS URL: %s", tokenIssuer.SignatureValidation.JWKS.URL)
+		logger.LoggerOasparser.Debugf("JWKS URL: %s", tokenIssuer.SignatureValidation.JWKS.URL)
 		jwksCluster, jwksAddress, err := getRemoteJWKSCluster(*tokenIssuer.SignatureValidation.JWKS, issuerName)
 		if err != nil {
 			logger.LoggerOasparser.Error(err)
