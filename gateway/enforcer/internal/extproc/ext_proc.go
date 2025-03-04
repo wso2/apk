@@ -308,9 +308,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
-				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
-				requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled {
+				// requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
+				// requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
+				// requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled 
+			{
 				// s.cfg.Logger.Sugar().Info("222")
 				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
