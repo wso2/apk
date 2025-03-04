@@ -41,7 +41,7 @@ This file contains the instructions to manage the `helm-charts` component of WSO
     helm template test . > test.yaml
     ```
 
-## Generate README.md File
+## Generate README.md File.
 
 1. Download and install the latest [helm-docs](https://github.com/norwoodj/helm-docs) executable.
 
