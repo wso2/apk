@@ -38,7 +38,7 @@ var VerifyOldAPIs = suite.IntegrationTest{
 		gwAddr1 := "prod-api.test.gw.wso2.com:9095"
 		token := http.GetTestToken(t)
 
-		testCases1 := []http.ExpectedResponse{
+		testCases := []http.ExpectedResponse{
 			// invoke prod api using prod domain name, invokes prod backend
 			{
 				Request: http.Request{
@@ -55,8 +55,8 @@ var VerifyOldAPIs = suite.IntegrationTest{
 			},
 		}
 
-		for i := range testCases1 {
-			tc := testCases1[i]
+		for i := range testCases {
+			tc := testCases[i]
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()

@@ -943,6 +943,11 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 							StringValue: clusterName,
 						},
 					},
+					endpointBasepathAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: endpointBasepath,
+						},
+					},
 				},
 			},
 		},

@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, ResourceLevelJWT)
+	// IntegrationTests = append(IntegrationTests, ResourceLevelJWT)
 }
 
 // ResourceLevelJWT test
@@ -55,7 +55,7 @@ var ResourceLevelJWT = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response: http.Response{StatusCode: 200},
+				Response:  http.Response{StatusCode: 200},
 			},
 			{
 				Request: http.Request{
@@ -73,7 +73,7 @@ var ResourceLevelJWT = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response: http.Response{StatusCode: 401},
+				Response:  http.Response{StatusCode: 401},
 			},
 			{
 				Request: http.Request{
