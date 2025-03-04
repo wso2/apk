@@ -230,6 +230,9 @@ spec:
             {{- end }}
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
+            - name: enforcer-health-check-volume
+              mountPath: /home/wso2/check_health.sh
+              subPath: check_health.sh
             - name: enforcer-jwt-secret-volume
               mountPath: /home/wso2/security/keystore/mg.pem
               subPath: mg.pem
@@ -273,18 +276,18 @@ spec:
               subPath: ca.crt
             {{- end }}
             {{ end }}
-          # readinessProbe:
-          #   exec:
-          #     command: [ "sh", "check_health.sh" ]
-          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.initialDelaySeconds }}
-          #   periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.periodSeconds }}
-          #   failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold }}
-          # livenessProbe:
-          #   exec:
-          #     command: [ "sh", "check_health.sh" ]
-          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds }}
-          #   periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds }}
-          #   failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold }}
+          readinessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold }}
+          livenessProbe:
+            exec:
+              command: [ "sh", "check_health.sh" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -390,30 +393,30 @@ spec:
               subPath: ca.crt
             {{- end }}
             {{ end }}
-          # livenessProbe:
-          #   exec:
-          #     command: [ "sh", "router_check_health.sh", "health" ]
-          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
-          #   periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
-          #   failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
-          # readinessProbe:
-          #   exec:
-          #     command: [ "sh", "router_check_health.sh", "ready" ]
-          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.initialDelaySeconds }}
-          #   periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.periodSeconds }}
-          #   failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold }}
+          livenessProbe:
+            exec:
+              command: [ "sh", "router_check_health.sh", "health" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.livenessProbe.failureThreshold }}
+          readinessProbe:
+            exec:
+              command: [ "sh", "router_check_health.sh", "health" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
             readOnlyRootFilesystem: true
             runAsNonRoot: true
-          # startupProbe:
-          #   exec:
-          #     command: [ "sh", "router_check_health.sh", "ready" ]
-          #   initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.initialDelaySeconds }}
-          #   periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.periodSeconds }}
-          #   failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold }}
+          startupProbe:
+            exec:
+              command: [ "sh", "router_check_health.sh", "health" ]
+            initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold }}
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
@@ -449,6 +452,9 @@ spec:
         - name: log-conf-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-log-conf
+        - name: enforcer-health-check-volume
+          configMap: 
+            name: {{ template "apk-helm.resource.prefix" . }}-enforcer-grpc-probe-script-conf
         - name: router-keystore-secret-volume
           secret: 
             {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.tls }}
