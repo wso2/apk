@@ -54,6 +54,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
+	"google.golang.org/grpc/health"
+    "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/protobuf/encoding/prototext"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 )
@@ -126,6 +128,8 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 		panic(err)
 	}
 
+	grpc_health_v1.RegisterHealthServer(server, health.NewServer())
+	cfg.Logger.Info("Health check added.....")
 	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
 	envoy_service_proc_v3.RegisterExternalProcessorServer(server,
 		&ExternalProcessingServer{cfg.Logger,
@@ -140,7 +144,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
 	}
-	cfg.Logger.Info("Starting to serve external processing server")
+	cfg.Logger.Info(fmt.Sprintf("Starting to serve external processing server on port: %s", cfg.ExternalProcessingPort))
 	if err := server.Serve(listener); err != nil {
 		cfg.Logger.Error(err, "Failed to serve grpc server")
 	}
