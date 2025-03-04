@@ -31,7 +31,12 @@
         ca-certificates \
         fontconfig \
         libstdc++ \
-        openjdk21-jre
+        openjdk21-jre \
+        openssl \
+        libc6-compat
+    
+    # Ensure /tmp directory exists and is writable
+    RUN mkdir -p /tmp && chmod 1777 /tmp
     
     # Set Java environment variables
     ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk \
@@ -52,7 +57,7 @@
     # Add application files
     ADD idp ${USER_HOME}/idp
     COPY docker-entrypoint.sh ${USER_HOME}
-    COPY /lib/jmx_prometheus_javaagent-0.20.0.jar ${USER_HOME}/lib/
+    COPY lib/jmx_prometheus_javaagent-0.20.0.jar ${USER_HOME}/lib/
     
     # Set permissions
     RUN chown -R ${USER}:${USER_GROUP} ${USER_HOME}/idp \
