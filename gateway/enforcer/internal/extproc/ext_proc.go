@@ -29,8 +29,8 @@ import (
 	"strings"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
@@ -83,6 +83,7 @@ const (
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
 	customOrgMetadataKey                            string = "customorg"
+	endpointBasepath                                string = "endpointBasepath"
 	suspendAIModelValueAttribute                    string = "ai:suspendmodel"
 	externalProessingMetadataContextKey             string = "envoy.filters.http.ext_proc"
 	subscriptionMetadataKey                         string = "ratelimit:subscription"
@@ -229,6 +230,33 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				ResponseBodyMode:   v31.ProcessingMode_NONE,
 			}
 			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
+
+			if strings.TrimSpace(attributes.EndpointBasepath) == "" {
+				for _, header := range req.GetRequestHeaders().GetHeaders().Headers {
+					if header.Key == ":path" {
+						// remove query params from path header
+						pathHeaderWithoutQuery := strings.Split(string(header.RawValue), "?")
+						// removes the API basepath from the path header
+						result := strings.TrimPrefix(pathHeaderWithoutQuery[0], attributes.BasePath)
+						if strings.TrimSpace(result) == "" {
+							var newPath string
+							if len(pathHeaderWithoutQuery) > 1 {
+								newPath = pathHeaderWithoutQuery[0] + "/?" + pathHeaderWithoutQuery[1]
+							} else {
+								newPath = pathHeaderWithoutQuery[0] + "/"
+							}
+							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
+								Header: &corev3.HeaderValue{
+									Key:      ":path",
+									RawValue: []byte(newPath),
+								},
+							})
+						}
+						break
+					}
+				}
+			}
+
 			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
 			// Do not remove or modify this nil check. It is necessary to avoid nil pointer dereference.
 			if requestConfigHolder.MatchedAPI == nil {
@@ -1206,6 +1234,7 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 			enableBackendBasedAIRatelimitAttribute,
 			backendBasedAIRatelimitDescriptorValueAttribute,
 			suspendAIModelValueAttribute,
+			endpointBasepath,
 		}
 
 		for _, key := range keysToExtract {
@@ -1233,6 +1262,8 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 					attributes.BackendBasedAIRatelimitDescriptorValue = extractedValues[key]
 				case suspendAIModelValueAttribute:
 					attributes.SuspendAIModel = extractedValues[key]
+				case endpointBasepath:
+					attributes.EndpointBasepath = extractedValues[key]
 				}
 			}
 		}

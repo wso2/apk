@@ -59,6 +59,7 @@ const (
 	apiVersionAttribute                             string = "version"
 	apiNameAttribute                                string = "name"
 	clusterNameAttribute                            string = "clusterName"
+	endpointBasepathAttribute                       string = "endpointBasepath"
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
 	retryPolicyRetriableStatusCodes                 string = "retriable-status-codes"
