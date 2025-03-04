@@ -233,7 +233,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 	conf := config.ReadConfigs()
 	sendReqHeadersToEnforcer := ext_process.ProcessingMode_SEND
 	logger.LoggerOasparser.Info(fmt.Sprintf("Enforcer %+v", conf.Enforcer))
-	if conf.Enforcer.EnforcerDisabled {
+	if !conf.Enforcer.EnforcerEnabled {
 		logger.LoggerOasparser.Info("Enforcer is disabled, skipping request headers to enforcer")
 		sendReqHeadersToEnforcer = ext_process.ProcessingMode_SKIP
 	}
@@ -249,7 +249,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 		FailureModeAllow: true,
 		ProcessingMode: &ext_process.ProcessingMode{
 			// ResponseBodyMode:   ext_process.ProcessingMode_BUFFERED,
-			RequestHeaderMode: sendReqHeadersToEnforcer,
+			RequestHeaderMode:  sendReqHeadersToEnforcer,
 			ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
 			// RequestHeaderMode:  ext_process.ProcessingMode_SKIP,
 			// ResponseHeaderMode: ext_process.ProcessingMode_SKIP,
@@ -266,7 +266,7 @@ func getExtProcessHTTPFilter() *hcmv3.HttpFilter {
 		RequestAttributes:  []string{"xds.route_metadata", "request.method", "request.id"},
 		ResponseAttributes: []string{"xds.route_metadata"},
 		MessageTimeout:     durationpb.New(conf.Envoy.EnforcerResponseTimeoutInSeconds * time.Second),
-		AllowModeOverride: true,
+		AllowModeOverride:  true,
 	}
 	ext, err2 := anypb.New(externalProcessor)
 	if err2 != nil {

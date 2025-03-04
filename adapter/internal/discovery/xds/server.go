@@ -378,7 +378,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 				}
 				logger.LoggerAPKOperator.Debugf("JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirements)
 				if len(jwtRequirements) > 0 {
-					if conf.Enforcer.EnforcerDisabled {
+					if !conf.Enforcer.EnforcerEnabled {
 						if len(jwtRequirements) == 1 {
 							jwtRequirementMap[envoyInternalAPI.adapterInternalAPI.UUID] = jwtRequirements[0]
 						} else {

@@ -81,7 +81,7 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 	}
 	mandateSubscriptionValidation := config.Enforcer.MandateSubscriptionValidation
 	mandateInternalKeyValidation := config.Enforcer.MandateInternalKeyValidation
-	enforcerDisabled := config.Enforcer.EnforcerDisabled
+	enforcerEnabled := config.Enforcer.EnforcerEnabled
 	enableGatewayClassController := config.Adapter.EnableGatewayClassController
 
 	analytics := &enforcer.Analytics{
@@ -162,7 +162,7 @@ func MarshalConfig(config *config.Config) *enforcer.Config {
 		Soap:                          soap,
 		MandateSubscriptionValidation: mandateSubscriptionValidation,
 		MandateInternalKeyValidation:  mandateInternalKeyValidation,
-		EnforcerDisabled:              enforcerDisabled,
+		EnforcerEnabled:               enforcerEnabled,
 		EnableGatewayClassController:  enableGatewayClassController,
 		HttpClient:                    httpClient,
 	}
