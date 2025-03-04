@@ -307,7 +307,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if requestConfigHolder.MatchedResource == nil {
 				break
 			}
-			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
+			if requestConfigHolder.MatchedAPI.AiProvider != nil
 				// requestConfigHolder.MatchedAPI.AiProvider.SupportedModels != nil &&
 				// requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin != nil &&
 				// requestConfigHolder.MatchedAPI.AIModelBasedRoundRobin.Enabled 
