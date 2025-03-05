@@ -412,9 +412,9 @@ wso2:
       # -- Container registry hostname
       registry: "docker.io"
       # -- Azure ACR repository name consisting the image
-      repository: "kavindasr/wso2am-acp"
+      repository: "kavindasr/wso2am-acp:rc"
       # -- Docker image digest
-      digest: "sha256:d109231b31a48cc5edd4bd78a61e56e5ed2738741f089b0734866f057198ae89"
+      digest: "sha256:ce1eb61fdfa397ece0e2a5b039b536df6015510c4e58b2357c7c1490e68fdf69"
       # -- Refer to the Kubernetes documentation on updating images (https://kubernetes.io/docs/concepts/containers/images/#updating-images)
       imagePullPolicy: Always
 
