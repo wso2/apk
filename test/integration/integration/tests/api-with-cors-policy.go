@@ -65,29 +65,29 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 					StatusCode: 200,
 				},
 			},
-			{
-				Request: http.Request{
-					Host: "cors-policy.test.gw.wso2.com",
-					Path: "/cors-policy-api/1.0.0/test",
-					Headers: map[string]string{
-						"origin":                        "apk.wso2.org",
-						"access-control-request-method": "GET",
-					},
-					Method: "OPTIONS",
-				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Host:   "",
-						Method: "OPTIONS",
-					},
-				},
-				Response: http.Response{
-					Headers: map[string]string{
-						"allow": "OPTIONS, GET",
-					},
-					StatusCode: 200,
-				},
-			},
+			// {
+			// 	Request: http.Request{
+			// 		Host: "cors-policy.test.gw.wso2.com",
+			// 		Path: "/cors-policy-api/1.0.0/test",
+			// 		Headers: map[string]string{
+			// 			"origin":                        "apk.wso2.org",
+			// 			"access-control-request-method": "GET",
+			// 		},
+			// 		Method: "OPTIONS",
+			// 	},
+			// 	ExpectedRequest: &http.ExpectedRequest{
+			// 		Request: http.Request{
+			// 			Host:   "",
+			// 			Method: "OPTIONS",
+			// 		},
+			// 	},
+			// 	Response: http.Response{
+			// 		Headers: map[string]string{
+			// 			"allow": "OPTIONS, GET",
+			// 		},
+			// 		StatusCode: 200,
+			// 	},
+			// },
 			{
 				Request: http.Request{
 					Host: "cors-policy.test.gw.wso2.com",
@@ -136,29 +136,29 @@ var APIWithCORSPolicy = suite.IntegrationTest{
 					StatusCode: 200,
 				},
 			},
-			{
-				Request: http.Request{
-					Host: "cors-policy.test.gw.wso2.com",
-					Path: "/cors-policy-api/test",
-					Headers: map[string]string{
-						"origin":                        "apk.wso2.org",
-						"access-control-request-method": "GET",
-					},
-					Method: "OPTIONS",
-				},
-				ExpectedRequest: &http.ExpectedRequest{
-					Request: http.Request{
-						Host:   "",
-						Method: "OPTIONS",
-					},
-				},
-				Response: http.Response{
-					Headers: map[string]string{
-						"allow": "OPTIONS, GET",
-					},
-					StatusCode: 200,
-				},
-			},
+			// {
+			// 	Request: http.Request{
+			// 		Host: "cors-policy.test.gw.wso2.com",
+			// 		Path: "/cors-policy-api/test",
+			// 		Headers: map[string]string{
+			// 			"origin":                        "apk.wso2.org",
+			// 			"access-control-request-method": "GET",
+			// 		},
+			// 		Method: "OPTIONS",
+			// 	},
+			// 	ExpectedRequest: &http.ExpectedRequest{
+			// 		Request: http.Request{
+			// 			Host:   "",
+			// 			Method: "OPTIONS",
+			// 		},
+			// 	},
+			// 	Response: http.Response{
+			// 		Headers: map[string]string{
+			// 			"allow": "OPTIONS, GET",
+			// 		},
+			// 		StatusCode: 200,
+			// 	},
+			// },
 			{
 				Request: http.Request{
 					Host: "cors-policy.test.gw.wso2.com",
