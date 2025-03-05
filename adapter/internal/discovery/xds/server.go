@@ -285,6 +285,7 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 			if !envoyInternalAPI.adapterInternalAPI.GetDisableAuthentications() {
 				var jwtRequirements []*jwt.JwtRequirement
 				var authorizationHeader *string
+				var oauth2Enabled bool
 				var sendTokenToUpstream *bool
 				var apiKeyHeader *string
 				var apiKeyQueryParam *string
@@ -299,6 +300,9 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 								if method.GetAuthentication() != nil {
 									if !method.GetAuthentication().Disabled {
 										if method.GetAuthentication().Oauth2 != nil {
+											logger.LoggerOasparser.Debugf("API ID %v", envoyInternalAPI.adapterInternalAPI.UUID)
+											logger.LoggerOasparser.Debugf("Oauth2 enabled for the API: %v", method.GetAuthentication().Oauth2)
+											oauth2Enabled = true
 											authorizationHeader = &method.GetAuthentication().Oauth2.Header
 											sendTokenToUpstream = &method.GetAuthentication().Oauth2.SendTokenToUpstream
 										}
@@ -325,7 +329,13 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 						}
 					}
 				}
-				if authorizationHeader != nil || sendTokenToUpstream != nil {
+				logger.LoggerOasparser.Debugf("Oauth2 enabled for the API: %+v %+v", envoyInternalAPI.adapterInternalAPI.UUID, oauth2Enabled)
+				if oauth2Enabled {
+					logger.LoggerOasparser.Debugf("Inside Oauth2 enabled for the API: %+v %+v", envoyInternalAPI.adapterInternalAPI.UUID, oauth2Enabled)
+
+					logger.LoggerOasparser.Debugf("Authorization Header is enabled for the API: %+v", authorizationHeader)
+					logger.LoggerOasparser.Debugf("Send Token to Upstream is enabled for the API: %+v", sendTokenToUpstream)
+
 					jwtProviders, jwtclusters, jwtaddress, jwtRequirement, err := oasParser.GenerateAPILevelJWTPRoviders(orgwizeJWTProviders[organizationID], envoyInternalAPI.adapterInternalAPI, authorizationHeader, sendTokenToUpstream)
 					if err != nil {
 						logger.LoggerXds.ErrorC(logging.PrintError(logging.Error2301, logging.MAJOR, "Error generating JWT Providers: %v", err))
@@ -338,6 +348,10 @@ func GenerateEnvoyResoucesForGateway(gatewayName string) ([]types.Resource,
 					if jwtRequirement != nil {
 						jwtRequirements = append(jwtRequirements, jwtRequirement...)
 					}
+					logger.LoggerOasparser.Debugf("JWT Requirements for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtRequirement)
+					logger.LoggerOasparser.Debugf("JWT Providers for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtProviders)
+					logger.LoggerOasparser.Debugf("JWT Clusters for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtclusters)
+					logger.LoggerOasparser.Debugf("JWT Address for API %+v is  %+v", envoyInternalAPI.adapterInternalAPI.UUID, jwtaddress)
 				} else {
 					jwtRequirement := oasParser.GetJWTRequirements(envoyInternalAPI.adapterInternalAPI, orgwizeJWTProviders[organizationID])
 					if jwtRequirement != nil {

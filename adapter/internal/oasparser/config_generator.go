@@ -490,28 +490,31 @@ func GenerateAPILevelJWTPRoviders(jwtIssuers map[string]*v1alpha1.ResolvedJWTIss
 	var clusters []*clusterv3.Cluster
 	var addresses []*corev3.Address
 	var selectedIssuers []string
+	logger.LoggerOasparser.Debugf("Token issuers %v", jwtIssuers)
 	for issuerMappingName, jwtIssuer := range jwtIssuers {
 		providerName := adapterAPI.UUID + "-" + issuerMappingName
 		fieldNamePrefix := jwtIssuer.Issuer + "-" + "oauth2"
-		var seleced bool
+		var selected bool
 		if contains(jwtIssuer.Environments, "*") {
 			selectedIssuers = append(selectedIssuers, providerName)
-			seleced = true
+			selected = true
 		} else if contains(jwtIssuer.Environments, adapterAPI.GetEnvironment()) {
 			selectedIssuers = append(selectedIssuers, providerName)
-			seleced = true
+			selected = true
 		}
-		if seleced {
+		if selected {
+			logger.LoggerOasparser.Debugf("Selected JWT Issuer: %s", providerName)
 			provider, cluster, address, err := getjwtAuthFilters(jwtIssuer, providerName, &fieldNamePrefix)
 			if err != nil {
 				return nil, nil, nil, nil, err
 			}
-			if authorizationHeader != nil {
+			if authorizationHeader != nil && len(*authorizationHeader) > 0 {
 				provider.FromHeaders = []*jwt.JwtHeader{{Name: *authorizationHeader, ValuePrefix: "Bearer "}}
 			}
 			if sendTokenToUpStream != nil {
 				provider.Forward = *sendTokenToUpStream
 			}
+			logger.LoggerOasparser.Debugf("JWT Provider: %+v %+v", adapterAPI.UUID, provider)
 			jwtProviders[providerName] = provider
 			clusters = append(clusters, cluster...)
 			addresses = append(addresses, address...)
