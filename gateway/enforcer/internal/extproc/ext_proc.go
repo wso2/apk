@@ -192,7 +192,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		dynamicMetadataKeyValuePairs := make(map[string]string)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
-			s.log.Sugar().Info("Request Headers Flow")
+			s.log.Sugar().Debug("Request Headers Flow")
 			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if err != nil {
