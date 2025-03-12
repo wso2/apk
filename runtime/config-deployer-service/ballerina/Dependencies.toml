@@ -442,7 +442,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "config_deployer_service"
-version = "1.3.0-SNAPSHOT"
+version = "1.3.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "crypto"},
