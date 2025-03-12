@@ -67,6 +67,24 @@
             color: #fff;
             text-align: left;
         }
+        .chat-messages {
+            height: auto; /* Will grow until half screen height */
+            max-height: 50vh; /* Half of viewport height */
+            overflow-y: auto; /* Scroll when exceeding max-height */
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+        .chat-message {
+            margin: 5px 0;
+        }
+        .chat-message.q {
+            color: #00cc00; /* Green for questions */
+        }
+        .chat-message.a {
+            color: #ff3333; /* Red for answers */
+        }
         .chat-input {
             display: flex;
             gap: 10px;
@@ -140,6 +158,9 @@
         <div class="side-panel">
             <div class="chat-box">
                 <div class="chat-title">Embrace Intelligent Interaction</div>
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Chat messages will be populated here -->
+                </div>
                 <div class="chat-input">
                     <input type="text" id="chatInput" placeholder="Type a question...">
                     <button onclick="sendMessage()">Send</button>
@@ -178,11 +199,30 @@
     <script src="stockData.js"></script>
     <script src="marketSummary.js"></script>
     <script>
-        // Basic send message functionality with dummy response table
+        // Basic send message functionality with chat and dummy response
         function sendMessage() {
             const input = document.getElementById('chatInput');
+            const chatMessages = document.getElementById('chatMessages');
             if (input.value.trim()) {
                 console.log("Question sent:", input.value);
+
+                // Add question to chat area
+                const question = document.createElement('div');
+                question.className = 'chat-message q';
+                question.textContent = `Q: ${input.value}`;
+                chatMessages.appendChild(question);
+
+                // Add dummy answer to chat area
+                const answer = document.createElement('div');
+                answer.className = 'chat-message a';
+                answer.textContent = `A: This is a dummy answer to your question.`;
+                chatMessages.appendChild(answer);
+
+                // Scroll to the latest message if chat area exceeds half screen height
+                if (chatMessages.scrollHeight > window.innerHeight * 0.5) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+
                 input.value = ''; // Clear the input after sending
 
                 // Generate and display dummy response table
@@ -198,7 +238,6 @@
 
                 dummyData.forEach(row => {
                     const tr = document.createElement('tr');
-                    // Determine color for YTD and 24-Hour Change
                     const ytdColor = parseFloat(row.ytd) >= 0 ? 'positive' : 'negative';
                     const change24hColor = parseFloat(row.change24h) >= 0 ? 'positive' : 'negative';
                     tr.innerHTML = `
