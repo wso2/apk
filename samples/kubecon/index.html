@@ -5,6 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Market Dashboard</title>
     <style>
+        /* Loading spinner style (updated) */
+        .loading::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3; /* Light gray */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 10; /* Ensures it appears above messages */
+        }
+
+        /* Keyframes for the spinning animation */
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .message {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.2); /* White with 70% opacity */
+        }
+        .welcome {
+            color: #ffffff;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 10px;
+        }
         body {
             font-family: Arial, sans-serif;
             background-color: #1a1a1a;
@@ -142,14 +175,14 @@
                 <thead>
                     <tr>
                         <th>Symbol</th>
-                        <th>Name</th>
-                        <th>Price</th>
+                        <th>Proce</th>
+                        <th>Open</th>
+                        <th>High</th>
+                        <th>Low %</th>
                         <th>Change</th>
                         <th>Change %</th>
                         <th>Volume</th>
-                        <th>Avg Vol (3M)</th>
-                        <th>Market Cap</th>
-                        <th>P/E Ratio (TTM)</th>
+                        <!-- <th>P/E Ratio (TTM)</th> -->
                     </tr>
                 </thead>
                 <tbody id="stockTableBody">
@@ -161,7 +194,10 @@
             <div class="chat-box">
                 <div class="chat-title">Embrace Intelligent Interaction</div>
                 <div class="chat-messages" id="chatMessages">
-                    <!-- Chat messages will be populated here -->
+                    <!-- Welcome message added here -->
+                    <div class="message welcome" id="welcomeMessage">
+                        Hello! Welcome to the chat. How can I assist you today?
+                    </div>
                 </div>
                 <div class="chat-input">
                     <input type="text" id="chatInput" placeholder="Type a question...">
@@ -173,9 +209,9 @@
                     <thead>
                         <tr>
                             <th>Symbol</th>
-                            <th>Name</th>
+                            <!-- <th>Name</th> -->
                             <th>Price</th>
-                            <th>YTD</th>
+                            <th>Change</th>
                             <th>Volume</th>
                         </tr>
                     </thead>
@@ -200,69 +236,6 @@
     <!-- JavaScript Files -->
     <script src="stockData.js"></script>
     <script src="marketSummary.js"></script>
-    <script>
-        // Basic send message functionality with chat and dummy response
-        function sendMessage() {
-            const input = document.getElementById('chatInput');
-            const chatMessages = document.getElementById('chatMessages');
-            if (input.value.trim()) {
-                console.log("Question sent:", input.value);
-
-                // Add question to chat area
-                const question = document.createElement('div');
-                question.className = 'chat-message q';
-                question.textContent = `Q: ${input.value}`;
-                chatMessages.appendChild(question);
-
-                // Add dummy answer to chat area
-                const answer = document.createElement('div');
-                answer.className = 'chat-message a';
-                answer.textContent = `A: This is a dummy answer to your question.`;
-                chatMessages.appendChild(answer);
-
-                // Scroll to the latest message if chat area exceeds half screen height
-                if (chatMessages.scrollHeight > window.innerHeight * 0.5) {
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }
-
-                input.value = ''; // Clear the input after sending
-
-                // Generate and display dummy response table
-                const responseTableBody = document.getElementById('responseTableBody');
-                responseTableBody.innerHTML = ''; // Clear previous data
-
-                // Dummy data with Symbol, Name, Price, YTD, 24-Hour Change, Volume
-                const dummyData = [
-                    { symbol: "AAPL", name: "Apple Inc.", price: 167.50, ytd: "+10.5%", change24h: "+2.3%", volume: "71.37M" },
-                    { symbol: "GOOGL", name: "Alphabet Inc.", price: 145.20, ytd: "-5.8%", change24h: "-1.1%", volume: "32.45M" },
-                    { symbol: "MSFT", name: "Microsoft Corp.", price: 298.75, ytd: "+15.2%", change24h: "+0.9%", volume: "25.89M" }
-                ];
-
-                dummyData.forEach(row => {
-                    const tr = document.createElement('tr');
-                    const ytdColor = parseFloat(row.ytd) >= 0 ? 'positive' : 'negative';
-                    const change24hColor = parseFloat(row.change24h) >= 0 ? 'positive' : 'negative';
-                    tr.innerHTML = `
-                        <td>${row.symbol}</td>
-                        <td>${row.name}</td>
-                        <td>${row.price}</td>
-                        <td class="${ytdColor}">${row.ytd}</td>
-                        <td>${row.volume}</td>
-                    `;
-                    responseTableBody.appendChild(tr);
-                });
-
-                // Show the response table
-                document.getElementById('responseTable').style.display = 'block';
-            }
-        }
-
-        // Allow sending message with Enter key
-        document.getElementById('chatInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-    </script>
+    <script src="chatBot.js"></script>
 </body>
 </html>

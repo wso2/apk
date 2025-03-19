@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-server-deployment
+  labels:
+    app: stock-server
+spec:
+  replicas: 1  # Number of pods
+  selector:
+    matchLabels:
+      app: stock-server
+  template:
+    metadata:
+      labels:
+        app: stock-server
+    spec:
+      containers:
+      - name: stock-server
+        image: tharsanan/stock-server:latest1  # Replace with your image
+        ports:
+        - containerPort: 5001
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "0.2"
+            memory: "256Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-server-service
+spec:
+  selector:
+    app: stock-server
+  ports:
+    - protocol: TCP
+      port: 80  # External port
+      targetPort: 5001  # Container port
+  type: LoadBalancer  # Exposes the service externally
