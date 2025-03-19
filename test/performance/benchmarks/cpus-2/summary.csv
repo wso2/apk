@@ -1,4 +1,4 @@
-Concurrent Users,Message Size (Bytes),Total requests,Average Response Time (ms),Throughput (Requests/sec),Error %,Error Count,90th Percentile of Response Time (ms),95th Percentile of Response Time (ms),99th Percentile of Response Time (ms),Adapter CPU,Adapter Memory,Enforcer Memory,Enforcer Memory,Router Memory,Router Memory
+Concurrent Users,Message Size (Bytes),Total requests,Average Response Time (ms),Throughput (Requests/sec),Error %,Error Count,90th Percentile of Response Time (ms),95th Percentile of Response Time (ms),99th Percentile of Response Time (ms),Adapter CPU,Adapter Memory,Enforcer CPU,Enforcer Memory,Router CPU,Router Memory
 10,50B,3232274,2.65,3591.39,0,0.0,3.0,4.0,5.0,5m,59Mi,1m,13Mi,1091m,241Mi
 50,50B,7511941,5.83,8346.51,0,0.0,7.0,8.0,9.0,6m,59Mi,1m,13Mi,1939m,241Mi
 100,50B,7916950,11.14,8796.44,0,0.0,13.0,14.0,16.0,5m,59Mi,1m,13Mi,1993m,242Mi
