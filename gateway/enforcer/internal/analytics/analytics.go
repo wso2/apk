@@ -272,6 +272,12 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 		event.Properties["isEgress"] = true
 		event.Properties["subtype"]  = "AIAPI"
 	}
+	event.Properties["username"]  = userName
+	event.Properties["commonName"]  = "N/A"
+	event.Properties["apiContext"]  = extendedAPI.APIContext
+	if logEntry.Response != nil {
+		event.Properties["responseSize"] = logEntry.Response.ResponseBodyBytes
+	}
 	hour := time.Now().Hour()
 	aiTokenUsage.Hour = &hour
 	event.Properties["aiTokenUsage"] = aiTokenUsage
