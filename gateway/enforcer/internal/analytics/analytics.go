@@ -20,6 +20,7 @@ package analytics
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics/dto"
@@ -266,6 +267,13 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	aiTokenUsage.PromptToken = keyValuePairsFromMetadata[PromptTokenCountMetadataKey]
 	aiTokenUsage.CompletionToken = keyValuePairsFromMetadata[CompletionTokenCountMetadataKey]
 	aiTokenUsage.TotalToken = keyValuePairsFromMetadata[TotalTokenCountMetadataKey]
+
+	if aiMetadata.VendorName == "" {
+		event.Properties["isEgress"] = true
+		event.Properties["subtype"]  = "AIAPI"
+	}
+	hour := time.Now().Hour()
+	aiTokenUsage.Hour = &hour
 	event.Properties["aiTokenUsage"] = aiTokenUsage
 	return event
 }
