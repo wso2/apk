@@ -285,10 +285,17 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 		event.Properties["isEgress"] = true
 		event.Properties["subtype"] = "AIAPI"
 	}
-	event.Properties["userName"] = "admin@carbon.super"
+	if userName == "" {
+		userName = Unknown
+	}
+	event.Properties["userName"] = userName
 	event.Properties["commonName"] = "N/A"
 	event.Properties["apiContext"] = extendedAPI.APIContext
-	event.Properties["responseContentType"] = "application/json"
+	if contentTypeHeader := logEntry.Response.GetResponseHeaders()["content-type"]; contentTypeHeader != "" {
+		event.Properties["responseContentType"] = contentTypeHeader
+	} else {
+		event.Properties["responseContentType"] = Unknown
+	}
 	if logEntry.Response != nil {
 		event.Properties["responseSize"] = logEntry.Response.ResponseBodyBytes
 	}
