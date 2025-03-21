@@ -19,6 +19,7 @@ package analytics
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -264,17 +265,30 @@ func (c *Analytics) prepareAnalyticEvent(logEntry *v3.HTTPAccessLogEntry) *dto.E
 	event.Properties["aiMetadata"] = aiMetadata
 
 	aiTokenUsage := dto.AITokenUsage{}
-	aiTokenUsage.PromptToken = keyValuePairsFromMetadata[PromptTokenCountMetadataKey]
-	aiTokenUsage.CompletionToken = keyValuePairsFromMetadata[CompletionTokenCountMetadataKey]
-	aiTokenUsage.TotalToken = keyValuePairsFromMetadata[TotalTokenCountMetadataKey]
-
-	if aiMetadata.VendorName == "" {
-		event.Properties["isEgress"] = true
-		event.Properties["subtype"]  = "AIAPI"
+	if promptToken, err := strconv.Atoi(keyValuePairsFromMetadata[PromptTokenCountMetadataKey]); err == nil {
+		aiTokenUsage.PromptToken = promptToken
+	} else {
+		c.cfg.Logger.Error(err, "Error converting PromptTokenCountMetadataKey to integer")
 	}
-	event.Properties["username"]  = userName
-	event.Properties["commonName"]  = "N/A"
-	event.Properties["apiContext"]  = extendedAPI.APIContext
+	if completionToken, err := strconv.Atoi(keyValuePairsFromMetadata[CompletionTokenCountMetadataKey]); err == nil {
+		aiTokenUsage.CompletionToken = completionToken
+	} else {
+		c.cfg.Logger.Error(err, "Error converting CompletionTokenCountMetadataKey to integer")
+	}
+	if totalToken, err := strconv.Atoi(keyValuePairsFromMetadata[TotalTokenCountMetadataKey]); err == nil {
+		aiTokenUsage.TotalToken = totalToken
+	} else {
+		c.cfg.Logger.Error(err, "Error converting TotalTokenCountMetadataKey to integer")
+	}
+
+	if aiMetadata.VendorName != "" {
+		event.Properties["isEgress"] = true
+		event.Properties["subtype"] = "AIAPI"
+	}
+	event.Properties["userName"] = "admin@carbon.super"
+	event.Properties["commonName"] = "N/A"
+	event.Properties["apiContext"] = extendedAPI.APIContext
+	event.Properties["responseContentType"] = "application/json"
 	if logEntry.Response != nil {
 		event.Properties["responseSize"] = logEntry.Response.ResponseBodyBytes
 	}

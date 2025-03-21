@@ -218,7 +218,7 @@ func (e *Choreo) publishEvent(event *dto.Event) {
 		UserIP:                   event.UserIP,
 		RequestTimestamp:         event.RequestTimestamp.Format(timeFormat),
 		EventType:                "response",
-		// Properties:               event.Properties,
+		Properties:               event.Properties,
 	}
 	choreoResponseEvent.Platform = "Other"
 	choreoResponseEvent.EnvironmentID = "Default"
