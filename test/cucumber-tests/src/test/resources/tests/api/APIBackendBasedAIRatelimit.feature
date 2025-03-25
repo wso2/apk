@@ -23,8 +23,8 @@ Feature: API backend based AI ratelimit Feature
       |299|
       |499|
       |hour|
-      |vendor_name|
-      |vendor_version|
+      |vendorName|
+      |vendorVersion|
       |totalTokens|
       |promptTokens|
       |completionTokens|
