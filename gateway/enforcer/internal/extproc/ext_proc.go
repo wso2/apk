@@ -357,6 +357,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if requestConfigHolder.MatchedAPI.AiProvider != nil {
 				// s.cfg.Logger.Sugar().Info("222")
 				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
+				resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
+				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
