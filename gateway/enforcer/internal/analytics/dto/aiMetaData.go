@@ -14,14 +14,14 @@
  *  limitations under the License.
  *
  */
- 
+
 package dto
 
 // AIMetadata represents AI metadata in an analytics event.
 type AIMetadata struct {
 	Model         string `json:"model"`
-	VendorName    string `json:"vendor_name"`
-	VendorVersion string `json:"vendor_version"`
+	VendorName    string `json:"vendorName"`
+	VendorVersion string `json:"vendorVersion"`
 }
 
 // GetModel returns the model.

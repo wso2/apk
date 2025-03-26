@@ -14,13 +14,13 @@
  *  limitations under the License.
  *
  */
- 
+
 package dto
 
 // AITokenUsage represents AI token usage in an analytics event.
 type AITokenUsage struct {
-	TotalToken      string `json:"totalTokens"`
-	PromptToken     string `json:"promptTokens"`
-	CompletionToken string `json:"completionTokens"`
-	Hour             *int `json:"hour"`
+	TotalToken      int  `json:"totalTokens"`
+	PromptToken     int  `json:"promptTokens"`
+	CompletionToken int  `json:"completionTokens"`
+	Hour            *int `json:"hour"`
 }
