@@ -47,7 +47,7 @@ metadata:
     api-version: "1.0"
 spec:
   hostnames:
-  - "default.gw.wso2.com"
+  - "default.gw.example.com"
   rules:
   - matches:
     - path:
