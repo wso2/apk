@@ -2000,3 +2000,136 @@ spec:
     totalToken:
       in: "Body"
       value: "$usage.totalTokens"
+---
+
+# Sample Endpoints for Weighted Routing Tests
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-1-service
+  namespace: apk-integration-test
+spec:
+  type: ClusterIP
+  ports:
+    - port: 81
+      targetPort: 81
+  selector:
+    app: demo-api-1
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-1-deployment
+  namespace: apk-integration-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-api-1
+  template:
+    metadata:
+      labels:
+        app: demo-api-1
+    spec:
+      containers:
+        - name: demo-api-1-container
+          image: vinupathenuka/demo-api-1:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 81
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-2-service
+  namespace: apk-integration-test
+spec:
+  type: ClusterIP
+  ports:
+    - port: 43
+      targetPort: 43
+  selector:
+    app: demo-api-2
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-2-deployment
+  namespace: apk-integration-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-api-2
+  template:
+    metadata:
+      labels:
+        app: demo-api-2
+    spec:
+      containers:
+        - name: demo-api-2-container
+          image: vinupathenuka/demo-api-2:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 43
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-api-3-service
+  namespace: apk-integration-test
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8081
+      targetPort: 8081
+  selector:
+    app: demo-api-3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-api-3-deployment
+  namespace: apk-integration-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: demo-api-3
+  template:
+    metadata:
+      labels:
+        app: demo-api-3
+    spec:
+      containers:
+        - name: demo-api-3-container
+          image: vinupathenuka/demo-api-3:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          resources:
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
