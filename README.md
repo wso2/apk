@@ -1,23 +1,23 @@
-# WSO2 APK - API Platform for Kubernetes
+# WSO2 Kubernetes Gateway
 
 <a href="https://wso2.com/">  <img src="https://raw.githubusercontent.com/wso2/apk/main/logo/wso2-logo.png" alt="WSO2 logo" title="WSO2" height="100" width="180" /></a>
 
 ---
-Introducing APK, the API Platform for Kubernetes, a cutting-edge API management solution designed to leverage the power of Kubernetes for seamless and scalable deployments. APK harnesses Kubernetes' native features, enabling automatic scaling based on load and configurable parameters, utilizing rich Kubernetes metrics.
+Introducing WSO2 Kubernetes Gateway, a cutting-edge API management solution designed to leverage the power of Kubernetes for seamless and scalable deployments. Kubernetes Gateway harnesses Kubernetes' native features, enabling automatic scaling based on load and configurable parameters, utilizing rich Kubernetes metrics.
 
-At the core of APK's robust gateway solution is the meticulously selected Envoy technology, known for exceptional performance, lightweight nature, and perfect compatibility within the APK ecosystem. APK extends beyond traditional gateways with purpose-built extensions addressing specific API management use cases. Some of these extensions have been contributed back to the Envoy community, reflecting our commitment to collaborative innovation.
+At the core of Kubernetes Gateway's robust gateway solution is the meticulously selected Envoy technology, known for exceptional performance, lightweight nature, and perfect compatibility within the Kubernetes Gateway ecosystem. Kubernetes Gateway extends beyond traditional gateways with purpose-built extensions addressing specific API management use cases. Some of these extensions have been contributed back to the Envoy community, reflecting our commitment to collaborative innovation.
 
-WSO2 APK adheres to the Kubernetes Gateway API specification, an open-source project managed by the SIG-NETWORK community. This specification introduces vital resources such as GatewayClass, Gateway, HTTPRoute, TCPRoute, and Service, augmenting service networking capabilities in Kubernetes. By adhering to this specification, WSO2 APK seamlessly integrates with Kubernetes service networking, leveraging expressive and extensible interfaces to enhance API management functionality within Kubernetes deployments.
+WSO2 Kubernetes Gateway adheres to the Kubernetes Gateway API specification, an open-source project managed by the SIG-NETWORK community. This specification introduces vital resources such as GatewayClass, Gateway, HTTPRoute, TCPRoute, and Service, augmenting service networking capabilities in Kubernetes. By adhering to this specification, WSO2 Kubernetes Gateway seamlessly integrates with Kubernetes service networking, leveraging expressive and extensible interfaces to enhance API management functionality within Kubernetes deployments.
 
-Some characteristics of APK
-- APK's microservices architecture offers advantages such as easy scalability and seamless upgrades, harnessing the benefits of the architecture for agility and flexibility.
-- The separation of the control plane and data plane in APK allows users to integrate any control plane of their choice, providing maximum flexibility and customization.
-- APK is an evolving open-source solution that delivers advanced API management capabilities and is designed for cloud-native architectures, seamlessly integrating with Kubernetes.
-- With seamless CI/CD integration, APK supports a streamlined GitOps approach for efficient deployment and management of APIs.
-- APK aims to provide API marketplace capabilities, enabling sharing, discovery, and reusability of APIs while focusing on efficient governance and administration.
-- With its Kubernetes-native approach, exceptional characteristics, microservices architecture, and commitment to collaboration and innovation, APK sets a new standard for API management.
+Some characteristics of Kubernetes Gateway
+- Kubernetes Gateway's microservices architecture offers advantages such as easy scalability and seamless upgrades, harnessing the benefits of the architecture for agility and flexibility.
+- The separation of the control plane and data plane in Kubernetes Gateway allows users to integrate any control plane of their choice, providing maximum flexibility and customization.
+- Kubernetes Gateway is an evolving open-source solution that delivers advanced API management capabilities and is designed for cloud-native architectures, seamlessly integrating with Kubernetes.
+- With seamless CI/CD integration, Kubernetes Gateway supports a streamlined GitOps approach for efficient deployment and management of APIs.
+- Kubernetes Gateway aims to provide API marketplace capabilities, enabling sharing, discovery, and reusability of APIs while focusing on efficient governance and administration.
+- With its Kubernetes-native approach, exceptional characteristics, microservices architecture, and commitment to collaboration and innovation, Kubernetes Gateway sets a new standard for API management.
 
-For more information about APK release planning and project management information, visit [APK Project Dashboard](https://github.com/orgs/wso2/projects/80/)
+For more information about Kubernetes Gateway release planning and project management information, visit [APK Project Dashboard](https://github.com/orgs/wso2/projects/80/)
 
 For in-depth information about WSO2 API Management Platform, visit [WSO2 API Management](https://wso2.com/api-manager/)
 
@@ -32,9 +32,9 @@ In this README:
 
 You'll find many other useful documents on our [Documentation](https://wso2.com/documentation/).
 ## Introduction
-[APK](https://github.com/wso2/apk) is an open-source platform for providing complete API Management capabilities on top of the Kubernetes cluster management platform.
+[Kubernetes Gateway](https://github.com/wso2/apk) is an open-source platform for providing complete API Management capabilities on top of the Kubernetes cluster management platform.
 
-APK is composed of these components:
+Kubernetes Gateway is composed of these components:
 
 ___
 
@@ -48,20 +48,20 @@ ___
   
    - **Management Client** - Responsible for communication with the management server(control plane) to push/pull updates and maintain connectivity between the data plane and the control plane. The backend component was developed using **Go** 
   -->
-The APK architecture consists of both control plane and data plane components. In the data plane, we have the Config Service, an open API for generating APK configurations and Kubernetes API artifacts based on inputs like OpenAPI schema files. The Deployer Service enables the creation of API artifacts within the gateway runtime, requiring a valid access token for secure deployment.
+The Kubernetes Gateway architecture consists of both control plane and data plane components. In the data plane, we have the Config Service, an open API for generating Kubernetes Gateway configurations and Kubernetes API artifacts based on inputs like OpenAPI schema files. The Deployer Service enables the creation of API artifacts within the gateway runtime, requiring a valid access token for secure deployment.
 
 These components efficiently generate configurations and deploy API artifacts within the data plane. The gateway partition comprises the Router, Enforcer, and Management Client. The Router intercepts API traffic, applying QoS policies for optimal performance. The Enforcer handles authentication and authorization, ensuring authorized access. The Management Client configures and synchronizes the Router and Enforcer, ensuring the gateway partition's smooth operation.
 
 The architecture also includes the Rate Limiting Service, which manages rate limits for API calls. The Router communicates with the Rate Limiter to enforce quota compliance. To facilitate distributed counters across gateways, Redis serves as a shared information store for rate limiting.
 
 ## Test Product APIs
-WSO2 APK comes with Postman collections to test product APIs and developers can use collection of API requests and configure them to test different scenarios. For example, they can reuse available requests to verify that the API returns the correct responses for different requests.
+WSO2 Kubernetes Gateway comes with Postman collections to test product APIs and developers can use collection of API requests and configure them to test different scenarios. For example, they can reuse available requests to verify that the API returns the correct responses for different requests.
 These tests will allow users to identify potential issues or bugs that may need to be addressed before using it. 
 Please refer [Postman Tests](https://github.com/wso2/apk/tree/main/test/postman-tests) section of the repo for more information about tests and test artifacts.
 
 ## Getting Started
 
-To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/latest/get-started/quick-start-guide/).
+To tryout Kubernetes Gateway please refer to this [document](https://apk.docs.wso2.com/en/latest/get-started/quick-start-guide/).
 
 
 ### Before you begin...
@@ -76,14 +76,14 @@ To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/lates
     kubectl create namespace <namespace>
     ```
 
-### Steps to deploy APK DS servers and CloudNativePG
+### Steps to deploy Kubernetes Gateway DS servers and CloudNativePG
 
 ```HELM-HOME``` = apk/helm-charts
 
 1. Execute `helm repo add bitnami https://charts.bitnami.com/bitnami` and `helm repo add jetstack https://charts.jetstack.io`.
 2. Clone the repo and cd into the `HELM-HOME` folder.
 3. Execute `helm dependency build` command to download the dependent charts.
-4. Now execute `helm install apk-test .` to install the APK components.
+4. Now execute `helm install apk-test .` to install the Kubernetes Gateway components.
 
     > **Optional**
     >
@@ -105,7 +105,7 @@ To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/lates
     kubectl port-forward svc/apk-test-wso2-apk-gateway-service 9095:9095
     ```
 
-## Quick Start APK with Kubernetes client
+## Quick Start Kubernetes Gateway with Kubernetes client
 Follow the instruction below to deploy an API using the `kubectl`.
 
 1. Create API CR and create production and/or sandbox HTTPRoute CRs, and service for the API backend. You can find a sample CR set in `developer/tryout/samples/` folder in this repository.
@@ -116,9 +116,9 @@ Follow the instruction below to deploy an API using the `kubectl`.
     ```
     > **Note**
     >
-    > Services should be created in a different namespace than APK or Kubernetes System namespaces.
+    > Services should be created in a different namespace than Kubernetes Gateway or Kubernetes System namespaces.
     >
-    > APIs should be created in the APK deployment namespace.
+    > APIs should be created in the Kubernetes Gateway deployment namespace.
     >
     > Provide the router service external ip to `{router_service}` in below commands.
 
@@ -154,10 +154,10 @@ Follow the instruction below to deploy an API using the `kubectl`.
     --header "Internal-Key: $INTERNAL_KEY"
     ```
 
-## Run domain services APIs in APK with postman
+## Run domain services APIs in Kubernetes Gateway with postman
 [Test Postman collection](#test/postman-tests/README.md)
 
-## Build APK Components
+## Build Kubernetes Gateway Components
 
 ### Pre-requisites
 1. Install Java JDK 17.
@@ -184,7 +184,7 @@ gradle build
 
 ## Issue management
 We use GitHub to track all of our bugs and feature requests. Each issue we track has a variety of metadata:
-- **Epic**. An epic represents a feature area for APK as a whole. Epics are fairly broad in scope and are basically product-level things.Each issue is ultimately part of an epic.
+- **Epic**. An epic represents a feature area for Kubernetes Gateway as a whole. Epics are fairly broad in scope and are basically product-level things.Each issue is ultimately part of an epic.
 - **Milestone**. Each issue is assigned a milestone. This is 0.1, 0.2, ..., or 'Nebulous Future'. The milestone indicates when we think the issue should get addressed.
 - **Priority**. Each issue has a priority which is represented by the column in the [Prioritization]() project. Priority can be one of P1, P2, or >P2. The priority indicates how important it is to address the issue within the milestone. P1 says that themilestone cannot be considered achieved if the issue isn't resolved.
 
