@@ -17,7 +17,7 @@ Some characteristics of Kubernetes Gateway
 - Kubernetes Gateway aims to provide API marketplace capabilities, enabling sharing, discovery, and reusability of APIs while focusing on efficient governance and administration.
 - With its Kubernetes-native approach, exceptional characteristics, microservices architecture, and commitment to collaboration and innovation, Kubernetes Gateway sets a new standard for API management.
 
-For more information about Kubernetes Gateway release planning and project management information, visit [APK Project Dashboard](https://github.com/orgs/wso2/projects/80/)
+For more information about Kubernetes Gateway release planning and project management information, visit [Kubernetes Gateway Project Dashboard](https://github.com/orgs/wso2/projects/80/)
 
 For in-depth information about WSO2 API Management Platform, visit [WSO2 API Management](https://wso2.com/api-manager/)
 
@@ -95,7 +95,7 @@ To tryout Kubernetes Gateway please refer to this [document](https://apk.docs.ws
 
 ### To Access Deployment through local machine
 
-- You can either, identify the gateway-service external IP address to invoke the API through the APK gateway
+- You can either, identify the gateway-service external IP address to invoke the API through the Kubernetes Gateway gateway
     ```bash
     kubectl get svc | grep gateway-service
     ```
