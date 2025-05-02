@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2022, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2025, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
@@ -97,12 +98,23 @@ func InitOperator(metricsConfig config.Metrics) {
 
 	operatorDataStore := synchronizer.GetOperatorDataStore()
 
+	config:= config.ReadConfigs()
+	defaultNamespaces := config.Adapter.Operator.Namespaces
+	defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+	defaultNSMap := make(map[string]cache.Config)
+	for _, ns := range defaultNamespaces {
+		defaultNSMap[ns] = cache.Config{}
+	}
+
 	options := ctrl.Options{
 		Scheme:                  scheme,
 		HealthProbeBindAddress:  probeAddr,
 		LeaderElection:          true,
 		LeaderElectionID:        "operator-lease.apk.wso2.com",
 		LeaderElectionNamespace: utils.GetOperatorPodNamespace(),
+		Cache: cache.Options{
+            DefaultNamespaces: defaultNSMap,
+        },
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
@@ -160,7 +172,7 @@ func InitOperator(metricsConfig config.Metrics) {
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
 	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
-	if config.ReadConfigs().PartitionServer.Enabled {
+	if config.PartitionServer.Enabled {
 		go synchronizer.SendEventToPartitionServer()
 	}
 

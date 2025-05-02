@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2025, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/message"
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
+	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/metrics"
 	"k8s.io/client-go/rest"
@@ -44,6 +45,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
 // Provider is the scaffolding for the Kubernetes provider. It sets up dependencies
@@ -62,16 +64,25 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 	log.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	conf := config.ReadConfigs()
 
+	defaultNamespaces := conf.Adapter.Operator.Namespaces
+	defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+	defaultNSMap := make(map[string]cache.Config)
+	for _, ns := range defaultNamespaces {
+		defaultNSMap[ns] = cache.Config{}
+	}
 	// TODO: Decide which mgr opts should be exposed through envoygateway.provider.kubernetes API.
 	mgrOpts := manager.Options{
-		LeaderElection:         false,
-		Scheme:                 provider.GetScheme(),
-		HealthProbeBindAddress: ":8081",
-		LeaderElectionID:       "operator-lease.apk.wso2.com",
-	}
+        LeaderElection:         false,
+        Scheme:                 provider.GetScheme(),
+        HealthProbeBindAddress: ":8081",
+        LeaderElectionID:       "operator-lease.apk.wso2.com",
+        Cache: cache.Options{
+            DefaultNamespaces: defaultNSMap,
+        },
+    }
 
-	conf := config.ReadConfigs()
 	metricsConfig := conf.Adapter.Metrics
 	if metricsConfig.Enabled {
 		mgrOpts.Metrics.BindAddress = fmt.Sprintf(":%d", metricsConfig.Port)

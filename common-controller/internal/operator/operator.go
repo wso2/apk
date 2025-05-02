@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2023, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
+ *  Copyright (c) 2025, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	cpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/cp"
 	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
+	"github.com/wso2/apk/common-controller/internal/utils"
 	"github.com/wso2/apk/common-controller/pkg/metrics"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
@@ -48,6 +49,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	cache1 "sigs.k8s.io/controller-runtime/pkg/cache"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	//+kubebuilder:scaffold:imports
@@ -76,6 +78,7 @@ func init() {
 // InitOperator initializes the operator
 // func InitOperator(prometheusPort int32, metricsEnabled bool) {
 func InitOperator(metricsConfig config.Metrics) {
+	config := config.ReadConfigs()
 	var enableLeaderElection bool
 	var probeAddr string
 	controlPlaneID := uuid.New().String()
@@ -92,10 +95,21 @@ func InitOperator(metricsConfig config.Metrics) {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	ratelimitStore := cache.CreateNewOperatorDataStore()
 	subscriptionStore := cache.CreateNewSubscriptionDataStore()
+	defaultNamespaces := config.CommonController.Operator.Namespaces
+	defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+	defaultNSMap := make(map[string]cache1.Config)
+	for _, ns := range defaultNamespaces {
+		defaultNSMap[ns] = cache1.Config{}
+	}
+
 
 	options := ctrl.Options{
-		Scheme:                 scheme,
-		HealthProbeBindAddress: probeAddr,
+        Scheme:                 scheme,
+        HealthProbeBindAddress: probeAddr,
+        Cache: cache1.Options{
+            DefaultNamespaces: defaultNSMap,
+        },
+
 		// LeaderElection:         true,
 		// LeaderElectionID:       "operator-lease.apk.wso2.com",
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
@@ -188,7 +202,7 @@ func InitOperator(metricsConfig config.Metrics) {
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
 
-	config := config.ReadConfigs()
+	
 	if !(config.CommonController.ControlPlane.Enabled && config.CommonController.ControlPlane.Persistence.Type == "DB") {
 		if err := cpcontrollers.NewApplicationController(mgr, subscriptionStore); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3115, logging.MAJOR,
