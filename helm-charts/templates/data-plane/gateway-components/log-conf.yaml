@@ -46,9 +46,9 @@ data:
       {{- end }}
     {{ if .Values.wso2.apk.dp.adapter.deployment.configs }}
       enableGatewayClassController = {{ .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController | default false }}
-    {{ if .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}
+    {{ if .Values.wso2.apk.dp.adapter.deployment.apiNamespaces }}
     [adapter.operator]
-      namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces}}]
+      namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.deployment.apiNamespaces}}]
     {{ end}} 
     {{ end}} 
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
