@@ -10,6 +10,7 @@ data:
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
+      deployApisAtClusterLevel = {{ .Values.wso2.apk.auth.deployApisAtClusterLevel | default true }}
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
     [commoncontroller.metrics]
       enabled = {{.Values.wso2.apk.metrics.enabled}}

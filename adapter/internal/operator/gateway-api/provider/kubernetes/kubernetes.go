@@ -78,10 +78,12 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
         Scheme:                 provider.GetScheme(),
         HealthProbeBindAddress: ":8081",
         LeaderElectionID:       "operator-lease.apk.wso2.com",
-        Cache: cache.Options{
-            DefaultNamespaces: defaultNSMap,
-        },
     }
+	if !conf.Adapter.DeployApisAtClusterLevel {
+		mgrOpts.Cache = cache.Options{
+			DefaultNamespaces: defaultNSMap,
+		}
+	}
 
 	metricsConfig := conf.Adapter.Metrics
 	if metricsConfig.Enabled {

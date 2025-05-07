@@ -112,9 +112,6 @@ func InitOperator(metricsConfig config.Metrics) {
 		LeaderElection:          true,
 		LeaderElectionID:        "operator-lease.apk.wso2.com",
 		LeaderElectionNamespace: utils.GetOperatorPodNamespace(),
-		Cache: cache.Options{
-            DefaultNamespaces: defaultNSMap,
-        },
 		// LeaderElectionReleaseOnCancel defines if the leader should step down voluntarily
 		// when the Manager ends. This requires the binary to immediately end when the
 		// Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
@@ -126,6 +123,11 @@ func InitOperator(metricsConfig config.Metrics) {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
+	}
+	if !config.Adapter.DeployApisAtClusterLevel {
+		options.Cache = cache.Options{
+			DefaultNamespaces: defaultNSMap,
+		}
 	}
 
 	if metricsConfig.Enabled {

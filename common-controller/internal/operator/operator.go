@@ -106,9 +106,6 @@ func InitOperator(metricsConfig config.Metrics) {
 	options := ctrl.Options{
         Scheme:                 scheme,
         HealthProbeBindAddress: probeAddr,
-        Cache: cache1.Options{
-            DefaultNamespaces: defaultNSMap,
-        },
 
 		// LeaderElection:         true,
 		// LeaderElectionID:       "operator-lease.apk.wso2.com",
@@ -123,6 +120,11 @@ func InitOperator(metricsConfig config.Metrics) {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
+	}
+	if !config.CommonController.DeployApisAtClusterLevel {
+		options.Cache = cache1.Options{
+			DefaultNamespaces: defaultNSMap,
+		}
 	}
 
 	if metricsConfig.Enabled {
