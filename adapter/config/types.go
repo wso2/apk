@@ -99,6 +99,8 @@ type adapter struct {
 	// ControlPlane represents the connection configuration of ControlPlane
 	ControlPlane                 controlplane
 	EnableGatewayClassController bool
+	// Decides whether to deploy APIs at cluster level or not
+	DeployApisAtClusterLevel bool
 }
 
 // Envoy Listener Component related configurations.

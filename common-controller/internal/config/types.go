@@ -50,6 +50,7 @@ type commoncontroller struct {
 	ControlPlane      controlplane
 	Metrics           Metrics
 	Database          database
+	DeployApisAtClusterLevel bool
 }
 type controlplane struct {
 	Enabled             bool
