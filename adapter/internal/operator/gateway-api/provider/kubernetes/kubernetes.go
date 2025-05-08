@@ -66,12 +66,6 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 	log.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	conf := config.ReadConfigs()
 
-	defaultNamespaces := conf.Adapter.Operator.Namespaces
-	defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
-	defaultNSMap := make(map[string]cache.Config)
-	for _, ns := range defaultNamespaces {
-		defaultNSMap[ns] = cache.Config{}
-	}
 	// TODO: Decide which mgr opts should be exposed through envoygateway.provider.kubernetes API.
 	mgrOpts := manager.Options{
 		LeaderElection:         false,
@@ -80,6 +74,12 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 		LeaderElectionID:       "operator-lease.apk.wso2.com",
 	}
 	if !conf.Adapter.DeployResourcesWithClusterRoleBindings {
+		defaultNamespaces := conf.Adapter.Operator.Namespaces
+		defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+		defaultNSMap := make(map[string]cache.Config)
+		for _, ns := range defaultNamespaces {
+			defaultNSMap[ns] = cache.Config{}
+		}
 		mgrOpts.Cache = cache.Options{
 			DefaultNamespaces: defaultNSMap,
 		}
