@@ -43,10 +43,10 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
@@ -98,7 +98,7 @@ func InitOperator(metricsConfig config.Metrics) {
 
 	operatorDataStore := synchronizer.GetOperatorDataStore()
 
-	config:= config.ReadConfigs()
+	config := config.ReadConfigs()
 	defaultNamespaces := config.Adapter.Operator.Namespaces
 	defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
 	defaultNSMap := make(map[string]cache.Config)
@@ -124,7 +124,7 @@ func InitOperator(metricsConfig config.Metrics) {
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
 	}
-	if !config.Adapter.DeployApisAtClusterLevel {
+	if !config.Adapter.DeployResourcesWithClusterRoleBindings {
 		options.Cache = cache.Options{
 			DefaultNamespaces: defaultNSMap,
 		}

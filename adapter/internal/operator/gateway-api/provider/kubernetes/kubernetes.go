@@ -40,12 +40,12 @@ import (
 	"github.com/wso2/apk/adapter/pkg/metrics"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
 // Provider is the scaffolding for the Kubernetes provider. It sets up dependencies
@@ -74,12 +74,12 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 	}
 	// TODO: Decide which mgr opts should be exposed through envoygateway.provider.kubernetes API.
 	mgrOpts := manager.Options{
-        LeaderElection:         false,
-        Scheme:                 provider.GetScheme(),
-        HealthProbeBindAddress: ":8081",
-        LeaderElectionID:       "operator-lease.apk.wso2.com",
-    }
-	if !conf.Adapter.DeployApisAtClusterLevel {
+		LeaderElection:         false,
+		Scheme:                 provider.GetScheme(),
+		HealthProbeBindAddress: ":8081",
+		LeaderElectionID:       "operator-lease.apk.wso2.com",
+	}
+	if !conf.Adapter.DeployResourcesWithClusterRoleBindings {
 		mgrOpts.Cache = cache.Options{
 			DefaultNamespaces: defaultNSMap,
 		}
