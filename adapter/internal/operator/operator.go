@@ -99,12 +99,6 @@ func InitOperator(metricsConfig config.Metrics) {
 	operatorDataStore := synchronizer.GetOperatorDataStore()
 
 	config := config.ReadConfigs()
-	defaultNamespaces := config.Adapter.Operator.Namespaces
-	defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
-	defaultNSMap := make(map[string]cache.Config)
-	for _, ns := range defaultNamespaces {
-		defaultNSMap[ns] = cache.Config{}
-	}
 
 	options := ctrl.Options{
 		Scheme:                  scheme,
@@ -125,6 +119,12 @@ func InitOperator(metricsConfig config.Metrics) {
 		// LeaderElectionReleaseOnCancel: true,
 	}
 	if !config.Adapter.DeployResourcesWithClusterRoleBindings {
+		defaultNamespaces := config.Adapter.Operator.Namespaces
+		defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+		defaultNSMap := make(map[string]cache.Config)
+		for _, ns := range defaultNamespaces {
+			defaultNSMap[ns] = cache.Config{}
+		}
 		options.Cache = cache.Options{
 			DefaultNamespaces: defaultNSMap,
 		}

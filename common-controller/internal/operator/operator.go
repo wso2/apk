@@ -95,13 +95,6 @@ func InitOperator(metricsConfig config.Metrics) {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	ratelimitStore := cache.CreateNewOperatorDataStore()
 	subscriptionStore := cache.CreateNewSubscriptionDataStore()
-	defaultNamespaces := config.CommonController.Operator.Namespaces
-	defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
-	defaultNSMap := make(map[string]cache1.Config)
-	for _, ns := range defaultNamespaces {
-		defaultNSMap[ns] = cache1.Config{}
-	}
-
 	options := ctrl.Options{
 		Scheme:                 scheme,
 		HealthProbeBindAddress: probeAddr,
@@ -121,6 +114,12 @@ func InitOperator(metricsConfig config.Metrics) {
 		// LeaderElectionReleaseOnCancel: true,
 	}
 	if !config.CommonController.DeployResourcesWithClusterRoleBindings {
+		defaultNamespaces := config.CommonController.Operator.Namespaces
+		defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+		defaultNSMap := make(map[string]cache1.Config)
+		for _, ns := range defaultNamespaces {
+			defaultNSMap[ns] = cache1.Config{}
+		}
 		options.Cache = cache1.Options{
 			DefaultNamespaces: defaultNSMap,
 		}
