@@ -99,7 +99,7 @@ type adapter struct {
 	// ControlPlane represents the connection configuration of ControlPlane
 	ControlPlane                 controlplane
 	EnableGatewayClassController bool
-	// Decides whether to deploy APIs at cluster level or not
+	// Decides whether to deploy resources with cluster role bindings
 	DeployResourcesWithClusterRoleBindings bool
 }
 
