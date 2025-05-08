@@ -44,7 +44,7 @@ data:
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
-      deployApisAtClusterLevel = {{ .Values.wso2.apk.auth.deployApisAtClusterLevel | default true }}
+      DeployResourcesWithClusterRoleBindings = {{ .Values.wso2.apk.auth.DeployResourcesWithClusterRoleBindings | default true }}
     {{ if .Values.wso2.apk.dp.adapter.deployment.configs }}
       enableGatewayClassController = {{ .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController | default false }}
     {{ if .Values.wso2.apk.dp.adapter.deployment.apiNamespaces }}

@@ -100,7 +100,7 @@ type adapter struct {
 	ControlPlane                 controlplane
 	EnableGatewayClassController bool
 	// Decides whether to deploy APIs at cluster level or not
-	DeployApisAtClusterLevel bool
+	DeployResourcesWithClusterRoleBindings bool
 }
 
 // Envoy Listener Component related configurations.

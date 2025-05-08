@@ -47,9 +47,9 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	cache1 "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	cache1 "sigs.k8s.io/controller-runtime/pkg/cache"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	//+kubebuilder:scaffold:imports
@@ -102,10 +102,9 @@ func InitOperator(metricsConfig config.Metrics) {
 		defaultNSMap[ns] = cache1.Config{}
 	}
 
-
 	options := ctrl.Options{
-        Scheme:                 scheme,
-        HealthProbeBindAddress: probeAddr,
+		Scheme:                 scheme,
+		HealthProbeBindAddress: probeAddr,
 
 		// LeaderElection:         true,
 		// LeaderElectionID:       "operator-lease.apk.wso2.com",
@@ -121,7 +120,7 @@ func InitOperator(metricsConfig config.Metrics) {
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
 	}
-	if !config.CommonController.DeployApisAtClusterLevel {
+	if !config.CommonController.DeployResourcesWithClusterRoleBindings {
 		options.Cache = cache1.Options{
 			DefaultNamespaces: defaultNSMap,
 		}
@@ -204,7 +203,6 @@ func InitOperator(metricsConfig config.Metrics) {
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
 
-	
 	if !(config.CommonController.ControlPlane.Enabled && config.CommonController.ControlPlane.Persistence.Type == "DB") {
 		if err := cpcontrollers.NewApplicationController(mgr, subscriptionStore); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3115, logging.MAJOR,
