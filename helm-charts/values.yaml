@@ -29,7 +29,7 @@ wso2:
       enabled: true
       enableServiceAccountCreation: true
       enableClusterRoleCreation: true
-      deployApisAtClusterLevel: true
+      DeployResourcesWithClusterRoleBindings: true
       serviceAccountName: wso2apk-platform
       roleName: wso2apk-role
     listener:

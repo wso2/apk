@@ -20,7 +20,7 @@ kind: ClusterRole
 metadata:
   name: {{ .Values.wso2.apk.auth.roleName }}
 rules:
-{{- if .Values.wso2.apk.auth.deployApisAtClusterLevel}}
+{{- if .Values.wso2.apk.auth.DeployResourcesWithClusterRoleBindings}}
 {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
   - apiGroups: ["discovery.k8s.io"]
     resources: ["endpointslices"]
