@@ -14,13 +14,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if and .Values.wso2.apk.auth.enabled .Values.wso2.apk.auth.enableClusterRoleCreation }}
+{{- if and .Values.wso2.apk.auth.enabled .Values.wso2.apk.auth.clusterRoleBindings.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Values.wso2.apk.auth.roleName }}
+  name: {{ .Values.wso2.apk.auth.clusterRoleBindings.roleName }}
 rules:
-{{- if .Values.wso2.apk.auth.DeployResourcesWithClusterRoleBindings}}
 {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
   - apiGroups: ["discovery.k8s.io"]
     resources: ["endpointslices"]
@@ -344,13 +343,5 @@ rules:
   - apiGroups: ["cp.wso2.com"]
     resources: ["applicationmappings/status"]
     verbs: ["get","patch","update"]
-{{- end -}}
-{{- else}}
-  - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["gateways", "gatewayclasses"]
-    verbs: ["get", "list", "watch", "update", "delete", "create"]
-  - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["gateways/status", "gatewayclasses/status"]
-    verbs: ["get", "patch", "update"]
-{{- end -}}
-{{- end -}}
+{{- end }}
+{{- end }}
