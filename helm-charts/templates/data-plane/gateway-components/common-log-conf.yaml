@@ -10,7 +10,7 @@ data:
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
-      DeployResourcesWithClusterRoleBindings = {{ .Values.wso2.apk.auth.DeployResourcesWithClusterRoleBindings | default true }}
+      DeployResourcesWithClusterRoleBindings = {{ .Values.wso2.apk.auth.clusterRoleBindings.enabled | default true }}
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
     [commoncontroller.metrics]
       enabled = {{.Values.wso2.apk.metrics.enabled}}

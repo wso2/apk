@@ -14,15 +14,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if not .Values.wso2.apk.auth.DeployResourcesWithClusterRoleBindings}}
+{{- if .Values.wso2.apk.auth.namespaceRoleBindings.enabled}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: apk-wso2-apk-role-binding
+  name: apk-wso2-namespace-role-binding
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: {{ .Values.wso2.apk.auth.roleName }}
+  name: {{ .Values.wso2.apk.auth.namespaceRoleBindings.roleName }}
   apiGroup: rbac.authorization.k8s.io
 subjects:
   - kind: ServiceAccount

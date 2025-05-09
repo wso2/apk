@@ -28,10 +28,16 @@ wso2:
     auth:
       enabled: true
       enableServiceAccountCreation: true
-      enableClusterRoleCreation: true
-      DeployResourcesWithClusterRoleBindings: true
       serviceAccountName: wso2apk-platform
-      roleName: wso2apk-role
+      clusterRoleBindingsGateway: 
+        enabled: true
+        roleName: wso2apk-gateway-cluster-role
+      namespaceRoleBindings: 
+        enabled: true
+        roleName: wso2apk-role
+      clusterRoleBindings: 
+        enabled: "false"
+        roleName: wso2apk-cluster-role
     listener:
       hostname: "api.am.wso2.com"
       port: 9095
@@ -132,8 +138,8 @@ wso2:
         # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
           configs: 
             enableGatewayClassController: false
-        #   apiNamespaces:
-        #     - "apk-v12"
+            # apiNamespaces:
+            #   - "apk-v12"
         #   tls:
         #     secretName: "adapter-cert"
         #     certKeyFilename: ""
