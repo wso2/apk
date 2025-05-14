@@ -41,15 +41,16 @@ type commoncontroller struct {
 	Server   server
 	Operator operator
 	// Trusted Certificates
-	Truststore        truststore
-	Environment       string
-	Redis             redis
-	Sts               sts
-	WebServer         webServer
-	InternalAPIServer internalAPIServer
-	ControlPlane      controlplane
-	Metrics           Metrics
-	Database          database
+	Truststore                             truststore
+	Environment                            string
+	Redis                                  redis
+	Sts                                    sts
+	WebServer                              webServer
+	InternalAPIServer                      internalAPIServer
+	ControlPlane                           controlplane
+	Metrics                                Metrics
+	Database                               database
+	DeployResourcesWithClusterRoleBindings bool
 }
 type controlplane struct {
 	Enabled             bool
