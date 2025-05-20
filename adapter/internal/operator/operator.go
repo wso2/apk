@@ -129,6 +129,7 @@ func InitOperator(metricsConfig config.Metrics) {
 			DefaultNamespaces: defaultNSMap,
 		}
 	}
+	loggers.LoggerAPKOperator.Debugf("Namespaces to watch: %v", options.Cache.DefaultNamespaces)
 
 	if metricsConfig.Enabled {
 		options.Metrics.BindAddress = fmt.Sprintf(":%d", metricsConfig.Port)

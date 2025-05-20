@@ -84,6 +84,7 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 			DefaultNamespaces: defaultNSMap,
 		}
 	}
+	loggers.LoggerAPKOperator.Debugf("Namespaces to watch: %v", mgrOpts.Cache.DefaultNamespaces)
 
 	metricsConfig := conf.Adapter.Metrics
 	if metricsConfig.Enabled {
