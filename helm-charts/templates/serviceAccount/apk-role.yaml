@@ -21,10 +21,25 @@ metadata:
   name: {{ .Values.wso2.apk.auth.namespaceRoleBindings.roleName }}
   namespace: {{ .Release.Namespace }}
 rules:
+{{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: [""]
-    resources: ["services", "configmaps", "secrets"]
-    verbs: ["get", "list", "watch", "update", "delete", "create"]
+    resources: ["namespaces", "serviceaccounts", "events", "nodes"]
+    verbs: ["get","list","watch","update","delete","create"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["httproutes", "grpcroutes", "gateways"]
-    verbs: ["get", "list", "watch", "update", "delete", "create"]
+    resources: ["httproutes","grpcroutes", "referencegrants"]
+    verbs: ["get","list","watch","update","delete","create", "patch"]
+{{- else }}
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["httproutes","grpcroutes"]
+    verbs: ["get","list","watch","update","delete","create"]
+{{- end }}
 {{- end -}}

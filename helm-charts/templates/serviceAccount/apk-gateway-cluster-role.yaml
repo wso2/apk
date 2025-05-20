@@ -26,4 +26,9 @@ rules:
   - apiGroups: ["gateway.networking.k8s.io"]
     resources: ["gateways/status", "gatewayclasses/status"]
     verbs: ["get", "patch", "update"]
+{{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gateways", "gatewayclasses"]
+    verbs: ["patch"]
+{{- end }}
 {{- end -}}
