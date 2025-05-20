@@ -63,6 +63,7 @@ public class SharedContext {
     private int grpcStatusCode;
     private int grpcErrorCode;
     private List<String> responses = new ArrayList<>();
+    private HashMap<String, Integer> weightedCount = new HashMap<>();
 
 
     public SimpleHTTPClient getHttpClient() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
@@ -335,5 +336,17 @@ public class SharedContext {
     public void setPolicyID(String policyId) {
 
         this.policyID = policyId;
+    }
+
+    public void setWeightedCount(String key, Integer value) {
+        weightedCount.put(key, value);
+    }
+
+    public HashMap<String, Integer> getWeightedCount() {
+        return weightedCount;
+    }
+
+    public void clearWeightedCount() {
+        weightedCount.clear();
     }
 }
