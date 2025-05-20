@@ -21,9 +21,9 @@ metadata:
   name: {{ .Values.wso2.apk.auth.clusterRoleBindingsGateway.roleName }}
 rules:
   - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["gateways", "gatewayclasses"]
+    resources: ["gatewayclasses"]
     verbs: ["get", "list", "watch", "update", "delete", "create"]
   - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["gateways/status", "gatewayclasses/status"]
+    resources: ["gatewayclasses/status"]
     verbs: ["get", "patch", "update"]
 {{- end -}}
