@@ -22,6 +22,12 @@ metadata:
   namespace: {{ .Release.Namespace }}
 rules:
 {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses"]
+    verbs: ["get", "list", "watch", "update", "delete", "create","patch"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses/status"]
+    verbs: ["get", "patch", "update"]
   - apiGroups: ["discovery.k8s.io"]
     resources: ["endpointslices"]
     verbs: ["get","list","watch","update","delete","create"]
@@ -188,6 +194,12 @@ rules:
     resources: ["applicationmappings/status"]
     verbs: ["get","patch","update"]
 {{- else }}
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses"]
+    verbs: ["get", "list", "watch", "update", "delete", "create"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses/status"]
+    verbs: ["get", "patch", "update"]
   - apiGroups: [""]
     resources: ["services","configmaps","secrets"]
     verbs: ["get","list","watch","update","delete","create"]
