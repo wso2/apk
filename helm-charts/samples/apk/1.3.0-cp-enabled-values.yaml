@@ -29,15 +29,9 @@ wso2:
       enabled: true
       enableServiceAccountCreation: true
       serviceAccountName: wso2apk-platform
-      clusterRoleBindingsGateway: 
-        enabled: true
-        roleName: wso2apk-gateway-cluster-role
-      namespaceRoleBindings: 
-        enabled: "false"
+      resourceLevelPermissions: 
+        scope: Cluster
         roleName: wso2apk-role
-      clusterRoleBindings: 
-        enabled: true
-        roleName: wso2apk-cluster-role
     listener:
       hostname: "api.am.wso2.com"
       port: 9095
