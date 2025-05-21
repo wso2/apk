@@ -14,7 +14,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if eq .Values.wso2.apk.auth.resourceLevelPermissions.scope "Namespaced" }}
+{{- $auth := .Values.wso2.apk.auth }}
+{{- $scope := "" }}
+{{- $roleName := "" }}
+
+{{- if $auth.resourceLevelPermissions }}
+  {{- $scope = $auth.resourceLevelPermissions.scope | default "" }}
+  {{- $roleName = $auth.resourceLevelPermissions.roleName | default "" }}
+{{- else }}
+  {{- if not $auth.enableClusterRoleCreation }}
+    {{- $scope = "Namespaced" }}
+    {{- $roleName = $auth.roleName | default "" }}
+  {{- end }}
+{{- end }}
+
+{{- if eq $scope "Namespaced" }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -22,7 +36,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: {{ .Values.wso2.apk.auth.resourceLevelPermissions.roleName }}
+  name: {{ $roleName }}
+  apiGroup: rbac.authorization.k8s.io
   apiGroup: rbac.authorization.k8s.io
 subjects:
   - kind: ServiceAccount

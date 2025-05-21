@@ -13,12 +13,25 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if eq .Values.wso2.apk.auth.resourceLevelPermissions.scope "Namespaced" }}
+{{- $auth := .Values.wso2.apk.auth }}
+{{- $scope := "" }}
+{{- $roleName := "" }}
 
+{{- if $auth.resourceLevelPermissions }}
+  {{- $scope = $auth.resourceLevelPermissions.scope | default "" }}
+  {{- $roleName = $auth.resourceLevelPermissions.roleName | default "" }}
+{{- else }}
+  {{- if not $auth.enableClusterRoleCreation }}
+    {{- $scope = "Namespaced" }}
+    {{- $roleName = $auth.roleName | default "" }}
+  {{- end }}
+{{- end }}
+
+{{- if eq $scope "Namespaced" }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: {{ .Values.wso2.apk.auth.resourceLevelPermissions.roleName }}
+  name: {{ $roleName }}
   namespace: {{ .Release.Namespace }}
 rules:
 {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
