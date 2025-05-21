@@ -28,7 +28,9 @@ wso2:
     auth:
       enabled: true
       enableServiceAccountCreation: true
+      enableClusterRoleCreation: true
       serviceAccountName: wso2apk-platform
+      roleName: wso2apk-role
       resourceLevelPermissions: 
         scope: Cluster
         roleName: wso2apk-role
