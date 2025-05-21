@@ -10,7 +10,16 @@ data:
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
-      DeployResourcesWithClusterRoleBindings = {{ or (eq .Values.wso2.apk.auth.resourceLevelPermissions.scope "Cluster") (not .Values.wso2.apk.auth.resourceLevelPermissions.scope)}}
+
+      {{- $auth := .Values.wso2.apk.auth }}
+      {{- $scope := "" }}
+      {{- if $auth.resourceLevelPermissions }}
+        {{- $scope = $auth.resourceLevelPermissions.scope | default "" }}
+      {{- else if $auth.enableClusterRoleCreation }}
+        {{- $scope = "Cluster" }}
+      {{- end }}
+      DeployResourcesWithClusterRoleBindings = {{ eq $scope "Cluster" }}
+
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
     [commoncontroller.metrics]
       enabled = {{.Values.wso2.apk.metrics.enabled}}
