@@ -14,11 +14,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if and .Values.wso2.apk.auth.enabled .Values.wso2.apk.auth.clusterRoleBindings.enabled }}
+{{- if and .Values.wso2.apk.auth.enabled (eq .Values.wso2.apk.auth.resourceLevelPermissions.scope "Cluster") }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Values.wso2.apk.auth.clusterRoleBindings.roleName }}
+  name: {{ .Values.wso2.apk.auth.resourceLevelPermissions.roleName }}
 rules:
 {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
   - apiGroups: ["discovery.k8s.io"]
