@@ -13,7 +13,6 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
 {{- $auth := .Values.wso2.apk.auth }}
 {{- $scope := "" }}
 {{- $roleName := "" }}
@@ -21,20 +20,22 @@
 {{- if $auth.resourceLevelPermissions }}
   {{- $scope = $auth.resourceLevelPermissions.scope | default "" }}
   {{- $roleName = $auth.resourceLevelPermissions.roleName | default "" }}
-{{- else }}
-  {{- if $auth.enableClusterRoleCreation }}
-    {{- $scope = "Cluster" }}
-    {{- $roleName = $auth.roleName | default "" }}
-  {{- end }}
 {{- end }}
 
-{{- if and $auth.enabled (eq $scope "Cluster") }}
+{{- if eq $scope "Namespaced" }}
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
   name: {{ $roleName }}
+  namespace: {{ .Release.Namespace }}
 rules:
 {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses"]
+    verbs: ["get", "list", "watch", "update", "delete", "create","patch"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses/status"]
+    verbs: ["get", "patch", "update"]
   - apiGroups: ["discovery.k8s.io"]
     resources: ["endpointslices"]
     verbs: ["get","list","watch","update","delete","create"]
@@ -48,10 +49,10 @@ rules:
     resources: ["deployments"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
   - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["httproutes","gateways","gatewayclasses","grpcroutes", "referencegrants"]
+    resources: ["httproutes","gateways","grpcroutes", "referencegrants"]
     verbs: ["get","list","watch","update","delete","create", "patch"]
   - apiGroups: [ "gateway.networking.k8s.io" ]
-    resources: [ "gateways/status","gatewayclasses/status","httproutes/status" ]
+    resources: [ "gateways/status","httproutes/status" ]
     verbs: [ "get","patch","update" ]
   - apiGroups: ["dp.wso2.com"]
     resources: ["apis"]
@@ -201,14 +202,20 @@ rules:
     resources: ["applicationmappings/status"]
     verbs: ["get","patch","update"]
 {{- else }}
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses"]
+    verbs: ["get", "list", "watch", "update", "delete", "create"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gatewayclasses/status"]
+    verbs: ["get", "patch", "update"]
   - apiGroups: [""]
     resources: ["services","configmaps","secrets"]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: ["gateway.networking.k8s.io"]
-    resources: ["httproutes","gateways","gatewayclasses","grpcroutes"]
+    resources: ["httproutes","gateways","grpcroutes"]
     verbs: ["get","list","watch","update","delete","create"]
   - apiGroups: [ "gateway.networking.k8s.io" ]
-    resources: [ "gateways/status","gatewayclasses/status","httproutes/status" ]
+    resources: [ "gateways/status","httproutes/status" ]
     verbs: [ "get","patch","update" ]
   - apiGroups: ["dp.wso2.com"]
     resources: ["apis"]
@@ -357,5 +364,5 @@ rules:
   - apiGroups: ["cp.wso2.com"]
     resources: ["applicationmappings/status"]
     verbs: ["get","patch","update"]
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}
