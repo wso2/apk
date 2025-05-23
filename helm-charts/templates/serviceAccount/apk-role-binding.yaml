@@ -21,11 +21,6 @@
 {{- if $auth.resourceLevelPermissions }}
   {{- $scope = $auth.resourceLevelPermissions.scope | default "" }}
   {{- $roleName = $auth.resourceLevelPermissions.roleName | default "" }}
-{{- else }}
-  {{- if not $auth.enableClusterRoleCreation }}
-    {{- $scope = "Namespaced" }}
-    {{- $roleName = $auth.roleName | default "" }}
-  {{- end }}
 {{- end }}
 
 {{- if eq $scope "Namespaced" }}
