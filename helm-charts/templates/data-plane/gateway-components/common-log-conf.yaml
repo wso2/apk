@@ -12,13 +12,10 @@ data:
       {{- end }}
 
       {{- $auth := .Values.wso2.apk.auth }}
-      {{- $scope := "" }}
       {{- if $auth.resourceLevelPermissions }}
-        {{- $scope = $auth.resourceLevelPermissions.scope | default "" }}
-      {{- else if $auth.enableClusterRoleCreation }}
-        {{- $scope = "Cluster" }}
-      {{- end }}
+      {{- $scope := $auth.resourceLevelPermissions.scope | default "Cluster" }}
       DeployResourcesWithClusterRoleBindings = {{ eq $scope "Cluster" }}
+      {{- end }}
 
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
     [commoncontroller.metrics]
