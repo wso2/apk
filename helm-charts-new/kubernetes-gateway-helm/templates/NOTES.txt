@@ -1,0 +1,25 @@
+Welcome to the WSO2 Kubernetes Gateway!
+
+Congratulations. You've successfully deployed WSO2 Kubernetes using Helm, you'll need to monitor and manage the deployment to ensure everything is running smoothly.
+
+   - Monitor Pods:
+     Check the status of the pods to ensure they are up and running:
+     ---
+     kubectl get pods
+     ---
+
+   - Monitor Services:
+     Verify that the services are running and find their external IPs to access the APIs:
+     ---
+     kubectl get services
+     ---
+
+For more detailed information, troubleshooting, and advanced configurations, we encourage you to explore the official WSO2 documentation.
+
+- WSO2 Kubernetes Gateway Documentation: [https://apk.docs.wso2.com/en/latest/get-started/quick-start-guide/]
+
+This is just the beginning of your Kubernetes Gateway journey. Feel free to customize and tailor your deployment to match your organization's specific needs.
+
+For any questions or assistance, don't hesitate to reach out to our discord channel.
+
+Happy API management with WSO2 Kubernetes Gateway!

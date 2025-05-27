@@ -1,0 +1,69 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+{{- if and .Values.wso2.kgw.dp.enabled .Values.wso2.kgw.dp.configdeployer.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-ds-configmap
+  namespace: {{ .Release.Namespace }}
+data:
+  Config.toml: |
+  {{- if .Values.wso2.kgw.dp.configdeployer.debug}}
+    [ballerina.log]
+    level = "DEBUG"
+    [ballerina.http]
+    traceLogConsole = true
+  {{end}}
+  {{if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled}}
+    [ballerina.observe]
+    metricsEnabled = true
+    metricsReporter = "prometheus"
+    [ballerinax.prometheus]
+    port=18006
+  {{if .Values.wso2.kgw.metrics.configDSBalHost}}
+    host = "{{ .Values.wso2.kgw.metrics.configDSBalHost}}"
+  {{else}} 
+    host = "0.0.0.0"
+  {{end}} 
+  {{else}} 
+    [ballerina.observe]
+    metricsEnabled = false
+  {{end}} 
+    [wso2.config_deployer_service.keyStores.tls]
+    keyFilePath = "/home/wso2kgw/config-deployer/security/config.key"
+    certFilePath = "/home/wso2kgw/config-deployer/security/config.pem"
+    [wso2.config_deployer_service.gatewayConfiguration]
+    name = "{{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}"
+    listenerName = "httpslistener"
+{{ include "generateVhosts" .Values.wso2.kgw.dp.configdeployer.vhosts | indent 4 }}
+{{if and .Values.wso2.kgw.dp.partitionServer .Values.wso2.kgw.dp.partitionServer.enabled}}
+    [wso2.config_deployer_service.partitionServiceConfiguration]
+    enabled = true
+    url = "{{.Values.wso2.kgw.dp.partitionServer.host}}{{.Values.wso2.kgw.dp.partitionServer.serviceBasePath}}"
+{{if and .Values.wso2.kgw.dp.partitionServer .Values.wso2.kgw.dp.partitionServer.tls}}
+    tlsCertificatePath = "/home/wso2kgw/config-deployer/security/partition-server.pem"
+{{end}} 
+    hostnameVerificationEnable = {{.Values.wso2.kgw.dp.partitionServer.hostnameVerificationEnable}}
+  {{ if .Values.wso2.kgw.dp.partitionServer.headers}}
+      {{ range $key, $value := .Values.wso2.kgw.dp.partitionServer.headers}}
+    [[wso2.config_deployer_service.partitionServiceConfiguration.headers]]
+      name = "{{ $key }}"
+      value = "{{ $value }}"
+      {{ end}}
+  {{ end}}
+{{end}}
+{{- end -}}

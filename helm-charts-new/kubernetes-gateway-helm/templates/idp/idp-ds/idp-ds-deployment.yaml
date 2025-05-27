@@ -1,0 +1,160 @@
+# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+{{- if .Values.idp.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idpds-deployment
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.idp.idpds.deployment.replicas }}
+  strategy:
+    type: {{ .Values.idp.idpds.deployment.strategy }}
+  selector:
+    matchLabels:
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 6}}
+  template:
+    metadata:
+      labels:
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 8}}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/idp/idp-ds/idp-ds-configmap.yaml") . | sha256sum }}
+    spec:
+      automountServiceAccountToken: false
+      initContainers:
+        - name: init-db
+          image: busybox:1.32
+          command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.idp.database.host }}" {{.Values.idp.database.port }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+      containers:
+        - name: idpds
+          image: {{ .Values.idp.idpds.deployment.image }}
+          imagePullPolicy: {{ .Values.idp.idpds.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 9443
+              protocol: "TCP"
+            {{ if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
+            - containerPort: 18006
+              protocol: "TCP"
+            - containerPort: 18007
+              protocol: "TCP"
+            {{ end }}            
+{{ include "kubernetes-gateway-helm.deployment.env" .Values.idp.idpds.deployment.env | indent 10 }}
+            {{ if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
+            - name: METRICS_ENABLED
+              value: "true"
+            {{ end }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.idp.idpds.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.idp.idpds.deployment.readinessProbe.periodSeconds }}    
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9443
+              scheme: HTTPS
+            initialDelaySeconds: {{ .Values.idp.idpds.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.idp.idpds.deployment.livenessProbe.periodSeconds }}
+{{ include "kubernetes-gateway-helm.deployment.resources" .Values.idp.idpds.deployment.resources | indent 10 }}
+          volumeMounts:
+            - mountPath: /home/wso2kgw/idp/conf/Config.toml
+              name: config-toml-volume
+              subPath: Config.toml
+            - mountPath: /home/wso2kgw/idp/security/wso2carbon.key
+              name: idp-signing-keystore-volume
+              subPath: wso2carbon.key
+            - mountPath: /home/wso2kgw/idp/security/wso2carbon.pem
+              name: idp-signing-keystore-volume
+              subPath: wso2carbon.pem
+            {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
+            - name: prometheus-jmx-config-volume	
+              mountPath: /tmp/metrics/prometheus-jmx-config-idpds.yml	
+              subPath: prometheus-jmx-config-idpds.yml
+            {{- end }}
+            - name: idp-ds-tls-volume
+              mountPath: /home/wso2kgw/idp/security/idp.key
+            {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+              subPath: {{ .Values.idp.idpds.configs.tls.certKeyFilename | default "tls.key" }}
+            {{- else }}
+              subPath: tls.key
+            {{- end }}
+            - name: idp-ds-tls-volume
+              mountPath: /home/wso2kgw/idp/security/idp.crt
+            {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+              subPath: {{ .Values.idp.idpds.configs.tls.certFilename | default "tls.crt" }}
+            {{- else }}
+              subPath: tls.crt
+            {{- end }}
+            - name: db-secret-volume
+              mountPath: /home/wso2kgw/idp/security/database/
+            - name: tmp
+              mountPath: /tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+      {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
+      imagePullSecrets:
+        - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+      {{ end }}      
+      securityContext:
+        seccompProfile:
+          type: "RuntimeDefault"
+      volumes:
+        - name: config-toml-volume
+          configMap:
+            name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ds-configmap
+        {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
+        - name: prometheus-jmx-config-volume	
+          configMap: 	
+            name: prometheus-jmx-config-idpds
+        {{- end }}
+        - name: idp-signing-keystore-volume
+          secret: 
+            secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-signing-keystore-secret
+        - name: idp-ds-tls-volume
+          secret:
+       {{ if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
+            secretName: {{ .Values.idp.idpds.configs.tls.secretName | default (printf "%s-idpds-ds-server-cert" (include "kubernetes-gateway-helm.resource.prefix" .)) }}
+       {{ else }}
+            secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ds-server-cert
+       {{ end }}
+        - name: db-secret-volume
+          secret:
+       {{  if and .Values.idp.database .Values.idp.database.secretName  }}
+            secretName: {{ .Values.idp.database.secretName }}
+            items:
+              - key: "{{ .Values.idp.database.secretKey }}"
+                path: db-password
+       {{ else }}
+            secretName: kgw-db-secret
+            items:
+              - key: DB_PASSWORD
+                path: db-password
+       {{ end }}
+        - name: tmp
+          emptyDir: {}
+{{- end -}}
