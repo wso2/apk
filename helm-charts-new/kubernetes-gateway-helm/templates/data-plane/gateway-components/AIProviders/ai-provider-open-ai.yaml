@@ -1,0 +1,30 @@
+apiVersion: dp.wso2.com/v1alpha4
+kind: AIProvider
+metadata:
+  name: ai-provider-open-ai
+  namespace: {{ .Release.Namespace }}
+spec:
+  providerName : "OpenAI"
+  providerAPIVersion : "v1"
+  organization : "default"
+  supportedModels:
+    - "gpt-4o"
+    - "o1-mini"
+    - "gpt-4o-mini"
+  requestModel:
+    in: "Body"
+    value: "model"
+  responseModel:
+    in: "Body"
+    value: "model"
+  rateLimitFields:
+    promptTokens: 
+      in: "Body"
+      value: "$usage.promptTokens"
+    completionToken:
+      in: "Body"
+      value: "$usage.completionTokens"
+    totalToken:
+      in: "Body"
+      value: "$usage.totalTokens"
+  
