@@ -1171,7 +1171,7 @@ spec:
     shortNames:
       - gc
     singular: gatewayclass
-  scope: Cluster
+  scope: Namespaced
   versions:
     - additionalPrinterColumns:
         - jsonPath: .spec.controllerName
