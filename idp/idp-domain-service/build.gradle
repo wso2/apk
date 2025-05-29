@@ -27,9 +27,10 @@ release {
     tagTemplate = 'idp-service-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
+        requireBranch= project.findProperty('requireBranch') ?: 'main'
 
         pushToRemote= "origin"
+        pushToCurrentBranch = false
     }
 }
 

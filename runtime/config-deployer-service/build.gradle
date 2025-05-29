@@ -22,14 +22,15 @@ allprojects {
     group = project.group
     version = project.version
 }
-
+apply from: "$rootDir/../../common-gradle-scripts/version.gradle"
 release {
     tagTemplate = 'config-deployer-service-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
+        requireBranch= project.findProperty('requireBranch') ?: 'main'
 
         pushToRemote= "origin"
+        pushToCurrentBranch = false
     }
 }
 

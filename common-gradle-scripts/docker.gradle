@@ -31,8 +31,12 @@ tasks.register('docker_login', Exec) {
     description 'Log in to a Docker registry.'
     if (project.hasProperty("docker_username")&& project.hasProperty("docker_password")) {
         println 'Log in to a Docker registry.'
-        commandLine 'docker', 'login', '--username', docker_username, '--password', docker_password
-    }else{
+        if (project.hasProperty("docker_organization_url")) {
+            commandLine 'docker', 'login', docker_organization_url, '--username', docker_username, '--password', docker_password
+        } else {
+            commandLine 'docker', 'login', '--username', docker_username, '--password', docker_password
+        }
+    } else {
         println 'Docker username and password are not provided.'
         commandLine 'echo', 'Docker username and password are not provided. or docker login done externally.'
     }
