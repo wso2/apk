@@ -21,14 +21,16 @@ plugins {
 
 apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../common-gradle-scripts/go.gradle"
+apply from: "$rootDir/../common-gradle-scripts/version.gradle"
 
 release {
     tagTemplate = 'common-controller-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
+        requireBranch= project.findProperty('requireBranch') ?: 'main'
 
         pushToRemote= "origin"
+        pushToCurrentBranch = false
     }
 }
 
