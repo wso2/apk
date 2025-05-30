@@ -209,7 +209,7 @@ func SetupRunners(conf *config.Config) {
 func Run(conf *config.Config) {
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt)
-	// TODO: (VirajSalaka) Support the REST API Configuration via flags only if it is a valid requirement
+	// TODO: (VirajSalaka)  Support the REST API Configuration via flags only if it is a valid requirement
 	flag.Parse()
 
 	ctx, cancel := context.WithCancel(context.Background())
