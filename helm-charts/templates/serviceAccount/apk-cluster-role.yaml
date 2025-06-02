@@ -1,4 +1,4 @@
-# Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
@@ -14,25 +14,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- $auth := .Values.wso2.apk.auth }}
-{{- $scope := "" }}
-{{- $roleName := "" }}
-
-{{- if $auth.resourceLevelPermissions }}
-  {{- $scope = $auth.resourceLevelPermissions.scope | default "" }}
-  {{- $roleName = $auth.resourceLevelPermissions.roleName | default "" }}
-{{- else }}
-  {{- if $auth.enableClusterRoleCreation }}
-    {{- $scope = "Cluster" }}
-    {{- $roleName = $auth.roleName | default "" }}
-  {{- end }}
-{{- end }}
-
-{{- if and $auth.enabled (eq $scope "Cluster") }}
+{{- if and .Values.wso2.apk.auth.enabled .Values.wso2.apk.auth.enableClusterRoleCreation }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ $roleName }}
+  name: {{ .Values.wso2.apk.auth.roleName }}
 rules:
 {{- if and .Values.wso2.apk.dp.adapter .Values.wso2.apk.dp.adapter.deployment .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController }}
   - apiGroups: ["discovery.k8s.io"]
@@ -357,5 +343,5 @@ rules:
   - apiGroups: ["cp.wso2.com"]
     resources: ["applicationmappings/status"]
     verbs: ["get","patch","update"]
-{{- end }}
-{{- end }}
+{{- end -}}
+{{- end -}}

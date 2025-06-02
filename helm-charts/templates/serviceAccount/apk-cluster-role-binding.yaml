@@ -14,30 +14,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- $auth := .Values.wso2.apk.auth }}
-{{- $scope := "" }}
-{{- $roleName := "" }}
-
-{{- if $auth.resourceLevelPermissions }}
-  {{- $scope = $auth.resourceLevelPermissions.scope | default "" }}
-  {{- $roleName = $auth.resourceLevelPermissions.roleName | default "" }}
-{{- else }}
-  {{- if $auth.enableClusterRoleCreation }}
-    {{- $scope = "Cluster" }}
-    {{- $roleName = $auth.roleName | default "" }}
-  {{- end }}
-{{- end }}
-
-{{- if and $auth.enabled $auth.enableServiceAccountCreation (eq $scope "Cluster") }}
-
+{{- if and .Values.wso2.apk.auth.enabled .Values.wso2.apk.auth.enableServiceAccountCreation }}
 apiVersion: rbac.authorization.k8s.io/v1
+# This cluster role binding allows anyone in the "manager" group to read secrets in any namespace.
 kind: ClusterRoleBinding
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-role-binding
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
-  name: {{ $roleName }}
+  name: {{ .Values.wso2.apk.auth.roleName }}
   apiGroup: rbac.authorization.k8s.io
 subjects:
   # You can specify more than one "subject"
