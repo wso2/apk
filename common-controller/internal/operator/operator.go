@@ -35,6 +35,7 @@ import (
 	"github.com/wso2/apk/common-controller/internal/loggers"
 	cpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/cp"
 	dpcontrollers "github.com/wso2/apk/common-controller/internal/operator/controllers/dp"
+	"github.com/wso2/apk/common-controller/internal/utils"
 	"github.com/wso2/apk/common-controller/pkg/metrics"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
@@ -46,6 +47,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	cache1 "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -76,6 +78,7 @@ func init() {
 // InitOperator initializes the operator
 // func InitOperator(prometheusPort int32, metricsEnabled bool) {
 func InitOperator(metricsConfig config.Metrics) {
+	config := config.ReadConfigs()
 	var enableLeaderElection bool
 	var probeAddr string
 	controlPlaneID := uuid.New().String()
@@ -109,6 +112,17 @@ func InitOperator(metricsConfig config.Metrics) {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
+	}
+	if !config.CommonController.DeployResourcesWithClusterRoleBindings {
+		defaultNamespaces := config.CommonController.Operator.Namespaces
+		defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+		defaultNSMap := make(map[string]cache1.Config)
+		for _, ns := range defaultNamespaces {
+			defaultNSMap[ns] = cache1.Config{}
+		}
+		options.Cache = cache1.Options{
+			DefaultNamespaces: defaultNSMap,
+		}
 	}
 
 	if metricsConfig.Enabled {
@@ -188,7 +202,7 @@ func InitOperator(metricsConfig config.Metrics) {
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
 
-	config := config.ReadConfigs()
+	
 	if !(config.CommonController.ControlPlane.Enabled && config.CommonController.ControlPlane.Persistence.Type == "DB") {
 		if err := cpcontrollers.NewApplicationController(mgr, subscriptionStore); err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3115, logging.MAJOR,

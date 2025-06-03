@@ -43,6 +43,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -97,6 +98,7 @@ func InitOperator(metricsConfig config.Metrics) {
 
 	operatorDataStore := synchronizer.GetOperatorDataStore()
 
+	config := config.ReadConfigs()
 	options := ctrl.Options{
 		Scheme:                  scheme,
 		HealthProbeBindAddress:  probeAddr,
@@ -114,6 +116,17 @@ func InitOperator(metricsConfig config.Metrics) {
 		// if you are doing or is intended to do any operation such as perform cleanups
 		// after the manager stops then its usage might be unsafe.
 		// LeaderElectionReleaseOnCancel: true,
+	}
+	if !config.Adapter.DeployResourcesWithClusterRoleBindings {
+		defaultNamespaces := config.Adapter.Operator.Namespaces
+		defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+		defaultNSMap := make(map[string]cache.Config)
+		for _, ns := range defaultNamespaces {
+			defaultNSMap[ns] = cache.Config{}
+		}
+		options.Cache = cache.Options{
+			DefaultNamespaces: defaultNSMap,
+		}
 	}
 
 	if metricsConfig.Enabled {
@@ -160,7 +173,7 @@ func InitOperator(metricsConfig config.Metrics) {
 
 	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
 	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
-	if config.ReadConfigs().PartitionServer.Enabled {
+	if config.PartitionServer.Enabled {
 		go synchronizer.SendEventToPartitionServer()
 	}
 
