@@ -73,7 +73,7 @@ spec:
             periodSeconds: {{ .Values.wso2.kgw.dp.configdeployer.deployment.livenessProbe.periodSeconds }}
 {{ include "kubernetes-gateway-helm.deployment.resources" .Values.wso2.kgw.dp.configdeployer.deployment.resources | indent 10 }}
           volumeMounts:
-            - mountPath: /home/wso2apk/config-deployer/conf/Config.toml
+            - mountPath: /home/wso2kgw/config-deployer/conf/Config.toml
               name: config-toml-volume
               subPath: Config.toml
             {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
@@ -82,14 +82,14 @@ spec:
               subPath: prometheus-jmx-config-configds.yml
             {{- end }}
             - name: config-ds-tls-volume
-              mountPath: /home/wso2apk/config-deployer/security/config.key
+              mountPath: /home/wso2kgw/config-deployer/security/config.key
             {{- if and .Values.wso2.kgw.dp.configdeployer.deployment.configs .Values.wso2.kgw.dp.configdeployer.deployment.configs.tls }}
               subPath: {{ .Values.wso2.kgw.dp.configdeployer.deployment.configs.tls.certKeyFilename | default "tls.key" }}
             {{- else }}
               subPath: tls.key
             {{- end }}
             - name: config-ds-tls-volume
-              mountPath: /home/wso2apk/config-deployer/security/config.pem
+              mountPath: /home/wso2kgw/config-deployer/security/config.pem
             {{- if and .Values.wso2.kgw.dp.configdeployer.deployment.configs .Values.wso2.kgw.dp.configdeployer.deployment.configs.tls }}
               subPath: {{ .Values.wso2.kgw.dp.configdeployer.deployment.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
@@ -97,13 +97,13 @@ spec:
             {{- end }}
             {{if and .Values.wso2.kgw.dp.partitionServer .Values.wso2.kgw.dp.partitionServer.tls}}
             - name:  partition-server-truststore-secret-volume
-              mountPath: /home/wso2apk/config-deployer/security/partition-server.pem
+              mountPath: /home/wso2kgw/config-deployer/security/partition-server.pem
               subPath: {{.Values.wso2.kgw.dp.partitionServer.tls.fileName | default "tls.crt"}}
             {{- end }}
             - name: tmp
               mountPath: /tmp
             - name: config-deployer-temp
-              mountPath: /home/wso2apk/config-deployer/tmp
+              mountPath: /home/wso2kgw/config-deployer/tmp
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
