@@ -131,8 +131,8 @@ wso2:
         # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
           configs: 
             enableGatewayClassController: false
-        #   apiNamespaces:
-        #     - "apk-v12"
+            # apiNamespaces:
+            #   - "apk-v12"
         #   tls:
         #     secretName: "adapter-cert"
         #     certKeyFilename: ""
