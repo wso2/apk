@@ -121,7 +121,7 @@ func runManagementServer(conf *config.Config, server xdsv3.Server, enforcerServe
 		logger.LoggerAPK.ErrorC(logging.PrintError(logging.Error1100, logging.BLOCKER, "Failed to listen on port: %v, error: %v", port, err.Error()))
 	}
 
-	// register services
+	// register  services
 	discoveryv3.RegisterAggregatedDiscoveryServiceServer(grpcServer, server)
 	configservice.RegisterConfigDiscoveryServiceServer(grpcServer, enforcerServer)
 	apiservice.RegisterApiDiscoveryServiceServer(grpcServer, enforcerServer)
