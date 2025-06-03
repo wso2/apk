@@ -23,17 +23,17 @@ import config_deployer_service.org.wso2.apk.config as runtimeUtil;
 
 configurable KeyStores keyStores = {
     tls: {
-        keyFilePath: "/home/wso2apk/config-deployer/security/config.key"
+        keyFilePath: "/home/wso2kgw/config-deployer/security/config.key"
     }
 };
-configurable (string & readonly) apkSchemaLocation = "/home/wso2apk/config-deployer/conf/apk-schema.json";
+configurable (string & readonly) apkSchemaLocation = "/home/wso2kgw/config-deployer/conf/apk-schema.json";
 configurable (K8sConfigurations & readonly) k8sConfiguration = {};
 configurable (GatewayConfigurations & readonly) gatewayConfiguration = {};
 configurable (PartitionServiceConfiguration & readonly) partitionServiceConfiguration = {};
 configurable (Vhost[] & readonly) vhosts = [{name: "Default", hosts: ["gw.wso2.com"], 'type: PRODUCTION_TYPE}, {name: "Default", hosts: ["sandbox.gw.wso2.com"], 'type: SANDBOX_TYPE}];
 commons:RequestErrorInterceptor requestErrorInterceptor = new;
 commons:ResponseErrorInterceptor responseErrorInterceptor = new;
-configurable (commons:IDPConfiguration & readonly) idpConfiguration = {publicKey: {certFilePath: "/home/wso2apk/config-deployer/security/mg.pem"}};
+configurable (commons:IDPConfiguration & readonly) idpConfiguration = {publicKey: {certFilePath: "/home/wso2kgw/config-deployer/security/mg.pem"}};
 commons:JWTValidationInterceptor jwtValidationInterceptor = new (idpConfiguration, getOrgResolver(), ["/health", "/api/configurator/apis/generate-configuration", "/api/configurator/apis/generate-k8s-resources", ""]);
 final commons:JWTBaseOrgResolver jwtBaseOrgResolver = new;
 final PartitionResolver partitionResolver;

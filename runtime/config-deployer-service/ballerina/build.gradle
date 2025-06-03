@@ -33,5 +33,5 @@ tasks.register('test') {
     dependsOn 'bal_test'
 }
 
-build.mustRunAfter ":org.wso2.apk.config:build"
-build.dependsOn ":org.wso2.apk.config:build"
+build.mustRunAfter ":org.wso2.kgw.config:build"
+build.dependsOn ":org.wso2.kgw.config:build"
