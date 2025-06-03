@@ -101,10 +101,11 @@ echo "Using Java memory options: $JVM_MEM_OPTS"
 JAVA_AGENT=""
 if [ "$METRICS_ENABLED" = "true" ]; then
   echo "METRICS_ENABLED is set to true."
-  JAVA_AGENT="-javaagent:/home/wso2apk/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-configds.yml"
+  JAVA_AGENT="-javaagent:/home/wso2kgw/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-configds.yml"
 fi
 
 $JAVACMD \
+  -XX:UseSVE=0 \
   $JVM_MEM_OPTS \
   $JAVA_OPTS \
   -classpath "$CLASSPATH" \
