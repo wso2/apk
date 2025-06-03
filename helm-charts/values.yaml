@@ -31,9 +31,6 @@ wso2:
       enableClusterRoleCreation: true
       serviceAccountName: wso2apk-platform
       roleName: wso2apk-role
-      resourceLevelPermissions: 
-        scope: Cluster
-        roleName: wso2apk-role
     listener:
       hostname: "api.am.wso2.com"
       port: 9095
