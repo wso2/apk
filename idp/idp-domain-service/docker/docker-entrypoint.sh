@@ -17,4 +17,4 @@
 # under the License.
 #
 
-sh /home/wso2apk/idp/idp.sh
+sh /home/wso2kgw/idp/idp.sh

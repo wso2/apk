@@ -92,7 +92,7 @@ START_EXIT_STATUS=121
 status=$START_EXIT_STATUS
 
 if [ -z "$JVM_MEM_OPTS" ]; then
-   java_version=$("$JAVACMD" -version 2>&1 | awk -F '"' '/version/ {print $2}')
+   java_version=$("$JAVACMD" -XX:UseSVE=0 -version 2>&1 | awk -F '"' '/version/ {print $2}')
    JVM_MEM_OPTS="-Xms256m -Xmx1024m"
 fi
 echo "Using Java memory options: $JVM_MEM_OPTS"
@@ -100,12 +100,13 @@ echo "Using Java memory options: $JVM_MEM_OPTS"
 JAVA_AGENT=""
 if [ "$METRICS_ENABLED" = "true" ]; then
   echo "METRICS_ENABLED is set to true."
-  JAVA_AGENT="-javaagent:/home/wso2apk/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-idpds.yml"
+  JAVA_AGENT="-javaagent:/home/wso2kgw/lib/jmx_prometheus_javaagent-0.20.0.jar=18007:/tmp/metrics/prometheus-jmx-config-idpds.yml"
 fi
 
 $JAVACMD \
   $JVM_MEM_OPTS \
   $JAVA_OPTS \
+  -XX:UseSVE=0 \
   -classpath "$CLASSPATH" \
   -Djava.io.tmpdir="$IDP_HOME/tmp" \
   $JAVA_AGENT \

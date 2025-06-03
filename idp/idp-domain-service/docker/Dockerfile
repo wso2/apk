@@ -44,7 +44,7 @@
     ENV METRICS_ENABLED=false
     
     # Define user and group variables
-    ARG USER=wso2apk
+    ARG USER=wso2kgw
     ARG USER_ID=10001
     ARG USER_GROUP=wso2
     ARG USER_GROUP_ID=10001
@@ -72,5 +72,5 @@
     WORKDIR ${USER_HOME}
     
     # Set entrypoint
-    ENTRYPOINT ["sh", "/home/wso2apk/docker-entrypoint.sh"]
+    ENTRYPOINT ["sh", "/home/wso2kgw/docker-entrypoint.sh"]
     

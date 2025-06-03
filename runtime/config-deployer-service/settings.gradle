@@ -6,7 +6,7 @@ include ':java'
 project(':ballerina').projectDir = file('ballerina')
 project(':docker').projectDir = file('docker')
 project(':java').projectDir = file('java')
-project(':java').name = "org.wso2.apk.config"
+project(':java').name = "org.wso2.kgw.config"
 
 dependencyResolutionManagement {
     versionCatalogs {

@@ -1,6 +1,6 @@
 ## IDP Domain Service
 
-APK IDP Domain Service.
+KGW IDP Domain Service.
 
 # Functionalities.
 
