@@ -44,6 +44,13 @@ data:
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
+
+      {{- $auth := .Values.wso2.apk.auth }}
+      {{- if $auth.resourceLevelPermissions }}
+      {{- $scope := $auth.resourceLevelPermissions.scope | default "Cluster" }}
+      DeployResourcesWithClusterRoleBindings = {{ eq $scope "Cluster" }}
+      {{- end }}
+      
     {{ if .Values.wso2.apk.dp.adapter.deployment.configs }}
       enableGatewayClassController = {{ .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController | default false }}
     {{ if .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}

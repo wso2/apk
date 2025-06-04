@@ -10,6 +10,13 @@ data:
       {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
       environment = "{{ .Values.wso2.apk.dp.environment.name }}"
       {{- end }}
+
+      {{- $auth := .Values.wso2.apk.auth }}
+      {{- if $auth.resourceLevelPermissions }}
+      {{- $scope := $auth.resourceLevelPermissions.scope | default "Cluster" }}
+      DeployResourcesWithClusterRoleBindings = {{ eq $scope "Cluster" }}
+      {{- end }}
+
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
     [commoncontroller.metrics]
       enabled = {{.Values.wso2.apk.metrics.enabled}}
@@ -18,7 +25,7 @@ data:
     {{ end}}  
     [commoncontroller.server]
       label = "ratelimiter"
-    {{ if and .Values.wso2.apk.dp.commonController.deployment.configs .Values.wso2.apk.dp.commonController.deployment.configs.apiNamespaces }}
+    {{if and .Values.wso2.apk.dp.commonController.deployment.configs .Values.wso2.apk.dp.commonController.deployment.configs.apiNamespaces }}
     [commoncontroller.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.commonController.deployment.configs.apiNamespaces}}]
     {{ end}}  
