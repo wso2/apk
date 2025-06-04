@@ -46,10 +46,8 @@ webhooks:
     - backends
   sideEffects: None
   namespaceSelector:
-      matchExpressions:
-      - key: metadata.namespace
-        operator: In
-        values: ["{{.Release.Namespace}}"]
+    matchLabels:
+      kubernetes.io/metadata.name: "{{.Release.Namespace}}"
 - admissionReviewVersions:
   - v1
   clientConfig:
@@ -71,10 +69,8 @@ webhooks:
     - apis
   sideEffects: None
   namespaceSelector:
-      matchExpressions:
-      - key: metadata.namespace
-        operator: In
-        values: ["{{.Release.Namespace}}"]
+    matchLabels:
+      kubernetes.io/metadata.name: "{{.Release.Namespace}}"
 - admissionReviewVersions:
     - v1
   clientConfig:
@@ -96,10 +92,8 @@ webhooks:
         - apipolicies
   sideEffects: None
   namespaceSelector:
-      matchExpressions:
-      - key: metadata.namespace
-        operator: In
-        values: ["{{.Release.Namespace}}"]
+    matchLabels:
+      kubernetes.io/metadata.name: "{{.Release.Namespace}}"
 - admissionReviewVersions:
   - v1
   clientConfig:
@@ -121,10 +115,8 @@ webhooks:
     - authentications
   sideEffects: None
   namespaceSelector:
-      matchExpressions:
-      - key: metadata.namespace
-        operator: In
-        values: ["{{.Release.Namespace}}"]
+    matchLabels:
+      kubernetes.io/metadata.name: "{{.Release.Namespace}}"
 {{ if .Values.wso2.apk.dp.ratelimiter.enabled }}
 - admissionReviewVersions:
     - v1
@@ -147,9 +139,7 @@ webhooks:
         - ratelimitpolicies
   sideEffects: None
   namespaceSelector:
-      matchExpressions:
-      - key: metadata.namespace
-        operator: In
-        values: ["{{.Release.Namespace}}"]
+    matchLabels:
+      kubernetes.io/metadata.name: "{{.Release.Namespace}}"
 {{ end }}
 {{- end -}}
