@@ -64,5 +64,6 @@ var defaultConfig = &Config{
 				PoolMaxConnLifetimeJitter: "1s",
 			},
 		},
+		DeployResourcesWithClusterRoleBindings: true,
 	},
 }
