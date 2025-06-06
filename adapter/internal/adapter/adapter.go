@@ -75,6 +75,7 @@ const (
 )
 
 func init() {
+	// Initialize the flags for the management server
 	flag.BoolVar(&debug, "debug", true, "Use debug logging")
 	flag.BoolVar(&onlyLogging, "onlyLogging", false, "Only demo AccessLogging Service")
 	flag.UintVar(&port, "port", 18000, "Management server port")
