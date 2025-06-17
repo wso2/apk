@@ -15,7 +15,7 @@
  *
  */
 
-package v1alpha4
+package v1alpha5
 
 // Hub marks this type as a conversion hub.
 func (*APIPolicy) Hub() {}

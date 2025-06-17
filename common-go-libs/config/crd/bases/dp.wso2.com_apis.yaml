@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.12.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: apis.dp.wso2.com
 spec:
   group: dp.wso2.com
@@ -36,14 +36,19 @@ spec:
         description: API is the Schema for the apis API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -51,8 +56,9 @@ spec:
             description: APISpec defines the desired state of API
             properties:
               apiName:
-                description: APIName is the unique name of the API can be used to
-                  uniquely identify an API.
+                description: |-
+                  APIName is the unique name of the API
+                  can be used to uniquely identify an API.
                 maxLength: 60
                 minLength: 1
                 pattern: ^[^~!@#;:%^*()+={}|\<>"'',&$\[\]\/]*$
@@ -70,8 +76,9 @@ spec:
                 nullable: true
                 type: array
               apiType:
-                description: APIType denotes the type of the API. Possible values
-                  could be REST, GraphQL, Async
+                description: |-
+                  APIType denotes the type of the API.
+                  Possible values could be REST, GraphQL, Async
                 enum:
                 - REST
                 type: string
@@ -82,12 +89,15 @@ spec:
                 pattern: ^[^~!@#;:%^*()+={}|\<>"'',&/$\[\]\s+\/]+$
                 type: string
               basePath:
-                description: 'BasePath denotes the basepath of the API. e.g: /pet-store-api/1.0.6'
+                description: |-
+                  BasePath denotes the basepath of the API.
+                  e.g: /pet-store-api/1.0.6
                 pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
-                description: DefinitionFileRef contains the OpenAPI 3 or Swagger definition
-                  of the API in a ConfigMap.
+                description: |-
+                  DefinitionFileRef contains the OpenAPI 3 or Swagger
+                  definition of the API in a ConfigMap.
                 type: string
               definitionPath:
                 default: /api-definition
@@ -99,12 +109,15 @@ spec:
                   be used as a default API
                 type: boolean
               organization:
-                description: Organization denotes the organization. related to the
-                  API
+                description: |-
+                  Organization denotes the organization.
+                  related to the API
                 type: string
               production:
-                description: 'Production contains a list of references to HttpRoutes
-                  of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
+                description: |-
+                  Production contains a list of references to HttpRoutes
+                  of type HttpRoute.
+                  xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
@@ -120,8 +133,10 @@ spec:
                 nullable: true
                 type: array
               sandbox:
-                description: 'Sandbox contains a list of references to HttpRoutes
-                  of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
+                description: |-
+                  Sandbox contains a list of references to HttpRoutes
+                  of type HttpRoute.
+                  xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
@@ -163,11 +178,13 @@ spec:
                       type: string
                     type: array
                   message:
-                    description: Message represents a user friendly message that explains
-                      the current state of the API.
+                    description: |-
+                      Message represents a user friendly message that explains the
+                      current state of the API.
                     type: string
                   status:
-                    description: Status denotes the state of the API in its lifecycle.
+                    description: |-
+                      Status denotes the state of the API in its lifecycle.
                       Possible values could be Accepted, Invalid, Deploy etc.
                     type: string
                   transitionTime:
@@ -208,14 +225,19 @@ spec:
         description: API is the Schema for the apis API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -223,8 +245,9 @@ spec:
             description: APISpec defines the desired state of API
             properties:
               apiName:
-                description: APIName is the unique name of the API can be used to
-                  uniquely identify an API.
+                description: |-
+                  APIName is the unique name of the API
+                  can be used to uniquely identify an API.
                 maxLength: 60
                 minLength: 1
                 pattern: ^[^~!@#;:%^*()+={}|\<>"'',&$\[\]\/]*$
@@ -242,8 +265,9 @@ spec:
                 nullable: true
                 type: array
               apiType:
-                description: APIType denotes the type of the API. Possible values
-                  could be REST, GraphQL, Async
+                description: |-
+                  APIType denotes the type of the API.
+                  Possible values could be REST, GraphQL, Async
                 enum:
                 - REST
                 - GraphQL
@@ -255,12 +279,15 @@ spec:
                 pattern: ^[^~!@#;:%^*()+={}|\<>"'',&/$\[\]\s+\/]+$
                 type: string
               basePath:
-                description: 'BasePath denotes the basepath of the API. e.g: /pet-store-api/1.0.6'
+                description: |-
+                  BasePath denotes the basepath of the API.
+                  e.g: /pet-store-api/1.0.6
                 pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
-                description: DefinitionFileRef contains the definition of the API
-                  in a ConfigMap.
+                description: |-
+                  DefinitionFileRef contains the
+                  definition of the API in a ConfigMap.
                 type: string
               definitionPath:
                 default: /api-definition
@@ -276,12 +303,15 @@ spec:
                   be used as a default API
                 type: boolean
               organization:
-                description: Organization denotes the organization. related to the
-                  API
+                description: |-
+                  Organization denotes the organization.
+                  related to the API
                 type: string
               production:
-                description: 'Production contains a list of references to HttpRoutes
-                  of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
+                description: |-
+                  Production contains a list of references to HttpRoutes
+                  of type HttpRoute.
+                  xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
@@ -297,8 +327,10 @@ spec:
                 nullable: true
                 type: array
               sandbox:
-                description: 'Sandbox contains a list of references to HttpRoutes
-                  of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
+                description: |-
+                  Sandbox contains a list of references to HttpRoutes
+                  of type HttpRoute.
+                  xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
@@ -340,11 +372,13 @@ spec:
                       type: string
                     type: array
                   message:
-                    description: Message represents a user friendly message that explains
-                      the current state of the API.
+                    description: |-
+                      Message represents a user friendly message that explains the
+                      current state of the API.
                     type: string
                   status:
-                    description: Status denotes the state of the API in its lifecycle.
+                    description: |-
+                      Status denotes the state of the API in its lifecycle.
                       Possible values could be Accepted, Invalid, Deploy etc.
                     type: string
                   transitionTime:
@@ -385,14 +419,19 @@ spec:
         description: API is the Schema for the apis API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -400,8 +439,9 @@ spec:
             description: APISpec defines the desired state of API
             properties:
               apiName:
-                description: APIName is the unique name of the API can be used to
-                  uniquely identify an API.
+                description: |-
+                  APIName is the unique name of the API
+                  can be used to uniquely identify an API.
                 maxLength: 60
                 minLength: 1
                 pattern: ^[^~!@#;:%^*()+={}|\<>"'',&$\[\]\/]*$
@@ -419,8 +459,9 @@ spec:
                 nullable: true
                 type: array
               apiType:
-                description: APIType denotes the type of the API. Possible values
-                  could be REST, GraphQL, GRPC
+                description: |-
+                  APIType denotes the type of the API.
+                  Possible values could be REST, GraphQL, GRPC
                 enum:
                 - REST
                 - GraphQL
@@ -433,12 +474,15 @@ spec:
                 pattern: ^[^~!@#;:%^*()+={}|\<>"'',&/$\[\]\s+\/]+$
                 type: string
               basePath:
-                description: 'BasePath denotes the basepath of the API. e.g: /pet-store-api/1.0.6'
+                description: |-
+                  BasePath denotes the basepath of the API.
+                  e.g: /pet-store-api/1.0.6
                 pattern: ^[/][a-zA-Z0-9~/_.-]*$
                 type: string
               definitionFileRef:
-                description: DefinitionFileRef contains the definition of the API
-                  in a ConfigMap.
+                description: |-
+                  DefinitionFileRef contains the
+                  definition of the API in a ConfigMap.
                 type: string
               definitionPath:
                 default: /api-definition
@@ -454,12 +498,15 @@ spec:
                   be used as a default API
                 type: boolean
               organization:
-                description: Organization denotes the organization. related to the
-                  API
+                description: |-
+                  Organization denotes the organization.
+                  related to the API
                 type: string
               production:
-                description: 'Production contains a list of references to HttpRoutes
-                  of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
+                description: |-
+                  Production contains a list of references to HttpRoutes
+                  of type HttpRoute.
+                  xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
@@ -475,8 +522,10 @@ spec:
                 nullable: true
                 type: array
               sandbox:
-                description: 'Sandbox contains a list of references to HttpRoutes
-                  of type HttpRoute. xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go'
+                description: |-
+                  Sandbox contains a list of references to HttpRoutes
+                  of type HttpRoute.
+                  xref: https://github.com/kubernetes-sigs/gateway-api/blob/main/apis/v1beta1/httproute_types.go
                 items:
                   description: EnvConfig contains the environment specific configuration
                   properties:
@@ -518,11 +567,13 @@ spec:
                       type: string
                     type: array
                   message:
-                    description: Message represents a user friendly message that explains
-                      the current state of the API.
+                    description: |-
+                      Message represents a user friendly message that explains the
+                      current state of the API.
                     type: string
                   status:
-                    description: Status denotes the state of the API in its lifecycle.
+                    description: |-
+                      Status denotes the state of the API in its lifecycle.
                       Possible values could be Accepted, Invalid, Deploy etc.
                     type: string
                   transitionTime:
