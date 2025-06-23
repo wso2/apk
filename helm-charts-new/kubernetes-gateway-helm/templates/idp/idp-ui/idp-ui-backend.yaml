@@ -15,27 +15,15 @@
 # under the License.
 {{- if .Values.idp.enabled }}
 kind: "Backend"
-apiVersion: "dp.wso2.com/v1alpha2"
+apiVersion: "gateway.envoyproxy.io/v1alpha1"
 metadata:
   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ui-backend
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
 spec:
- services:
-  - host:  {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ui-service.{{ .Release.Namespace }}
-    port: 9443
- protocol: "https"
- tls:
-  allowedSANs:
-   - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ui-service.{{ .Release.Namespace }}.svc
-  secretRef:
-  {{- if and .Values.idp.idpui.configs .Values.idp.idpui.configs.tls }}
-    name: {{.Values.idp.idpui.configs.tls.secretName}}
-    key: {{.Values.idp.idpui.configs.tls.certFilename}}
-  {{- else }}
-    name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ui-server-cert
-    key: tls.crt
-  {{- end }}
-
+  endpoints:
+    - fqdn:
+        hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ui-service.{{ .Release.Namespace }}.svc
+        port: 9443
 {{- end -}}
