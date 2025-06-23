@@ -566,22 +566,28 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
 
 			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
-			if matchedAPI.RequestInBuiltPolicies != nil &&
-				len(matchedAPI.RequestInBuiltPolicies) > 0 {
-				for _, policy := range matchedAPI.RequestInBuiltPolicies {
-					if policy == nil {
-						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
-						continue
+		apiRequestPolicyLoop:
+			for _, policy := range matchedAPI.RequestInBuiltPolicies {
+				if policy == nil {
+					s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+					continue
+				}
+				switch policy.GetPolicyName() {
+				case inbuiltpolicy.RegexGuardrailName:
+					s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy Enabled")
+					regexGuardrail := inbuiltpolicy.NewRegexGuardrail(policy)
+					policyValdationResponse = regexGuardrail.HandleRequest(&s.cfg.Logger, req)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy validation failed")
+						break apiRequestPolicyLoop
 					}
-					switch policy.GetPolicyName() {
-					case inbuiltpolicy.RegexGuardrailName:
-						s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy Enabled")
-						regexGuardrail := inbuiltpolicy.NewRegexGuardrail(policy)
-						policyValdationResponse = regexGuardrail.HandleRequest(&s.cfg.Logger, req)
-						if policyValdationResponse != nil {
-							s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy validation failed")
-							break
-						}
+				case inbuiltpolicy.WordCountGuardrailName:
+					s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy Enabled")
+					wordCountGuardrail := inbuiltpolicy.NewWordCountGuardrail(policy)
+					policyValdationResponse = wordCountGuardrail.HandleRequest(&s.cfg.Logger, req)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy validation failed")
+						break apiRequestPolicyLoop
 					}
 				}
 			}
@@ -597,6 +603,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				(matchedResource.RequestInBuiltPolicies != nil &&
 					len(matchedResource.RequestInBuiltPolicies) > 0) {
 				s.cfg.Logger.Sugar().Debug("Resource Level Request Policies Enabled")
+			resourceRequestPolicyLoop:
 				for _, policy := range matchedResource.RequestInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -609,7 +616,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						policyValdationResponse = regexGuardrail.HandleRequest(&s.cfg.Logger, req)
 						if policyValdationResponse != nil {
 							s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy validation failed")
-							break
+							break resourceRequestPolicyLoop
+						}
+					case inbuiltpolicy.WordCountGuardrailName:
+						s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy Enabled")
+						wordCountGuardrail := inbuiltpolicy.NewWordCountGuardrail(policy)
+						policyValdationResponse = wordCountGuardrail.HandleRequest(&s.cfg.Logger, req)
+						if policyValdationResponse != nil {
+							s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy validation failed")
+							break resourceRequestPolicyLoop
 						}
 					}
 				}
@@ -1009,6 +1024,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if matchedAPI.ResponseInBuiltPolicies != nil &&
 				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("API Level Response Policies Enabled")
+			apiResponsePolicyLoop:
 				for _, policy := range matchedAPI.ResponseInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -1021,7 +1037,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						policyValdationResponse = regexGuardrail.HandleResponse(&s.cfg.Logger, resp)
 						if policyValdationResponse != nil {
 							s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy validation failed")
-							break
+							break apiResponsePolicyLoop
+						}
+					case inbuiltpolicy.WordCountGuardrailName:
+						s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy Enabled")
+						wordCountGuardrail := inbuiltpolicy.NewWordCountGuardrail(policy)
+						policyValdationResponse = wordCountGuardrail.HandleResponse(&s.cfg.Logger, resp)
+						if policyValdationResponse != nil {
+							s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy validation failed")
+							break apiResponsePolicyLoop
 						}
 					}
 				}
@@ -1038,6 +1062,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				(matchedResource.ResponseInBuiltPolicies != nil &&
 					len(matchedResource.ResponseInBuiltPolicies) > 0) {
 				s.cfg.Logger.Sugar().Debug("Resource Level Response Policies Enabled")
+			resourceResponsePolicyLoop:
 				for _, policy := range matchedResource.ResponseInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -1050,7 +1075,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						policyValdationResponse = regexGuardrail.HandleResponse(&s.cfg.Logger, resp)
 						if policyValdationResponse != nil {
 							s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy validation failed")
-							break
+							break resourceResponsePolicyLoop
+						}
+					case inbuiltpolicy.WordCountGuardrailName:
+						s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy Enabled")
+						wordCountGuardrail := inbuiltpolicy.NewWordCountGuardrail(policy)
+						policyValdationResponse = wordCountGuardrail.HandleResponse(&s.cfg.Logger, resp)
+						if policyValdationResponse != nil {
+							s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy validation failed")
+							break resourceResponsePolicyLoop
 						}
 					}
 				}

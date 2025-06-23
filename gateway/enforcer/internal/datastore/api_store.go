@@ -129,8 +129,17 @@ func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []d
 	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(requestPolicies))
 	for _, policy := range requestPolicies {
 		switch policy.PolicyName {
-		case "RegexGuardrail":
+		case inbuiltpolicy.RegexGuardrailName:
 			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.RegexGuardrail{
+				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
+					PolicyName:    policy.PolicyName,
+					PolicyID:      policy.PolicyID,
+					PolicyVersion: policy.PolicyVersion,
+					Parameters:    policy.Parameters,
+				},
+			})
+		case inbuiltpolicy.WordCountGuardrailName:
+			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.WordCountGuardrail{
 				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
 					PolicyName:    policy.PolicyName,
 					PolicyID:      policy.PolicyID,

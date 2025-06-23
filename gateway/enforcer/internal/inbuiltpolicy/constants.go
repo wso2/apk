@@ -33,9 +33,12 @@ const (
 	Direction                  = "direction"
 	Assessments                = "assessments"
 
-	RegexGuardrailName = "RegexGuardrail"
+	RegexGuardrailName     = "RegexGuardrail"
+	WordCountGuardrailName = "WordCountGuardrail"
 
-	RegexGuardrailConstant = "REGEX_GUARDRAIL"
+	RegexGuardrailConstant     = "REGEX_GUARDRAIL"
+	WordCountGuardrailConstant = "WORD_COUNT_GUARDRAIL"
 
 	TextCleanRegex = "^\"|\"$"
+	WordSplitRegex = "\\s+"
 )
