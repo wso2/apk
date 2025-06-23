@@ -56,6 +56,8 @@ type API struct {
 	AIModelBasedRoundRobin            *dto.AIModelBasedRoundRobin  `json:"aiModelBasedRoundRobin"`            // AI model-based round robin configuration
 	DoSubscriptionAIRLInHeaderReponse bool                         `json:"doSubscriptionAIRLInHeaderReponse"` // Whether to include subscription AIRL in header response
 	DoSubscriptionAIRLInBodyReponse   bool                         `json:"doSubscriptionAIRLInBodyReponse"`   // Whether to include subscription AIRL in body response
+	RequestInBuiltPolicies            []dto.InBuiltPolicy          `json:"requestPolicies"`                   // List of request policies for the API
+	ResponseInBuiltPolicies           []dto.InBuiltPolicy          `json:"responsePolicies"`                  // List of response policies for the API
 }
 
 // IsGraphQLAPI checks whether the API is graphql

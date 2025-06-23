@@ -24,6 +24,7 @@ import (
 	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+	"github.com/wso2/apk/gateway/enforcer/internal/inbuiltpolicy"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
@@ -84,6 +85,8 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			AIModelBasedRoundRobin:            convertAIModelBasedRoundRobinToDTO(api.AiModelBasedRoundRobin),
 			DoSubscriptionAIRLInHeaderReponse: api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InHeader,
 			DoSubscriptionAIRLInBodyReponse:   api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InBody,
+			RequestInBuiltPolicies:            covertRequestInBuiltPoliciesToDTO(api.RequestInBuiltPolicies),
+			ResponseInBuiltPolicies:           covertResponseInBuiltPoliciesToDTO(api.ResponseInBuiltPolicies),
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
@@ -116,6 +119,50 @@ func (s *APIStore) GetAPIs() map[string]*requestconfig.API {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.apis
+}
+
+// convertRequestInBuiltPoliciesToDTO converts a slice of InBuiltPolicy to a slice of dto.InBuiltPolicy.
+func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
+	if requestPolicies == nil {
+		return nil
+	}
+	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(requestPolicies))
+	for _, policy := range requestPolicies {
+		switch policy.PolicyName {
+		case "RegexGuardrail":
+			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.RegexGuardrail{
+				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
+					PolicyName:    policy.PolicyName,
+					PolicyID:      policy.PolicyID,
+					PolicyVersion: policy.PolicyVersion,
+					Parameters:    policy.Parameters,
+				},
+			})
+		}
+	}
+	return dtoPolicies
+}
+
+// convertResponseInBuiltPoliciesToDTO converts a slice of InBuiltPolicy to a slice of dto.InBuiltPolicy.
+func covertResponseInBuiltPoliciesToDTO(responsePolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
+	if responsePolicies == nil {
+		return nil
+	}
+	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(responsePolicies))
+	for _, policy := range responsePolicies {
+		switch policy.PolicyName {
+		case "RegexGuardrail":
+			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.RegexGuardrail{
+				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
+					PolicyName:    policy.PolicyName,
+					PolicyID:      policy.PolicyID,
+					PolicyVersion: policy.PolicyVersion,
+					Parameters:    policy.Parameters,
+				},
+			})
+		}
+	}
+	return dtoPolicies
 }
 
 // convertAIModelBasedRoundRobinToDTO converts AIModelBasedRoundRobin to DTO.
