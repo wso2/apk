@@ -1,0 +1,256 @@
+# Copyright (c) 2025 WSO2 LLC. (http://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+{{- if .Values.wso2.kgw.dp.enabled }}
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: {{ .Values.wso2.kgw.dp.envoyProxy.name | default "wso2-kgw-envoy-proxy-default" }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  logging:
+    level:
+      default: warn
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              selector:
+                matchLabels:
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 18}}
+              template:
+                metadata:
+                  labels:
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 20}}
+                spec:
+                  containers:
+                    - name: enforcer
+                      image: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.image }}
+                      imagePullPolicy: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy }}
+                      ports:
+                        - containerPort: 8081
+                          protocol: "TCP"
+                        - containerPort: 9001
+                          protocol: "TCP"
+                        - containerPort: 5006	
+                          protocol: "TCP"
+                        - containerPort: 8084
+                          protocol: "TCP"
+                        - containerPort: 9092
+                          protocol: "TCP"
+                        - containerPort: 18002
+                          protocol: "TCP"
+                        {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled}}
+                        - containerPort: 18006
+                          protocol: "TCP"
+                        {{- end }}
+{{ include "kubernetes-gateway-helm.deployment.resources" .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.resources | indent 22 }}
+{{ include "kubernetes-gateway-helm.deployment.env" .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.env | indent 22 }}
+                        - name: COMMON_CONTROLLER_HOST_NAME
+                          value: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
+                        - name: COMMON_CONTROLLER_HOST
+                          value: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
+                        - name: ENFORCER_PRIVATE_KEY_PATH
+                          value: /home/wso2/security/keystore/enforcer.key  
+                        - name: ENFORCER_PUBLIC_CERT_PATH
+                          value: /home/wso2/security/keystore/enforcer.crt
+                        - name: ENFORCER_SERVER_NAME
+                          value: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc
+                        - name: TRUSTED_CA_CERTS_PATH
+                          value: "/home/wso2/security/truststore"
+                        - name: COMMON_CONTROLLER_XDS_PORT
+                          value : "18002"
+                        - name: COMMON_CONTROLLER_REST_PORT
+                          value : "18003"
+                        - name: ENFORCER_LABEL
+                          value : {{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}
+                        - name: ENFORCER_REGION
+                          value: UNKNOWN
+                        - name: XDS_MAX_MSG_SIZE
+                          value: "4194304"
+                        - name: XDS_MAX_RETRIES 
+                          value: "3"
+                        - name: enforcer_admin_pwd
+                          value: admin
+                        {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
+                        - name: METRICS_ENABLED
+                          value: "true"
+                        {{- end }}
+                        {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis }}
+                        - name: REDIS_USERNAME
+                          value: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.username | default "default" }}
+                        - name: REDIS_PASSWORD
+                          value: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.password | default "" }}
+                        - name: REDIS_HOST
+                          value: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.host | default "redis-master" }}
+                        - name: REDIS_PORT
+                          value: "{{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.port | default "6379" }}"
+                        - name: IS_REDIS_TLS_ENABLED
+                          value: "{{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.tlsEnabled | default "false" }}"
+                        - name: REDIS_REVOKED_TOKENS_CHANNEL
+                          value: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.channelName | default "wso2-kgw-revoked-tokens-channel" }}
+                        - name: REDIS_KEY_FILE
+                          value: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.userKeyPath | default "/home/wso2/security/truststore/enforcer.key" }}
+                        - name: REDIS_CERT_FILE
+                          value: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.userCertPath | default "/home/wso2/security/truststore/enforcer.crt" }}
+                        - name: REDIS_CA_CERT_FILE
+                          value: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.redisCaCertPath | default "/home/wso2/security/truststore/enforcer.crt" }}
+                        - name: REVOKED_TOKEN_CLEANUP_INTERVAL
+                          value: "{{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.redis.tokenCleanupInterval | default "3600" }}"
+                        {{- else }}
+                        - name: REDIS_USERNAME
+                          value: "default"
+                        - name: REDIS_PASSWORD
+                          value: ""
+                        - name: REDIS_HOST
+                          value: "redis-master"
+                        - name: REDIS_PORT
+                          value: "6379"
+                        - name: IS_REDIS_TLS_ENABLED
+                          value: "false"
+                        - name: REDIS_REVOKED_TOKENS_CHANNEL
+                          value: "wso2-kgw-revoked-tokens-channel"
+                        - name: REDIS_KEY_FILE
+                          value: "/home/wso2/security/truststore/enforcer.key"
+                        - name: REDIS_CERT_FILE
+                          value: "/home/wso2/security/truststore/enforcer.crt"
+                        - name: REDIS_CA_CERT_FILE
+                          value: "/home/wso2/security/truststore/enforcer.crt"
+                        - name: REVOKED_TOKEN_CLEANUP_INTERVAL
+                          value: "3600"
+                        {{- end }}
+                      volumeMounts:
+                        - name: tmp
+                          mountPath: /tmp
+                        - name: enforcer-keystore-secret-volume
+                          mountPath: /home/wso2/security/keystore/enforcer.key
+                        {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+                          subPath: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls.certKeyFilename | default "tls.key" }}
+                        {{- else }}
+                          subPath: tls.key
+                        {{- end }}
+                        - name: enforcer-keystore-secret-volume
+                          mountPath: /home/wso2/security/keystore/enforcer.crt
+                        {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+                          subPath: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | default "tls.crt" }}
+                        {{- else }}
+                          subPath: tls.crt
+                        {{- end }}
+                        - name: enforcer-keystore-secret-volume
+                          mountPath: /home/wso2/security/truststore/apk.crt
+                        {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+                          subPath: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls.caCertFileName | default "ca.crt" }}
+                        {{- else }}
+                          subPath: ca.crt
+                        {{- end }}
+                        - name: enforcer-keystore-secret-volume
+                          mountPath: /home/wso2/security/truststore/enforcer.crt
+                        {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+                          subPath: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls.certFilename | default "tls.crt" }}
+                        {{- else }}
+                          subPath: tls.crt
+                        {{- end }}
+                        - name: log-conf-volume
+                          mountPath: /home/wso2/conf/
+                        - name: enforcer-health-check-volume
+                          mountPath: /home/wso2/check_health.sh
+                          subPath: check_health.sh
+                        - name: enforcer-jwt-secret-volume
+                          mountPath: /home/wso2/security/keystore/mg.pem
+                          subPath: mg.pem
+                        - name: enforcer-jwt-secret-volume
+                          mountPath: /home/wso2/security/truststore/mg.pem
+                          subPath: mg.pem
+                        - name: enforcer-jwt-secret-volume
+                          mountPath: /home/wso2/security/keystore/mg.key
+                          subPath: mg.key
+                        - name: enforcer-trusted-certs
+                          mountPath: /home/wso2/security/truststore/wso2carbon.pem
+                          subPath: wso2carbon.pem
+                        - name: enforcer-apikey-cert
+                          mountPath: /home/wso2/security/truststore/wso2-apim-carbon.pem
+                          subPath: wso2-apim-carbon.pem
+                        - name: idp-certificate-secret-volume
+                          mountPath: /home/wso2/security/truststore/idp.pem
+                        {{ if and .Values.wso2.kgw.idp.signing .Values.wso2.kgw.idp.signing.fileName }}
+                          subPath: {{ .Values.wso2.kgw.idp.signing.fileName }}
+                        {{ else }}
+                          subPath: wso2carbon.pem
+                        {{ end }}
+                        # {{ if and .Values.wso2.kgw.idp.tls .Values.wso2.kgw.idp.tls.fileName }}
+                        # - name: idp-tls-certificate-secret-volume
+                        #   mountPath: /home/wso2/security/truststore/idp-tls.pem
+                        #   subPath: {{ .Values.wso2.kgw.idp.tls.fileName }}
+                        # {{ end }}
+                      readinessProbe:
+                        exec:
+                          command: [ "sh", "check_health.sh" ]
+                        initialDelaySeconds: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.readinessProbe.initialDelaySeconds }}
+                        periodSeconds: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.readinessProbe.periodSeconds }}
+                        failureThreshold: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold }}
+                      livenessProbe:
+                        exec:
+                          command: [ "sh", "check_health.sh" ]
+                        initialDelaySeconds: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds }}
+                        periodSeconds: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds }}
+                        failureThreshold: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold }}
+                      securityContext:
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop: ["ALL"]
+                        readOnlyRootFilesystem: true
+                        runAsNonRoot: true
+                  imagePullSecrets:
+                    - name: {{ .Values.wso2.subscription.imagePullSecrets }}
+                  securityContext:
+                    seccompProfile:
+                      type: "RuntimeDefault"
+                  volumes:
+                    - name: enforcer-keystore-secret-volume
+                      secret:
+                      {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls }}
+                        secretName: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.tls.certificatesSecret | default (printf "%s-enforcer-server-cert" (include "kubernetes-gateway-helm.resource.prefix" .)) }}
+                      {{- else }}
+                        secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-server-cert
+                      {{- end }}
+                    - name: log-conf-volume
+                      configMap:
+                        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-log-conf
+                    - name: enforcer-health-check-volume
+                      configMap:
+                        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-grpc-probe-script-conf
+                    - name: enforcer-jwt-secret-volume
+                      secret:
+                        secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-keystore-secret
+                    - name: enforcer-trusted-certs
+                      secret:
+                        secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-truststore-secret
+                    - name: enforcer-apikey-cert
+                      secret:
+                        secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-truststore-secret
+                    - name: idp-certificate-secret-volume
+                      secret:
+                      {{ if and .Values.wso2.kgw.idp.signing .Values.wso2.kgw.idp.signing.secretName }}
+                        secretName: {{ .Values.wso2.kgw.idp.signing.secretName }}
+                      {{else}}
+                        secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-truststore-secret
+                      {{ end}}
+                    - name: tmp
+                      emptyDir: {}
+{{- end }}

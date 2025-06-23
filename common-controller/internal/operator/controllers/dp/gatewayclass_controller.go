@@ -46,7 +46,7 @@ const (
 
 var (
 	setReadiness                 sync.Once
-	wso2APKDefaultControllerName = "wso2.com/apk-gateway-default"
+	wso2APKDefaultControllerName = "gateway.envoyproxy.io/gatewayclass-controller"
 )
 
 // GatewayClassReconciler reconciles a Gateway object

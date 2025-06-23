@@ -15,54 +15,20 @@
 # under the License.
 
 {{- if and .Values.wso2.kgw.dp.enabled .Values.wso2.kgw.dp.commonController }}
-kind: "API"
-apiVersion: "dp.wso2.com/v1alpha3"
-metadata:
-  name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-wso2-kgw-notification-api"
-  namespace: {{ .Release.Namespace }}
-  labels:
-    managed-by: "kgw"
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
-spec:
-  apiName: "WSO2 kgw Notification API"
-  apiType: "REST"
-  apiVersion: "1.0.0"
-  basePath: "/api/notification/1.0.0"
-  isDefaultVersion: true
-  organization: "kgw-system"
-  definitionFileRef: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-definition"
-  production:
-  - routeRefs:
-    - "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-route"
-  systemAPI: true
----
 kind: "Backend"
-apiVersion: "dp.wso2.com/v1alpha2"
+apiVersion: "gateway.envoyproxy.io/v1alpha1"
 metadata:
   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-backend
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
 spec:
-  basePath: ""
-  services:
-    - host:  {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
-      port: 9543
-  protocol: "https"
-  tls:
-    allowedSANs:
-      - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
-    secretRef:
-    {{- if and .Values.wso2.kgw.dp.commonController.deployment.configs .Values.wso2.kgw.dp.commonController.deployment.configs.tls }}
-      name: {{ .Values.wso2.kgw.dp.commonController.deployment.configs.tls.secretName}}
-      key: {{ .Values.wso2.kgw.dp.commonController.deployment.configs.tls.certKeyFilename }}
-    {{- else }}
-      name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-server-cert
-      key: tls.crt
-    {{- end }}
+  endpoints:
+    - fqdn:
+        hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
+        port: 9543
 ---
-apiVersion: "gateway.networking.k8s.io/v1beta1"
+apiVersion: "gateway.networking.k8s.io/v1"
 kind: "HTTPRoute"
 metadata:
   name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-route"
@@ -75,20 +41,26 @@ spec:
   hostnames:
     - "{{ .Values.wso2.kgw.listener.hostname | default "api.am.wso2.com"}}"
   rules:
-    - matches:
-        - path:
-            type: "RegularExpression"
-            value: "/notify"
-          method: "POST"
-      backendRefs:
-        - group: "dp.wso2.com"
-          kind: "Backend"
-          name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-backend"
+  - matches:
+    - path:
+        type: "RegularExpression"
+        value: "/api/notification/1.0.0/notify"
+      method: "POST"
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+            type: ReplaceFullPath
+            replaceFullPath: /notify
+    backendRefs:
+    - group: "gateway.envoyproxy.io"
+      kind: "Backend"
+      name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-backend"
   parentRefs:
-    - group: "gateway.networking.k8s.io"
-      kind: "Gateway"
-      name: {{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}
-      sectionName: "httpslistener"
+  - group: "gateway.networking.k8s.io"
+    kind: "Gateway"
+    name: {{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}
+    sectionName: "apilistener"
 ---
 kind: "ConfigMap"
 apiVersion: "v1"
@@ -102,22 +74,19 @@ metadata:
 binaryData:
   definition: "H4sIAAAAAAAA/31TTW/bMAz9K4LOi5N028W3dsghCJYUa7rLUhSqTc/qrI9KdFYv8H8fKTtrgwTzxTb5RL73SB2k82CV1zKXH7NZNpcfhNS2cjI/SNTYACXWDnWlC4XaWXF9u2RMCbEI2nOIENtaR84IH9xeU04oYaColdXRiMoFEcGW2v6kuH1fDR0dW2U7yzX3EOJQb05UZrKnWITAYZn/OMg2NJSrEX3Mp1MincGrMr6BrHBmup+f87oNrmyL1GkoJPuHVLRog8YuVS2hUm2D9P2Qkl5hHVn+NDHt+NO7iPyOrTEqdEdPOiZ/3nXwi0zAGkTsIoIZFXoVlAE8CrL0Q3jsPAy+089LC9TggsMgGCdcdeJgJr62EcUTiJ3cblaL9eO3xffNl+vtcrPeyYwLBXhpdYBS5hhaYPnYpbnSXAwD4NU3roS3fFGDUWkDmFlOBwLNTvbJHy4HEW9cmawpnEWwyR3lfTPSmj5Hpn04r+WenqHAZEag3QtIRqW0+wX2Us8+MUxzfoeTnWvDRBUFxDhJsUkNAUb8qeQhEr2zceh1NZvx69ThzSot3KdLuRtVilH3CJqfg+6tarF2Qf+hxoz6fKnUkuwKVjXiLi2kWITgaC37/67loIq2nDSQ2UnEEX3HDg+6/p15c5spXbHbVeN+J5A2PCU9TGwknGZ2f3K9kLTyvZJpIWhSfLgfnr9aQ7ylNgQAAA=="
 ---
-apiVersion: "dp.wso2.com/v1alpha2"
-kind: "Authentication"
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: BackendTLSPolicy
 metadata:
-  name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-no-authentication-policy"
-  namespace: {{ .Release.Namespace }}
-  labels:
-    managed-by: "kgw"
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-backend-tls
 spec:
-  override:
-    disabled: true
-  targetRef:
-    group: ""
-    kind: "API"
-    name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-wso2-kgw-notification-api"
-    namespace: {{ .Release.Namespace }}
----
+  targetRefs:
+    - group: gateway.envoyproxy.io
+      kind: Backend
+      name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-backend
+  validation:
+    caCertificateRefs:
+      - name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-server-cert
+        group: ''
+        kind: Secret
+    hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
 {{- end}}
