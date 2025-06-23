@@ -19,7 +19,6 @@ package inbuiltpolicy
 
 import (
 	"encoding/json"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -28,11 +27,6 @@ import (
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
-)
-
-var (
-	textCleanRe = regexp.MustCompile(`[^\w\s]`) // Remove non-word, non-space chars
-	wordSplitRe = regexp.MustCompile(`\s+`)     // Split on whitespace
 )
 
 // WordCountGuardrail is a struct that represents a word count guardrail policy.
@@ -84,11 +78,11 @@ func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []b
 	}
 
 	// Clean and trim
-	extractedValue = textCleanRe.ReplaceAllString(extractedValue, "")
+	extractedValue = TextCleanRe.ReplaceAllString(extractedValue, "")
 	extractedValue = strings.TrimSpace(extractedValue)
 
 	// Split into words and count non-empty
-	words := wordSplitRe.Split(extractedValue, -1)
+	words := WordSplitRe.Split(extractedValue, -1)
 	wordCount := 0
 	for _, w := range words {
 		if w != "" {

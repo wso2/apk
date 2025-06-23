@@ -17,6 +17,8 @@
 
 package inbuiltpolicy
 
+import "regexp"
+
 // Constants for Guardrail policies
 const (
 	ErrorCode    = "code"
@@ -41,4 +43,9 @@ const (
 
 	TextCleanRegex = "^\"|\"$"
 	WordSplitRegex = "\\s+"
+)
+
+var (
+	TextCleanRe = regexp.MustCompile(TextCleanRegex) // Remove non-word, non-space chars
+	WordSplitRe = regexp.MustCompile(WordSplitRegex) // Split on whitespace
 )
