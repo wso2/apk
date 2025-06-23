@@ -156,6 +156,15 @@ func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []d
 					Parameters:    policy.Parameters,
 				},
 			})
+		case inbuiltpolicy.ContentLengthGuardrailName:
+			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.ContentLengthGuardrail{
+				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
+					PolicyName:    policy.PolicyName,
+					PolicyID:      policy.PolicyID,
+					PolicyVersion: policy.PolicyVersion,
+					Parameters:    policy.Parameters,
+				},
+			})
 		}
 	}
 	return dtoPolicies

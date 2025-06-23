@@ -38,10 +38,12 @@ const (
 	RegexGuardrailName         = "RegexGuardrail"
 	WordCountGuardrailName     = "WordCountGuardrail"
 	SentenceCountGuardrailName = "SentenceCountGuardrail"
+	ContentLengthGuardrailName = "ContentLengthGuardrail"
 
 	RegexGuardrailConstant         = "REGEX_GUARDRAIL"
 	WordCountGuardrailConstant     = "WORD_COUNT_GUARDRAIL"
 	SentenceCountGuardrailConstant = "SENTENCE_COUNT_GUARDRAIL"
+	ContentLengthGuardrailConstant = "CONTENT_LENGTH_GUARDRAIL"
 
 	TextCleanRegex     = "^\"|\"$"
 	WordSplitRegex     = "\\s+"
