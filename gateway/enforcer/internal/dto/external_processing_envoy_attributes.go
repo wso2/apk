@@ -30,6 +30,7 @@ type ExternalProcessingEnvoyAttributes struct {
 	APIName                                string `json:"apiNameAttribute"`
 	ClusterName                            string `json:"clusterNameAttribute"`
 	RequestMethod                          string `json:"requestMethodAttribute"`
+	RequestID                              string `json:"requestIdAttribute"`
 	Organization                           string `json:"organizationAttribute"`
 	ApplicationID                          string `json:"applicationIdAttribute"`
 	CorrelationID                          string `json:"correlationIdAttribute"`
