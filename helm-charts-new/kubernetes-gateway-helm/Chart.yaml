@@ -8,7 +8,7 @@ dependencies:
   - name: gateway-helm
     version: "1.3.2"
     repository: "oci://docker.io/envoyproxy"
-    alias: envoy-gateway     # optional, gives it a nicer sub-chart name
+    alias: envoy     # optional, gives it a nicer sub-chart name
     condition: envoy.enabled # optional: only pull if values.envoy.enabled == true
   - name: postgresql
     version: "16.4.14"

@@ -1,4 +1,4 @@
-# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+# Copyright (c) 2025 WSO2 LLC. (http://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
@@ -13,17 +13,15 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.idp.enabled }}
-kind: "Backend"
-apiVersion: "gateway.envoyproxy.io/v1alpha1"
+{{- if .Values.wso2.kgw.dp.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
 metadata:
-  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-authentication-endpoint-ds-backend
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
+  {{- if .Values.wso2.kgw.dp.gatewayClass }}
+  name: {{ .Values.wso2.kgw.dp.gatewayClass.name | default "wso2-kgw-default" }}
+  {{- else }}
+  name: "wso2-kgw-default"
+  {{- end }}
 spec:
-  endpoints:
-    - fqdn:
-        hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
-        port: 9443
+  controllerName: "gateway.envoyproxy.io/gatewayclass-controller"
 {{- end -}}

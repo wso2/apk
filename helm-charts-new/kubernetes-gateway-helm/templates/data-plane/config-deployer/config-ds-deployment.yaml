@@ -100,6 +100,9 @@ spec:
               mountPath: /home/wso2kgw/config-deployer/security/partition-server.pem
               subPath: {{.Values.wso2.kgw.dp.partitionServer.tls.fileName | default "tls.crt"}}
             {{- end }}
+            - name: enforcer-jwt-secret-volume
+              mountPath: /home/wso2kgw/config-deployer/security/mg.pem
+              subPath: mg.pem
             - name: tmp
               mountPath: /tmp
             - name: config-deployer-temp
@@ -139,6 +142,9 @@ spec:
           secret:
             secretName: {{.Values.wso2.kgw.dp.partitionServer.tls.secretName}}
         {{ end }}
+        - name: enforcer-jwt-secret-volume
+          secret: 
+            secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-keystore-secret
         - name: tmp
           emptyDir: {}
         - name: config-deployer-temp
