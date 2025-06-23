@@ -1,4 +1,4 @@
-# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+# Copyright (c) 2025 WSO2 LLC. (http://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
@@ -17,7 +17,7 @@
 # apiVersion: "gateway.envoyproxy.io/v1alpha1"
 # kind: "SecurityPolicy"
 # metadata:
-#   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-commonoauth-ds-authentication
+#   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-authentication-endpoint-ds-authentication
 #   namespace: {{ .Release.Namespace }}
 #   labels:
 #     api-name: "idp-domain-service"
@@ -28,5 +28,5 @@
 #   targetRefs:
 #     - kind: HTTPRoute
 #       group: "gateway.networking.k8s.io"
-#       name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-commonoauth-ds-httproute
+#       name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-authentication-endpoint-ds-httproute
 # {{- end -}}

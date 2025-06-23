@@ -15,27 +15,17 @@
 # under the License.
 {{- if and .Values.wso2.kgw.dp.enabled .Values.wso2.kgw.dp.configdeployer.enabled }}
 kind: "Backend"
-apiVersion: "dp.wso2.com/v1alpha2"
+apiVersion: "gateway.envoyproxy.io/v1alpha1"
 metadata:
   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-generator-backend
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
 spec:
- basePath: "/api/configurator"
- services:
-  - host:  {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}
-    port: 9443
- protocol: "https"
- tls:
-  allowedSANs:
-   - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}.svc
-  secretRef:
-  {{- if and .Values.wso2.kgw.dp.configdeployer.deployment.configs .Values.wso2.kgw.dp.configdeployer.deployment.configs.tls }}
-    name: {{.Values.wso2.kgw.dp.configdeployer.deployment.configs.tls.secretName}}
-    key: {{.Values.wso2.kgw.dp.configdeployer.deployment.configs.tls.certFilename}}
-  {{- else }}
-    name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-ds-server-cert
-    key: tls.crt
-  {{- end }}
+  # appProtocols:
+  #   - gateway.envoyproxy.io/h2c
+  endpoints:
+    - fqdn:
+        hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}.svc
+        port: 9443
 {{- end -}}

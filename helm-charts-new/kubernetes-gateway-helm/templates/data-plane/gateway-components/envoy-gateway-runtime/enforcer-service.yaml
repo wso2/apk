@@ -1,4 +1,4 @@
-# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+# Copyright (c) 2025 WSO2 LLC. (http://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,
 # Version 2.0 (the "License"); you may not use this file except
@@ -13,17 +13,18 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.idp.enabled }}
-kind: "Backend"
-apiVersion: "gateway.envoyproxy.io/v1alpha1"
+{{- if .Values.wso2.kgw.dp.enabled }}
+apiVersion: v1
+kind: Service
 metadata:
-  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-authentication-endpoint-ds-backend
-  namespace: {{ .Release.Namespace }}
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-service
+  namespace : {{ .Release.Namespace }}
 spec:
-  endpoints:
-    - fqdn:
-        hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
-        port: 9443
+  # label keys and values that must match in order to receive traffic for this service
+  selector:
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 4}}
+  ports:
+    - name: servlet-https
+      protocol: TCP
+      port: 9092
 {{- end -}}
