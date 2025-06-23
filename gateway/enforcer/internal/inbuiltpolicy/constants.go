@@ -35,17 +35,21 @@ const (
 	Direction                  = "direction"
 	Assessments                = "assessments"
 
-	RegexGuardrailName     = "RegexGuardrail"
-	WordCountGuardrailName = "WordCountGuardrail"
+	RegexGuardrailName         = "RegexGuardrail"
+	WordCountGuardrailName     = "WordCountGuardrail"
+	SentenceCountGuardrailName = "SentenceCountGuardrail"
 
-	RegexGuardrailConstant     = "REGEX_GUARDRAIL"
-	WordCountGuardrailConstant = "WORD_COUNT_GUARDRAIL"
+	RegexGuardrailConstant         = "REGEX_GUARDRAIL"
+	WordCountGuardrailConstant     = "WORD_COUNT_GUARDRAIL"
+	SentenceCountGuardrailConstant = "SENTENCE_COUNT_GUARDRAIL"
 
-	TextCleanRegex = "^\"|\"$"
-	WordSplitRegex = "\\s+"
+	TextCleanRegex     = "^\"|\"$"
+	WordSplitRegex     = "\\s+"
+	SentenceSplitRegex = "[.!?]"
 )
 
 var (
-	TextCleanRe = regexp.MustCompile(TextCleanRegex) // Remove non-word, non-space chars
-	WordSplitRe = regexp.MustCompile(WordSplitRegex) // Split on whitespace
+	TextCleanRegexCompiled     = regexp.MustCompile(TextCleanRegex)     // TextCleanRegexCompiled is used to clean text by removing leading and trailing quotes
+	WordSplitRegexCompiled     = regexp.MustCompile(WordSplitRegex)     // WordSplitRegexCompiled is used to split text into words based on whitespace
+	SentenceSplitRegexCompiled = regexp.MustCompile(SentenceSplitRegex) // SentenceSplitRegexCompiled is used to split text into sentences based on punctuation marks (., !, ?
 )

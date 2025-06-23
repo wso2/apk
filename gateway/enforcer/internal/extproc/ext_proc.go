@@ -589,6 +589,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy validation failed")
 						break apiRequestPolicyLoop
 					}
+				case inbuiltpolicy.SentenceCountGuardrailName:
+					s.cfg.Logger.Sugar().Debug("Sentence Count Guardrail Policy Enabled")
+					sentenceCountGuardrail := inbuiltpolicy.NewSentenceCountGuardrail(policy)
+					policyValdationResponse = sentenceCountGuardrail.HandleRequest(&s.cfg.Logger, req)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("Sentence Count Guardrail Policy validation failed")
+						break apiRequestPolicyLoop
+					}
 				}
 			}
 
@@ -624,6 +632,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						policyValdationResponse = wordCountGuardrail.HandleRequest(&s.cfg.Logger, req)
 						if policyValdationResponse != nil {
 							s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy validation failed")
+							break resourceRequestPolicyLoop
+						}
+					case inbuiltpolicy.SentenceCountGuardrailName:
+						s.cfg.Logger.Sugar().Debug("Sentence Count Guardrail Policy Enabled")
+						sentenceCountGuardrail := inbuiltpolicy.NewSentenceCountGuardrail(policy)
+						policyValdationResponse = sentenceCountGuardrail.HandleRequest(&s.cfg.Logger, req)
+						if policyValdationResponse != nil {
+							s.cfg.Logger.Sugar().Debug("Sentence Count Guardrail Policy validation failed")
 							break resourceRequestPolicyLoop
 						}
 					}
@@ -1047,6 +1063,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy validation failed")
 							break apiResponsePolicyLoop
 						}
+					case inbuiltpolicy.SentenceCountGuardrailName:
+						s.cfg.Logger.Sugar().Debug("Sentence Count Guardrail Policy Enabled")
+						sentenceCountGuardrail := inbuiltpolicy.NewSentenceCountGuardrail(policy)
+						policyValdationResponse = sentenceCountGuardrail.HandleResponse(&s.cfg.Logger, resp)
+						if policyValdationResponse != nil {
+							s.cfg.Logger.Sugar().Debug("Sentence Count Guardrail Policy validation failed")
+							break apiResponsePolicyLoop
+						}
 					}
 				}
 			}
@@ -1083,6 +1107,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						policyValdationResponse = wordCountGuardrail.HandleResponse(&s.cfg.Logger, resp)
 						if policyValdationResponse != nil {
 							s.cfg.Logger.Sugar().Debug("Word Count Guardrail Policy validation failed")
+							break resourceResponsePolicyLoop
+						}
+					case inbuiltpolicy.SentenceCountGuardrailName:
+						s.cfg.Logger.Sugar().Debug("Sentence Count Guardrail Policy Enabled")
+						sentenceCountGuardrail := inbuiltpolicy.NewSentenceCountGuardrail(policy)
+						policyValdationResponse = sentenceCountGuardrail.HandleResponse(&s.cfg.Logger, resp)
+						if policyValdationResponse != nil {
+							s.cfg.Logger.Sugar().Debug("Sentence Count Guardrail Policy validation failed")
 							break resourceResponsePolicyLoop
 						}
 					}

@@ -29,8 +29,8 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 )
 
-// WordCountGuardrail is a struct that represents a word count guardrail policy.
-type WordCountGuardrail struct {
+// SentenceCountGuardrail is a struct that represents a sentence count guardrail policy.
+type SentenceCountGuardrail struct {
 	dto.BaseInBuiltPolicy
 	Name           string
 	Min            int
@@ -40,34 +40,34 @@ type WordCountGuardrail struct {
 	ShowAssessment bool
 }
 
-// HandleRequest is a method that implements the mediation logic for the WordCountGuardrail policy on request.
-func (r *WordCountGuardrail) HandleRequest(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
-	logger.Sugar().Debugf("Beginning request payload validation for WordCountGuardrail policy: %s", r.Name)
+// HandleRequest is a method that implements the mediation logic for the SentenceCountGuardrail policy on request.
+func (r *SentenceCountGuardrail) HandleRequest(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
+	logger.Sugar().Debugf("Beginning request payload validation for SentenceCountGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
 	if !validationResult {
-		logger.Sugar().Debugf("Request payload validation failed for WordCountGuardrail policy: %s", r.Name)
+		logger.Sugar().Debugf("Request payload validation failed for SentenceCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, false)
 	}
-	logger.Sugar().Debugf("Request payload validation passed for WordCountGuardrail policy: %s", r.Name)
+	logger.Sugar().Debugf("Request payload validation passed for SentenceCountGuardrail policy: %s", r.Name)
 	return nil
 }
 
-// HandleResponse is a method that implements the mediation logic for the WordCountGuardrail policy on response.
-func (r *WordCountGuardrail) HandleResponse(logger *logging.Logger, resp *envoy_service_proc_v3.ProcessingResponse) *envoy_service_proc_v3.ProcessingResponse {
-	logger.Sugar().Debugf("Beginning response body validation for WordCountGuardrail policy: %s", r.Name)
+// HandleResponse is a method that implements the mediation logic for the SentenceCountGuardrail policy on response.
+func (r *SentenceCountGuardrail) HandleResponse(logger *logging.Logger, resp *envoy_service_proc_v3.ProcessingResponse) *envoy_service_proc_v3.ProcessingResponse {
+	logger.Sugar().Debugf("Beginning response body validation for SentenceCountGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, resp.GetImmediateResponse().Body)
 	if !validationResult {
-		logger.Sugar().Debugf("Response body validation failed for WordCountGuardrail policy: %s", r.Name)
+		logger.Sugar().Debugf("Response body validation failed for SentenceCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
 	}
-	logger.Sugar().Debugf("Response body validation passed for WordCountGuardrail policy: %s", r.Name)
+	logger.Sugar().Debugf("Response body validation passed for SentenceCountGuardrail policy: %s", r.Name)
 	return nil
 }
 
-// validatePayload validates the payload against the WordCountGuardrail policy.
-func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []byte) bool {
+// validatePayload validates the payload against the SentenceCountGuardrail policy.
+func (r *SentenceCountGuardrail) validatePayload(logger *logging.Logger, payload []byte) bool {
 	if (r.Min > r.Max) || (r.Min < 0) || (r.Max <= 0) {
-		logger.Sugar().Errorf("Invalid word count range: min=%d, max=%d", r.Min, r.Max)
+		logger.Sugar().Errorf("Invalid sentence count range: min=%d, max=%d", r.Min, r.Max)
 		return false
 	}
 
@@ -81,17 +81,18 @@ func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []b
 	extractedValue = TextCleanRegexCompiled.ReplaceAllString(extractedValue, "")
 	extractedValue = strings.TrimSpace(extractedValue)
 
-	// Split into words and count non-empty
-	words := WordSplitRegexCompiled.Split(extractedValue, -1)
-	wordCount := 0
-	for _, w := range words {
+	// Split into sentences and count non-empty
+	sentences := SentenceSplitRegexCompiled.Split(extractedValue, -1)
+	logger.Sugar().Debugf("Extracted value for SentenceCountGuardrail policy: %v", sentences)
+	sentenceCount := 0
+	for _, w := range sentences {
 		if w != "" {
-			wordCount++
+			sentenceCount++
 		}
 	}
 
-	if wordCount < r.Min || wordCount > r.Max {
-		logger.Sugar().Debugf("Word count validation failed: %d words found, expected between %d and %d words", wordCount, r.Min, r.Max)
+	if sentenceCount < r.Min || sentenceCount > r.Max {
+		logger.Sugar().Debugf("Sentence count validation failed: %d sentences found, expected between %d and %d sentences", sentenceCount, r.Min, r.Max)
 		if r.Inverted {
 			logger.Sugar().Debugf("Inverted condition is true, returning true")
 			return true
@@ -102,11 +103,11 @@ func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []b
 	return true
 }
 
-// buildResponse is a method that builds the response body for the WordCountGuardrail policy.
-func (r *WordCountGuardrail) buildResponse(logger *logging.Logger, isResponse bool) *envoy_service_proc_v3.ProcessingResponse {
+// buildResponse is a method that builds the response body for the SentenceCountGuardrail policy.
+func (r *SentenceCountGuardrail) buildResponse(logger *logging.Logger, isResponse bool) *envoy_service_proc_v3.ProcessingResponse {
 	responseBody := make(map[string]interface{})
 	responseBody[ErrorCode] = GuardrailAPIMExceptionCode
-	responseBody[ErrorType] = WordCountGuardrailConstant
+	responseBody[ErrorType] = SentenceCountGuardrailConstant
 	responseBody[ErrorMessage] = r.buildAssessmentObject(logger, isResponse)
 
 	bodyBytes, err := json.Marshal(responseBody)
@@ -139,9 +140,9 @@ func (r *WordCountGuardrail) buildResponse(logger *logging.Logger, isResponse bo
 	}
 }
 
-// buildAssessmentObject is a method that builds the assessment object for the WordCountGuardrail policy.
-func (r *WordCountGuardrail) buildAssessmentObject(logger *logging.Logger, isResponse bool) map[string]interface{} {
-	logger.Sugar().Debugf("Building assessment object for WordCountGuardrail policy: %s", r.Name)
+// buildAssessmentObject is a method that builds the assessment object for the SentenceCountGuardrail policy.
+func (r *SentenceCountGuardrail) buildAssessmentObject(logger *logging.Logger, isResponse bool) map[string]interface{} {
+	logger.Sugar().Debugf("Building assessment object for SentenceCountGuardrail policy: %s", r.Name)
 	assessment := make(map[string]interface{})
 	assessment[AssessmentAction] = "GUARDRAIL_INTERVENED"
 	assessment[InterveningGuardrail] = r.Name
@@ -150,7 +151,7 @@ func (r *WordCountGuardrail) buildAssessmentObject(logger *logging.Logger, isRes
 	} else {
 		assessment[Direction] = "REQUEST"
 	}
-	assessment[AssessmentReason] = "Violation of applied word count constraints detected."
+	assessment[AssessmentReason] = "Violation of applied sentence count constraints detected."
 
 	if r.ShowAssessment {
 		var minStr, maxStr string
@@ -161,14 +162,14 @@ func (r *WordCountGuardrail) buildAssessmentObject(logger *logging.Logger, isRes
 			minStr = "between"
 			maxStr = "and"
 		}
-		assessment[Assessments] = "Violation of word count detected. Expected " + minStr + " " + strconv.Itoa(r.Min) + " " + maxStr + " " + strconv.Itoa(r.Max) + " words."
+		assessment[Assessments] = "Violation of sentence count detected. Expected " + minStr + " " + strconv.Itoa(r.Min) + " " + maxStr + " " + strconv.Itoa(r.Max) + " sentences."
 	}
 	return assessment
 }
 
-// NewWordCountGuardrail initializes the WordCountGuardrail policy from the given InBuiltPolicy.
-func NewWordCountGuardrail(inBuiltPolicy dto.InBuiltPolicy) WordCountGuardrail {
-	wordCountGuardrail := WordCountGuardrail{
+// NewSentenceCountGuardrail initializes the SentenceCountGuardrail policy from the given InBuiltPolicy.
+func NewSentenceCountGuardrail(inBuiltPolicy dto.InBuiltPolicy) SentenceCountGuardrail {
+	SentenceCountGuardrail := SentenceCountGuardrail{
 		BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
 			PolicyName:    inBuiltPolicy.GetPolicyName(),
 			PolicyID:      inBuiltPolicy.GetPolicyID(),
@@ -180,22 +181,22 @@ func NewWordCountGuardrail(inBuiltPolicy dto.InBuiltPolicy) WordCountGuardrail {
 	for key, value := range inBuiltPolicy.GetParameters() {
 		switch key {
 		case "name":
-			wordCountGuardrail.Name = value
+			SentenceCountGuardrail.Name = value
 		case "min":
 			if intValue, err := strconv.Atoi(value); err == nil {
-				wordCountGuardrail.Min = intValue
+				SentenceCountGuardrail.Min = intValue
 			}
 		case "max":
 			if intValue, err := strconv.Atoi(value); err == nil {
-				wordCountGuardrail.Max = intValue
+				SentenceCountGuardrail.Max = intValue
 			}
 		case "jsonPath":
-			wordCountGuardrail.JSONPath = value
+			SentenceCountGuardrail.JSONPath = value
 		case "invert":
-			wordCountGuardrail.Inverted = value == "true"
+			SentenceCountGuardrail.Inverted = value == "true"
 		case "showAssessment":
-			wordCountGuardrail.ShowAssessment = value == "true"
+			SentenceCountGuardrail.ShowAssessment = value == "true"
 		}
 	}
-	return wordCountGuardrail
+	return SentenceCountGuardrail
 }
