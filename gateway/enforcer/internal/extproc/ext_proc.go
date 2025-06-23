@@ -574,7 +574,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					switch policy.GetPolicyName() {
-					case "RegexGuardrail":
+					case inbuiltpolicy.RegexGuardrailName:
 						s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy Enabled")
 						regexGuardrail := inbuiltpolicy.NewRegexGuardrail(policy)
 						policyValdationResponse = regexGuardrail.HandleRequest(&s.cfg.Logger, req)
@@ -603,7 +603,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					switch policy.GetPolicyName() {
-					case "RegexGuardrail":
+					case inbuiltpolicy.RegexGuardrailName:
 						s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy Enabled")
 						regexGuardrail := inbuiltpolicy.NewRegexGuardrail(policy)
 						policyValdationResponse = regexGuardrail.HandleRequest(&s.cfg.Logger, req)
@@ -1015,7 +1015,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					switch policy.GetPolicyName() {
-					case "RegexGuardrail":
+					case inbuiltpolicy.RegexGuardrailName:
 						s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy Enabled")
 						regexGuardrail := inbuiltpolicy.NewRegexGuardrail(policy)
 						policyValdationResponse = regexGuardrail.HandleResponse(&s.cfg.Logger, resp)
@@ -1044,7 +1044,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					switch policy.GetPolicyName() {
-					case "RegexGuardrail":
+					case inbuiltpolicy.RegexGuardrailName:
 						s.cfg.Logger.Sugar().Debug("Regex Guardrail Policy Enabled")
 						regexGuardrail := inbuiltpolicy.NewRegexGuardrail(policy)
 						policyValdationResponse = regexGuardrail.HandleResponse(&s.cfg.Logger, resp)

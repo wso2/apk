@@ -33,6 +33,8 @@ const (
 	Direction                  = "direction"
 	Assessments                = "assessments"
 
+	RegexGuardrailName = "RegexGuardrail"
+
 	RegexGuardrailConstant = "REGEX_GUARDRAIL"
 
 	TextCleanRegex = "^\"|\"$"

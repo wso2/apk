@@ -44,7 +44,7 @@ func (r *RegexGuardrail) HandleRequest(logger *logging.Logger, req *envoy_servic
 	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
 	if !validationResult {
 		logger.Sugar().Debugf("Request payload validation failed for RegexGuardrail policy: %s", r.Name)
-		return r.buildResponse(logger)
+		return r.buildResponse(logger, false)
 	}
 	logger.Sugar().Debugf("Request payload validation passed for RegexGuardrail policy: %s", r.Name)
 	return nil
@@ -56,7 +56,7 @@ func (r *RegexGuardrail) HandleResponse(logger *logging.Logger, resp *envoy_serv
 	validationResult := r.validatePayload(logger, resp.GetImmediateResponse().Body)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for RegexGuardrail policy: %s", r.Name)
-		return r.buildResponse(logger)
+		return r.buildResponse(logger, true)
 	}
 	logger.Sugar().Debugf("Response body validation passed for RegexGuardrail policy: %s", r.Name)
 	return nil
@@ -64,37 +64,10 @@ func (r *RegexGuardrail) HandleResponse(logger *logging.Logger, resp *envoy_serv
 
 // validatePayload is a method that returns the name of the policy for validation purposes.
 func (r *RegexGuardrail) validatePayload(logger *logging.Logger, payload []byte) bool {
-	logger.Sugar().Debugf("Payload body before %+v\n", payload)
-	// Define a map to hold the JSON data
-	var jsonData map[string]interface{}
-	// Unmarshal the JSON data into the map
-	err := json.Unmarshal(payload, &jsonData)
+	extractedValue, err := ExtractStringValueFromJsonpath(logger, payload, r.JSONPath)
 	if err != nil {
-		logger.Error(err, "Error unmarshaling JSON Reuqest Body")
+		logger.Error(err, "Error extracting value from JSON using JSONPath")
 		return false
-	}
-	var extractedValue string
-	if r.JSONPath != "" {
-		logger.Sugar().Debugf("Using JSONPath %s to extract value from request body", r.JSONPath)
-		// Extract the value from the JSON data using the JSONPath
-		value, err := extractValueFromJsonpath(jsonData, r.JSONPath)
-		if err != nil {
-			logger.Error(err, "Error extracting value from JSON using JSONPath")
-			return false
-		}
-		logger.Sugar().Debugf("Extracted value from JSONPath %s: %s", r.JSONPath, value)
-		// Convert the value to a string for regex matching
-		var ok bool
-		extractedValue, ok = value.(string)
-		if !ok {
-			logger.Sugar().Errorf("Value at JSONPath %s is not a string", r.JSONPath)
-			return false
-		}
-	} else {
-		// If JSONPath is not provided, use the entire request body as the extracted value
-		extractedValue = string(payload)
-		// TODO: check whether the request body needs to be cleaned up
-		logger.Sugar().Debugf("Using entire request body for regex matching: %s", extractedValue)
 	}
 	// Perform regex matching
 	matched, err := regexp.MatchString(r.Regex, extractedValue)
@@ -114,11 +87,11 @@ func (r *RegexGuardrail) validatePayload(logger *logging.Logger, payload []byte)
 }
 
 // buildResponse is a method that builds the response body for the RegexGuardrail policy.
-func (r *RegexGuardrail) buildResponse(logger *logging.Logger) *envoy_service_proc_v3.ProcessingResponse {
+func (r *RegexGuardrail) buildResponse(logger *logging.Logger, isResponse bool) *envoy_service_proc_v3.ProcessingResponse {
 	responseBody := make(map[string]interface{})
 	responseBody[ErrorCode] = GuardrailAPIMExceptionCode
 	responseBody[ErrorType] = RegexGuardrailConstant
-	responseBody[ErrorMessage] = r.buildAssessmentObject(logger)
+	responseBody[ErrorMessage] = r.buildAssessmentObject(logger, isResponse)
 
 	bodyBytes, err := json.Marshal(responseBody)
 	if err != nil {
@@ -151,12 +124,16 @@ func (r *RegexGuardrail) buildResponse(logger *logging.Logger) *envoy_service_pr
 }
 
 // buildAssessmentObject is a method that builds the assessment object for the RegexGuardrail policy.
-func (r *RegexGuardrail) buildAssessmentObject(logger *logging.Logger) map[string]interface{} {
+func (r *RegexGuardrail) buildAssessmentObject(logger *logging.Logger, isResponse bool) map[string]interface{} {
 	logger.Sugar().Debugf("Building assessment object for RegexGuardrail policy: %s", r.Name)
 	assessment := make(map[string]interface{})
 	assessment[AssessmentAction] = "GUARDRAIL_INTERVENED"
 	assessment[InterveningGuardrail] = r.Name
-	assessment[Direction] = "REQUEST"
+	if isResponse {
+		assessment[Direction] = "RESPONSE"
+	} else {
+		assessment[Direction] = "REQUEST"
+	}
 	assessment[AssessmentReason] = "Violation of regular expression detected."
 
 	if r.ShowAssessment {
