@@ -248,6 +248,36 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 
 	logger.LoggerOasparser.Debugf("After Conversion Model Based Round Robin: %+v", modelBasedRoundRobin)
 
+	var requestInBuiltPolicies []*api.InBuiltPolicy
+	requestInBuiltPoliciesFromInternalAPI := adapterInternalAPI.GetRequestInBuiltPolicies()
+	logger.LoggerOasparser.Debugf("Before Internal Request In-Built Policies: %+v", requestInBuiltPoliciesFromInternalAPI)
+
+	for _, policy := range requestInBuiltPoliciesFromInternalAPI {
+		requestInBuiltPolicies = append(requestInBuiltPolicies, &api.InBuiltPolicy{
+			PolicyName:    policy.PolicyName,
+			PolicyID:      policy.PolicyID,
+			PolicyVersion: policy.PolicyVersion,
+			Parameters:    policy.Parameters,
+		})
+	}
+
+	logger.LoggerOasparser.Debugf("After Conversion Request In-Built Policies: %+v", requestInBuiltPolicies)
+
+	var responseInBuiltPolicies []*api.InBuiltPolicy
+	responseInBuiltPoliciesFromInternalAPI := adapterInternalAPI.GetResponseInBuiltPolicies()
+	logger.LoggerOasparser.Debugf("Before Internal Response In-Built Policies: %+v", responseInBuiltPoliciesFromInternalAPI)
+
+	for _, policy := range responseInBuiltPoliciesFromInternalAPI {
+		responseInBuiltPolicies = append(responseInBuiltPolicies, &api.InBuiltPolicy{
+			PolicyName:    policy.PolicyName,
+			PolicyID:      policy.PolicyID,
+			PolicyVersion: policy.PolicyVersion,
+			Parameters:    policy.Parameters,
+		})
+	}
+
+	logger.LoggerOasparser.Debugf("After Conversion Response In-Built Policies: %+v", responseInBuiltPolicies)
+
 	return &api.Api{
 		Id:                     adapterInternalAPI.UUID,
 		Title:                  adapterInternalAPI.GetTitle(),
@@ -290,6 +320,8 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 			}
 			return nil
 		}(),
+		RequestInBuiltPolicies:  requestInBuiltPolicies,
+		ResponseInBuiltPolicies: responseInBuiltPolicies,
 	}
 }
 

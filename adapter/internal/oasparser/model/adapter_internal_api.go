@@ -35,6 +35,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+	dpv1alpha5 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5"
 	"golang.org/x/exp/maps"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -76,14 +77,24 @@ type AdapterInternalAPI struct {
 	APIProperties            []dpv1alpha3.Property
 	// GraphQLSchema              string
 	// GraphQLComplexities        GraphQLComplexityYaml
-	IsSystemAPI            bool
-	RateLimitPolicy        *RateLimitPolicy
-	environment            string
-	Endpoints              *EndpointCluster
-	EndpointSecurity       []*EndpointSecurity
-	AIProvider             InternalAIProvider
-	AIModelBasedRoundRobin InternalModelBasedRoundRobin
-	HTTPRouteIDs           []string
+	IsSystemAPI             bool
+	RateLimitPolicy         *RateLimitPolicy
+	environment             string
+	Endpoints               *EndpointCluster
+	EndpointSecurity        []*EndpointSecurity
+	AIProvider              InternalAIProvider
+	AIModelBasedRoundRobin  InternalModelBasedRoundRobin
+	HTTPRouteIDs            []string
+	RequestInBuiltPolicies  []InternalInBuiltPolicy
+	ResponseInBuiltPolicies []InternalInBuiltPolicy
+}
+
+// InternalInBuiltPolicy represents the in-built policy configurations
+type InternalInBuiltPolicy struct {
+	PolicyName    string            `json:"policyName"`
+	PolicyID      string            `json:"policyID"`
+	PolicyVersion string            `json:"policyVersion"`
+	Parameters    map[string]string `json:"parameters,omitempty"`
 }
 
 // InternalModelBasedRoundRobin holds the model based round robin configurations
@@ -516,6 +527,34 @@ func (adapterInternalAPI *AdapterInternalAPI) GetModelBasedRoundRobin() Internal
 	return adapterInternalAPI.AIModelBasedRoundRobin
 }
 
+// GetRequestInBuiltPolicies returns the in-built policies that are applied to the request of the API.
+func (adapterInternalAPI *AdapterInternalAPI) GetRequestInBuiltPolicies() []InternalInBuiltPolicy {
+	return adapterInternalAPI.RequestInBuiltPolicies
+}
+
+// SetRequestInBuiltPolicies sets the in-built policies that are applied to the request of the API.
+func (adapterInternalAPI *AdapterInternalAPI) SetRequestInBuiltPolicies(policies []InternalInBuiltPolicy) {
+	if policies == nil {
+		adapterInternalAPI.RequestInBuiltPolicies = []InternalInBuiltPolicy{}
+	} else {
+		adapterInternalAPI.RequestInBuiltPolicies = policies
+	}
+}
+
+// GetResponseInBuiltPolicies returns the in-built policies that are applied to the response of the API.
+func (adapterInternalAPI *AdapterInternalAPI) GetResponseInBuiltPolicies() []InternalInBuiltPolicy {
+	return adapterInternalAPI.ResponseInBuiltPolicies
+}
+
+// SetResponseInBuiltPolicies sets the in-built policies that are applied to the response of the API.
+func (adapterInternalAPI *AdapterInternalAPI) SetResponseInBuiltPolicies(policies []InternalInBuiltPolicy) {
+	if policies == nil {
+		adapterInternalAPI.ResponseInBuiltPolicies = []InternalInBuiltPolicy{}
+	} else {
+		adapterInternalAPI.ResponseInBuiltPolicies = policies
+	}
+}
+
 // Validate method confirms that the adapterInternalAPI has all required fields in the required format.
 // This needs to be checked prior to generate router/enforcer related resources.
 func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
@@ -550,7 +589,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha4.APIPolicy
+	var apiPolicy *dpv1alpha5.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
@@ -985,6 +1024,18 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				modelBasedRoundRobin = extracted
 			}
 
+			var requestInBuiltPolicies []*InternalInBuiltPolicy
+			var responseInBuiltPolicies []*InternalInBuiltPolicy
+			if extracted := extractRequestInBuiltPolicies(resourceAPIPolicy); extracted != nil {
+				loggers.LoggerAPI.Debugf("Request In-Built Policies extracted %v", extracted)
+				requestInBuiltPolicies = extracted
+			}
+
+			if extracted := extractResponseInBuiltPolicies(resourceAPIPolicy); extracted != nil {
+				loggers.LoggerAPI.Debugf("Response In-Built Policies extracted %v", extracted)
+				responseInBuiltPolicies = extracted
+			}
+
 			resource := &Resource{
 				path:                                   resourcePath,
 				methods:                                operations,
@@ -996,6 +1047,8 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 				backendBasedAIRatelimitDescriptorValue: descriptorValue,
 				extractTokenFrom:                       extractTokenFrom,
 				AIModelBasedRoundRobin:                 modelBasedRoundRobin,
+				RequestInBuiltPolicies:                 requestInBuiltPolicies,
+				ResponseInBuiltPolicies:                responseInBuiltPolicies,
 			}
 
 			resource.endpoints = &EndpointCluster{
@@ -1098,7 +1151,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 }
 
 // ExtractModelBasedRoundRobinFromPolicy extracts the ModelBasedRoundRobin from the API Policy
-func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, backendMapping map[string]*dpv1alpha4.ResolvedBackend, adapterInternalAPI *AdapterInternalAPI, resourcePath string, vHost string, namespace string) *InternalModelBasedRoundRobin {
+func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha5.APIPolicy, backendMapping map[string]*dpv1alpha4.ResolvedBackend, adapterInternalAPI *AdapterInternalAPI, resourcePath string, vHost string, namespace string) *InternalModelBasedRoundRobin {
 	if apiPolicy == nil {
 		return nil
 	}
@@ -1255,6 +1308,88 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha4.APIPolicy, back
 	return nil
 }
 
+// extractRequestInBuiltPolicies extracts the request in-built policies from the API Policy
+func extractRequestInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*InternalInBuiltPolicy {
+	if apiPolicy == nil {
+		return nil
+	}
+	resolvedRequestInBuiltPolicies := []*InternalInBuiltPolicy{}
+	// Safely access Override section
+	if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInBuiltPolicies != nil && len(apiPolicy.Spec.Override.RequestInBuiltPolicies) > 0 {
+		loggers.LoggerAPI.Debugf("RequestInBuiltPolicies Override section  %v", apiPolicy.Spec.Override.RequestInBuiltPolicies)
+		for _, policy := range apiPolicy.Spec.Override.RequestInBuiltPolicies {
+			resolvedRequestInBuiltPolicies = append(resolvedRequestInBuiltPolicies, &InternalInBuiltPolicy{
+				PolicyName:    policy.PolicyName,
+				PolicyID:      policy.PolicyID,
+				PolicyVersion: policy.PolicyVersion,
+				Parameters:    policy.Parameters,
+			})
+		}
+	}
+
+	// Safely access Default section
+	if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInBuiltPolicies != nil && len(apiPolicy.Spec.Default.RequestInBuiltPolicies) > 0 {
+		loggers.LoggerAPI.Debugf("RequestInBuiltPolicies Default section  %v", apiPolicy.Spec.Default.RequestInBuiltPolicies)
+		for _, policy := range apiPolicy.Spec.Default.RequestInBuiltPolicies {
+			resolvedRequestInBuiltPolicies = append(resolvedRequestInBuiltPolicies, &InternalInBuiltPolicy{
+				PolicyName:    policy.PolicyName,
+				PolicyID:      policy.PolicyID,
+				PolicyVersion: policy.PolicyVersion,
+				Parameters:    policy.Parameters,
+			})
+		}
+	}
+	if len(resolvedRequestInBuiltPolicies) > 0 {
+		loggers.LoggerAPI.Debugf("RequestInBuiltPolicies found in API Policy %v", apiPolicy.Name)
+		return resolvedRequestInBuiltPolicies
+	}
+	loggers.LoggerAPI.Debugf("RequestInBuiltPolicies not found in API Policy %v", apiPolicy)
+	// Return nil if nothing matches
+	return nil
+}
+
+// extractResponseInBuiltPolicies extracts the response in-built policies from the API Policy
+func extractResponseInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*InternalInBuiltPolicy {
+	if apiPolicy == nil {
+		return nil
+	}
+
+	resolvedResponseInBuiltPolicies := []*InternalInBuiltPolicy{}
+
+	if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInBuiltPolicies != nil && len(apiPolicy.Spec.Override.ResponseInBuiltPolicies) > 0 {
+		loggers.LoggerAPI.Debugf("ResponseInBuiltPolicies Override section  %v", apiPolicy.Spec.Override.ResponseInBuiltPolicies)
+		for _, policy := range apiPolicy.Spec.Override.ResponseInBuiltPolicies {
+			resolvedResponseInBuiltPolicies = append(resolvedResponseInBuiltPolicies, &InternalInBuiltPolicy{
+				PolicyName:    policy.PolicyName,
+				PolicyID:      policy.PolicyID,
+				PolicyVersion: policy.PolicyVersion,
+				Parameters:    policy.Parameters,
+			})
+		}
+	}
+
+	// Safely access Default section
+	if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInBuiltPolicies != nil && len(apiPolicy.Spec.Default.ResponseInBuiltPolicies) > 0 {
+		loggers.LoggerAPI.Debugf("ResponseInBuiltPolicies Default section  %v", apiPolicy.Spec.Default.ResponseInBuiltPolicies)
+		for _, policy := range apiPolicy.Spec.Default.ResponseInBuiltPolicies {
+			resolvedResponseInBuiltPolicies = append(resolvedResponseInBuiltPolicies, &InternalInBuiltPolicy{
+				PolicyName:    policy.PolicyName,
+				PolicyID:      policy.PolicyID,
+				PolicyVersion: policy.PolicyVersion,
+				Parameters:    policy.Parameters,
+			})
+		}
+	}
+
+	if len(resolvedResponseInBuiltPolicies) > 0 {
+		loggers.LoggerAPI.Debugf("ResponseInBuiltPolicies found in API Policy %v", apiPolicy.Name)
+		return resolvedResponseInBuiltPolicies
+	}
+	loggers.LoggerAPI.Debugf("ResponseInBuiltPolicies not found in API Policy %v", apiPolicy)
+	// Return nil if nothing matches
+	return nil
+}
+
 // getClusterName returns the cluster name for the API.
 func getClusterName(epPrefix string, organizationID string, vHost string, swaggerTitle string, swaggerVersion string,
 	hostname string) string {
@@ -1281,7 +1416,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGQLRouteCR(gqlRoute *dpv1al
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha4.APIPolicy
+	var apiPolicy *dpv1alpha5.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}
@@ -1468,7 +1603,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoGRPCRouteCR(grpcRoute *gwap
 	if outputAuthScheme != nil {
 		authScheme = *outputAuthScheme
 	}
-	var apiPolicy *dpv1alpha4.APIPolicy
+	var apiPolicy *dpv1alpha5.APIPolicy
 	if outputAPIPolicy != nil {
 		apiPolicy = *outputAPIPolicy
 	}

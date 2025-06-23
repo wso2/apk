@@ -39,6 +39,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+	dpv1alpha5 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -179,8 +180,8 @@ func FilterBackendJWTByNamespaces(namespaces []string) func(object *dpv1alpha1.B
 // FilterAPIPolicyByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
-func FilterAPIPolicyByNamespaces(namespaces []string) func(object *dpv1alpha4.APIPolicy) bool {
-	return func(object *dpv1alpha4.APIPolicy) bool {
+func FilterAPIPolicyByNamespaces(namespaces []string) func(object *dpv1alpha5.APIPolicy) bool {
+	return func(object *dpv1alpha5.APIPolicy) bool {
 		if namespaces == nil {
 			return true
 		}
@@ -807,7 +808,7 @@ func RetrieveNamespaceListOptions(namespaces []string) k8client.ListOptions {
 
 // GetInterceptorService reads InterceptorService when interceptorReference is given
 func GetInterceptorService(ctx context.Context, client k8client.Client, namespace string,
-	interceptorReference *dpv1alpha4.InterceptorReference, api *dpv1alpha3.API) *dpv1alpha1.InterceptorService {
+	interceptorReference *dpv1alpha5.InterceptorReference, api *dpv1alpha3.API) *dpv1alpha1.InterceptorService {
 	interceptorService := &dpv1alpha1.InterceptorService{}
 	interceptorRef := types.NamespacedName{
 		Namespace: namespace,

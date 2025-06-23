@@ -179,6 +179,36 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 	loggers.LoggerAPKOperator.Debugf("AdapterInternalAPI AI Provider: %+v", adapterInternalAPI.GetAIProvider())
 	loggers.LoggerAPKOperator.Debugf("AdapterInternalAPI Model Based Round Robin: %+v", adapterInternalAPI.GetModelBasedRoundRobin())
 
+	if len(apiState.RequestInBuiltPolicies) > 0 {
+		loggers.LoggerAPKOperator.Debugf("API State Request In-Built Policies: %+v", apiState.RequestInBuiltPolicies)
+		requestInBuiltPolicies := make([]model.InternalInBuiltPolicy, 0, len(apiState.RequestInBuiltPolicies))
+		for _, policy := range apiState.RequestInBuiltPolicies {
+			requestInBuiltPolicies = append(requestInBuiltPolicies, model.InternalInBuiltPolicy{
+				PolicyName:    policy.PolicyName,
+				PolicyID:      policy.PolicyID,
+				PolicyVersion: policy.PolicyVersion,
+				Parameters:    policy.Parameters,
+			})
+		}
+		adapterInternalAPI.SetRequestInBuiltPolicies(requestInBuiltPolicies)
+		loggers.LoggerAPKOperator.Debugf("AdapterInternalAPI Request In-Built Policies: %+v", adapterInternalAPI.GetRequestInBuiltPolicies())
+	}
+
+	if len(apiState.ResponseInBuiltPolicies) > 0 {
+		loggers.LoggerAPKOperator.Debugf("API State Response In-Built Policies: %+v", apiState.ResponseInBuiltPolicies)
+		responseInBuiltPolicies := make([]model.InternalInBuiltPolicy, 0, len(apiState.ResponseInBuiltPolicies))
+		for _, policy := range apiState.ResponseInBuiltPolicies {
+			responseInBuiltPolicies = append(responseInBuiltPolicies, model.InternalInBuiltPolicy{
+				PolicyName:    policy.PolicyName,
+				PolicyID:      policy.PolicyID,
+				PolicyVersion: policy.PolicyVersion,
+				Parameters:    policy.Parameters,
+			})
+		}
+		adapterInternalAPI.SetResponseInBuiltPolicies(responseInBuiltPolicies)
+		loggers.LoggerAPKOperator.Debugf("AdapterInternalAPI Response In-Built Policies: %+v", adapterInternalAPI.GetResponseInBuiltPolicies())
+	}
+
 	return &adapterInternalAPI, nil
 }
 

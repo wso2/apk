@@ -26,6 +26,7 @@ import "wso2/discovery/api/security_info.proto";
 import "wso2/discovery/api/graphql.proto";
 import "wso2/discovery/api/ai_provider.proto";
 import "wso2/discovery/api/ai_model_based_round_robin.proto";
+import "wso2/discovery/api/inbuilt_policy.proto";
 
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/api;api";
 option java_package = "org.wso2.apk.enforcer.discovery.api";
@@ -67,4 +68,6 @@ message Api {
 	AIProvider aiprovider = 31;
 	AIModelBasedRoundRobin aiModelBasedRoundRobin = 32;
 	string apiDefinitionPath = 33;
+	repeated InBuiltPolicy requestInBuiltPolicies = 34;
+	repeated InBuiltPolicy responseInBuiltPolicies = 35;
 }

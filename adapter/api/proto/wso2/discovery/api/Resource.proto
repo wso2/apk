@@ -22,6 +22,7 @@ import "wso2/discovery/api/endpoint_cluster.proto";
 import "wso2/discovery/api/api_authentication.proto";
 import "wso2/discovery/api/security_info.proto";
 import "wso2/discovery/api/ai_model_based_round_robin.proto";
+import "wso2/discovery/api/inbuilt_policy.proto";
 // import "wso2/discovery/api/mocked_api_config.proto";
 
 option go_package = "github.com/envoyproxy/go-control-plane/wso2/discovery/api;api";
@@ -39,6 +40,8 @@ message Resource {
 	EndpointCluster endpoints = 4;
 	repeated SecurityInfo endpointSecurity =5;
 	AIModelBasedRoundRobin aiModelBasedRoundRobin = 6;
+	repeated InBuiltPolicy requestInBuiltPolicies = 7;
+	repeated InBuiltPolicy responseInBuiltPolicies = 8;
 }
 
 // Operation model which maps to a particular http methods

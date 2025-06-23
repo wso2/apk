@@ -26,6 +26,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+	dpv1alpha5 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5"
 	"k8s.io/apimachinery/pkg/types"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -34,8 +35,8 @@ import (
 type ResourceParams struct {
 	AuthSchemes               map[string]dpv1alpha2.Authentication
 	ResourceAuthSchemes       map[string]dpv1alpha2.Authentication
-	APIPolicies               map[string]dpv1alpha4.APIPolicy
-	ResourceAPIPolicies       map[string]dpv1alpha4.APIPolicy
+	APIPolicies               map[string]dpv1alpha5.APIPolicy
+	ResourceAPIPolicies       map[string]dpv1alpha5.APIPolicy
 	InterceptorServiceMapping map[string]dpv1alpha1.InterceptorService
 	BackendJWTMapping         map[string]dpv1alpha1.BackendJWT
 	BackendMapping            map[string]*dpv1alpha4.ResolvedBackend
@@ -70,7 +71,7 @@ func parseBackendJWTTokenToInternal(backendJWTToken dpv1alpha1.BackendJWTSpec) *
 	return backendJWTTokenInternal
 }
 
-func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha4.APIPolicy) *CorsConfig {
+func getCorsConfigFromAPIPolicy(apiPolicy *dpv1alpha5.APIPolicy) *CorsConfig {
 	globalCorsConfig := config.ReadConfigs().Enforcer.Cors
 
 	var corsConfig = CorsConfig{
@@ -112,7 +113,7 @@ func parseRateLimitPolicyToInternal(ratelimitPolicy *dpv1alpha3.RateLimitPolicy)
 }
 
 // addOperationLevelInterceptors add the operation level interceptor policy to the policies
-func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha4.APIPolicy,
+func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1alpha5.APIPolicy,
 	interceptorServicesMapping map[string]dpv1alpha1.InterceptorService,
 	backendMapping map[string]*dpv1alpha4.ResolvedBackend, namespace string) {
 	if apiPolicy != nil && apiPolicy.Spec.Override != nil {
@@ -175,7 +176,7 @@ func GetEndpoints(backendName types.NamespacedName, backendMapping map[string]*d
 					URLType:     string(backend.Protocol),
 					Certificate: []byte(backend.TLS.ResolvedCertificate),
 					AllowedSANs: backend.TLS.AllowedSANs,
-					Weight: 	 backend.Weight,
+					Weight:      backend.Weight,
 				})
 			}
 		}
@@ -224,8 +225,8 @@ func concatRateLimitPolicies(schemeUp *dpv1alpha3.RateLimitPolicy, schemeDown *d
 	return &finalRateLimit
 }
 
-func concatAPIPolicies(schemeUp *dpv1alpha4.APIPolicy, schemeDown *dpv1alpha4.APIPolicy) *dpv1alpha4.APIPolicy {
-	apiPolicy := dpv1alpha4.APIPolicy{}
+func concatAPIPolicies(schemeUp *dpv1alpha5.APIPolicy, schemeDown *dpv1alpha5.APIPolicy) *dpv1alpha5.APIPolicy {
+	apiPolicy := dpv1alpha5.APIPolicy{}
 	if schemeUp != nil && schemeDown != nil {
 		apiPolicy.Spec.Override = utils.SelectPolicy(&schemeUp.Spec.Override, &schemeUp.Spec.Default, &schemeDown.Spec.Override, &schemeDown.Spec.Default)
 	} else if schemeUp != nil {
