@@ -16,7 +16,7 @@
 // under the License.
 //
 public type APIPolicy record {|
-    string apiVersion = "dp.wso2.com/v1alpha4";
+    string apiVersion = "dp.wso2.com/v1alpha5";
     string kind = "APIPolicy";
     Metadata metadata;
     APIPolicySpec spec;
@@ -36,6 +36,8 @@ public type APIPolicyData record {
     boolean subscriptionValidation?;
     AIProviderReference aiProvider?;
     ModelBasedRoundRobin modelBasedRoundRobin?;
+    InBuiltPolicy[] requestInBuiltPolicies?;
+    InBuiltPolicy[] responseInBuiltPolicies?;
 };
 
 public type InterceptorReference record {
@@ -62,8 +64,15 @@ public type ModelWeight record {
     int weight;
 };
 
+public type InBuiltPolicy record {
+    string policyName;
+    string policyID;
+    string policyVersion?;
+    map<string> parameters = {};
+};
+
 public type APIPolicyList record {
-    string apiVersion = "dp.wso2.com/v1alpha4";
+    string apiVersion = "dp.wso2.com/v1alpha5";
     string kind = "APIPolicyList";
     ListMeta metadata;
     APIPolicy[] items;
