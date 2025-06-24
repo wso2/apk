@@ -27,7 +27,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
-func buildResource(operation *api.Operation, path string, endpointCluster *api.EndpointCluster, aiModelBasedRoundRobin *dto.AIModelBasedRoundRobin, endpointSecurity []*requestconfig.EndpointSecurity) requestconfig.Resource {
+func buildResource(operation *api.Operation, path string, endpointCluster *api.EndpointCluster, aiModelBasedRoundRobin *dto.AIModelBasedRoundRobin, requestInBuiltPolicies []dto.InBuiltPolicy, responseInBuiltPolicies []dto.InBuiltPolicy, endpointSecurity []*requestconfig.EndpointSecurity) requestconfig.Resource {
 	authConfig := auth.AuthenticationConfig{
 		Disabled: operation.ApiAuthentication.Disabled,
 	}
@@ -56,15 +56,17 @@ func buildResource(operation *api.Operation, path string, endpointCluster *api.E
 		authConfig.APIKeyAuthenticationConfigs = apiKeyAuthConfigs
 	}
 	return requestconfig.Resource{
-		MatchID:                operation.MatchID,
-		Path:                   util.NormalizePath(path),
-		Method:                 requestconfig.HTTPMethods(operation.Method),
-		Tier:                   operation.Tier,
-		EndpointSecurity:       endpointSecurity,
-		AuthenticationConfig:   &authConfig,
-		Scopes:                 operation.Scopes,
-		AIModelBasedRoundRobin: aiModelBasedRoundRobin,
-		Endpoints:              buildEndpointCluster(endpointCluster),
+		MatchID:                 operation.MatchID,
+		Path:                    util.NormalizePath(path),
+		Method:                  requestconfig.HTTPMethods(operation.Method),
+		Tier:                    operation.Tier,
+		EndpointSecurity:        endpointSecurity,
+		AuthenticationConfig:    &authConfig,
+		Scopes:                  operation.Scopes,
+		AIModelBasedRoundRobin:  aiModelBasedRoundRobin,
+		Endpoints:               buildEndpointCluster(endpointCluster),
+		RequestInBuiltPolicies:  requestInBuiltPolicies,
+		ResponseInBuiltPolicies: responseInBuiltPolicies,
 	}
 }
 

@@ -90,7 +90,7 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
-				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), func() []*requestconfig.EndpointSecurity {
+				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), covertRequestInBuiltPoliciesToDTO(resource.RequestInBuiltPolicies), covertRequestInBuiltPoliciesToDTO(resource.ResponseInBuiltPolicies), func() []*requestconfig.EndpointSecurity {
 					endpointSecurity := make([]*requestconfig.EndpointSecurity, len(resource.EndpointSecurity))
 					for i, es := range resource.EndpointSecurity {
 						endpointSecurity[i] = &requestconfig.EndpointSecurity{
@@ -178,8 +178,35 @@ func covertResponseInBuiltPoliciesToDTO(responsePolicies []*api.InBuiltPolicy) [
 	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(responsePolicies))
 	for _, policy := range responsePolicies {
 		switch policy.PolicyName {
-		case "RegexGuardrail":
+		case inbuiltpolicy.RegexGuardrailName:
 			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.RegexGuardrail{
+				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
+					PolicyName:    policy.PolicyName,
+					PolicyID:      policy.PolicyID,
+					PolicyVersion: policy.PolicyVersion,
+					Parameters:    policy.Parameters,
+				},
+			})
+		case inbuiltpolicy.WordCountGuardrailName:
+			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.WordCountGuardrail{
+				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
+					PolicyName:    policy.PolicyName,
+					PolicyID:      policy.PolicyID,
+					PolicyVersion: policy.PolicyVersion,
+					Parameters:    policy.Parameters,
+				},
+			})
+		case inbuiltpolicy.SentenceCountGuardrailName:
+			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.SentenceCountGuardrail{
+				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
+					PolicyName:    policy.PolicyName,
+					PolicyID:      policy.PolicyID,
+					PolicyVersion: policy.PolicyVersion,
+					Parameters:    policy.Parameters,
+				},
+			})
+		case inbuiltpolicy.ContentLengthGuardrailName:
+			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.ContentLengthGuardrail{
 				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
 					PolicyName:    policy.PolicyName,
 					PolicyID:      policy.PolicyID,
