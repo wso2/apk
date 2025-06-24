@@ -1105,10 +1105,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 
-			if (matchedAPI.ResponseInBuiltPolicies == nil ||
-				len(matchedAPI.ResponseInBuiltPolicies) == 0) &&
-				(matchedResource.ResponseInBuiltPolicies != nil &&
-					len(matchedResource.ResponseInBuiltPolicies) > 0) {
+			if matchedResource.ResponseInBuiltPolicies != nil &&
+				len(matchedResource.ResponseInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("Resource Level Response Policies Enabled")
 			resourceResponsePolicyLoop:
 				for _, policy := range matchedResource.ResponseInBuiltPolicies {
