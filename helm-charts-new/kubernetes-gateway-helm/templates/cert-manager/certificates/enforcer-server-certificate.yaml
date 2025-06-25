@@ -32,6 +32,8 @@ spec:
   dnsNames:
   - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc
   - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc.cluster.local
+  - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-grpc-service.{{ .Release.Namespace }}.svc
+  - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-grpc-service.{{ .Release.Namespace }}.svc.cluster.local
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
     {{ if .Values.certmanager.servers -}}

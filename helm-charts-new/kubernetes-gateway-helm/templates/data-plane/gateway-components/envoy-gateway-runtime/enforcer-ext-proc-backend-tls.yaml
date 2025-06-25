@@ -13,18 +13,19 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.wso2.kgw.dp.enabled }}
-apiVersion: v1
-kind: Service
+apiVersion: gateway.networking.k8s.io/v1alpha3
+kind: BackendTLSPolicy
 metadata:
-  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-service
-  namespace : {{ .Release.Namespace }}
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-ext-proc-backend-tls
 spec:
-  # label keys and values that must match in order to receive traffic for this service
-  selector:
-{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "enforcer" ) | indent 4}}
-  ports:
-    - name: servlet-https
-      protocol: TCP
-      port: 9092
-{{- end -}}
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-grpc-service
+      sectionName: servlet-https
+  validation:
+    caCertificateRefs:
+      - name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-server-cert
+        group: ''
+        kind: Secret
+    hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-grpc-service.{{ .Release.Namespace }}.svc
