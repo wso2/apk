@@ -14,17 +14,26 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if .Values.wso2.kgw.dp.enabled }}
-apiVersion: v1
-kind: Service
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
 metadata:
-  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-service
-  namespace : {{ .Release.Namespace }}
+  name: enforcer-ext-proc
+  namespace: {{ .Release.Namespace }}
 spec:
-  # label keys and values that must match in order to receive traffic for this service
-  selector:
-{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "enforcer" ) | indent 4}}
-  ports:
-    - name: servlet-https
-      protocol: TCP
-      port: 9092
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: {{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}
+  extProc:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-grpc-service
+          namespace: {{ .Release.Namespace }}
+          port: 8081
+      processingMode:
+        request:
+          body: Streamed
+        response:
+          body: Streamed
 {{- end -}}

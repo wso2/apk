@@ -33,11 +33,11 @@ spec:
             spec:
               selector:
                 matchLabels:
-{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 18}}
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "enforcer" ) | indent 18}}
               template:
                 metadata:
                   labels:
-{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "gateway" ) | indent 20}}
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "enforcer" ) | indent 20}}
                 spec:
                   containers:
                     - name: enforcer
