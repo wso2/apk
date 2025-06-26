@@ -53,7 +53,7 @@ type Server struct {
 	RedisHost                        string `envconfig:"REDIS_HOST" default:"redis-master"`
 	RedisPort                        int    `envconfig:"REDIS_PORT" default:"6379"`
 	IsRedisTLSEnabled                bool   `envconfig:"IS_REDIS_TLS_ENABLED" default:"false"`
-	RevokedTokensRedisChannel        string `envconfig:"REDIS_REVOKED_TOKENS_CHANNEL" default:"wso2-apk-revoked-tokens-channel"`
+	RevokedTokensRedisChannel        string `envconfig:"REDIS_REVOKED_TOKENS_CHANNEL" default:"wso2-kgw-revoked-tokens-channel"`
 	RedisKeyFile                     string `envconfig:"REDIS_KEY_FILE" default:"/home/wso2/security/redis/redis.key"`
 	RedisCertFile                    string `envconfig:"REDIS_CERT_FILE" default:"/home/wso2/security/redis/redis.crt"`
 	RedisCaCertFile                  string `envconfig:"REDIS_CA_CERT_FILE" default:"/home/wso2/security/redis/ca.crt"`

@@ -41,8 +41,8 @@ public type IDPConfiguration record {|
 |};
 
 public type KeyStores record {|
-    CertKey signing = {keyFile: "/home/wso2apk/idp/security/wso2carbon.key", certFile: "/home/wso2apk/idp/security/wso2carbon.pem"};
-    CertKey tls = {keyFile: "/home/wso2apk/idp/security/idp.key",certFile: "/home/wso2apk/idp/security/idp.crt"};
+    CertKey signing = {keyFile: "/home/wso2kgw/idp/security/wso2carbon.key", certFile: "/home/wso2kgw/idp/security/wso2carbon.pem"};
+    CertKey tls = {keyFile: "/home/wso2kgw/idp/security/idp.key",certFile: "/home/wso2kgw/idp/security/idp.crt"};
 |};
 
 # Description
@@ -103,7 +103,7 @@ public type TokenIssuerConfiguration record {|
 |};
 
 public isolated function getPassword() returns string {
-    string|error password = io:fileReadString("/home/wso2apk/idp/security/database/db-password");
+    string|error password = io:fileReadString("/home/wso2kgw/idp/security/database/db-password");
     if (password is error) {
         log:printError("Error while reading the password");
         return "";

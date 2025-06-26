@@ -17,4 +17,4 @@
 # under the License.
 #
 
-sh /home/wso2apk/config-deployer/config.sh
+sh /home/wso2kgw/config-deployer/config.sh

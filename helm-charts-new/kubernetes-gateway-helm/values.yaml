@@ -1,0 +1,370 @@
+wso2:
+  subscription:
+    imagePullSecrets: ""
+  kgw:
+    auth:
+      enabled: true
+      enableServiceAccountCreation: true
+      enableClusterRoleCreation: true
+      serviceAccountName: wso2kgw-platform
+      roleName: wso2kgw-role
+    listener:
+      hostname: "api.am.wso2.com"
+      port: 9095
+      # secretName: "idp-tls"
+    idp:
+      issuer: "https://idp.am.wso2.com/token"
+      usernameClaim: "sub"
+      organizationClaim: "organization"
+      groupsClaim: "groups"
+      consumerKeyClaim: "clientId"
+      # organizationResolver: "controlPlane" # controlplane,none
+      # tls:
+      #   secretName: "wso2apk-idp-certificates"
+      #   fileName: "idp.crt"
+      signing:
+        jwksEndpoint: "https://idp.am.wso2.com:9095/oauth2/jwks"
+        # secretName: "wso2apk-idp-signing"
+        # fileName: "idp.crt"
+    # cp:
+    # enabledSubscription: true
+    # host: "apim-apk-agent-service.apk.svc.cluster.local"
+    # skipSSLVerification: true
+    #   skipSSLVerification: false
+    #   persistence:
+    #     type: "K8s"
+    dp:
+      enabled: true
+      gatewayClass:
+        name: "wso2-kgw-default"
+      gateway:
+        name: "wso2-kgw-default"
+        listener:
+          hostname: "*.gw.wso2.com"
+        service: {}
+      envoyProxy:
+        name: "wso2-kgw-envoy-proxy-default"
+      configdeployer:
+        enabled: true
+        deployment:
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: RollingUpdate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/kgw-config-deployer-service:1.3.0
+          # debug: true
+          # configs:
+          #   tls:
+          #     secretName: "my-secret"
+          #     certKeyFilename: "tls.key"
+      commonController:
+        deployment:
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: RollingUpdate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/kgw-common-controller:1.3.0
+          security:
+            sslHostname: "commoncontroller"
+          # configs:
+          #   apiNamespaces:
+          #     - "kgw-v12"
+      gatewayRuntime:
+        deployment:
+          replicas: 1
+          enforcer:
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "200m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+            readinessProbe:
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            livenessProbe:
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            strategy: RollingUpdate
+            imagePullPolicy: Always
+            image: wso2/kgw-enforcer:1.3.0
+            security:
+              sslHostname: "enforcer"
+#            logging:
+#              level: DEBUG
+            env:
+              TOKEN_REVOCATION_ENABLED: "true"
+envoy:
+  enabled: true
+  # ───────────────────────────────────────────────────────────────
+  # begin pasted defaults from gateway-defaults.yaml (v1.3.2)
+  global:
+    images:
+      envoyGateway:
+        image: docker.io/envoyproxy/gateway:v1.3.2
+        pullPolicy: IfNotPresent
+        pullSecrets: []
+      ratelimit:
+        image: "docker.io/envoyproxy/ratelimit:0141a24f"
+        pullPolicy: IfNotPresent
+        pullSecrets: []
+  podDisruptionBudget:
+    minAvailable: 0
+
+  deployment:
+    envoyGateway:
+      image:
+        repository: ""
+        tag: ""
+      imagePullPolicy: ""
+      imagePullSecrets: []
+      resources:
+        limits:
+          memory: 1024Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        privileged: false
+        runAsNonRoot: true
+        runAsGroup: 65532
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
+    ports:
+      - name: grpc
+        port: 18000
+        targetPort: 18000
+      - name: ratelimit
+        port: 18001
+        targetPort: 18001
+      - name: wasm
+        port: 18002
+        targetPort: 18002
+      - name: metrics
+        port: 19001
+        targetPort: 19001
+    priorityClassName: null
+    replicas: 1
+    pod:
+      affinity: {}
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '19001'
+      labels: {}
+      topologySpreadConstraints: []
+      tolerations: []
+      nodeSelector: {}
+
+  service:
+    annotations: {}
+
+  config:
+    envoyGateway:
+      gateway:
+        controllerName: gateway.envoyproxy.io/gatewayclass-controller
+      provider:
+        type: Kubernetes
+      logging:
+        level:
+          default: info
+      extensionApis:
+        enableBackend: true
+
+  createNamespace: false
+
+  kubernetesClusterDomain: cluster.local
+
+  certgen:
+    job:
+      annotations: {}
+      args: []
+      resources: {}
+      affinity: {}
+      tolerations: []
+      nodeSelector: {}
+      ttlSecondsAfterFinished: 30
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsGroup: 65534
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+    rbac:
+      annotations: {}
+      labels: {}
+  # end pasted defaults
+
+idp:
+  enabled: true
+  listener:
+    hostname: "idp.am.wso2.com"
+    # secretName: "idp-tls"
+  database:
+    driver: "org.postgresql.Driver"
+    url: "jdbc:postgresql://wso2kgw-db-service:5432/WSO2AM_DB"
+    host: "wso2kgw-db-service"
+    port: 5432
+    databaseName: "WSO2AM_DB"
+    username: "wso2carbon"
+    secretName: "kgw-db-secret"
+    secretKey: "DB_PASSWORD"
+    validationQuery: "SELECT 1"
+    validationTimeout: 250
+  idpds:
+    configs:
+      issuer: "https://idp.am.wso2.com/token"
+      keyId: "gateway_certificate_alias"
+      hostname: "idp.am.wso2.com"
+      loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
+      loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
+      loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
+    deployment:
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "200m"
+        limits:
+          memory: "1024Mi"
+          cpu: "500m"
+      readinessProbe:
+        initialDelaySeconds: 20
+        periodSeconds: 20
+        failureThreshold: 5
+      livenessProbe:
+        initialDelaySeconds: 20
+        periodSeconds: 20
+        failureThreshold: 5
+      strategy: RollingUpdate
+      replicas: 1
+      imagePullPolicy: Always
+      image: wso2/kgw-idp-domain-service:1.3.0
+  idpui:
+    deployment:
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "256Mi"
+          cpu: "100m"
+      readinessProbe:
+        initialDelaySeconds: 20
+        periodSeconds: 20
+        failureThreshold: 5
+      livenessProbe:
+        initialDelaySeconds: 20
+        periodSeconds: 20
+        failureThreshold: 5
+      strategy: RollingUpdate
+      replicas: 1
+      imagePullPolicy: Always
+      image: wso2/kgw-idp-ui:1.3.0
+    configs:
+      idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
+      idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
+
+certmanager:
+  enabled: true
+  enableClusterIssuer: true
+  enableRootCa: true
+  rootCaSecretName: "kgw-root-certificate"
+
+postgresql:
+  enabled: true
+  fullnameOverride: "wso2kgw-db-service"
+  auth:
+    database: WSO2AM_DB
+    postgresPassword: wso2carbon
+    username: wso2carbon
+    password: wso2carbon
+  primary:
+    extendedConfiguration: |
+      max_connections = 400
+    initdb:
+      scriptsConfigMap: postgres-initdb-scripts-configmap
+      user: wso2carbon
+      password: wso2carbon
+    service:
+      ports:
+        postgresql: 5432
+    podSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsUser: null
+  image:
+    debug: true
+
+redis:
+  enabled: true
+  architecture: standalone
+  fullnameOverride: redis
+  primary:
+    service:
+      ports:
+        redis: 6379
+  master:
+    podSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsUser: null
+  auth:
+    enabled: false
+    usePasswordFiles: false
+  image:
+    debug: true
