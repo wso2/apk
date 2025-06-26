@@ -606,4 +606,89 @@ public class BaseSteps {
         sharedContext.setApiAccessToken(newToken);
         sharedContext.addStoreValue("accessToken", sharedContext.getApiAccessToken());
     }
+
+    @Then("I send {int} requests to {string} to test weighted routing and count the responses from each endpoint")
+    public void countResponsesFromWeightedEndpoints(int count, String url) throws IOException {
+        Map<String, Integer> versionCount = new HashMap<>();
+        versionCount.put("1.0", 0);
+        versionCount.put("2.0", 0);
+        versionCount.put("3.0", 0);
+    
+        for (int i = 0; i < count; i++) {
+            sharedContext.setResponse(httpClient.doGet(url, sharedContext.getHeaders()));
+            String responseBody = SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse());
+            String apiVersion = extractApiVersion(responseBody);
+    
+            if (versionCount.containsKey(apiVersion)) {
+                versionCount.put(apiVersion, versionCount.get(apiVersion) + 1);
+            } else {
+                versionCount.put(apiVersion, 1);
+            }
+        }
+        versionCount.forEach((version, occurences) -> {
+            sharedContext.setWeightedCount(version, occurences);
+        });
+    }
+    
+    private String extractApiVersion(String responseBody) {
+        JsonObject jsonObject = JsonParser.parseString(responseBody).getAsJsonObject();
+        return jsonObject.get("API_version").getAsString();
+    }
+
+    @Then("I ensure that the weights of the endpoints increase in the order of API_version: {string}, {string}, {string} from the response counts")
+    public void ensureWeightsOrder(String version1, String version2, String version3) {
+        sharedContext.getWeightedCount().forEach((version, count) -> {
+            System.out.println("API Version: " + version + ", Count: " + count);
+        });
+
+        int count1 = sharedContext.getWeightedCount().get(version1);
+        int count2 = sharedContext.getWeightedCount().get(version2);
+        int count3 = sharedContext.getWeightedCount().get(version3);
+    
+        Assert.assertTrue(count1 < count2 && count2 < count3, "The weights of the responese from the endpoints did not increase in the expected order of API_version: " + version1 + ", " + version2 + ", " + version3);
+    }
+
+    @Then("I ensure that the response count of the endpoint {string} with zero weight is zero")
+    public void ensureZeroWeightEndpointResponseCount(String version) {
+        int count = sharedContext.getWeightedCount().get(version);
+        Assert.assertEquals(count, 0, "The response count of the endpoint " + version + " with zero weight is not zero");
+    }
+
+    @Then("I clear all stored responses and weight counts")
+    public void clearAllStoredResponsesAndWeightCounts() {
+        sharedContext.clearResposes();
+        sharedContext.clearWeightedCount();
+    }
+
+    @Then("I ensure that the responses are distributed approximately equally among the endpoints")
+    public void ensureWeightsAreDistributedEqually() {
+        sharedContext.getWeightedCount().forEach((version, count) -> {
+            System.out.println("API Version: " + version + ", Count: " + count);
+        });
+
+        int count1 = sharedContext.getWeightedCount().get("1.0");
+        int count2 = sharedContext.getWeightedCount().get("2.0");
+        int count3 = sharedContext.getWeightedCount().get("3.0");
+
+        int totalCount = count1 + count2 + count3;
+        int averageCount = totalCount / 3;
+        int deviation = (int) Math.ceil(averageCount * 0.15); // Allow a deviation of 15 percent from the average count (rounded up)
+
+        Assert.assertTrue(Math.abs(count1 - averageCount) <= deviation && Math.abs(count2 - averageCount) <= deviation && Math.abs(count3 - averageCount) <= deviation, "The responses are not distributed approximately equally among the endpoints");
+    }
+
+    @Then("I ensure that all the responses are from one of the endpoints")
+    public void ensureAllResponsesFromOneEndpoint() {
+        sharedContext.getWeightedCount().forEach((version, count) -> {
+            System.out.println("API Version: " + version + ", Count: " + count);
+        });
+
+        int count1 = sharedContext.getWeightedCount().get("1.0");
+        int count2 = sharedContext.getWeightedCount().get("2.0");
+        int count3 = sharedContext.getWeightedCount().get("3.0");
+
+        int totalCount = count1 + count2 + count3;
+
+        Assert.assertTrue(count1 == totalCount || count2 == totalCount || count3 == totalCount, "All the responses are not from one of the endpoints");
+    }
 }
