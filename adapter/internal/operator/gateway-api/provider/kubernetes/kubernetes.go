@@ -35,10 +35,12 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/message"
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
+	"github.com/wso2/apk/adapter/internal/operator/utils"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	"github.com/wso2/apk/adapter/pkg/metrics"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -62,6 +64,7 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 	log.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	conf := config.ReadConfigs()
 
 	// TODO: Decide which mgr opts should be exposed through envoygateway.provider.kubernetes API.
 	mgrOpts := manager.Options{
@@ -70,8 +73,18 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 		HealthProbeBindAddress: ":8081",
 		LeaderElectionID:       "operator-lease.apk.wso2.com",
 	}
+	if !conf.Adapter.DeployResourcesWithClusterRoleBindings {
+		defaultNamespaces := conf.Adapter.Operator.Namespaces
+		defaultNamespaces = append(defaultNamespaces, utils.GetOperatorPodNamespace())
+		defaultNSMap := make(map[string]cache.Config)
+		for _, ns := range defaultNamespaces {
+			defaultNSMap[ns] = cache.Config{}
+		}
+		mgrOpts.Cache = cache.Options{
+			DefaultNamespaces: defaultNSMap,
+		}
+	}
 
-	conf := config.ReadConfigs()
 	metricsConfig := conf.Adapter.Metrics
 	if metricsConfig.Enabled {
 		mgrOpts.Metrics.BindAddress = fmt.Sprintf(":%d", metricsConfig.Port)
