@@ -21,6 +21,18 @@ jobs:
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_envoy_gateway_extension_server:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/envoy-gateway-extension-server-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_common_controller:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/common-controller-release.yml
