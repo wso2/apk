@@ -38,8 +38,8 @@ type RegexGuardrail struct {
 	ShowAssessment bool
 }
 
-// HandleRequest is a method that implements the mediation logic for the RegexGuardrail policy on request.
-func (r *RegexGuardrail) HandleRequest(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
+// HandleRequestBody is a method that implements the mediation logic for the RegexGuardrail policy on request.
+func (r *RegexGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for RegexGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
 	if !validationResult {
@@ -50,10 +50,10 @@ func (r *RegexGuardrail) HandleRequest(logger *logging.Logger, req *envoy_servic
 	return nil
 }
 
-// HandleResponse is a method that implements the mediation logic for the RegexGuardrail policy on response.
-func (r *RegexGuardrail) HandleResponse(logger *logging.Logger, resp *envoy_service_proc_v3.ProcessingResponse) *envoy_service_proc_v3.ProcessingResponse {
+// HandleResponseBody is a method that implements the mediation logic for the RegexGuardrail policy on response.
+func (r *RegexGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for RegexGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, resp.GetImmediateResponse().Body)
+	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for RegexGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
@@ -143,13 +143,14 @@ func (r *RegexGuardrail) buildAssessmentObject(logger *logging.Logger, isRespons
 }
 
 // NewRegexGuardrail initializes the RegexGuardrail policy from the given InBuiltPolicy.
-func NewRegexGuardrail(inBuiltPolicy dto.InBuiltPolicy) RegexGuardrail {
-	regexGuardrail := RegexGuardrail{
+func NewRegexGuardrail(inBuiltPolicy dto.InBuiltPolicy) *RegexGuardrail {
+	regexGuardrail := &RegexGuardrail{
 		BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
 			PolicyName:    inBuiltPolicy.GetPolicyName(),
 			PolicyID:      inBuiltPolicy.GetPolicyID(),
 			PolicyVersion: inBuiltPolicy.GetPolicyVersion(),
 			Parameters:    inBuiltPolicy.GetParameters(),
+			PolicyOrder:   inBuiltPolicy.GetPolicyOrder(),
 		},
 	}
 	for key, value := range inBuiltPolicy.GetParameters() {

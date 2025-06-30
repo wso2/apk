@@ -40,8 +40,8 @@ type ContentLengthGuardrail struct {
 	ShowAssessment bool
 }
 
-// HandleRequest is a method that implements the mediation logic for the ContentLengthGuardrail policy on request.
-func (r *ContentLengthGuardrail) HandleRequest(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
+// HandleRequestBody is a method that implements the mediation logic for the ContentLengthGuardrail policy on request.
+func (r *ContentLengthGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for ContentLengthGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
 	if !validationResult {
@@ -52,10 +52,10 @@ func (r *ContentLengthGuardrail) HandleRequest(logger *logging.Logger, req *envo
 	return nil
 }
 
-// HandleResponse is a method that implements the mediation logic for the ContentLengthGuardrail policy on response.
-func (r *ContentLengthGuardrail) HandleResponse(logger *logging.Logger, resp *envoy_service_proc_v3.ProcessingResponse) *envoy_service_proc_v3.ProcessingResponse {
+// HandleResponseBody is a method that implements the mediation logic for the ContentLengthGuardrail policy on response.
+func (r *ContentLengthGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for ContentLengthGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, resp.GetImmediateResponse().Body)
+	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for ContentLengthGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
@@ -161,35 +161,36 @@ func (r *ContentLengthGuardrail) buildAssessmentObject(logger *logging.Logger, i
 }
 
 // NewContentLengthGuardrail initializes the ContentLengthGuardrail policy from the given InBuiltPolicy.
-func NewContentLengthGuardrail(inBuiltPolicy dto.InBuiltPolicy) ContentLengthGuardrail {
-	ContentLengthGuardrail := ContentLengthGuardrail{
+func NewContentLengthGuardrail(inBuiltPolicy dto.InBuiltPolicy) *ContentLengthGuardrail {
+	contentLengthGuardrail := &ContentLengthGuardrail{
 		BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
 			PolicyName:    inBuiltPolicy.GetPolicyName(),
 			PolicyID:      inBuiltPolicy.GetPolicyID(),
 			PolicyVersion: inBuiltPolicy.GetPolicyVersion(),
 			Parameters:    inBuiltPolicy.GetParameters(),
+			PolicyOrder:   inBuiltPolicy.GetPolicyOrder(),
 		},
 	}
 
 	for key, value := range inBuiltPolicy.GetParameters() {
 		switch key {
 		case "name":
-			ContentLengthGuardrail.Name = value
+			contentLengthGuardrail.Name = value
 		case "min":
 			if intValue, err := strconv.Atoi(value); err == nil {
-				ContentLengthGuardrail.Min = intValue
+				contentLengthGuardrail.Min = intValue
 			}
 		case "max":
 			if intValue, err := strconv.Atoi(value); err == nil {
-				ContentLengthGuardrail.Max = intValue
+				contentLengthGuardrail.Max = intValue
 			}
 		case "jsonPath":
-			ContentLengthGuardrail.JSONPath = value
+			contentLengthGuardrail.JSONPath = value
 		case "invert":
-			ContentLengthGuardrail.Inverted = value == "true"
+			contentLengthGuardrail.Inverted = value == "true"
 		case "showAssessment":
-			ContentLengthGuardrail.ShowAssessment = value == "true"
+			contentLengthGuardrail.ShowAssessment = value == "true"
 		}
 	}
-	return ContentLengthGuardrail
+	return contentLengthGuardrail
 }

@@ -40,8 +40,8 @@ type SentenceCountGuardrail struct {
 	ShowAssessment bool
 }
 
-// HandleRequest is a method that implements the mediation logic for the SentenceCountGuardrail policy on request.
-func (r *SentenceCountGuardrail) HandleRequest(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
+// HandleRequestBody is a method that implements the mediation logic for the SentenceCountGuardrail policy on request.
+func (r *SentenceCountGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for SentenceCountGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
 	if !validationResult {
@@ -52,10 +52,10 @@ func (r *SentenceCountGuardrail) HandleRequest(logger *logging.Logger, req *envo
 	return nil
 }
 
-// HandleResponse is a method that implements the mediation logic for the SentenceCountGuardrail policy on response.
-func (r *SentenceCountGuardrail) HandleResponse(logger *logging.Logger, resp *envoy_service_proc_v3.ProcessingResponse) *envoy_service_proc_v3.ProcessingResponse {
+// HandleResponseBody is a method that implements the mediation logic for the SentenceCountGuardrail policy on response.
+func (r *SentenceCountGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for SentenceCountGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, resp.GetImmediateResponse().Body)
+	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for SentenceCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
@@ -168,35 +168,36 @@ func (r *SentenceCountGuardrail) buildAssessmentObject(logger *logging.Logger, i
 }
 
 // NewSentenceCountGuardrail initializes the SentenceCountGuardrail policy from the given InBuiltPolicy.
-func NewSentenceCountGuardrail(inBuiltPolicy dto.InBuiltPolicy) SentenceCountGuardrail {
-	SentenceCountGuardrail := SentenceCountGuardrail{
+func NewSentenceCountGuardrail(inBuiltPolicy dto.InBuiltPolicy) *SentenceCountGuardrail {
+	sentenceCountGuardrail := &SentenceCountGuardrail{
 		BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
 			PolicyName:    inBuiltPolicy.GetPolicyName(),
 			PolicyID:      inBuiltPolicy.GetPolicyID(),
 			PolicyVersion: inBuiltPolicy.GetPolicyVersion(),
 			Parameters:    inBuiltPolicy.GetParameters(),
+			PolicyOrder:   inBuiltPolicy.GetPolicyOrder(),
 		},
 	}
 
 	for key, value := range inBuiltPolicy.GetParameters() {
 		switch key {
 		case "name":
-			SentenceCountGuardrail.Name = value
+			sentenceCountGuardrail.Name = value
 		case "min":
 			if intValue, err := strconv.Atoi(value); err == nil {
-				SentenceCountGuardrail.Min = intValue
+				sentenceCountGuardrail.Min = intValue
 			}
 		case "max":
 			if intValue, err := strconv.Atoi(value); err == nil {
-				SentenceCountGuardrail.Max = intValue
+				sentenceCountGuardrail.Max = intValue
 			}
 		case "jsonPath":
-			SentenceCountGuardrail.JSONPath = value
+			sentenceCountGuardrail.JSONPath = value
 		case "invert":
-			SentenceCountGuardrail.Inverted = value == "true"
+			sentenceCountGuardrail.Inverted = value == "true"
 		case "showAssessment":
-			SentenceCountGuardrail.ShowAssessment = value == "true"
+			sentenceCountGuardrail.ShowAssessment = value == "true"
 		}
 	}
-	return SentenceCountGuardrail
+	return sentenceCountGuardrail
 }
