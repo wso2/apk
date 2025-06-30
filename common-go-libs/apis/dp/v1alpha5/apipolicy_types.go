@@ -70,19 +70,26 @@ type PolicySpec struct {
 	// ModelBasedRoundRobin holds the model based round robin configurations
 	ModelBasedRoundRobin *ModelBasedRoundRobin `json:"modelBasedRoundRobin,omitempty"`
 
-	// RequestInBuiltPolicies holds the in-built request policies to be applied
-	RequestInBuiltPolicies []InBuiltPolicy `json:"requestInBuiltPolicies,omitempty"`
+	// RequestPolicies holds the request policies to be applied
+	RequestPolicies []Policy `json:"requestPolicies,omitempty"`
 
-	// ResponseInBuiltPolicies holds the in-built response policies to be applied
-	ResponseInBuiltPolicies []InBuiltPolicy `json:"responseInBuiltPolicies,omitempty"`
+	// ResponsePolicies holds the response policies to be applied
+	ResponsePolicies []Policy `json:"responsePolicies,omitempty"`
 }
 
-// InBuiltPolicy holds the in-built policy configurations
-type InBuiltPolicy struct {
-	PolicyName    string            `json:"policyName"`
-	PolicyID      string            `json:"policyID"`
-	PolicyVersion string            `json:"policyVersion,omitempty"`
-	Parameters    map[string]string `json:"parameters,omitempty"`
+// Policy holds the policy configurations
+type Policy struct {
+	PolicyName    string      `json:"policyName"`
+	PolicyID      string      `json:"policyID"`
+	PolicyVersion string      `json:"policyVersion,omitempty"`
+	Parameters    []Parameter `json:"parameters,omitempty"`
+}
+
+// Parameter represents a key-value or key-valueFrom pair for policy parameters
+type Parameter struct {
+	Key      string                          `json:"key"`
+	Value    *string                         `json:"value,omitempty"`
+	ValueRef *gwapiv1b1.LocalObjectReference `json:"valueRef,omitempty"`
 }
 
 // ModelBasedRoundRobin holds the model based round robin configurations

@@ -7714,27 +7714,6 @@ spec:
                     - productionModels
                     - sandboxModels
                     type: object
-                  requestInBuiltPolicies:
-                    description: RequestInBuiltPolicies holds the in-built request
-                      policies to be applied
-                    items:
-                      description: InBuiltPolicy holds the in-built policy configurations
-                      properties:
-                        parameters:
-                          additionalProperties:
-                            type: string
-                          type: object
-                        policyID:
-                          type: string
-                        policyName:
-                          type: string
-                        policyVersion:
-                          type: string
-                      required:
-                      - policyID
-                      - policyName
-                      type: object
-                    type: array
                   requestInterceptors:
                     description: |-
                       RequestInterceptors referenced to intercetor services to be applied
@@ -7753,16 +7732,61 @@ spec:
                     maxItems: 1
                     nullable: true
                     type: array
-                  responseInBuiltPolicies:
-                    description: ResponseInBuiltPolicies holds the in-built response
-                      policies to be applied
+                  requestPolicies:
+                    description: RequestPolicies holds the request policies to be
+                      applied
                     items:
-                      description: InBuiltPolicy holds the in-built policy configurations
+                      description: Policy holds the policy configurations
                       properties:
                         parameters:
-                          additionalProperties:
-                            type: string
-                          type: object
+                          items:
+                            description: Parameter represents a key-value or key-valueFrom
+                              pair for policy parameters
+                            properties:
+                              key:
+                                type: string
+                              value:
+                                type: string
+                              valueRef:
+                                description: |-
+                                  LocalObjectReference identifies an API object within the namespace of the
+                                  referrer.
+                                  The API object must be valid in the cluster; the Group and Kind must
+                                  be registered in the cluster for this reference to be valid.
+
+
+                                  References to objects with invalid Group and Kind are not valid, and must
+                                  be rejected by the implementation, with appropriate Conditions set
+                                  on the containing object.
+                                properties:
+                                  group:
+                                    description: |-
+                                      Group is the group of the referent. For example, "gateway.networking.k8s.io".
+                                      When unspecified or empty string, core API group is inferred.
+                                    maxLength: 253
+                                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                    type: string
+                                  kind:
+                                    description: Kind is kind of the referent. For
+                                      example "HTTPRoute" or "Service".
+                                    maxLength: 63
+                                    minLength: 1
+                                    pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                                    type: string
+                                  name:
+                                    description: Name is the name of the referent.
+                                    maxLength: 253
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - group
+                                - kind
+                                - name
+                                type: object
+                            required:
+                            - key
+                            type: object
+                          type: array
                         policyID:
                           type: string
                         policyName:
@@ -7791,6 +7815,72 @@ spec:
                       type: object
                     maxItems: 1
                     nullable: true
+                    type: array
+                  responsePolicies:
+                    description: ResponsePolicies holds the response policies to be
+                      applied
+                    items:
+                      description: Policy holds the policy configurations
+                      properties:
+                        parameters:
+                          items:
+                            description: Parameter represents a key-value or key-valueFrom
+                              pair for policy parameters
+                            properties:
+                              key:
+                                type: string
+                              value:
+                                type: string
+                              valueRef:
+                                description: |-
+                                  LocalObjectReference identifies an API object within the namespace of the
+                                  referrer.
+                                  The API object must be valid in the cluster; the Group and Kind must
+                                  be registered in the cluster for this reference to be valid.
+
+
+                                  References to objects with invalid Group and Kind are not valid, and must
+                                  be rejected by the implementation, with appropriate Conditions set
+                                  on the containing object.
+                                properties:
+                                  group:
+                                    description: |-
+                                      Group is the group of the referent. For example, "gateway.networking.k8s.io".
+                                      When unspecified or empty string, core API group is inferred.
+                                    maxLength: 253
+                                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                    type: string
+                                  kind:
+                                    description: Kind is kind of the referent. For
+                                      example "HTTPRoute" or "Service".
+                                    maxLength: 63
+                                    minLength: 1
+                                    pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                                    type: string
+                                  name:
+                                    description: Name is the name of the referent.
+                                    maxLength: 253
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - group
+                                - kind
+                                - name
+                                type: object
+                            required:
+                            - key
+                            type: object
+                          type: array
+                        policyID:
+                          type: string
+                        policyName:
+                          type: string
+                        policyVersion:
+                          type: string
+                      required:
+                      - policyID
+                      - policyName
+                      type: object
                     type: array
                   subscriptionValidation:
                     default: false
@@ -10031,27 +10121,6 @@ spec:
                     - productionModels
                     - sandboxModels
                     type: object
-                  requestInBuiltPolicies:
-                    description: RequestInBuiltPolicies holds the in-built request
-                      policies to be applied
-                    items:
-                      description: InBuiltPolicy holds the in-built policy configurations
-                      properties:
-                        parameters:
-                          additionalProperties:
-                            type: string
-                          type: object
-                        policyID:
-                          type: string
-                        policyName:
-                          type: string
-                        policyVersion:
-                          type: string
-                      required:
-                      - policyID
-                      - policyName
-                      type: object
-                    type: array
                   requestInterceptors:
                     description: |-
                       RequestInterceptors referenced to intercetor services to be applied
@@ -10070,16 +10139,61 @@ spec:
                     maxItems: 1
                     nullable: true
                     type: array
-                  responseInBuiltPolicies:
-                    description: ResponseInBuiltPolicies holds the in-built response
-                      policies to be applied
+                  requestPolicies:
+                    description: RequestPolicies holds the request policies to be
+                      applied
                     items:
-                      description: InBuiltPolicy holds the in-built policy configurations
+                      description: Policy holds the policy configurations
                       properties:
                         parameters:
-                          additionalProperties:
-                            type: string
-                          type: object
+                          items:
+                            description: Parameter represents a key-value or key-valueFrom
+                              pair for policy parameters
+                            properties:
+                              key:
+                                type: string
+                              value:
+                                type: string
+                              valueRef:
+                                description: |-
+                                  LocalObjectReference identifies an API object within the namespace of the
+                                  referrer.
+                                  The API object must be valid in the cluster; the Group and Kind must
+                                  be registered in the cluster for this reference to be valid.
+
+
+                                  References to objects with invalid Group and Kind are not valid, and must
+                                  be rejected by the implementation, with appropriate Conditions set
+                                  on the containing object.
+                                properties:
+                                  group:
+                                    description: |-
+                                      Group is the group of the referent. For example, "gateway.networking.k8s.io".
+                                      When unspecified or empty string, core API group is inferred.
+                                    maxLength: 253
+                                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                    type: string
+                                  kind:
+                                    description: Kind is kind of the referent. For
+                                      example "HTTPRoute" or "Service".
+                                    maxLength: 63
+                                    minLength: 1
+                                    pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                                    type: string
+                                  name:
+                                    description: Name is the name of the referent.
+                                    maxLength: 253
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - group
+                                - kind
+                                - name
+                                type: object
+                            required:
+                            - key
+                            type: object
+                          type: array
                         policyID:
                           type: string
                         policyName:
@@ -10108,6 +10222,72 @@ spec:
                       type: object
                     maxItems: 1
                     nullable: true
+                    type: array
+                  responsePolicies:
+                    description: ResponsePolicies holds the response policies to be
+                      applied
+                    items:
+                      description: Policy holds the policy configurations
+                      properties:
+                        parameters:
+                          items:
+                            description: Parameter represents a key-value or key-valueFrom
+                              pair for policy parameters
+                            properties:
+                              key:
+                                type: string
+                              value:
+                                type: string
+                              valueRef:
+                                description: |-
+                                  LocalObjectReference identifies an API object within the namespace of the
+                                  referrer.
+                                  The API object must be valid in the cluster; the Group and Kind must
+                                  be registered in the cluster for this reference to be valid.
+
+
+                                  References to objects with invalid Group and Kind are not valid, and must
+                                  be rejected by the implementation, with appropriate Conditions set
+                                  on the containing object.
+                                properties:
+                                  group:
+                                    description: |-
+                                      Group is the group of the referent. For example, "gateway.networking.k8s.io".
+                                      When unspecified or empty string, core API group is inferred.
+                                    maxLength: 253
+                                    pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                    type: string
+                                  kind:
+                                    description: Kind is kind of the referent. For
+                                      example "HTTPRoute" or "Service".
+                                    maxLength: 63
+                                    minLength: 1
+                                    pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                                    type: string
+                                  name:
+                                    description: Name is the name of the referent.
+                                    maxLength: 253
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - group
+                                - kind
+                                - name
+                                type: object
+                            required:
+                            - key
+                            type: object
+                          type: array
+                        policyID:
+                          type: string
+                        policyName:
+                          type: string
+                        policyVersion:
+                          type: string
+                      required:
+                      - policyID
+                      - policyName
+                      type: object
                     type: array
                   subscriptionValidation:
                     default: false
