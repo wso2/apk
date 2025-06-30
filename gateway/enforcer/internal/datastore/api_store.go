@@ -19,6 +19,7 @@ package datastore
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 
 	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
@@ -90,7 +91,7 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
-				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), covertRequestInBuiltPoliciesToDTO(resource.RequestInBuiltPolicies), covertRequestInBuiltPoliciesToDTO(resource.ResponseInBuiltPolicies), func() []*requestconfig.EndpointSecurity {
+				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), covertRequestInBuiltPoliciesToDTO(resource.RequestInBuiltPolicies), covertResponseInBuiltPoliciesToDTO(resource.ResponseInBuiltPolicies), func() []*requestconfig.EndpointSecurity {
 					endpointSecurity := make([]*requestconfig.EndpointSecurity, len(resource.EndpointSecurity))
 					for i, es := range resource.EndpointSecurity {
 						endpointSecurity[i] = &requestconfig.EndpointSecurity{
@@ -128,45 +129,28 @@ func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []d
 	}
 	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(requestPolicies))
 	for _, policy := range requestPolicies {
+		basePolicy := &dto.BaseInBuiltPolicy{
+			PolicyName:    policy.PolicyName,
+			PolicyID:      policy.PolicyID,
+			PolicyVersion: policy.PolicyVersion,
+			Parameters:    policy.Parameters,
+			PolicyOrder:   int(policy.PolicyOrder),
+		}
 		switch policy.PolicyName {
 		case inbuiltpolicy.RegexGuardrailName:
-			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.RegexGuardrail{
-				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
-					PolicyName:    policy.PolicyName,
-					PolicyID:      policy.PolicyID,
-					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
-				},
-			})
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewRegexGuardrail(basePolicy))
 		case inbuiltpolicy.WordCountGuardrailName:
-			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.WordCountGuardrail{
-				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
-					PolicyName:    policy.PolicyName,
-					PolicyID:      policy.PolicyID,
-					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
-				},
-			})
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewWordCountGuardrail(basePolicy))
 		case inbuiltpolicy.SentenceCountGuardrailName:
-			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.SentenceCountGuardrail{
-				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
-					PolicyName:    policy.PolicyName,
-					PolicyID:      policy.PolicyID,
-					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
-				},
-			})
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSentenceCountGuardrail(basePolicy))
 		case inbuiltpolicy.ContentLengthGuardrailName:
-			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.ContentLengthGuardrail{
-				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
-					PolicyName:    policy.PolicyName,
-					PolicyID:      policy.PolicyID,
-					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
-				},
-			})
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewContentLengthGuardrail(basePolicy))
 		}
 	}
+	// Sort by PolicyOrder
+	sort.SliceStable(dtoPolicies, func(i, j int) bool {
+		return dtoPolicies[i].GetPolicyOrder() < dtoPolicies[j].GetPolicyOrder()
+	})
 	return dtoPolicies
 }
 
@@ -177,45 +161,28 @@ func covertResponseInBuiltPoliciesToDTO(responsePolicies []*api.InBuiltPolicy) [
 	}
 	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(responsePolicies))
 	for _, policy := range responsePolicies {
+		basePolicy := &dto.BaseInBuiltPolicy{
+			PolicyName:    policy.PolicyName,
+			PolicyID:      policy.PolicyID,
+			PolicyVersion: policy.PolicyVersion,
+			Parameters:    policy.Parameters,
+			PolicyOrder:   int(policy.PolicyOrder),
+		}
 		switch policy.PolicyName {
 		case inbuiltpolicy.RegexGuardrailName:
-			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.RegexGuardrail{
-				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
-					PolicyName:    policy.PolicyName,
-					PolicyID:      policy.PolicyID,
-					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
-				},
-			})
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewRegexGuardrail(basePolicy))
 		case inbuiltpolicy.WordCountGuardrailName:
-			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.WordCountGuardrail{
-				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
-					PolicyName:    policy.PolicyName,
-					PolicyID:      policy.PolicyID,
-					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
-				},
-			})
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewWordCountGuardrail(basePolicy))
 		case inbuiltpolicy.SentenceCountGuardrailName:
-			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.SentenceCountGuardrail{
-				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
-					PolicyName:    policy.PolicyName,
-					PolicyID:      policy.PolicyID,
-					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
-				},
-			})
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSentenceCountGuardrail(basePolicy))
 		case inbuiltpolicy.ContentLengthGuardrailName:
-			dtoPolicies = append(dtoPolicies, &inbuiltpolicy.ContentLengthGuardrail{
-				BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
-					PolicyName:    policy.PolicyName,
-					PolicyID:      policy.PolicyID,
-					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
-				},
-			})
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewContentLengthGuardrail(basePolicy))
 		}
 	}
+	// Sort by PolicyOrder
+	sort.SliceStable(dtoPolicies, func(i, j int) bool {
+		return dtoPolicies[i].GetPolicyOrder() < dtoPolicies[j].GetPolicyOrder()
+	})
 	return dtoPolicies
 }
 
