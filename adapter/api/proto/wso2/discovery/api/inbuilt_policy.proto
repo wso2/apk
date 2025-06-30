@@ -31,4 +31,5 @@ message InBuiltPolicy {
     string policyID = 2; // Unique identifier for the policy
     string policyVersion = 3; // Version of the policy
     map<string, string> parameters = 4; // Configuration parameters for the policy
+    uint32 policyOrder = 5; // Order in which the policy should be applied
 }

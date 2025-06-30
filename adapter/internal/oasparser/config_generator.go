@@ -258,6 +258,7 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 			PolicyID:      policy.PolicyID,
 			PolicyVersion: policy.PolicyVersion,
 			Parameters:    policy.Parameters,
+			PolicyOrder:   uint32(policy.PolicyOrder),
 		})
 	}
 
@@ -273,6 +274,7 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 			PolicyID:      policy.PolicyID,
 			PolicyVersion: policy.PolicyVersion,
 			Parameters:    policy.Parameters,
+			PolicyOrder:   uint32(policy.PolicyOrder),
 		})
 	}
 

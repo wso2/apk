@@ -1157,50 +1157,78 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 
 	for _, apiPolicy := range apiPolicies {
 		// Safely access Override section
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInBuiltPolicies != nil && len(apiPolicy.Spec.Override.RequestInBuiltPolicies) > 0 {
-			loggers.LoggerAPKOperator.Debugf("RequestInBuiltPolicies Override section  %v", apiPolicy.Spec.Override.RequestInBuiltPolicies)
-			for _, policy := range apiPolicy.Spec.Override.RequestInBuiltPolicies {
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestPolicies != nil && len(apiPolicy.Spec.Override.RequestPolicies) > 0 {
+			loggers.LoggerAPKOperator.Debugf("RequestPolicies Override section  %v", apiPolicy.Spec.Override.RequestPolicies)
+			index := 0
+			for _, policy := range apiPolicy.Spec.Override.RequestPolicies {
+				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiPolicy.Namespace, policy)
+				if err != nil {
+					return nil, nil, false, nil, nil, nil, nil, fmt.Errorf("error resolving parameters for policy %s: %w", policy.PolicyName, err)
+				}
 				resolvedRequestInBuiltPolicies = append(resolvedRequestInBuiltPolicies, synchronizer.ResolvedInBuiltPolicy{
 					PolicyName:    policy.PolicyName,
 					PolicyID:      policy.PolicyID,
 					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
+					Parameters:    resolvedParameters,
+					PolicyOrder:   index,
 				})
+				index++
 			}
 		}
-		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInBuiltPolicies != nil && len(apiPolicy.Spec.Override.ResponseInBuiltPolicies) > 0 {
-			loggers.LoggerAPKOperator.Debugf("ResponseInBuiltPolicies Override section  %v", apiPolicy.Spec.Override.ResponseInBuiltPolicies)
-			for _, policy := range apiPolicy.Spec.Override.ResponseInBuiltPolicies {
+		if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponsePolicies != nil && len(apiPolicy.Spec.Override.ResponsePolicies) > 0 {
+			loggers.LoggerAPKOperator.Debugf("ResponsePolicies Override section  %v", apiPolicy.Spec.Override.ResponsePolicies)
+			index := 0
+			for _, policy := range apiPolicy.Spec.Override.ResponsePolicies {
+				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiPolicy.Namespace, policy)
+				if err != nil {
+					return nil, nil, false, nil, nil, nil, nil, fmt.Errorf("error resolving parameters for policy %s: %w", policy.PolicyName, err)
+				}
 				resolvedResponseInBuiltPolicies = append(resolvedResponseInBuiltPolicies, synchronizer.ResolvedInBuiltPolicy{
 					PolicyName:    policy.PolicyName,
 					PolicyID:      policy.PolicyID,
 					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
+					Parameters:    resolvedParameters,
+					PolicyOrder:   index,
 				})
+				index++
 			}
 		}
 
 		// Safely access Default section
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInBuiltPolicies != nil {
-			loggers.LoggerAPKOperator.Debugf("RequestInBuiltPolicies Default section  %v", apiPolicy.Spec.Default.RequestInBuiltPolicies)
-			for _, policy := range apiPolicy.Spec.Default.RequestInBuiltPolicies {
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestPolicies != nil {
+			loggers.LoggerAPKOperator.Debugf("RequestPolicies Default section  %v", apiPolicy.Spec.Default.RequestPolicies)
+			index := 0
+			for _, policy := range apiPolicy.Spec.Default.RequestPolicies {
+				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiPolicy.Namespace, policy)
+				if err != nil {
+					return nil, nil, false, nil, nil, nil, nil, fmt.Errorf("error resolving parameters for policy %s: %w", policy.PolicyName, err)
+				}
 				resolvedRequestInBuiltPolicies = append(resolvedRequestInBuiltPolicies, synchronizer.ResolvedInBuiltPolicy{
 					PolicyName:    policy.PolicyName,
 					PolicyID:      policy.PolicyID,
 					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
+					Parameters:    resolvedParameters,
+					PolicyOrder:   index,
 				})
+				index++
 			}
 		}
-		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInBuiltPolicies != nil {
-			loggers.LoggerAPKOperator.Debugf("ResponseInBuiltPolicies Default section  %v", apiPolicy.Spec.Default.ResponseInBuiltPolicies)
-			for _, policy := range apiPolicy.Spec.Default.ResponseInBuiltPolicies {
+		if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponsePolicies != nil {
+			loggers.LoggerAPKOperator.Debugf("ResponsePolicies Default section  %v", apiPolicy.Spec.Default.ResponsePolicies)
+			index := 0
+			for _, policy := range apiPolicy.Spec.Default.ResponsePolicies {
+				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiPolicy.Namespace, policy)
+				if err != nil {
+					return nil, nil, false, nil, nil, nil, nil, fmt.Errorf("error resolving parameters for policy %s: %w", policy.PolicyName, err)
+				}
 				resolvedResponseInBuiltPolicies = append(resolvedResponseInBuiltPolicies, synchronizer.ResolvedInBuiltPolicy{
 					PolicyName:    policy.PolicyName,
 					PolicyID:      policy.PolicyID,
 					PolicyVersion: policy.PolicyVersion,
-					Parameters:    policy.Parameters,
+					Parameters:    resolvedParameters,
+					PolicyOrder:   index,
 				})
+				index++
 			}
 		}
 	}

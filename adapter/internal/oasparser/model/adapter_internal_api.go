@@ -95,6 +95,7 @@ type InternalInBuiltPolicy struct {
 	PolicyID      string            `json:"policyID"`
 	PolicyVersion string            `json:"policyVersion"`
 	Parameters    map[string]string `json:"parameters,omitempty"`
+	PolicyOrder   int               `json:"policyOrder,omitempty"`
 }
 
 // InternalModelBasedRoundRobin holds the model based round robin configurations
@@ -1315,35 +1316,51 @@ func extractRequestInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*InternalI
 	}
 	resolvedRequestInBuiltPolicies := []*InternalInBuiltPolicy{}
 	// Safely access Override section
-	if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestInBuiltPolicies != nil && len(apiPolicy.Spec.Override.RequestInBuiltPolicies) > 0 {
-		loggers.LoggerAPI.Debugf("RequestInBuiltPolicies Override section  %v", apiPolicy.Spec.Override.RequestInBuiltPolicies)
-		for _, policy := range apiPolicy.Spec.Override.RequestInBuiltPolicies {
+	if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.RequestPolicies != nil && len(apiPolicy.Spec.Override.RequestPolicies) > 0 {
+		index := 0
+		loggers.LoggerAPI.Debugf("RequestPolicies Override section  %v", apiPolicy.Spec.Override.RequestPolicies)
+		for _, policy := range apiPolicy.Spec.Override.RequestPolicies {
+			resolvedParameters, err := getResolvedPolicyParameters(policy, apiPolicy.Namespace)
+			if err != nil {
+				loggers.LoggerAPI.Errorf("Error resolving parameters for policy %s: %v", policy.PolicyName, err)
+				continue
+			}
 			resolvedRequestInBuiltPolicies = append(resolvedRequestInBuiltPolicies, &InternalInBuiltPolicy{
 				PolicyName:    policy.PolicyName,
 				PolicyID:      policy.PolicyID,
 				PolicyVersion: policy.PolicyVersion,
-				Parameters:    policy.Parameters,
+				Parameters:    resolvedParameters,
+				PolicyOrder:   index,
 			})
+			index++
 		}
 	}
 
 	// Safely access Default section
-	if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestInBuiltPolicies != nil && len(apiPolicy.Spec.Default.RequestInBuiltPolicies) > 0 {
-		loggers.LoggerAPI.Debugf("RequestInBuiltPolicies Default section  %v", apiPolicy.Spec.Default.RequestInBuiltPolicies)
-		for _, policy := range apiPolicy.Spec.Default.RequestInBuiltPolicies {
+	if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.RequestPolicies != nil && len(apiPolicy.Spec.Default.RequestPolicies) > 0 {
+		loggers.LoggerAPI.Debugf("RequestPolicies Default section  %v", apiPolicy.Spec.Default.RequestPolicies)
+		index := 0
+		for _, policy := range apiPolicy.Spec.Default.RequestPolicies {
+			resolvedParameters, err := getResolvedPolicyParameters(policy, apiPolicy.Namespace)
+			if err != nil {
+				loggers.LoggerAPI.Errorf("Error resolving parameters for policy %s: %v", policy.PolicyName, err)
+				continue
+			}
 			resolvedRequestInBuiltPolicies = append(resolvedRequestInBuiltPolicies, &InternalInBuiltPolicy{
 				PolicyName:    policy.PolicyName,
 				PolicyID:      policy.PolicyID,
 				PolicyVersion: policy.PolicyVersion,
-				Parameters:    policy.Parameters,
+				Parameters:    resolvedParameters,
+				PolicyOrder:   index,
 			})
+			index++
 		}
 	}
 	if len(resolvedRequestInBuiltPolicies) > 0 {
-		loggers.LoggerAPI.Debugf("RequestInBuiltPolicies found in API Policy %v", apiPolicy.Name)
+		loggers.LoggerAPI.Debugf("RequestPolicies found in API Policy %v", apiPolicy.Name)
 		return resolvedRequestInBuiltPolicies
 	}
-	loggers.LoggerAPI.Debugf("RequestInBuiltPolicies not found in API Policy %v", apiPolicy)
+	loggers.LoggerAPI.Debugf("RequestPolicies not found in API Policy %v", apiPolicy)
 	// Return nil if nothing matches
 	return nil
 }
@@ -1356,37 +1373,52 @@ func extractResponseInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*Internal
 
 	resolvedResponseInBuiltPolicies := []*InternalInBuiltPolicy{}
 
-	if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponseInBuiltPolicies != nil && len(apiPolicy.Spec.Override.ResponseInBuiltPolicies) > 0 {
-		loggers.LoggerAPI.Debugf("ResponseInBuiltPolicies Override section  %v", apiPolicy.Spec.Override.ResponseInBuiltPolicies)
-		for _, policy := range apiPolicy.Spec.Override.ResponseInBuiltPolicies {
+	if apiPolicy.Spec.Override != nil && apiPolicy.Spec.Override.ResponsePolicies != nil && len(apiPolicy.Spec.Override.ResponsePolicies) > 0 {
+		loggers.LoggerAPI.Debugf("ResponsePolicies Override section  %v", apiPolicy.Spec.Override.ResponsePolicies)
+		index := 0
+		for _, policy := range apiPolicy.Spec.Override.ResponsePolicies {
+			resolvedParameters, err := getResolvedPolicyParameters(policy, apiPolicy.Namespace)
+			if err != nil {
+				loggers.LoggerAPI.Errorf("Error resolving parameters for policy %s: %v", policy.PolicyName, err)
+				continue
+			}
 			resolvedResponseInBuiltPolicies = append(resolvedResponseInBuiltPolicies, &InternalInBuiltPolicy{
 				PolicyName:    policy.PolicyName,
 				PolicyID:      policy.PolicyID,
 				PolicyVersion: policy.PolicyVersion,
-				Parameters:    policy.Parameters,
+				Parameters:    resolvedParameters,
+				PolicyOrder:   index,
 			})
+			index++
 		}
 	}
 
 	// Safely access Default section
-	if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponseInBuiltPolicies != nil && len(apiPolicy.Spec.Default.ResponseInBuiltPolicies) > 0 {
-		loggers.LoggerAPI.Debugf("ResponseInBuiltPolicies Default section  %v", apiPolicy.Spec.Default.ResponseInBuiltPolicies)
-		for _, policy := range apiPolicy.Spec.Default.ResponseInBuiltPolicies {
+	if apiPolicy.Spec.Default != nil && apiPolicy.Spec.Default.ResponsePolicies != nil && len(apiPolicy.Spec.Default.ResponsePolicies) > 0 {
+		loggers.LoggerAPI.Debugf("ResponsePolicies Default section  %v", apiPolicy.Spec.Default.ResponsePolicies)
+		index := 0
+		for _, policy := range apiPolicy.Spec.Default.ResponsePolicies {
+			resolvedParameters, err := getResolvedPolicyParameters(policy, apiPolicy.Namespace)
+			if err != nil {
+				loggers.LoggerAPI.Errorf("Error resolving parameters for policy %s: %v", policy.PolicyName, err)
+				continue
+			}
 			resolvedResponseInBuiltPolicies = append(resolvedResponseInBuiltPolicies, &InternalInBuiltPolicy{
 				PolicyName:    policy.PolicyName,
 				PolicyID:      policy.PolicyID,
 				PolicyVersion: policy.PolicyVersion,
-				Parameters:    policy.Parameters,
+				Parameters:    resolvedParameters,
+				PolicyOrder:   index,
 			})
+			index++
 		}
 	}
 
 	if len(resolvedResponseInBuiltPolicies) > 0 {
-		loggers.LoggerAPI.Debugf("ResponseInBuiltPolicies found in API Policy %v", apiPolicy.Name)
+		loggers.LoggerAPI.Debugf("ResponsePolicies found in API Policy %v", apiPolicy.Name)
 		return resolvedResponseInBuiltPolicies
 	}
-	loggers.LoggerAPI.Debugf("ResponseInBuiltPolicies not found in API Policy %v", apiPolicy)
-	// Return nil if nothing matches
+	loggers.LoggerAPI.Debugf("ResponsePolicies not found in API Policy %v", apiPolicy)
 	return nil
 }
 
@@ -1399,6 +1431,36 @@ func getClusterName(epPrefix string, organizationID string, vHost string, swagge
 	}
 	return strings.TrimSpace(organizationID + "_" + epPrefix + "_" + vHost + "_" + strings.Replace(swaggerTitle, " ", "", -1) +
 		swaggerVersion)
+}
+
+// getResolvedPolicyParameters resolves the policy parameters of policies
+func getResolvedPolicyParameters(policy dpv1alpha5.Policy, namespace string) (map[string]string, error) {
+	resolvedParams := make(map[string]string)
+
+	for _, paramValue := range policy.Parameters {
+		value, err := getResolvedParameterValue(namespace, paramValue)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
+		}
+		resolvedParams[paramValue.Key] = value
+	}
+
+	return resolvedParams, nil
+}
+
+// ResolveParameterValue resolves a ParameterValue to its actual string value
+func getResolvedParameterValue(namespace string, paramValue dpv1alpha5.Parameter) (string, error) {
+	// If it's a direct value, return it
+	if paramValue.Value != nil {
+		return *paramValue.Value, nil
+	}
+
+	// If it's a reference, resolve it
+	if paramValue.ValueRef != nil {
+		return "", fmt.Errorf("ValueRef is not supported yet")
+	}
+
+	return "", nil
 }
 
 // SetInfoGQLRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches

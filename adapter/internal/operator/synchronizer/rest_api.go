@@ -188,6 +188,7 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 				PolicyID:      policy.PolicyID,
 				PolicyVersion: policy.PolicyVersion,
 				Parameters:    policy.Parameters,
+				PolicyOrder:   policy.PolicyOrder,
 			})
 		}
 		adapterInternalAPI.SetRequestInBuiltPolicies(requestInBuiltPolicies)
@@ -203,6 +204,7 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 				PolicyID:      policy.PolicyID,
 				PolicyVersion: policy.PolicyVersion,
 				Parameters:    policy.Parameters,
+				PolicyOrder:   policy.PolicyOrder,
 			})
 		}
 		adapterInternalAPI.SetResponseInBuiltPolicies(responseInBuiltPolicies)

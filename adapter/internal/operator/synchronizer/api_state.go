@@ -62,6 +62,7 @@ type ResolvedInBuiltPolicy struct {
 	PolicyID      string            `json:"policyId"`
 	PolicyVersion string            `json:"policyVersion"`
 	Parameters    map[string]string `json:"parameters,omitempty"`
+	PolicyOrder   int               `json:"policyOrder,omitempty"`
 }
 
 // ResolvedModelBasedRoundRobin holds the resolved model based round robin configuration.
