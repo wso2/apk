@@ -35,7 +35,7 @@ on:
     paths:
       - '**/gateway/enforcer/**'
     branches:
-      - 'main'
+      - 'choreo'
 env:
   GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
   NEXUS_REPO_URL: ${{ secrets.NEXUS_REPO_URL }}
@@ -74,7 +74,7 @@ jobs:
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
-          git merge origin/main
+          git merge origin/choreo
       - name: Run Release Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         run: |

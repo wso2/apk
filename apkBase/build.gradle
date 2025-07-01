@@ -17,7 +17,7 @@ release {
     tagTemplate = 'apkbase-$version'
 
     git {
-        requireBranch= project.findProperty('requireBranch') ?: 'main'
+        requireBranch= project.findProperty('requireBranch') ?: 'choreo'
 
         pushToRemote= "origin"
         pushToCurrentBranch = false
