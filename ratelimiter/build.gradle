@@ -25,7 +25,7 @@ release {
     tagTemplate = 'ratelimiter-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
+        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'choreo'
 
         pushToRemote= "origin"
     }

@@ -36,7 +36,7 @@ on:
       - '**/runtime/config-deployer-service/**'
       - '**/common-bal-libs/**'
     branches:
-      - 'main'
+      - 'choreo'
 env:
   GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
 concurrency:
@@ -94,7 +94,7 @@ jobs:
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
-          git merge origin/main
+          git merge origin/choreo
 
       - name: build common bal libs
         run: |
