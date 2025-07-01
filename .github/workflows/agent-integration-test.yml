@@ -19,7 +19,7 @@ jobs:
     - name: Create AKS Cluster and set context
       uses: azure/CLI@v1
       with:
-        azcliversion: 2.44.1
+        azcliversion: 2.72.0
         inlineScript: |
           az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "agent-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --node-vm-size Standard_DS4_v2 --generate-ssh-keys
     - uses: azure/aks-set-context@v3
@@ -221,14 +221,14 @@ jobs:
       if: always()
       uses: azure/CLI@v1
       with:
-        azcliversion: 2.44.1
+        azcliversion: 2.72.0
         inlineScript: |
           az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name agent-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
     - name: Logout from azure
       if: always()
       uses: azure/CLI@v1
       with:
-        azcliversion: 2.44.1
+        azcliversion: 2.72.0
         inlineScript: |
           az logout
     - name: Publish Test Report(DP to CP Flow)
