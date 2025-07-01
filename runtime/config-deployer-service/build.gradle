@@ -27,7 +27,7 @@ release {
     tagTemplate = 'config-deployer-service-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
+        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'choreo'
 
         pushToRemote= "origin"
     }
