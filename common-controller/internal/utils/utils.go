@@ -19,6 +19,8 @@
 package utils
 
 import (
+	"encoding/json"
+	"errors"
 	"sync"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
@@ -28,6 +30,7 @@ import (
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/common-go-libs/constants"
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
@@ -152,6 +155,30 @@ func FilterAIRatelimitPolicyByNamespaces(namespaces []string) func(object *dpv1a
 	}
 }
 
+// FilterRoutePolicyByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterRoutePolicyByNamespaces(namespaces []string) func(object *dpv2alpha1.RoutePolicy) bool {
+	return func(object *dpv2alpha1.RoutePolicy) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterRouteMetadataByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterRouteMetadataByNamespaces(namespaces []string) func(object *dpv2alpha1.RouteMetadata) bool {
+	return func(object *dpv2alpha1.RouteMetadata) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
 // FilterAPIByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
@@ -210,3 +237,17 @@ func NamespacedName(obj k8client.Object) types.NamespacedName {
 		Name:      obj.GetName(),
 	}
 }
+
+// ToJSONString converts any Go object to its JSON string representation.
+// If it fails to marshal, it returns an error message as the string.
+func ToJSONString(obj interface{}) (string, error) {
+	if obj == nil {
+		return "", errors.New("cannot convert nil to JSON")
+	}
+	jsonBytes, err := json.Marshal(obj)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
+}
+

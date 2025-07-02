@@ -10,26 +10,6 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-dp-wso2-com-v1alpha4-apipolicy
-  failurePolicy: Fail
-  name: mapipolicy.kb.io
-  rules:
-  - apiGroups:
-    - dp.wso2.com
-    apiVersions:
-    - v1alpha4
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - apipolicies
-  sideEffects: None
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
       path: /mutate-dp-wso2-com-v1alpha3-api
   failurePolicy: Fail
   name: mapi.kb.io
@@ -150,6 +130,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-dp-wso2-com-v1alpha4-apipolicy
+  failurePolicy: Fail
+  name: mapipolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apipolicies
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-dp-wso2-com-v1alpha1-apipolicy
   failurePolicy: Fail
   name: mapipolicy.kb.io
@@ -250,26 +250,6 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validating-webhook-configuration
 webhooks:
-- admissionReviewVersions:
-  - v1
-  clientConfig:
-    service:
-      name: webhook-service
-      namespace: system
-      path: /validate-dp-wso2-com-v1alpha4-apipolicy
-  failurePolicy: Fail
-  name: vapipolicy.kb.io
-  rules:
-  - apiGroups:
-    - dp.wso2.com
-    apiVersions:
-    - v1alpha4
-    operations:
-    - CREATE
-    - UPDATE
-    resources:
-    - apipolicies
-  sideEffects: None
 - admissionReviewVersions:
   - v1
   clientConfig:
@@ -389,6 +369,26 @@ webhooks:
     - UPDATE
     resources:
     - authentications
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-dp-wso2-com-v1alpha4-apipolicy
+  failurePolicy: Fail
+  name: vapipolicy.kb.io
+  rules:
+  - apiGroups:
+    - dp.wso2.com
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - apipolicies
   sideEffects: None
 - admissionReviewVersions:
   - v1

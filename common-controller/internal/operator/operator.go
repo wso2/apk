@@ -42,6 +42,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -70,6 +71,7 @@ func init() {
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
 	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
+	utilruntime.Must(dpv2alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -92,6 +94,8 @@ func InitOperator(metricsConfig config.Metrics) {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 	ratelimitStore := cache.CreateNewOperatorDataStore()
 	subscriptionStore := cache.CreateNewSubscriptionDataStore()
+	routePolicyDataStore := cache.GetRoutePolicyDataStore()
+	routeMetadataDataStore := cache.GetRouteMetadataDataStore()
 
 	options := ctrl.Options{
 		Scheme:                 scheme,
@@ -184,6 +188,14 @@ func InitOperator(metricsConfig config.Metrics) {
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
 	if err := dpcontrollers.NewAIRatelimitController(mgr, ratelimitStore); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
+			"Error creating JWT Issuer controller, error: %v", err))
+	}
+	if err := dpcontrollers.NewRoutePolicyController(mgr, routePolicyDataStore); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
+			"Error creating JWT Issuer controller, error: %v", err))
+	}
+	if err := dpcontrollers.NewRouteMetadataController(mgr, routeMetadataDataStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
