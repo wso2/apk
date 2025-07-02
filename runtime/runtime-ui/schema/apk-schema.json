@@ -381,7 +381,11 @@
             "BackendJwt",
             "RequestMirror",
             "RequestRedirect",
-            "ModelBasedRoundRobin"
+            "ModelBasedRoundRobin",
+            "RegexGuardrail",
+            "WordCountGuardrail",
+            "SentenceCountGuardrail",
+            "ContentLengthGuardrail"
           ]
         },
         "policyVersion": {
@@ -394,7 +398,6 @@
           "description": "The ID of the operation policy."
         },
         "parameters": {
-          "type": "object",
           "oneOf": [
             {
               "$ref": "#/schemas/InterceptorProperties"
@@ -413,6 +416,9 @@
             },
             {
               "$ref": "#/schemas/ModelBasedRoundRobinProperties"
+            },
+            {
+              "$ref": "#/schemas/CommonPolicyProperties"
             }
           ]
         }
@@ -434,7 +440,11 @@
             "RemoveHeader",
             "SetHeader",
             "Interceptor",
-            "BackendJwt"
+            "BackendJwt",
+            "RegexGuardrail",
+            "WordCountGuardrail",
+            "SentenceCountGuardrail",
+            "ContentLengthGuardrail"
           ]
         },
         "policyVersion": {
@@ -447,7 +457,6 @@
           "description": "The ID of the operation policy."
         },
         "parameters": {
-          "type": "object",
           "oneOf": [
             {
               "$ref": "#/schemas/InterceptorProperties"
@@ -457,6 +466,9 @@
             },
             {
               "$ref": "#/schemas/HeaderModifierProperties"
+            },
+            {
+              "$ref": "#/schemas/CommonPolicyProperties"
             }
           ]
         }
@@ -977,6 +989,32 @@
       "required": [
         "model",
         "endpoint"
+      ],
+      "additionalProperties": false
+    },
+    "CommonPolicyProperties": {
+      "title": "Common Policy Parameters",
+      "type": "array",
+      "items": {
+        "$ref": "#/schemas/CommonPolicy_parameter"
+      }
+    },
+    "CommonPolicy_parameter": {
+      "title": "Common Policy Parameter",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The key of the parameter."
+        },
+        "value": {
+          "type": "string",
+          "description": "The value of the parameter."
+        }
+      },
+      "required": [
+        "key",
+        "value"
       ],
       "additionalProperties": false
     },

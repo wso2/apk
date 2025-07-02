@@ -36,8 +36,8 @@ public type APIPolicyData record {
     boolean subscriptionValidation?;
     AIProviderReference aiProvider?;
     ModelBasedRoundRobin modelBasedRoundRobin?;
-    InBuiltPolicy[] requestInBuiltPolicies?;
-    InBuiltPolicy[] responseInBuiltPolicies?;
+    InBuiltPolicy[] requestPolicies?;
+    InBuiltPolicy[] responsePolicies?;
 };
 
 public type InterceptorReference record {
@@ -68,7 +68,12 @@ public type InBuiltPolicy record {
     string policyName;
     string policyID;
     string policyVersion?;
-    map<string> parameters = {};
+    InBuiltPolicyParameter[] parameters = [];
+};
+
+public type InBuiltPolicyParameter record {
+    string key;
+    string value;
 };
 
 public type APIPolicyList record {

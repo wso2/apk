@@ -289,6 +289,10 @@ schemas:
           - RequestMirror
           - RequestRedirect
           - ModelBasedRoundRobin
+          - RegexGuardrail
+          - WordCountGuardrail
+          - SentenceCountGuardrail
+          - ContentLengthGuardrail
       policyVersion:
         type: string
         default: v1
@@ -297,7 +301,6 @@ schemas:
         type: string
         description: The ID of the operation policy.
       parameters:
-        type: object
         oneOf:
           - "$ref": "#/schemas/InterceptorProperties"
           - "$ref": "#/schemas/BackendJWTProperties"
@@ -305,6 +308,7 @@ schemas:
           - "$ref": "#/schemas/RequestMirrorProperties"
           - "$ref": "#/schemas/RequestRedirectProperties"
           - "$ref": "#/schemas/ModelBasedRoundRobinProperties"
+          - "$ref": "#/schemas/CommonPolicyProperties"
     additionalProperties: false
   APKResponseOperationPolicy:
     title: API Operation Policy
@@ -321,6 +325,10 @@ schemas:
           - SetHeader
           - Interceptor
           - BackendJwt
+          - RegexGuardrail
+          - WordCountGuardrail
+          - SentenceCountGuardrail
+          - ContentLengthGuardrail
       policyVersion:
         type: string
         default: v1
@@ -329,11 +337,11 @@ schemas:
         type: string
         description: The ID of the operation policy.
       parameters:
-        type: object
         oneOf:
           - "$ref": "#/schemas/InterceptorProperties"
           - "$ref": "#/schemas/BackendJWTProperties"
           - "$ref": "#/schemas/HeaderModifierProperties"
+          - "$ref": "#/schemas/CommonPolicyProperties"
     additionalProperties: false
   HeaderModifierProperties:
     title: Header Modifier Parameters
@@ -705,6 +713,22 @@ schemas:
     required:
       - "model"
       - "endpoint"
+    additionalProperties: false
+  CommonPolicyProperties:
+    title: Common Policy Parameters
+    type: array
+    items:
+      $ref: "#/schemas/CommonPolicyParameter"
+  CommonPolicyParameter:
+    type: object
+    required:
+      - key
+      - value
+    properties:
+      key:
+        type: string
+      value:
+        type: string
     additionalProperties: false
   BackendJWTProperties:
     title: Backend JWT Parameters

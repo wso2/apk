@@ -142,10 +142,10 @@ public type APKOperations record {
 public type APKOperationPolicy APKRequestOperationPolicy|APKResponseOperationPolicy;
 
 # Common type for request operation policies.
-public type APKRequestOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy|RequestMirrorPolicy|RequestRedirectPolicy|ModelBasedRoundRobinPolicy;
+public type APKRequestOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy|RequestMirrorPolicy|RequestRedirectPolicy|ModelBasedRoundRobinPolicy|CommonPolicy;
 
 # Common type for response operation policies.
-public type APKResponseOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy;
+public type APKResponseOperationPolicy InterceptorPolicy|BackendJWTPolicy|HeaderModifierPolicy|CommonPolicy;
 
 # Header modification configuration for an operation.
 #
@@ -236,6 +236,7 @@ public type Resiliency record {
 
 # Configuration of AIRatelimit settings.
 #
+# + enabled - Indicates whether the AI rate limit is enabled.
 # + token - Configuration for the CircuitBreaker.
 # + request - Configuration for the Timeout.
 public type AIRatelimit record {
@@ -425,7 +426,11 @@ public enum PolicyName {
     RemoveHeader,
     RequestMirror,
     RequestRedirect,
-    ModelBasedRoundRobin
+    ModelBasedRoundRobin,
+    RegexGuardrail,
+    WordCountGuardrail,
+    SentenceCountGuardrail,
+    ContentLengthGuardrail
 }
 
 # Configuration for authentication types.
@@ -473,6 +478,23 @@ public type ModelRouting record {
     string model;
     string endpoint;
     int weight;
+};
+
+# Common policy configuration for an operation.
+# 
+# + parameters - Contains common policy parameters.
+public type CommonPolicy record {
+    *BaseOperationPolicy;
+    CommonPolicy_parameter[] parameters?;
+};
+
+# Configuration for common policy parameters.
+# 
+# + key - The key of the parameter.
+# + value - The value of the parameter.
+public type CommonPolicy_parameter record {
+    string key;
+    string value;
 };
 
 # APK configuration for a given API
