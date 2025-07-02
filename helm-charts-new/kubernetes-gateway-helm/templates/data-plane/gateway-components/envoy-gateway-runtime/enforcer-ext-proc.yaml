@@ -32,8 +32,6 @@ spec:
           namespace: {{ .Release.Namespace }}
           port: 8081
       processingMode:
-        request:
-          body: Streamed
-        response:
-          body: Streamed
+        request: {}
+        allowModeOverride: true
 {{- end -}}
