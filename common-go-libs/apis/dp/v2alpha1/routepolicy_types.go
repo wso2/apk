@@ -25,22 +25,8 @@ import (
 
 // RoutePolicySpec defines the desired state of RoutePolicy
 type RoutePolicySpec struct {
-	API               API         `json:"api,omitempty"`
 	RequestMediation  []Mediation `json:"requestMediation,omitempty"`
 	ResponseMediation []Mediation `json:"responseMediation,omitempty"`
-}
-
-// API represents the API metadata for the RoutePolicy
-type API struct {
-	// Name is the name of the API
-	// It is used to identify the API in the policy
-	Name         string `json:"name,omitempty"`
-	// Version is the version of the API
-	Version      string `json:"version,omitempty"`
-	// Organization is the organization that owns the API
-	Organization string `json:"organization,omitempty"`
-	// Type is the type of the API
-	Type         string `json:"type,omitempty"` // e.g., REST, SOAP
 }
 
 // Mediation represents a policy mediation configuration
