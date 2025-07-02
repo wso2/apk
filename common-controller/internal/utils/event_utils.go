@@ -164,6 +164,58 @@ func SendApplicationKeyMappingEvent(eventType, applicationUUID, securityScheme, 
 	sendEvent(&event)
 }
 
+// SendRoutePolicyCreatedOrUpdatedEvent sends a route policy creation or update event to the enforcer
+func SendRoutePolicyCreatedOrUpdatedEvent(routePolicy string) {
+	currentTime := time.Now()
+	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
+	event := subscription.Event{
+		Uuid:      uuid.New().String(),
+		Type:      constants.RoutePolicyCreatedOrUpdated,
+		TimeStamp: milliseconds,
+		RoutePolicy: routePolicy,
+	}
+	sendEvent(&event)
+}
+
+// SendRoutePolicyDeletedEvent sends a route policy deletion event to the enforcer
+func SendRoutePolicyDeletedEvent(routePolicy string) {
+	currentTime := time.Now()
+	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
+	event := subscription.Event{
+		Uuid:      uuid.New().String(),
+		Type:      constants.RoutePolicyDeleted,
+		TimeStamp: milliseconds,
+		RoutePolicy: routePolicy,
+	}
+	sendEvent(&event)
+}
+
+// SendRouteMetadataCreatedOrUpdatedEvent sends a route metadata creation or update event to the enforcer
+func SendRouteMetadataCreatedOrUpdatedEvent(routeMetadata string) {
+	currentTime := time.Now()
+	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
+	event := subscription.Event{
+		Uuid:      uuid.New().String(),
+		Type:      constants.RouteMetadataCreatedOrUpdated,
+		TimeStamp: milliseconds,
+		RouteMetadata: routeMetadata,
+	}
+	sendEvent(&event)
+}
+
+// SendRouteMetadataDeletedEvent sends a route metadata deletion event to the enforcer
+func SendRouteMetadataDeletedEvent(routeMetadata string) {
+	currentTime := time.Now()
+	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
+	event := subscription.Event{
+		Uuid:      uuid.New().String(),
+		Type:      constants.RouteMetadataDeleted,
+		TimeStamp: milliseconds,
+		RouteMetadata: routeMetadata,
+	}
+	sendEvent(&event)
+}
+
 func sendEvent(event *subscription.Event) {
 	loggers.LoggerAPKOperator.Debugf("Sending event to all clients: %v", event)
 	for clientID, stream := range GetAllClientConnections() {

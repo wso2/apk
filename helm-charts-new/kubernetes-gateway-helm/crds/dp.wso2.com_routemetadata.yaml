@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.18.0
-  name: routepolicies.dp.wso2.com
+  name: routemetadata.dp.wso2.com
 spec:
   group: dp.wso2.com
   names:
-    kind: RoutePolicy
-    listKind: RoutePolicyList
-    plural: routepolicies
-    singular: routepolicy
+    kind: RouteMetadata
+    listKind: RouteMetadataList
+    plural: routemetadata
+    singular: routemetadata
   scope: Namespaced
   versions:
   - name: v2alpha1
     schema:
       openAPIV3Schema:
-        description: RoutePolicy is the Schema for the routepolicies API
+        description: RouteMetadata is the Schema for the routemetadata API
         properties:
           apiVersion:
             description: |-
@@ -37,134 +37,57 @@ spec:
           metadata:
             type: object
           spec:
-            description: RoutePolicySpec defines the desired state of RoutePolicy
+            description: RouteMetadataSpec defines the desired state of RouteMetadata
             properties:
-              requestMediation:
-                items:
-                  description: |-
-                    Mediation represents a policy mediation configuration
-                    It can be used for both request and response mediation
-                  properties:
-                    parameters:
-                      items:
-                        description: Parameter represents a key-value or key-valueFrom
-                          pair for policy parameters
-                        properties:
-                          key:
-                            description: |-
-                              Key is the name of the parameter
-                              It is used to identify the parameter in the policy
-                            type: string
-                          value:
-                            description: Value is the value of the parameter
-                            type: string
-                          valueRef:
-                            description: |-
-                              ValueRef is used to reference a value from another resource
-                              It can be used to reference a value from a ConfigMap, Secret, or other resources
-                            properties:
-                              group:
-                                description: |-
-                                  Group is the group of the referent. For example, "gateway.networking.k8s.io".
-                                  When unspecified or empty string, core API group is inferred.
-                                maxLength: 253
-                                pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
-                                type: string
-                              kind:
-                                description: Kind is kind of the referent. For example
-                                  "HTTPRoute" or "Service".
-                                maxLength: 63
-                                minLength: 1
-                                pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
-                                type: string
-                              name:
-                                description: Name is the name of the referent.
-                                maxLength: 253
-                                minLength: 1
-                                type: string
-                            required:
-                            - group
-                            - kind
-                            - name
-                            type: object
-                        required:
-                        - key
-                        type: object
-                      type: array
-                    policyID:
-                      type: string
-                    policyName:
-                      type: string
-                    policyVersion:
-                      type: string
-                  required:
-                  - policyID
-                  - policyName
-                  type: object
-                type: array
-              responseMediation:
-                items:
-                  description: |-
-                    Mediation represents a policy mediation configuration
-                    It can be used for both request and response mediation
-                  properties:
-                    parameters:
-                      items:
-                        description: Parameter represents a key-value or key-valueFrom
-                          pair for policy parameters
-                        properties:
-                          key:
-                            description: |-
-                              Key is the name of the parameter
-                              It is used to identify the parameter in the policy
-                            type: string
-                          value:
-                            description: Value is the value of the parameter
-                            type: string
-                          valueRef:
-                            description: |-
-                              ValueRef is used to reference a value from another resource
-                              It can be used to reference a value from a ConfigMap, Secret, or other resources
-                            properties:
-                              group:
-                                description: |-
-                                  Group is the group of the referent. For example, "gateway.networking.k8s.io".
-                                  When unspecified or empty string, core API group is inferred.
-                                maxLength: 253
-                                pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
-                                type: string
-                              kind:
-                                description: Kind is kind of the referent. For example
-                                  "HTTPRoute" or "Service".
-                                maxLength: 63
-                                minLength: 1
-                                pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
-                                type: string
-                              name:
-                                description: Name is the name of the referent.
-                                maxLength: 253
-                                minLength: 1
-                                type: string
-                            required:
-                            - group
-                            - kind
-                            - name
-                            type: object
-                        required:
-                        - key
-                        type: object
-                      type: array
-                    policyID:
-                      type: string
-                    policyName:
-                      type: string
-                    policyVersion:
-                      type: string
-                  required:
-                  - policyID
-                  - policyName
-                  type: object
-                type: array
+              api:
+                description: API represents the API metadata for the RoutePolicy
+                properties:
+                  apiProperties:
+                    description: APIProperties denotes the custom properties of the
+                      API.
+                    items:
+                      description: Property holds key value pair of APIProperties
+                      properties:
+                        name:
+                          type: string
+                        value:
+                          type: string
+                      type: object
+                    nullable: true
+                    type: array
+                  context:
+                    description: Context is the context of the API
+                    type: string
+                  definitionFileRef:
+                    description: |-
+                      DefinitionFileRef contains the
+                      definition of the API in a ConfigMap.
+                    type: string
+                  definitionPath:
+                    default: /api-definition
+                    description: DefinitionPath contains the path to expose the API
+                      definition.
+                    minLength: 1
+                    type: string
+                  environment:
+                    description: Environment denotes the environment of the API.
+                    nullable: true
+                    type: string
+                  name:
+                    description: Name is the name of the API
+                    type: string
+                  organization:
+                    description: Organization is the organization that owns the API
+                    type: string
+                  type:
+                    description: Type is the type of the API
+                    type: string
+                  version:
+                    description: Version is the version of the API
+                    type: string
+                required:
+                - definitionPath
+                type: object
             type: object
           status:
             description: |-

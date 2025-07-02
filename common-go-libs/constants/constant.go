@@ -25,6 +25,8 @@ const (
 	SubscriptionController       string = "SubscriptionController"
 	ApplicationMappingController string = "ApplicationMappingController"
 	GatewayClassController       string = "GatewayClassController"
+	RoutePolicyController        string = "RoutePolicyController"
+	RouteMetadataController     string = "RouteMetadataController"
 )
 
 // API events related constants
@@ -36,19 +38,23 @@ const (
 
 // Subscriprion events related constants
 const (
-	ApplicationCreated           string = "APPLICATION_CREATED"
-	ApplicationUpdated           string = "APPLICATION_UPDATED"
-	ApplicationDeleted           string = "APPLICATION_DELETED"
-	SubscriptionCreated          string = "SUBSCRIPTION_CREATED"
-	SubscriptionUpdated          string = "SUBSCRIPTION_UPDATED"
-	SubscriptionDeleted          string = "SUBSCRIPTION_DELETED"
-	ApplicationMappingCreated    string = "APPLICATION_MAPPING_CREATED"
-	ApplicationMappingUpdated    string = "APPLICATION_MAPPING_UPDATED"
-	ApplicationMappingDeleted    string = "APPLICATION_MAPPING_DELETED"
-	ApplicationKeyMappingCreated string = "APPLICATION_KEY_MAPPING_CREATED"
-	ApplicationKeyMappingUpdated string = "APPLICATION_KEY_MAPPING_UPDATED"
-	ApplicationKeyMappingDeleted string = "APPLICATION_KEY_MAPPING_DELETED"
-	AllEvents                    string = "ALL_EVENTS"
+	ApplicationCreated            string = "APPLICATION_CREATED"
+	ApplicationUpdated            string = "APPLICATION_UPDATED"
+	ApplicationDeleted            string = "APPLICATION_DELETED"
+	SubscriptionCreated           string = "SUBSCRIPTION_CREATED"
+	SubscriptionUpdated           string = "SUBSCRIPTION_UPDATED"
+	SubscriptionDeleted           string = "SUBSCRIPTION_DELETED"
+	ApplicationMappingCreated     string = "APPLICATION_MAPPING_CREATED"
+	ApplicationMappingUpdated     string = "APPLICATION_MAPPING_UPDATED"
+	ApplicationMappingDeleted     string = "APPLICATION_MAPPING_DELETED"
+	ApplicationKeyMappingCreated  string = "APPLICATION_KEY_MAPPING_CREATED"
+	ApplicationKeyMappingUpdated  string = "APPLICATION_KEY_MAPPING_UPDATED"
+	ApplicationKeyMappingDeleted  string = "APPLICATION_KEY_MAPPING_DELETED"
+	RoutePolicyCreatedOrUpdated   string = "ROUTE_POLICY_CREATED_OR_UPDATED"
+	RoutePolicyDeleted            string = "ROUTE_POLICY_DELETED"
+	RouteMetadataCreatedOrUpdated string = "ROUTE_METADATA_CREATED_OR_UPDATED"
+	RouteMetadataDeleted          string = "ROUTE_METADATA_DELETED"
+	AllEvents                     string = "ALL_EVENTS"
 )
 
 // Environment variable names and default values

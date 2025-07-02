@@ -343,5 +343,17 @@ rules:
   - apiGroups: ["cp.wso2.com"]
     resources: ["applicationmappings/status"]
     verbs: ["get","patch","update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["routepolicies/status"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["routepolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["routemetadata/status"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["routemetadata"]
+    verbs: ["get", "list", "watch"]
 {{- end -}}
 {{- end -}}
