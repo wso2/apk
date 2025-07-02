@@ -25,4 +25,5 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: envoy-gateway
-    namespace: {{ default "envoy-gateway-system"  .Values.wso2.kgw.dp.envoyGateway.namespace }}
+    # namespace: {{ default "envoy-gateway-system"  .Values.wso2.kgw.dp.envoyGateway.namespace }}
+    namespace: {{ .Release.Namespace }}

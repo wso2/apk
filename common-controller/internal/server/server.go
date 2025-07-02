@@ -2,11 +2,14 @@ package server
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/wso2/apk/common-controller/internal/cache"
 	"github.com/wso2/apk/common-controller/internal/config"
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/common-go-libs/pkg/server/model"
 )
 
@@ -48,6 +51,30 @@ func StartInternalServer() {
 			applicationKeyMappingList = append(applicationKeyMappingList, applicationKeyMapping)
 		}
 		c.JSON(http.StatusOK, model.ApplicationKeyMappingList{List: applicationKeyMappingList})
+	})
+	r.GET("/routepolicies", func(c *gin.Context) {
+		log.Printf("Received request from %s", c.ClientIP())
+		rps := cache.GetRoutePolicyDataStore().GetRoutePolicies()
+		rpList := dpv2alpha1.RoutePolicyList{
+			Items: []dpv2alpha1.RoutePolicy{},
+		}
+		for _, rp := range rps {
+			rpList.Items = append(rpList.Items, rp)
+		}
+		log.Printf("Returning %d route policies", len(rpList.Items))
+		c.JSON(http.StatusOK, rpList)
+	})
+	r.GET("/routemetadata", func(c *gin.Context) {
+		log.Printf("Received request from %s", c.ClientIP())
+		rmds := cache.GetRouteMetadataDataStore().GetRouteMetadatas()
+		rmdList := dpv2alpha1.RouteMetadataList{
+			Items: []dpv2alpha1.RouteMetadata{},
+		}
+		for _, rmd := range rmds {
+			rmdList.Items = append(rmdList.Items, rmd)
+		}
+		log.Printf("Returning %d route metadata", len(rmdList.Items))
+		c.JSON(http.StatusOK, rmdList)
 	})
 	conf := config.ReadConfigs()
 	certPath := conf.CommonController.Keystore.CertPath

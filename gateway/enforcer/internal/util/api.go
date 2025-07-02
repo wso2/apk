@@ -18,8 +18,11 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
+
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 )
 
 const delimPeriod = ":"
@@ -37,4 +40,24 @@ func NormalizePath(input string) string {
 // PrepareApplicationKeyMappingCacheKey generates a cache key for application key mapping.
 func PrepareApplicationKeyMappingCacheKey(applicationIdentifier, keyType, securityScheme, envID string) string {
 	return strings.Join([]string{securityScheme, envID, keyType, applicationIdentifier}, delimPeriod)
+}
+
+// ConvertToRoutePolicy converts a JSON string to a RoutePolicy object.
+func ConvertToRoutePolicy(jsonStr string) (*dpv2alpha1.RoutePolicy, error) {
+	var policy dpv2alpha1.RoutePolicy
+	err := json.Unmarshal([]byte(jsonStr), &policy)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal RoutePolicy: %w", err)
+	}
+	return &policy, nil
+}
+
+// ConvertToRouteMetadata converts a JSON string to a RouteMetadata object.
+func ConvertToRouteMetadata(jsonStr string) (*dpv2alpha1.RouteMetadata, error) {
+	var metadata dpv2alpha1.RouteMetadata
+	err := json.Unmarshal([]byte(jsonStr), &metadata)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal RouteMetadata: %w", err)
+	}
+	return &metadata, nil
 }

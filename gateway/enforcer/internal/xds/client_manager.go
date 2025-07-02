@@ -18,13 +18,13 @@
 package xds
 
 import (
-	"time"
+	// "time"
 
 	core_v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	v3 "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
-	"github.com/wso2/apk/gateway/enforcer/internal/util"
+	// "github.com/wso2/apk/gateway/enforcer/internal/util"
 	status "google.golang.org/genproto/googleapis/rpc/status"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 )
@@ -33,19 +33,19 @@ import (
 // including API XDS, Config XDS, and JWT Issuer XDS clients.
 // It handles TLS configuration, certificate loading, and connection setup.
 func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.ConfigStore, *datastore.JWTIssuerStore, *datastore.ModelBasedRoundRobinTracker) {
-	clientCert, err := util.LoadCertificates(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
-	if err != nil {
-		panic(err)
-	}
+	// clientCert, err := util.LoadCertificates(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// Load the trusted CA certificates
-	certPool, err := util.LoadCACertificates(cfg.TrustedAdapterCertsPath)
-	if err != nil {
-		panic(err)
-	}
+	// // Load the trusted CA certificates
+	// certPool, err := util.LoadCACertificates(cfg.TrustedAdapterCertsPath)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// Create the TLS configuration
-	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
+	// // Create the TLS configuration
+	// tlsConfig := util.CreateTLSConfig(clientCert, certPool)
 	configDatastore := datastore.NewConfigStore()
 	jwtIssuerDatastore := datastore.NewJWTIssuerStore()
 	apiDatastore := datastore.NewAPIStore(configDatastore, cfg)
@@ -53,13 +53,13 @@ func CreateXDSClients(cfg *config.Server) (*datastore.APIStore, *datastore.Confi
 	modelBasedRoundRobinTracker := datastore.NewModelBasedRoundRobinTracker()
 	// Start the reactivation task
 	go modelBasedRoundRobinTracker.ReactivateSuspendedModels()
-	apiXDSClient := NewAPIXDSClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, apiDatastore)
-	configXDSClient := NewXDSConfigClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, configDatastore)
-	jwtIssuerXDSClient := NewJWTIssuerXDSClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, jwtIssuerDatastore)
+	// apiXDSClient := NewAPIXDSClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, apiDatastore)
+	// configXDSClient := NewXDSConfigClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, configDatastore)
+	// jwtIssuerXDSClient := NewJWTIssuerXDSClient(cfg.AdapterHost, cfg.AdapterXdsPort, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, jwtIssuerDatastore)
 
-	apiXDSClient.InitiateAPIXDSConnection()
-	configXDSClient.InitiateConfigXDSConnection()
-	jwtIssuerXDSClient.InitiateSubscriptionXDSConnection()
+	// apiXDSClient.InitiateAPIXDSConnection()
+	// configXDSClient.InitiateConfigXDSConnection()
+	// jwtIssuerXDSClient.InitiateSubscriptionXDSConnection()
 	cfg.Logger.Info("XDS clients initiated successfully")
 	return apiDatastore, configDatastore, jwtIssuerDatastore, modelBasedRoundRobinTracker
 }

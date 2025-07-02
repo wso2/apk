@@ -234,4 +234,12 @@ resources:
   kind: RoutePolicy
   path: github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1
   version: v2alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: wso2.com
+  group: dp
+  kind: RouteMetadata
+  path: github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1
+  version: v2alpha1
 version: "3"

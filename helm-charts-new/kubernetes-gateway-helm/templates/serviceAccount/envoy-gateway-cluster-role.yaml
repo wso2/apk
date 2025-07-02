@@ -20,8 +20,14 @@ metadata:
   name: {{ .Values.wso2.kgw.dp.envoyGateway.clusterRoleName }}
 rules:
   - apiGroups: ["dp.wso2.com"]
-    resources: ["apipolicies/status"]
+    resources: ["routepolicies/status"]
     verbs: ["get", "list", "watch", "patch", "update"]
-  - apiGroups: [""]
-    resources: ["apipolicies"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["routepolicies"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["routemetadata/status"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+  - apiGroups: ["dp.wso2.com"]
+    resources: ["routemetadata"]
     verbs: ["get", "list", "watch"]
