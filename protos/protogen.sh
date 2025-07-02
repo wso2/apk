@@ -23,7 +23,7 @@ cd $cur_dir
 rm -rf target
 mkdir -p target/deps
 
-ADAPTER_GEN_DIR=$cur_dir/../common-controller/pkg/discovery/api/wso2/
+ADAPTER_GEN_DIR=$cur_dir/../common-go-libs/pkg/discovery/api/wso2/
 ENFORCER_GEN_DIR=$cur_dir/../gateway/enforcer/org.wso2.apk.enforcer/src/main/java/
 GREEN='\033[0;32m'
 BOLD="\033[1m"
@@ -70,10 +70,10 @@ printf "protoc go services - ${GREEN}${BOLD}done${NC}\n"
 rm -rf $ADAPTER_GEN_DIR
 cp -r target/gen/go/* $ADAPTER_GEN_DIR
 # Java generated implementations are not required for apkmgt related protobufs
-rm -rf target/gen/java/org/wso2/choreo/connect/discovery/apkmgt
-rm -rf target/gen/java/org/wso2/choreo/connect/discovery/service/apkmgt
-rm -rf $ENFORCER_GEN_DIR/org/wso2/choreo/connect/discovery
-cp -r target/gen/java/* $ENFORCER_GEN_DIR
+# rm -rf target/gen/java/org/wso2/choreo/connect/discovery/apkmgt
+# rm -rf target/gen/java/org/wso2/choreo/connect/discovery/service/apkmgt
+# rm -rf $ENFORCER_GEN_DIR/org/wso2/choreo/connect/discovery
+# cp -r target/gen/java/* $ENFORCER_GEN_DIR
 rm -rf target
 
 # remove all the containers created

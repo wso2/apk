@@ -19,7 +19,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ default "envoy-gateway-extension-server"  .Values.wso2.kgw.dp.envoyGatewayExtensionServer.deployment.name  }}
-  namespace: {{ default "envoy-gateway-system"  .Values.wso2.kgw.dp.envoyGateway.namespace }}
+  # namespace: {{ default "envoy-gateway-system"  .Values.wso2.kgw.dp.envoyGateway.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: envoy-gateway-extension-server
 spec:

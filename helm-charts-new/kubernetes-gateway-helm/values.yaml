@@ -45,7 +45,7 @@ wso2:
       envoyProxy:
         name: "wso2-kgw-envoy-proxy-default"
       envoyGateway:
-        namespace: "envoy-gateway-system"
+        namespace: "default"
         clusterRoleName: "envoy-gateway-cluster-role"
         clusterRoleBindingName: "envoy-gateway-cluster-role-binding"
       envoyGatewayExtensionServer:
@@ -76,7 +76,7 @@ wso2:
         service:
           name: "envoy-gateway-extension-server-service"
       configdeployer:
-        enabled: true
+        enabled: false
         deployment:
           resources:
             requests:
@@ -96,7 +96,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/kgw-config-deployer-service:1.3.0
+          image: wso2/apk-config-deployer-service:1.3.0
           # debug: true
           # configs:
           #   tls:
@@ -121,8 +121,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/kgw-common-controller:1.3.0
+          imagePullPolicy: IfNotPresent
+          image: apk-common-controller:1.3.1-SNAPSHOT
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -148,14 +148,15 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: Always
-            image: wso2/kgw-enforcer:1.3.0
+            imagePullPolicy: IfNotPresent
+            image: apk-enforcer:1.3.1-SNAPSHOT
             security:
               sslHostname: "enforcer"
 #            logging:
 #              level: DEBUG
             env:
               TOKEN_REVOCATION_ENABLED: "true"
+              LOG_LEVEL: "DEBUG"
 envoy:
   enabled: true
   # ───────────────────────────────────────────────────────────────
@@ -238,16 +239,19 @@ envoy:
         enableBackend: true
       extensionManager:
         resources:
-        - group: example.extensions.io
-          version: v1alpha1
-          kind: ListenerContextExample
+        - group: dp.wso2.com
+          version: v2alpha1
+          kind: RouteMetadata
+        - group: dp.wso2.com
+          version: v2alpha1
+          kind: RoutePolicy
         hooks:
           xdsTranslator:
             post:
             - Route
         service:
           fqdn:
-            hostname: envoy-gateway-extension-server-service.envoy-gateway-system.svc.cluster.local
+            hostname: envoy-gateway-extension-server-service.default.svc.cluster.local
             port: 5005
 
   createNamespace: false
@@ -281,7 +285,7 @@ envoy:
   # end pasted defaults
 
 idp:
-  enabled: true
+  enabled: false
   listener:
     hostname: "idp.am.wso2.com"
     # secretName: "idp-tls"
@@ -323,7 +327,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/kgw-idp-domain-service:1.3.0
+      image: wso2/apk-idp-domain-service:1.3.0
   idpui:
     deployment:
       resources:
@@ -344,7 +348,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/kgw-idp-ui:1.3.0
+      image: wso2/apk-idp-ui:1.3.0
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
