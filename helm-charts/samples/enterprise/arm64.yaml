@@ -19,26 +19,26 @@ wso2:
     dp:
       configdeployer:
         deployment:
-          image: docker.wso2.com/apk-config-deployer-service:1.1.0.0-arm64
+          image: docker.wso2.com/apk-config-deployer-service:1.3.0.0-arm64
       adapter:
         deployment:
-          image: docker.wso2.com/apk-adapter:1.1.0.0-arm64
+          image: docker.wso2.com/apk-adapter:1.3.0.0-arm64
       commonController:
         deployment:
-          image: docker.wso2.com/apk-common-controller:1.1.0.0-arm64
+          image: docker.wso2.com/apk-common-controller:1.3.0.0-arm64
       ratelimiter:
         deployment:
-          image: docker.wso2.com/apk-ratelimiter:1.1.0.0-arm64
+          image: docker.wso2.com/apk-ratelimiter:1.3.0.0-arm64
       gatewayRuntime:
         deployment:
           router:
-            image: docker.wso2.com/apk-router:1.1.0.0-arm64
+            image: docker.wso2.com/apk-router:1.3.0.0-arm64
           enforcer:
-            image: docker.wso2.com/apk-enforcer:1.1.0.0-arm64
+            image: docker.wso2.com/apk-enforcer:1.3.0.0-arm64
 idp:
   idpds:
     deployment:
-      image: docker.wso2.com/apk-idp-domain-service:1.1.0.0-arm64
+      image: docker.wso2.com/apk-idp-domain-service:1.3.0.0-arm64
   idpui:
     deployment:
-      image: docker.wso2.com/apk-idp-ui:1.1.0.0-arm64
+      image: docker.wso2.com/apk-idp-ui:1.3.0.0-arm64

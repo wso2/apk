@@ -21,13 +21,15 @@ plugins {
 
 apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../common-gradle-scripts/go.gradle"
+apply from: "$rootDir/../common-gradle-scripts/version.gradle"
 
 release {
     tagTemplate = 'adapter-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'choreo'
+        requireBranch= project.findProperty('requireBranch') ?: 'choreo'
         pushToRemote= "origin"
+        pushToCurrentBranch = false
     }
 }
 
@@ -70,7 +72,7 @@ tasks.named('go_revive_run').configure {
 tasks.named('go_build').configure {
     dependsOn go_revive_run
     dependsOn go_vet
-    println("Running go build")
+    logger.info("Running go build")
     finalizedBy docker_build
 }
 

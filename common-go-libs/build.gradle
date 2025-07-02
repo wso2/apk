@@ -48,7 +48,7 @@ tasks.named('go_revive_run').configure {
 tasks.named('go_build').configure {
     dependsOn go_revive_run
     dependsOn go_vet
-    println("Running go build")
+    logger.info("Running go build")
 }
 
 tasks.register('make_generates', Exec) {

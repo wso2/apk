@@ -20,7 +20,7 @@ plugins {
     id 'net.researchgate.release' version '2.8.0'
 }
 apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
-
+apply from: "$rootDir/../../common-gradle-scripts/version.gradle"
 allprojects {
     group = project.group
     version = project.version
@@ -30,8 +30,9 @@ release {
     tagTemplate = 'idp-ui-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'choreo'
+        requireBranch= project.findProperty('requireBranch') ?: 'choreo'
         pushToRemote= "origin"
+        pushToCurrentBranch = false
     }
 }
 task build{

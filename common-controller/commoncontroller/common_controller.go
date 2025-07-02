@@ -96,7 +96,7 @@ func runRatelimitServer(rlsServer xdsv3.Server) {
 	grpcOptions = append(grpcOptions, grpc.MaxConcurrentStreams(grpcMaxConcurrentStreams))
 	publicKeyLocation, privateKeyLocation, truststoreLocation := utils.GetKeyLocations()
 	cert, err := utils.GetServerCertificate(publicKeyLocation, privateKeyLocation)
-
+	// Create a certificate pool from the truststore
 	caCertPool := utils.GetTrustedCertPool(truststoreLocation)
 	if err == nil {
 		loggers.LoggerAPKOperator.Info("initiate the ssl context: ", err)

@@ -1,7 +1,7 @@
 [package]
 org = "wso2"
 name = "config_deployer_service"
-version = "PROJECT_VERSION"
+version = "PROJECT_VERSION_STRIPPED"
 distribution = "2201.11.0"
 
 [build-options]

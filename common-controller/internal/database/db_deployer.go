@@ -22,9 +22,9 @@ import (
 	"github.com/wso2/apk/common-controller/internal/server"
 	"github.com/wso2/apk/common-controller/internal/utils"
 	"github.com/wso2/apk/common-go-libs/constants"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/manager"	
 	"github.com/wso2/apk/common-go-libs/pkg/server/model"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // DBDeployer is a struct that implements ArtifactDeployer interface

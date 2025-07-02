@@ -32,7 +32,7 @@ func main() {
 		panic(err)
 	}
 
-	//Create the TLS configuration
+	// Create the TLS configuration
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
 	subAppDatastore := datastore.NewSubAppDataStore(cfg)
 	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, subAppDatastore)

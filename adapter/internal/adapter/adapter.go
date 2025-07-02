@@ -75,6 +75,7 @@ const (
 )
 
 func init() {
+	// Initialize the flags for the management server
 	flag.BoolVar(&debug, "debug", true, "Use debug logging")
 	flag.BoolVar(&onlyLogging, "onlyLogging", false, "Only demo AccessLogging Service")
 	flag.UintVar(&port, "port", 18000, "Management server port")
@@ -209,7 +210,7 @@ func SetupRunners(conf *config.Config) {
 func Run(conf *config.Config) {
 	sig := make(chan os.Signal, 2)
 	signal.Notify(sig, os.Interrupt)
-	// TODO: (VirajSalaka) Support the REST API Configuration via flags only if it is a valid requirement
+	// TODO: (VirajSalaka)  Support the REST API Configuration via flags only if it is a valid requirement
 	flag.Parse()
 
 	ctx, cancel := context.WithCancel(context.Background())

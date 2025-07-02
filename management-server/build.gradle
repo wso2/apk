@@ -19,6 +19,7 @@ plugins {
     id 'net.researchgate.release' version '2.8.0'
 }
 
+apply from: "$rootDir/../common-gradle-scripts/version.gradle"
 apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../common-gradle-scripts/go.gradle"
 
@@ -26,9 +27,10 @@ release {
     tagTemplate = 'management-server-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'choreo'
+        requireBranch= project.findProperty('requireBranch') ?: 'choreo'
 
         pushToRemote= "origin"
+        pushToCurrentBranch = false
     }
 }
 

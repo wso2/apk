@@ -38,16 +38,24 @@ task update_toml_files {
     description 'Update Ballerina.toml and Dependencies.toml'
     doLast {
         def moduleVersion;
+        def moduleVersionStripped;
         if (project.hasProperty("release.releaseVersion")) {
                 moduleVersion = project.property("release.releaseVersion");
-        }else {
+        } else {
             moduleVersion = project.version;
+        }
+        def parts = moduleVersion.split("\\.");
+        moduleVersionStripped=moduleVersion;
+        if (parts.size() > 3) {
+            moduleVersionStripped = parts[0]+"."+parts[1]+"."+parts[2];
         }
 	println 'applying Ballerina.toml.template and Dependencies.toml.template  with version ' + moduleVersion
         def ballerinaTomlFilePlaceHolder = new File("${projectDir}/Ballerina.toml.template")
         def dependencyTomlFilePlaceHolder = new File("${projectDir}/Dependencies.toml.template")
-        def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("PROJECT_VERSION", moduleVersion);
-        def newDependenciesToml = dependencyTomlFilePlaceHolder.text.replace("PROJECT_VERSION", moduleVersion);
+        def newBallerinaToml = ballerinaTomlFilePlaceHolder.text.replace("PROJECT_VERSION_STRIPPED", moduleVersionStripped);
+        newBallerinaToml = newBallerinaToml.replace("PROJECT_VERSION", moduleVersion);
+        def newDependenciesToml = dependencyTomlFilePlaceHolder.text.replace("PROJECT_VERSION_STRIPPED", moduleVersionStripped);
+        newDependenciesToml = newDependenciesToml.replace("PROJECT_VERSION", moduleVersion);
         def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml");
         def dependenciesTomlFile = new File("$project.projectDir/Dependencies.toml");
         ballerinaTomlFile.text = newBallerinaToml;

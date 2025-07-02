@@ -20,7 +20,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 apply from: "$projectDir/../../../common-gradle-scripts/ballerina.gradle"
 apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
-
+apply from: "$rootDir/../../common-gradle-scripts/version.gradle"
 tasks.register('build') {
     group 'build'
     description 'Build ballerina component'

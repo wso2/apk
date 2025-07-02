@@ -1,0 +1,26 @@
+task printProjectVersion {
+    doLast {
+        println "${project.version}"
+    }
+}
+task printReleaseVersion {
+    doLast {
+        def version = project.version
+        def versionParts = version.split("\\-SNAPSHOT")
+        println "${versionParts[0]}"
+    }
+}
+
+task printPreviousVersion {
+    doLast {
+        def version = project.version
+        def versionParts = version.split("\\-SNAPSHOT")
+        def baseVersion = versionParts[0]
+        def buildNumber = Integer.parseInt(baseVersion.split("\\.")[3])
+        def previousBuildNumber = buildNumber - 1
+        versionParts = baseVersion.split("\\.")
+        def concatenatedVersion = versionParts[0..2].join(".")
+        def concatenatedVersionWithBuildNumber = concatenatedVersion + "." + previousBuildNumber
+        println concatenatedVersionWithBuildNumber
+    }
+}

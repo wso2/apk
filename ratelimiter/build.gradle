@@ -20,14 +20,16 @@ plugins {
 }
 
 apply from: "$rootDir/../common-gradle-scripts/docker.gradle"
+apply from: "$rootDir/../common-gradle-scripts/version.gradle"
 
 release {
     tagTemplate = 'ratelimiter-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'choreo'
+        requireBranch= project.findProperty('requireBranch') ?: 'choreo'
 
         pushToRemote= "origin"
+        pushToCurrentBranch = false
     }
 }
 
