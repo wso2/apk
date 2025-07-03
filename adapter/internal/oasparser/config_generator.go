@@ -162,6 +162,33 @@ func GetEnforcerAPI(adapterInternalAPI *model.AdapterInternalAPI, vhost string) 
 			}
 		}
 		logger.LoggerOasparser.Debugf("Resource AI Model Based Round Robin: %+v", resource.AiModelBasedRoundRobin)
+
+		requestInBuiltPolicies := res.GetRequestInBuiltPolicies()
+		logger.LoggerOasparser.Debugf("Get Request In-Built Policies: %+v", requestInBuiltPolicies)
+		for _, policy := range requestInBuiltPolicies {
+			resource.RequestInBuiltPolicies = append(resource.RequestInBuiltPolicies, &api.InBuiltPolicy{
+				PolicyName:    policy.PolicyName,
+				PolicyID:      policy.PolicyID,
+				PolicyVersion: policy.PolicyVersion,
+				Parameters:    policy.Parameters,
+				PolicyOrder:   uint32(policy.PolicyOrder),
+			})
+		}
+		logger.LoggerOasparser.Debugf("Resource Request In-Built Policies: %+v", resource.RequestInBuiltPolicies)
+
+		responseInBuiltPolicies := res.GetResponseInBuiltPolicies()
+		logger.LoggerOasparser.Debugf("Get Response In-Built Policies: %+v", responseInBuiltPolicies)
+		for _, policy := range responseInBuiltPolicies {
+			resource.ResponseInBuiltPolicies = append(resource.ResponseInBuiltPolicies, &api.InBuiltPolicy{
+				PolicyName:    policy.PolicyName,
+				PolicyID:      policy.PolicyID,
+				PolicyVersion: policy.PolicyVersion,
+				Parameters:    policy.Parameters,
+				PolicyOrder:   uint32(policy.PolicyOrder),
+			})
+		}
+		logger.LoggerOasparser.Debugf("Resource Response In-Built Policies: %+v", resource.ResponseInBuiltPolicies)
+
 		resources = append(resources, resource)
 	}
 
