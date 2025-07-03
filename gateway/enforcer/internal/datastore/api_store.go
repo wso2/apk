@@ -145,6 +145,8 @@ func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []d
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSentenceCountGuardrail(basePolicy))
 		case inbuiltpolicy.ContentLengthGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewContentLengthGuardrail(basePolicy))
+		case inbuiltpolicy.URLGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
@@ -177,6 +179,8 @@ func covertResponseInBuiltPoliciesToDTO(responsePolicies []*api.InBuiltPolicy) [
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSentenceCountGuardrail(basePolicy))
 		case inbuiltpolicy.ContentLengthGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewContentLengthGuardrail(basePolicy))
+		case inbuiltpolicy.URLGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
 		}
 	}
 	// Sort by PolicyOrder

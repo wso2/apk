@@ -39,19 +39,23 @@ const (
 	WordCountGuardrailName     = "WordCountGuardrail"
 	SentenceCountGuardrailName = "SentenceCountGuardrail"
 	ContentLengthGuardrailName = "ContentLengthGuardrail"
+	URLGuardrailName           = "URLGuardrail"
 
 	RegexGuardrailConstant         = "REGEX_GUARDRAIL"
 	WordCountGuardrailConstant     = "WORD_COUNT_GUARDRAIL"
 	SentenceCountGuardrailConstant = "SENTENCE_COUNT_GUARDRAIL"
 	ContentLengthGuardrailConstant = "CONTENT_LENGTH_GUARDRAIL"
+	URLGuardrailConstant           = "URL_GUARDRAIL"
 
 	TextCleanRegex     = "^\"|\"$"
 	WordSplitRegex     = "\\s+"
 	SentenceSplitRegex = "[.!?]"
+	URLRegex           = "https?://[^\\s,\"'{}\\[\\]\\\\`]+"
 )
 
 var (
 	TextCleanRegexCompiled     = regexp.MustCompile(TextCleanRegex)     // TextCleanRegexCompiled is used to clean text by removing leading and trailing quotes
 	WordSplitRegexCompiled     = regexp.MustCompile(WordSplitRegex)     // WordSplitRegexCompiled is used to split text into words based on whitespace
 	SentenceSplitRegexCompiled = regexp.MustCompile(SentenceSplitRegex) // SentenceSplitRegexCompiled is used to split text into sentences based on punctuation marks (., !, ?
+	URLRegexCompiled           = regexp.MustCompile(URLRegex)           // URLRegexCompiled is used to find URLs in text
 )
