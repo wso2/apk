@@ -30,6 +30,7 @@ import (
 
 	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/clients/kvresolver"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	constants "github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/pkg/logging"
@@ -555,13 +556,14 @@ func GetResolvedBackendFromService(k8sService *corev1.Service, svcPort int) (*dp
 
 // ResolveAndAddBackendToMapping resolves backend from reference and adds it to the backendMapping.
 func ResolveAndAddBackendToMapping(ctx context.Context, client k8client.Client,
+	kvClient *kvresolver.KVResolverClientImpl,
 	backendMapping map[string]*dpv1alpha4.ResolvedBackend,
 	backendRef dpv1alpha1.BackendReference, interceptorServiceNamespace string, api *dpv1alpha3.API) {
 	backendName := types.NamespacedName{
 		Name:      backendRef.Name,
 		Namespace: interceptorServiceNamespace,
 	}
-	backend := GetResolvedBackend(ctx, client, backendName, api)
+	backend := GetResolvedBackend(ctx, client, kvClient, backendName, api)
 	if backend != nil {
 		backendMapping[backendName.String()] = backend
 	}
@@ -576,6 +578,7 @@ func ResolveRef(ctx context.Context, client k8client.Client, api *dpv1alpha3.API
 
 // GetResolvedBackend resolves backend TLS configurations.
 func GetResolvedBackend(ctx context.Context, client k8client.Client,
+	kvClient *kvresolver.KVResolverClientImpl,
 	backendNamespacedName types.NamespacedName, api *dpv1alpha3.API) *dpv1alpha4.ResolvedBackend {
 	resolvedBackend := dpv1alpha4.ResolvedBackend{}
 	resolvedTLSConfig := dpv1alpha4.ResolvedTLSConfig{}
@@ -630,7 +633,7 @@ func GetResolvedBackend(ctx context.Context, client k8client.Client,
 		resolvedBackend.TLS = resolvedTLSConfig
 	}
 	if backend.Spec.Security != nil {
-		resolvedBackend.Security = getResolvedBackendSecurity(ctx, client,
+		resolvedBackend.Security = getResolvedBackendSecurity(ctx, client, kvClient,
 			backend.Namespace, *backend.Spec.Security)
 	}
 	return &resolvedBackend
@@ -655,9 +658,10 @@ func UpdateCR(ctx context.Context, client k8client.Client, child metav1.Object) 
 }
 
 // getResolvedBackendSecurity resolves backend security configurations.
-func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
+func getResolvedBackendSecurity(ctx context.Context, client k8client.Client, kvClient *kvresolver.KVResolverClientImpl,
 	namespace string, security dpv1alpha2.SecurityConfig) dpv1alpha4.ResolvedSecurityConfig {
 	resolvedSecurity := dpv1alpha4.ResolvedSecurityConfig{}
+	conf := config.ReadConfigs()
 	if security.Basic != nil {
 		var err error
 		var username string
@@ -677,28 +681,67 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client,
 			},
 		}
 	} else if security.APIKey != nil {
-		var err error
-		var in string
-		var keyName string
-		var keyValue string
-		in = security.APIKey.In
-		keyName = security.APIKey.Name
-		if security.APIKey.ValueFrom.Name != "" {
-			keyValue, err = getSecretValue(ctx, client,
-				namespace, security.APIKey.ValueFrom.Name, security.APIKey.ValueFrom.ValueKey)
-			if err != nil || keyValue == "" {
-				loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2649, logging.CRITICAL, "Error while reading key from secretRef: %s", security.APIKey.ValueFrom))
+		if !conf.KVResolver.Enabled {
+			var err error
+			var in string
+			var keyName string
+			var keyValue string
+			in = security.APIKey.In
+			keyName = security.APIKey.Name
+			if security.APIKey.ValueFrom.Name != "" {
+				keyValue, err = getSecretValue(ctx, client,
+					namespace, security.APIKey.ValueFrom.Name, security.APIKey.ValueFrom.ValueKey)
+				if err != nil || keyValue == "" {
+					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2649, logging.CRITICAL, "Error while reading key from secretRef: %s", security.APIKey.ValueFrom))
+				}
+			} else {
+				keyValue = security.APIKey.ValueFrom.ValueKey
+			}
+			resolvedSecurity = dpv1alpha4.ResolvedSecurityConfig{
+				Type: "APIKey",
+				APIKey: dpv1alpha4.ResolvedAPIKeySecurityConfig{
+					In:    in,
+					Name:  keyName,
+					Value: keyValue,
+				},
 			}
 		} else {
-			keyValue = security.APIKey.ValueFrom.ValueKey
-		}
-		resolvedSecurity = dpv1alpha4.ResolvedSecurityConfig{
-			Type: "APIKey",
-			APIKey: dpv1alpha4.ResolvedAPIKeySecurityConfig{
-				In:    in,
-				Name:  keyName,
-				Value: keyValue,
-			},
+			var in string
+			var keyName string
+			apiKeyHeaderName := ""
+			apiKeyHeaderValue := ""
+			in = security.APIKey.In
+			keyName = security.APIKey.Name
+			if security.APIKey.ValueFrom.Name != "" {
+				kvRefKeys := []string{keyName, security.APIKey.ValueFrom.ValueKey}
+				secrets, err := kvClient.GetSecrets(ctx, kvRefKeys)
+				if err != nil {
+					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2648, logging.CRITICAL, "Error while reading key from kv client: %s", security.APIKey.ValueFrom))
+				}
+				// Iterate through the secrets to find the keyName and valueKey
+				for _, secret := range secrets.Secrets {
+					if secret.Key == keyName {
+						apiKeyHeaderName = secret.Value
+					}
+					if secret.Key == security.APIKey.ValueFrom.ValueKey {
+						apiKeyHeaderValue = secret.Value
+					}
+				}
+				if apiKeyHeaderName == "" || apiKeyHeaderValue == "" {
+					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2648, logging.CRITICAL, "failed to resolve the secrets"))
+				}
+			} else {
+				apiKeyHeaderName = keyName
+				apiKeyHeaderValue = security.APIKey.ValueFrom.ValueKey
+			}
+			resolvedSecurity = dpv1alpha4.ResolvedSecurityConfig{
+				Type: "APIKey",
+				APIKey: dpv1alpha4.ResolvedAPIKeySecurityConfig{
+					In:    in,
+					Name:  apiKeyHeaderName,
+					Value: apiKeyHeaderValue,
+				},
+			}
 		}
 	}
 	loggers.LoggerAPKOperator.Debugf("Resolved Security %v", resolvedSecurity)

@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/wso2/apk/adapter/internal/clients/kvresolver"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
 	"github.com/wso2/apk/adapter/internal/operator/status"
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
@@ -68,6 +69,7 @@ var (
 // GatewayReconciler reconciles a Gateway object
 type GatewayReconciler struct {
 	client        k8client.Client
+	kvClient      *kvresolver.KVResolverClientImpl
 	ods           *synchronizer.OperatorDataStore
 	ch            *chan synchronizer.GatewayEvent
 	statusUpdater *status.UpdateHandler
@@ -79,6 +81,7 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 	ch *chan synchronizer.GatewayEvent) error {
 	r := &GatewayReconciler{
 		client:        mgr.GetClient(),
+		kvClient:      kvresolver.InitializeKVResolverClient(),
 		ods:           operatorDataStore,
 		ch:            ch,
 		statusUpdater: statusUpdater,
@@ -334,7 +337,7 @@ func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx conte
 	if gatewayStateData.GatewayInterceptorServiceMapping != nil {
 		interceptorServices := maps.Values(gatewayStateData.GatewayInterceptorServiceMapping)
 		for _, interceptorService := range interceptorServices {
-			utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, backendMapping,
+			utils.ResolveAndAddBackendToMapping(ctx, gatewayReconciler.client, gatewayReconciler.kvClient, backendMapping,
 				interceptorService.Spec.BackendRef, interceptorService.Namespace, nil)
 		}
 	}

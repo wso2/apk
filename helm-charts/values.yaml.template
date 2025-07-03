@@ -155,6 +155,15 @@ wso2:
           secretName: "managetment-server-cert"
           # -- TLS certificate file name.
           fileName: "certificate.crt"
+      kvResolver:
+        # -- Enable Key Value Resolver for Data Plane.
+        enabled: true
+        # -- Key Value Resolver Service URL.
+        serviceURL: "https://wso2apk-kv-resolver-service.apk.svc.cluster.local:8080"
+        # -- Key Value Resolver Retry configurations.
+        retryInterval: 5
+        # -- Key Value Resolver Retry count.
+        maxRetryCount: 3
       configdeployer:
         enabled: true
         deployment:

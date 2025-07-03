@@ -311,4 +311,10 @@ var defaultConfig = &Config{
 			},
 		},
 	},
+	KVResolver: kvResolver{
+		Enabled:       false,
+		ServiceURL:    "http://localhost:8080",
+		RetryInterval: 5,
+		MaxRetryCount: 3,
+	},
 }
