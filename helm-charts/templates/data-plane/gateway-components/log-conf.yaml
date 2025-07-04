@@ -306,6 +306,14 @@ data:
       partitionName = "{{ .Values.wso2.apk.dp.partitionServer.partitionName}}"
       disableSslVerification = {{eq .Values.wso2.apk.dp.partitionServer.hostnameVerificationEnable false }}
     {{end}}
+    
+    {{ if .Values.wso2.apk.dp.kvResolver }}
+    [kvResolver]
+      enabled = {{.Values.wso2.apk.dp.kvResolver.enabled | default false }}
+      serviceURL = "{{ .Values.wso2.apk.dp.kvResolver.serviceURL | default "http://wso2apk-kv-resolver-service.apk.svc.cluster.local:8080" }}"
+      retryInterval = {{ .Values.wso2.apk.dp.kvResolver.retryInterval | default 5 }}
+      maxRetryCount = {{ .Values.wso2.apk.dp.kvResolver.maxRetryCount | default 3 }}
+    {{end}}
 
   log_config.toml: |
     # The logging configuration for Adapter

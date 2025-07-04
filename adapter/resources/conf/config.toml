@@ -69,3 +69,9 @@ trustedCertPath = "/etc/ssl/certs/ca-certificates.crt"
 [managementServer]
   serviceURL="localhost:18000"
 	NodeLabel="default"
+
+[kvResolver]
+  enabled = false
+  serviceURL = "http://wso2apk-kv-resolver-service.apk.svc.cluster.local:8080"
+  retryInterval = 5
+  maxRetryCount = 3

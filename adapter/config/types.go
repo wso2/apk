@@ -80,6 +80,7 @@ type Config struct {
 	Analytics        analytics        `toml:"analytics"`
 	Tracing          tracing
 	Deployment       deployment
+	KVResolver       kvResolver `toml:"kvResolver"`
 }
 
 // Adapter related Configurations
@@ -523,4 +524,11 @@ type controlplane struct {
 
 type persistence struct {
 	Type string
+}
+
+type kvResolver struct {
+	Enabled       bool   `toml:"enabled" default:"false"`
+	ServiceURL    string `toml:"serviceURL" default:"localhost:8080"`
+	RetryInterval int    `toml:"retryInterval" default:"5"`
+	MaxRetryCount int    `toml:"maxRetryCount" default:"3"`
 }

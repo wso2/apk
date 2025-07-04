@@ -75,6 +75,11 @@ wso2:
       #   headers:
       #     - name: "apiKey"
       #       value: "123-456-789"
+      kvResolver:
+        enabled: false
+        serviceURL: "http://wso2apk-kv-resolver-service.apk.svc.cluster.local:8080"
+        retryInterval: 5
+        maxRetryCount: 3
       configdeployer:
         enabled: true
         deployment:

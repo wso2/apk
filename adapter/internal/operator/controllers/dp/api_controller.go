@@ -34,6 +34,7 @@ import (
 	"sync"
 
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/clients/kvresolver"
 	"github.com/wso2/apk/adapter/internal/controlplane"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
@@ -117,6 +118,7 @@ var (
 // APIReconciler reconciles a API object
 type APIReconciler struct {
 	client                k8client.Client
+	kvClient              *kvresolver.KVResolverClientImpl
 	ods                   *synchronizer.OperatorDataStore
 	ch                    *chan *synchronizer.APIEvent
 	successChannel        *chan synchronizer.SuccessEvent
@@ -130,6 +132,7 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 	ch *chan *synchronizer.APIEvent, successChannel *chan synchronizer.SuccessEvent) error {
 	apiReconciler := &APIReconciler{
 		client:         mgr.GetClient(),
+		kvClient:       kvresolver.InitializeKVResolverClient(),
 		ods:            operatorDataStore,
 		ch:             ch,
 		successChannel: successChannel,
@@ -678,7 +681,7 @@ func (apiReconciler *APIReconciler) concatGRPCRoutes(ctx context.Context, grpcRo
 		Name:      string(grpcRouteState.GRPCRouteCombined.Spec.Rules[0].BackendRefs[0].BackendRef.Name),
 		Namespace: namespace,
 	}
-	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 	if resolvedBackend != nil {
 		grpcRouteState.BackendMapping = map[string]*dpv1alpha4.ResolvedBackend{
 			backendNamespacedName.String(): resolvedBackend,
@@ -712,7 +715,7 @@ func (apiReconciler *APIReconciler) concatGQLRoutes(ctx context.Context, gqlRout
 		Name:      string(gqlRouteState.GQLRouteCombined.Spec.BackendRefs[0].Name),
 		Namespace: namespace,
 	}
-	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 	if resolvedBackend != nil {
 		gqlRouteState.BackendMapping = map[string]*dpv1alpha4.ResolvedBackend{
 			backendNamespacedName.String(): resolvedBackend,
@@ -1037,7 +1040,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 								Namespace: utils.GetNamespace(model.BackendRef.Namespace, apiPolicy.Namespace),
 							}
 							if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
-								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 								if resolvedBackend != nil {
 									backendMapping[backendNamespacedName.String()] = resolvedBackend
 								} else {
@@ -1066,7 +1069,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 								Namespace: utils.GetNamespace(model.BackendRef.Namespace, apiPolicy.Namespace),
 							}
 							if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
-								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 								if resolvedBackend != nil {
 									backendMapping[backendNamespacedName.String()] = resolvedBackend
 								} else {
@@ -1104,7 +1107,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 								Namespace: utils.GetNamespace(model.BackendRef.Namespace, apiPolicy.Namespace),
 							}
 							if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
-								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 								if resolvedBackend != nil {
 									backendMapping[backendNamespacedName.String()] = resolvedBackend
 								} else {
@@ -1133,7 +1136,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 								Namespace: utils.GetNamespace(model.BackendRef.Namespace, apiPolicy.Namespace),
 							}
 							if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
-								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+								resolvedBackend = utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 								if resolvedBackend != nil {
 									backendMapping[backendNamespacedName.String()] = resolvedBackend
 								} else {
@@ -1279,7 +1282,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 				}
 			}
 			if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
-				resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+				resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 				if resolvedBackend != nil {
 					backendMapping[backendNamespacedName.String()] = resolvedBackend
 				} else {
@@ -1298,7 +1301,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 				}
 				if string(*mirrorBackend.Kind) == constants.KindBackend {
 					if _, exists := backendMapping[mirrorBackendNamespacedName.String()]; !exists {
-						resolvedMirrorBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, mirrorBackendNamespacedName, &api)
+						resolvedMirrorBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, mirrorBackendNamespacedName, &api)
 						if resolvedMirrorBackend != nil {
 							backendMapping[mirrorBackendNamespacedName.String()] = resolvedMirrorBackend
 						} else {
@@ -1323,7 +1326,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 	// Resolve backends in InterceptorServices
 	interceptorServices := maps.Values(interceptorServiceMapping)
 	for _, interceptorService := range interceptorServices {
-		utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
+		utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, apiReconciler.kvClient, backendMapping,
 			interceptorService.Spec.BackendRef, interceptorService.Namespace, &api)
 	}
 
@@ -1344,7 +1347,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMappingForGRPC(ctx contex
 				Namespace: utils.GetNamespace(backend.Namespace, grpcRoute.Namespace),
 			}
 			if _, exists := backendMapping[backendNamespacedName.String()]; !exists {
-				resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, backendNamespacedName, &api)
+				resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 				if resolvedBackend != nil {
 					backendMapping[backendNamespacedName.String()] = resolvedBackend
 				} else {
@@ -1357,7 +1360,7 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMappingForGRPC(ctx contex
 	// Resolve backends in InterceptorServices
 	interceptorServices := maps.Values(interceptorServiceMapping)
 	for _, interceptorService := range interceptorServices {
-		utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, backendMapping,
+		utils.ResolveAndAddBackendToMapping(ctx, apiReconciler.client, apiReconciler.kvClient, backendMapping,
 			interceptorService.Spec.BackendRef, interceptorService.Namespace, &api)
 	}
 
