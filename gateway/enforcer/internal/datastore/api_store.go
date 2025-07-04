@@ -19,11 +19,13 @@ package datastore
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 
 	api "github.com/wso2/apk/adapter/pkg/discovery/api/wso2/discovery/api"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
+	"github.com/wso2/apk/gateway/enforcer/internal/inbuiltpolicy"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
@@ -84,10 +86,12 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			AIModelBasedRoundRobin:            convertAIModelBasedRoundRobinToDTO(api.AiModelBasedRoundRobin),
 			DoSubscriptionAIRLInHeaderReponse: api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InHeader,
 			DoSubscriptionAIRLInBodyReponse:   api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InBody,
+			RequestInBuiltPolicies:            covertRequestInBuiltPoliciesToDTO(api.RequestInBuiltPolicies),
+			ResponseInBuiltPolicies:           covertResponseInBuiltPoliciesToDTO(api.ResponseInBuiltPolicies),
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
-				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), func() []*requestconfig.EndpointSecurity {
+				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), covertRequestInBuiltPoliciesToDTO(resource.RequestInBuiltPolicies), covertResponseInBuiltPoliciesToDTO(resource.ResponseInBuiltPolicies), func() []*requestconfig.EndpointSecurity {
 					endpointSecurity := make([]*requestconfig.EndpointSecurity, len(resource.EndpointSecurity))
 					for i, es := range resource.EndpointSecurity {
 						endpointSecurity[i] = &requestconfig.EndpointSecurity{
@@ -116,6 +120,74 @@ func (s *APIStore) GetAPIs() map[string]*requestconfig.API {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return s.apis
+}
+
+// convertRequestInBuiltPoliciesToDTO converts a slice of InBuiltPolicy to a slice of dto.InBuiltPolicy.
+func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
+	if requestPolicies == nil {
+		return nil
+	}
+	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(requestPolicies))
+	for _, policy := range requestPolicies {
+		basePolicy := &dto.BaseInBuiltPolicy{
+			PolicyName:    policy.PolicyName,
+			PolicyID:      policy.PolicyID,
+			PolicyVersion: policy.PolicyVersion,
+			Parameters:    policy.Parameters,
+			PolicyOrder:   int(policy.PolicyOrder),
+		}
+		switch policy.PolicyName {
+		case inbuiltpolicy.RegexGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewRegexGuardrail(basePolicy))
+		case inbuiltpolicy.WordCountGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewWordCountGuardrail(basePolicy))
+		case inbuiltpolicy.SentenceCountGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSentenceCountGuardrail(basePolicy))
+		case inbuiltpolicy.ContentLengthGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewContentLengthGuardrail(basePolicy))
+		case inbuiltpolicy.URLGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
+		}
+	}
+	// Sort by PolicyOrder
+	sort.SliceStable(dtoPolicies, func(i, j int) bool {
+		return dtoPolicies[i].GetPolicyOrder() < dtoPolicies[j].GetPolicyOrder()
+	})
+	return dtoPolicies
+}
+
+// convertResponseInBuiltPoliciesToDTO converts a slice of InBuiltPolicy to a slice of dto.InBuiltPolicy.
+func covertResponseInBuiltPoliciesToDTO(responsePolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
+	if responsePolicies == nil {
+		return nil
+	}
+	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(responsePolicies))
+	for _, policy := range responsePolicies {
+		basePolicy := &dto.BaseInBuiltPolicy{
+			PolicyName:    policy.PolicyName,
+			PolicyID:      policy.PolicyID,
+			PolicyVersion: policy.PolicyVersion,
+			Parameters:    policy.Parameters,
+			PolicyOrder:   int(policy.PolicyOrder),
+		}
+		switch policy.PolicyName {
+		case inbuiltpolicy.RegexGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewRegexGuardrail(basePolicy))
+		case inbuiltpolicy.WordCountGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewWordCountGuardrail(basePolicy))
+		case inbuiltpolicy.SentenceCountGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSentenceCountGuardrail(basePolicy))
+		case inbuiltpolicy.ContentLengthGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewContentLengthGuardrail(basePolicy))
+		case inbuiltpolicy.URLGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
+		}
+	}
+	// Sort by PolicyOrder
+	sort.SliceStable(dtoPolicies, func(i, j int) bool {
+		return dtoPolicies[i].GetPolicyOrder() < dtoPolicies[j].GetPolicyOrder()
+	})
+	return dtoPolicies
 }
 
 // convertAIModelBasedRoundRobinToDTO converts AIModelBasedRoundRobin to DTO.

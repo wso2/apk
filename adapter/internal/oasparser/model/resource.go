@@ -49,6 +49,8 @@ type Resource struct {
 	enableBackendBasedAIRatelimit          bool
 	backendBasedAIRatelimitDescriptorValue string
 	extractTokenFrom                       string
+	RequestInBuiltPolicies                 []*InternalInBuiltPolicy
+	ResponseInBuiltPolicies                []*InternalInBuiltPolicy
 }
 
 // GetEndpointSecurity returns the endpoint security object of a given resource.
@@ -113,6 +115,22 @@ func (resource *Resource) HasPolicies() bool {
 // GetAIModelBasedRoundRobin returns the AIModelBasedRoundRobin object of a given resource.
 func (resource *Resource) GetAIModelBasedRoundRobin() *InternalModelBasedRoundRobin {
 	return resource.AIModelBasedRoundRobin
+}
+
+// GetRequestInBuiltPolicies returns the request in-built policies of a given resource.
+func (resource *Resource) GetRequestInBuiltPolicies() []*InternalInBuiltPolicy {
+	if resource.RequestInBuiltPolicies == nil {
+		resource.RequestInBuiltPolicies = make([]*InternalInBuiltPolicy, 0)
+	}
+	return resource.RequestInBuiltPolicies
+}
+
+// GetResponseInBuiltPolicies returns the response in-built policies of a given resource.
+func (resource *Resource) GetResponseInBuiltPolicies() []*InternalInBuiltPolicy {
+	if resource.ResponseInBuiltPolicies == nil {
+		resource.ResponseInBuiltPolicies = make([]*InternalInBuiltPolicy, 0)
+	}
+	return resource.ResponseInBuiltPolicies
 }
 
 // CreateMinimalDummyResourceForTests create a resource object with minimal required set of values

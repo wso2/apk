@@ -54,14 +54,14 @@ webhooks:
     service:
       name: {{ template "apk-helm.resource.prefix" . }}-common-controller-service
       namespace: {{ .Release.Namespace }}
-      path: /mutate-dp-wso2-com-v1alpha4-apipolicy
+      path: /mutate-dp-wso2-com-v1alpha5-apipolicy
   failurePolicy: Fail
   name: mapipolicy.kb.io
   rules:
     - apiGroups:
         - dp.wso2.com
       apiVersions:
-        - v1alpha4
+        - v1alpha5
       operations:
         - CREATE
         - UPDATE

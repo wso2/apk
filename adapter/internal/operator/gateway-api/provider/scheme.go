@@ -27,6 +27,7 @@ import (
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+	dpv1alpha5 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -61,6 +62,9 @@ func GetScheme() *runtime.Scheme {
 		panic(err)
 	}
 	if err := dpv1alpha4.AddToScheme(scheme); err != nil {
+		panic(err)
+	}
+	if err := dpv1alpha5.AddToScheme(scheme); err != nil {
 		panic(err)
 	}
 

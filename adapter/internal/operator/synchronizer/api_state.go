@@ -22,6 +22,7 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
@@ -40,8 +41,8 @@ type APIState struct {
 	RateLimitPolicies            map[string]v1alpha3.RateLimitPolicy
 	ResourceAuthentications      map[string]v1alpha2.Authentication
 	ResourceRateLimitPolicies    map[string]v1alpha3.RateLimitPolicy
-	ResourceAPIPolicies          map[string]v1alpha4.APIPolicy
-	APIPolicies                  map[string]v1alpha4.APIPolicy
+	ResourceAPIPolicies          map[string]v1alpha5.APIPolicy
+	APIPolicies                  map[string]v1alpha5.APIPolicy
 	AIProvider                   *v1alpha4.AIProvider
 	ResolvedModelBasedRoundRobin *ResolvedModelBasedRoundRobin
 	InterceptorServiceMapping    map[string]v1alpha1.InterceptorService
@@ -51,6 +52,17 @@ type APIState struct {
 	MutualSSL                    *v1alpha2.MutualSSL
 	ProdAIRL                     *v1alpha3.AIRateLimitPolicy
 	SandAIRL                     *v1alpha3.AIRateLimitPolicy
+	RequestInBuiltPolicies       []ResolvedInBuiltPolicy
+	ResponseInBuiltPolicies      []ResolvedInBuiltPolicy
+}
+
+// ResolvedInBuiltPolicy holds the resolved in-built policy configurations
+type ResolvedInBuiltPolicy struct {
+	PolicyName    string            `json:"policyName"`
+	PolicyID      string            `json:"policyId"`
+	PolicyVersion string            `json:"policyVersion"`
+	Parameters    map[string]string `json:"parameters,omitempty"`
+	PolicyOrder   int               `json:"policyOrder,omitempty"`
 }
 
 // ResolvedModelBasedRoundRobin holds the resolved model based round robin configuration.

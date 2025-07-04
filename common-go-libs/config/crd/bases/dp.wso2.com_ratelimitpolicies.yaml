@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.12.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: ratelimitpolicies.dp.wso2.com
 spec:
   group: dp.wso2.com
@@ -20,14 +20,19 @@ spec:
         description: RateLimitPolicy is the Schema for the ratelimitpolicies API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -127,13 +132,13 @@ spec:
                     type: object
                 type: object
               targetRef:
-                description: NamespacedPolicyTargetReference identifies an API object
-                  to apply a direct or inherited policy to, potentially in a different
-                  namespace. This should only be used as part of Policy resources
-                  that need to be able to target resources in different namespaces.
-                  For more information on how this policy attachment model works,
-                  and a sample Policy resource, refer to the policy attachment documentation
-                  for Gateway API.
+                description: |-
+                  NamespacedPolicyTargetReference identifies an API object to apply a direct or
+                  inherited policy to, potentially in a different namespace. This should only
+                  be used as part of Policy resources that need to be able to target resources
+                  in different namespaces. For more information on how this policy attachment
+                  model works, and a sample Policy resource, refer to the policy attachment
+                  documentation for Gateway API.
                 properties:
                   group:
                     description: Group is the group of the target resource.
@@ -152,10 +157,11 @@ spec:
                     minLength: 1
                     type: string
                   namespace:
-                    description: Namespace is the namespace of the referent. When
-                      unspecified, the local namespace is inferred. Even when policy
-                      targets a resource in a different namespace, it MUST only apply
-                      to traffic originating from the same namespace as the policy.
+                    description: |-
+                      Namespace is the namespace of the referent. When unspecified, the local
+                      namespace is inferred. Even when policy targets a resource in a different
+                      namespace, it MUST only apply to traffic originating from the same
+                      namespace as the policy.
                     maxLength: 63
                     minLength: 1
                     pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
@@ -180,14 +186,19 @@ spec:
         description: RateLimitPolicy is the Schema for the ratelimitpolicies API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -349,13 +360,13 @@ spec:
                     type: object
                 type: object
               targetRef:
-                description: NamespacedPolicyTargetReference identifies an API object
-                  to apply a direct or inherited policy to, potentially in a different
-                  namespace. This should only be used as part of Policy resources
-                  that need to be able to target resources in different namespaces.
-                  For more information on how this policy attachment model works,
-                  and a sample Policy resource, refer to the policy attachment documentation
-                  for Gateway API.
+                description: |-
+                  NamespacedPolicyTargetReference identifies an API object to apply a direct or
+                  inherited policy to, potentially in a different namespace. This should only
+                  be used as part of Policy resources that need to be able to target resources
+                  in different namespaces. For more information on how this policy attachment
+                  model works, and a sample Policy resource, refer to the policy attachment
+                  documentation for Gateway API.
                 properties:
                   group:
                     description: Group is the group of the target resource.
@@ -374,10 +385,11 @@ spec:
                     minLength: 1
                     type: string
                   namespace:
-                    description: Namespace is the namespace of the referent. When
-                      unspecified, the local namespace is inferred. Even when policy
-                      targets a resource in a different namespace, it MUST only apply
-                      to traffic originating from the same namespace as the policy.
+                    description: |-
+                      Namespace is the namespace of the referent. When unspecified, the local
+                      namespace is inferred. Even when policy targets a resource in a different
+                      namespace, it MUST only apply to traffic originating from the same
+                      namespace as the policy.
                     maxLength: 63
                     minLength: 1
                     pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$

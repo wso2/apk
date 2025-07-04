@@ -50,13 +50,15 @@ type Resource struct {
 	MatchID                 string                                 `json:"matchID"`                 // The match ID for the resource
 	Method                  HTTPMethods                            `json:"method"`                  // The HTTP method (GET, POST, etc.)
 	Tier                    string                                 `json:"tier"`                    // The tier of the resource (default is "Unlimited")
-	Endpoints               *EndpointCluster                        `json:"endpoints"`               // Endpoint cluster for the resource
+	Endpoints               *EndpointCluster                       `json:"endpoints"`               // Endpoint cluster for the resource
 	EndpointSecurity        []*EndpointSecurity                    `json:"endpointSecurity"`        // Endpoint security configurations
 	PolicyConfig            PolicyConfig                           `json:"policyConfig"`            // Policy configurations for the resource
 	AuthenticationConfig    *auth.AuthenticationConfig             `json:"authenticationConfig"`    // Authentication configuration
 	Scopes                  []string                               `json:"scopes"`                  // Scopes for the resource
 	AIModelBasedRoundRobin  *dto.AIModelBasedRoundRobin            `json:"aiModelBasedRoundRobin"`  // AI model-based round robin configuration
 	RouteMetadataAttributes *dto.ExternalProcessingEnvoyAttributes `json:"routeMetadataAttributes"` // Route metadata attributes
+	RequestInBuiltPolicies  []dto.InBuiltPolicy                    `json:"requestPolicies"`         // List of request policies for the resource
+	ResponseInBuiltPolicies []dto.InBuiltPolicy                    `json:"responsePolicies"`        // List of response policies for the resource
 }
 
 // GetResourceIdentifier returns the identifier for the resource

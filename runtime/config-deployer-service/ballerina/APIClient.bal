@@ -853,6 +853,14 @@ public class APIClient {
                 defaultSpecData.backendJwtPolicy = item;
             } else if item is model:ModelBasedRoundRobin {
                 defaultSpecData.modelBasedRoundRobin = item;
+            } else if item is model:InBuiltPolicy {
+                model:InBuiltPolicy[]? requestPolicies = defaultSpecData.requestPolicies;
+                if (requestPolicies is model:InBuiltPolicy[] && requestPolicies.length() > 0) {
+                    requestPolicies.push(item);
+                } else {
+                    requestPolicies = [item];
+                }
+                defaultSpecData.requestPolicies = requestPolicies;
             }
         }
         APKResponseOperationPolicy[]? response = policies?.response;
@@ -860,6 +868,14 @@ public class APIClient {
         foreach any item in responseInterceptor {
             if item is model:InterceptorReference {
                 defaultSpecData.responseInterceptors = [item];
+            } else if item is model:InBuiltPolicy {
+                model:InBuiltPolicy[]? responsePolicies = defaultSpecData.responsePolicies;
+                if (responsePolicies is model:InBuiltPolicy[] && responsePolicies.length() > 0) {
+                    responsePolicies.push(item);
+                } else {
+                    responsePolicies = [item];
+                }
+                defaultSpecData.responsePolicies = responsePolicies;
             }
         }
         boolean subscriptionValidation = apkConf.subscriptionValidation;
@@ -1628,7 +1644,7 @@ public class APIClient {
         if policies is APKOperationPolicy[] {
             foreach APKOperationPolicy policy in policies {
                 string policyName = policy.policyName;
-                if policy.parameters is record {} {
+                if policy.parameters is record {} || policy.parameters is CommonPolicy_parameter[] {
                     if (policyName == Interceptor) {
                         InterceptorPolicy interceptorPolicy = check policy.cloneWithType(InterceptorPolicy);
                         InterceptorPolicy_parameters parameters = <InterceptorPolicy_parameters>interceptorPolicy?.parameters;
@@ -1738,6 +1754,27 @@ public class APIClient {
                             sandboxModels: sandboxModels
                         };
                         policyReferences.push(modelBasedRoundRobin);
+                    } else if (policyName == RegexGuardrail || policyName == WordCountGuardrail || policyName == SentenceCountGuardrail || policyName == ContentLengthGuardrail) {
+                        CommonPolicy commonPolicy = check policy.cloneWithType(CommonPolicy);
+                        model:InBuiltPolicyParameter[] parametersArray = [];
+                        CommonPolicy_parameter[] commonPolicyParameters = [];
+                        if commonPolicy.parameters is CommonPolicy_parameter[] {
+                            commonPolicyParameters = <CommonPolicy_parameter[]>commonPolicy.parameters;
+                        }
+                        foreach CommonPolicy_parameter param in commonPolicyParameters {
+                            model:InBuiltPolicyParameter inBuiltPolicyParameter = {
+                                key: param.key,
+                                value: param.value
+                            };
+                            parametersArray.push(inBuiltPolicyParameter);
+                        }
+                        model:InBuiltPolicy inBuiltPolicy = {
+                            policyName: commonPolicy.policyName,
+                            policyID: commonPolicy.policyId ?: commonPolicy.policyName + commonPolicy.policyVersion,
+                            policyVersion: commonPolicy.policyVersion,
+                            parameters: parametersArray
+                        };
+                        policyReferences.push(inBuiltPolicy);
                     } else if policyName != AddHeader && policyName != SetHeader && policyName != RemoveHeader && policyName != RequestMirror && policyName != RequestRedirect {
                         return e909052(error("Incorrect API Policy name provided."));
                     }

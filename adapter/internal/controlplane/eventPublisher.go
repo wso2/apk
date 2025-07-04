@@ -76,37 +76,39 @@ type APICPEvent struct {
 
 // API holds the data that needs to be sent to agent
 type API struct {
-	APIUUID                string                  `json:"apiUUID"`
-	APIName                string                  `json:"apiName"`
-	APIVersion             string                  `json:"apiVersion"`
-	IsDefaultVersion       bool                    `json:"isDefaultVersion"`
-	Definition             string                  `json:"definition"`
-	APIType                string                  `json:"apiType"`
-	APISubType             string                  `json:"apiSubType"`
-	BasePath               string                  `json:"basePath"`
-	Organization           string                  `json:"organization"`
-	SystemAPI              bool                    `json:"systemAPI"`
-	APIProperties          map[string]string       `json:"apiProperties,omitempty"`
-	Environment            string                  `json:"environment,omitempty"`
-	RevisionID             string                  `json:"revisionID"`
-	SandEndpoint           string                  `json:"sandEndpoint"`
-	SandEndpointSecurity   EndpointSecurity        `json:"sandEndpointSecurity"`
-	ProdEndpoint           string                  `json:"prodEndpoint"`
-	ProdEndpointSecurity   EndpointSecurity        `json:"prodEndpointSecurity"`
-	EndpointProtocol       string                  `json:"endpointProtocol"`
-	CORSPolicy             *CORSPolicy             `json:"cORSPolicy,omitempty"`
-	Vhost                  string                  `json:"vhost"`
-	SandVhost              string                  `json:"sandVhost"`
-	SecurityScheme         []string                `json:"securityScheme"`
-	AuthHeader             string                  `json:"authHeader"`
-	APIKeyHeader           string                  `json:"apiKeyHeader"`
-	Operations             []Operation             `json:"operations"`
-	AIConfiguration        AIConfiguration         `json:"aiConfiguration"`
-	APIHash                string                  `json:"-"`
-	SandAIRL               *AIRL                   `json:"sandAIRL"`
-	ProdAIRL               *AIRL                   `json:"prodAIRL"`
-	MultiEndpoints         APIEndpoints            `json:"multiEndpoints"`
-	AIModelBasedRoundRobin *AIModelBasedRoundRobin `json:"modelBasedRoundRobin"`
+	APIUUID                 string                  `json:"apiUUID"`
+	APIName                 string                  `json:"apiName"`
+	APIVersion              string                  `json:"apiVersion"`
+	IsDefaultVersion        bool                    `json:"isDefaultVersion"`
+	Definition              string                  `json:"definition"`
+	APIType                 string                  `json:"apiType"`
+	APISubType              string                  `json:"apiSubType"`
+	BasePath                string                  `json:"basePath"`
+	Organization            string                  `json:"organization"`
+	SystemAPI               bool                    `json:"systemAPI"`
+	APIProperties           map[string]string       `json:"apiProperties,omitempty"`
+	Environment             string                  `json:"environment,omitempty"`
+	RevisionID              string                  `json:"revisionID"`
+	SandEndpoint            string                  `json:"sandEndpoint"`
+	SandEndpointSecurity    EndpointSecurity        `json:"sandEndpointSecurity"`
+	ProdEndpoint            string                  `json:"prodEndpoint"`
+	ProdEndpointSecurity    EndpointSecurity        `json:"prodEndpointSecurity"`
+	EndpointProtocol        string                  `json:"endpointProtocol"`
+	CORSPolicy              *CORSPolicy             `json:"cORSPolicy,omitempty"`
+	Vhost                   string                  `json:"vhost"`
+	SandVhost               string                  `json:"sandVhost"`
+	SecurityScheme          []string                `json:"securityScheme"`
+	AuthHeader              string                  `json:"authHeader"`
+	APIKeyHeader            string                  `json:"apiKeyHeader"`
+	Operations              []Operation             `json:"operations"`
+	AIConfiguration         AIConfiguration         `json:"aiConfiguration"`
+	APIHash                 string                  `json:"-"`
+	SandAIRL                *AIRL                   `json:"sandAIRL"`
+	ProdAIRL                *AIRL                   `json:"prodAIRL"`
+	MultiEndpoints          APIEndpoints            `json:"multiEndpoints"`
+	AIModelBasedRoundRobin  *AIModelBasedRoundRobin `json:"modelBasedRoundRobin"`
+	RequestInBuiltPolicies  []InBuiltPolicy         `json:"requestInBuiltPolicies"`
+	ResponseInBuiltPolicies []InBuiltPolicy         `json:"responseInBuiltPolicies"`
 }
 
 // AIRL holds AI ratelimit related data
@@ -204,6 +206,14 @@ type CORSPolicy struct {
 	AccessControlExposeHeaders    []string `json:"accessControlExposeHeaders,omitempty"`
 	AccessControlMaxAge           *int     `json:"accessControlMaxAge,omitempty"`
 	AccessControlAllowMethods     []string `json:"accessControlAllowMethods,omitempty"`
+}
+
+// InBuiltPolicy holds the in-built policy configurations.
+type InBuiltPolicy struct {
+	PolicyName    string            `json:"policyName"`    // Name of the in-built
+	PolicyID      string            `json:"policyID"`      // Unique identifier for the policy
+	PolicyVersion string            `json:"policyVersion"` // Version of the policy
+	Parameters    map[string]string `json:"parameters"`    // Configuration parameters for the policy
 }
 
 // init reads the configuration and starts the worker to send data.

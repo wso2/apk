@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.12.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: tokenissuers.dp.wso2.com
 spec:
   group: dp.wso2.com
@@ -20,14 +20,19 @@ spec:
         description: TokenIssuer is the Schema for the tokenIssuer API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -60,9 +65,10 @@ spec:
                 minLength: 1
                 type: string
               name:
-                description: Name is the unique name of the Token Issuer in the Organization
-                  defined . "Organization/Name" can be used to uniquely identify an
-                  Issuer.
+                description: |-
+                  Name is the unique name of the Token Issuer in
+                  the Organization defined . "Organization/Name" can
+                  be used to uniquely identify an Issuer.
                 minLength: 1
                 type: string
               organization:
@@ -188,10 +194,11 @@ spec:
                     minLength: 1
                     type: string
                   namespace:
-                    description: Namespace is the namespace of the referent. When
-                      unspecified, the local namespace is inferred. Even when policy
-                      targets a resource in a different namespace, it MUST only apply
-                      to traffic originating from the same namespace as the policy.
+                    description: |-
+                      Namespace is the namespace of the referent. When unspecified, the local
+                      namespace is inferred. Even when policy targets a resource in a different
+                      namespace, it MUST only apply to traffic originating from the same
+                      namespace as the policy.
                     maxLength: 63
                     minLength: 1
                     pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
@@ -223,14 +230,19 @@ spec:
         description: TokenIssuer is the Schema for the tokenissuers API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -270,9 +282,10 @@ spec:
                 minLength: 1
                 type: string
               name:
-                description: Name is the unique name of the Token Issuer in the Organization
-                  defined . "Organization/Name" can be used to uniquely identify an
-                  Issuer.
+                description: |-
+                  Name is the unique name of the Token Issuer in
+                  the Organization defined . "Organization/Name" can
+                  be used to uniquely identify an Issuer.
                 minLength: 1
                 type: string
               organization:
@@ -398,10 +411,11 @@ spec:
                     minLength: 1
                     type: string
                   namespace:
-                    description: Namespace is the namespace of the referent. When
-                      unspecified, the local namespace is inferred. Even when policy
-                      targets a resource in a different namespace, it MUST only apply
-                      to traffic originating from the same namespace as the policy.
+                    description: |-
+                      Namespace is the namespace of the referent. When unspecified, the local
+                      namespace is inferred. Even when policy targets a resource in a different
+                      namespace, it MUST only apply to traffic originating from the same
+                      namespace as the policy.
                     maxLength: 63
                     minLength: 1
                     pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$

@@ -262,6 +262,7 @@ components:
         - $ref: "#/components/schemas/RequestMirrorPolicy"
         - $ref: "#/components/schemas/RequestRedirectPolicy"
         - $ref: "#/components/schemas/ModelBasedRoundRobinPolicy"
+        - $ref: "#/components/schemas/CommonPolicy"
       discriminator:
         propertyName: "policyName"
         mapping:
@@ -273,12 +274,17 @@ components:
           RequestMirror: "#/components/schemas/RequestMirrorPolicy"
           RequestRedirect: "#/components/schemas/RequestRedirectPolicy"
           ModelBasedRoundRobin: "#/components/schemas/ModelBasedRoundRobinPolicy"
+          RegexGuardrail: "#/components/schemas/CommonPolicy"
+          WordCountGuardrail: "#/components/schemas/CommonPolicy"
+          SentenceCountGuardrail: "#/components/schemas/CommonPolicy"
+          ContentLengthGuardrail: "#/components/schemas/CommonPolicy"
     APKResponseOperationPolicy:
       title: API Operation Policy
       oneOf:
         - $ref: "#/components/schemas/InterceptorPolicy"
         - $ref: "#/components/schemas/BackendJWTPolicy"
         - $ref: "#/components/schemas/HeaderModifierPolicy"
+        - $ref: "#/components/schemas/CommonPolicy"
       discriminator:
         propertyName: "policyName"
         mapping:
@@ -287,6 +293,10 @@ components:
           AddHeader: "#/components/schemas/HeaderModifierPolicy"
           SetHeader: "#/components/schemas/HeaderModifierPolicy"
           RemoveHeader: "#/components/schemas/HeaderModifierPolicy"
+          RegexGuardrail: "#/components/schemas/CommonPolicy"
+          WordCountGuardrail: "#/components/schemas/CommonPolicy"
+          SentenceCountGuardrail: "#/components/schemas/CommonPolicy"
+          ContentLengthGuardrail: "#/components/schemas/CommonPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -304,6 +314,10 @@ components:
             - ModelBasedRoundRobin
             - RequestMirror
             - RequestRedirect
+            - RegexGuardrail
+            - WordCountGuardrail
+            - SentenceCountGuardrail
+            - ContentLengthGuardrail
         policyVersion:
           type: string
           default: "v1"
@@ -546,7 +560,7 @@ components:
         productionModels:
           type: "array"
           items:
-            $ref: "#/components/schemas//AIModel"
+            $ref: "#/components/schemas/AIModel"
         sandboxModels:
           type: "array"
           items:
@@ -631,6 +645,26 @@ components:
           enum:
             - 301
             - 302
+      additionalProperties: false
+    CommonPolicy:
+      title: Common Policy Parameters
+      allOf:
+        - $ref: "#/components/schemas/BaseOperationPolicy"
+        - type: object
+          properties:
+            parameters:
+              type: array
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+                required:
+                  - key
+                  - value
+                additionalProperties: false
       additionalProperties: false
     CustomClaims:
       type: object

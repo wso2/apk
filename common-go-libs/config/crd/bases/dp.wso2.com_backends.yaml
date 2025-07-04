@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.12.0
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: backends.dp.wso2.com
 spec:
   group: dp.wso2.com
@@ -20,14 +20,19 @@ spec:
         description: Backend is the Schema for the backends API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -41,9 +46,9 @@ spec:
                 description: CircuitBreaker defines the circuit breaker configurations
                 properties:
                   maxConnectionPools:
-                    description: MaxConnectionPools is the maximum number of parallel
-                      connection pools that will allow to the upstream cluster. If
-                      not specified, the default is unlimited.
+                    description: |-
+                      MaxConnectionPools is the maximum number of parallel connection pools that will allow to the upstream cluster.
+                      If not specified, the default is unlimited.
                     format: int32
                     minimum: 1
                     type: integer
@@ -78,10 +83,9 @@ spec:
                 properties:
                   healthyThreshold:
                     default: 2
-                    description: HealthyThreshold is the number of healthy health
-                      checks required before a host is marked healthy. Note that during
-                      startup, only a single successful health check is required to
-                      mark a host healthy.
+                    description: |-
+                      HealthyThreshold is the number of healthy health checks required before a host is marked healthy.
+                      Note that during startup, only a single successful health check is required to mark a host healthy.
                     format: int32
                     type: integer
                   interval:
@@ -92,15 +96,16 @@ spec:
                     type: integer
                   timeout:
                     default: 1
-                    description: Timeout is the time to wait for a health check response.
-                      If the timeout is reached the health check attempt will be considered
-                      a failure.
+                    description: |-
+                      Timeout is the time to wait for a health check response.
+                      If the timeout is reached the health check attempt will be considered a failure.
                     format: int32
                     type: integer
                   unhealthyThreshold:
                     default: 2
-                    description: UnhealthyThreshold is the number of consecutive health
-                      check failures required before a backend is marked unhealthy.
+                    description: |-
+                      UnhealthyThreshold is the number of consecutive health check failures required
+                      before a backend is marked unhealthy.
                     format: int32
                     type: integer
                 type: object
@@ -118,16 +123,17 @@ spec:
                 properties:
                   baseIntervalMillis:
                     default: 25
-                    description: BaseIntervalMillis is exponential retry back off
-                      and it defines the base interval between retries in milliseconds.
+                    description: |-
+                      BaseIntervalMillis is exponential retry back off and it defines the base interval between retries in milliseconds.
                       maximum interval is 10 times of the BaseIntervalMillis
                     format: int32
                     minimum: 1
                     type: integer
                   count:
                     default: 1
-                    description: Count defines the number of retries. If exceeded,
-                      TooEarly(425 response code) response will be sent to the client.
+                    description: |-
+                      Count defines the number of retries.
+                      If exceeded, TooEarly(425 response code) response will be sent to the client.
                     format: int32
                     type: integer
                   statusCodes:
@@ -194,17 +200,17 @@ spec:
                 properties:
                   downstreamRequestIdleTimeout:
                     default: 300
-                    description: DownstreamRequestIdleTimeout bounds the amount of
-                      time the request's stream may be idle. A value of 0 will completely
-                      disable the route's idle timeout.
+                    description: |-
+                      DownstreamRequestIdleTimeout bounds the amount of time the request's stream may be idle.
+                      A value of 0 will completely disable the route's idle timeout.
                     format: int32
                     type: integer
                   upstreamResponseTimeout:
                     default: 15
-                    description: UpstreamResponseTimeout spans between the point at
-                      which the entire downstream request (i.e. end-of-stream) has
-                      been processed and when the upstream response has been completely
-                      processed. A value of 0 will disable the route’s timeout.
+                    description: |-
+                      UpstreamResponseTimeout spans between the point at which the entire downstream request (i.e. end-of-stream) has been processed and
+                      when the upstream response has been completely processed.
+                      A value of 0 will disable the route’s timeout.
                     format: int32
                     type: integer
                 required:
@@ -270,14 +276,19 @@ spec:
         description: Backend is the Schema for the backends API
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -291,9 +302,9 @@ spec:
                 description: CircuitBreaker defines the circuit breaker configurations
                 properties:
                   maxConnectionPools:
-                    description: MaxConnectionPools is the maximum number of parallel
-                      connection pools that will allow to the upstream cluster. If
-                      not specified, the default is unlimited.
+                    description: |-
+                      MaxConnectionPools is the maximum number of parallel connection pools that will allow to the upstream cluster.
+                      If not specified, the default is unlimited.
                     format: int32
                     minimum: 1
                     type: integer
@@ -328,10 +339,9 @@ spec:
                 properties:
                   healthyThreshold:
                     default: 2
-                    description: HealthyThreshold is the number of healthy health
-                      checks required before a host is marked healthy. Note that during
-                      startup, only a single successful health check is required to
-                      mark a host healthy.
+                    description: |-
+                      HealthyThreshold is the number of healthy health checks required before a host is marked healthy.
+                      Note that during startup, only a single successful health check is required to mark a host healthy.
                     format: int32
                     type: integer
                   interval:
@@ -342,15 +352,16 @@ spec:
                     type: integer
                   timeout:
                     default: 1
-                    description: Timeout is the time to wait for a health check response.
-                      If the timeout is reached the health check attempt will be considered
-                      a failure.
+                    description: |-
+                      Timeout is the time to wait for a health check response.
+                      If the timeout is reached the health check attempt will be considered a failure.
                     format: int32
                     type: integer
                   unhealthyThreshold:
                     default: 2
-                    description: UnhealthyThreshold is the number of consecutive health
-                      check failures required before a backend is marked unhealthy.
+                    description: |-
+                      UnhealthyThreshold is the number of consecutive health check failures required
+                      before a backend is marked unhealthy.
                     format: int32
                     type: integer
                 type: object
@@ -368,16 +379,17 @@ spec:
                 properties:
                   baseIntervalMillis:
                     default: 25
-                    description: BaseIntervalMillis is exponential retry back off
-                      and it defines the base interval between retries in milliseconds.
+                    description: |-
+                      BaseIntervalMillis is exponential retry back off and it defines the base interval between retries in milliseconds.
                       maximum interval is 10 times of the BaseIntervalMillis
                     format: int32
                     minimum: 1
                     type: integer
                   count:
                     default: 1
-                    description: Count defines the number of retries. If exceeded,
-                      TooEarly(425 response code) response will be sent to the client.
+                    description: |-
+                      Count defines the number of retries.
+                      If exceeded, TooEarly(425 response code) response will be sent to the client.
                     format: int32
                     type: integer
                   statusCodes:
@@ -396,8 +408,8 @@ spec:
                     description: APIKey security configuration
                     properties:
                       in:
-                        description: In is to specify how the APIKey is passed to
-                          the request
+                        description: ' In is to specify how the APIKey is passed to
+                          the request'
                         enum:
                         - Header
                         - Query
@@ -478,17 +490,17 @@ spec:
                 properties:
                   downstreamRequestIdleTimeout:
                     default: 300
-                    description: DownstreamRequestIdleTimeout bounds the amount of
-                      time the request's stream may be idle. A value of 0 will completely
-                      disable the route's idle timeout.
+                    description: |-
+                      DownstreamRequestIdleTimeout bounds the amount of time the request's stream may be idle.
+                      A value of 0 will completely disable the route's idle timeout.
                     format: int32
                     type: integer
                   upstreamResponseTimeout:
                     default: 15
-                    description: UpstreamResponseTimeout spans between the point at
-                      which the entire downstream request (i.e. end-of-stream) has
-                      been processed and when the upstream response has been completely
-                      processed. A value of 0 will disable the route’s timeout.
+                    description: |-
+                      UpstreamResponseTimeout spans between the point at which the entire downstream request (i.e. end-of-stream) has been processed and
+                      when the upstream response has been completely processed.
+                      A value of 0 will disable the route’s timeout.
                     format: int32
                     type: integer
                 required:

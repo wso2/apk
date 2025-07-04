@@ -222,4 +222,12 @@ resources:
   kind: APIPolicy
   path: github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4
   version: v1alpha4
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: wso2.com
+  group: dp
+  kind: APIPolicy
+  path: github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5
+  version: v1alpha5
 version: "3"

@@ -1,11 +1,11 @@
-apiVersion: dp.wso2.com/v1alpha4
+apiVersion: dp.wso2.com/v1alpha5
 kind: APIPolicy
 metadata:
   labels:
     app.kubernetes.io/name: apipolicy
     app.kubernetes.io/instance: apipolicy-sample
     app.kubernetes.io/part-of: operator
-    app.kuberentes.io/managed-by: kustomize
+    app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: operator
   name: apipolicy-sample
 spec:
