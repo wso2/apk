@@ -451,6 +451,55 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", requestConfigHolder.MatchedAPI.OrganizationID, requestConfigHolder.MatchedSubscription.RatelimitTier)
 				}
 			}
+
+			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
+			if requestConfigHolder.MatchedAPI.RequestInBuiltPolicies != nil &&
+				len(requestConfigHolder.MatchedAPI.RequestInBuiltPolicies) > 0 {
+			apiRequestHeadersPolicyLoop:
+				for _, policy := range requestConfigHolder.MatchedAPI.RequestInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Request In-Built Policy: %T", policy))
+					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("API Level Request In-Built Policy validation failed")
+						break apiRequestHeadersPolicyLoop
+					}
+				}
+			}
+
+			if policyValdationResponse != nil {
+				s.cfg.Logger.Sugar().Debug("Request In-Built Policy validation failed")
+				resp = policyValdationResponse
+				break
+			}
+
+			if requestConfigHolder.MatchedResource.RequestInBuiltPolicies != nil &&
+				len(requestConfigHolder.MatchedResource.RequestInBuiltPolicies) > 0 {
+				s.cfg.Logger.Sugar().Debug("Resource Level Request Policies Enabled")
+			resourceRequestHeadersPolicyLoop:
+				for _, policy := range requestConfigHolder.MatchedResource.RequestInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Request In-Built Policy: %T", policy))
+					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("Resource Level Request In-Built Policy validation failed")
+						break resourceRequestHeadersPolicyLoop
+					}
+				}
+			}
+
+			if policyValdationResponse != nil {
+				s.cfg.Logger.Sugar().Debug("Request In-Built Policy validation failed")
+				resp = policyValdationResponse
+				break
+			}
+
 			backendJWT := ""
 			if requestConfigHolder.MatchedAPI.BackendJwtConfiguration != nil && requestConfigHolder.MatchedAPI.BackendJwtConfiguration.Enabled {
 				backendJWT = jwtbackend.CreateBackendJWT(requestConfigHolder, s.cfg)
@@ -594,7 +643,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.cfg.Logger.Sugar().Debugf("Props content for Request flow policies: %+v", props)
 			if matchedAPI.RequestInBuiltPolicies != nil &&
 				len(matchedAPI.RequestInBuiltPolicies) > 0 {
-			apiRequestPolicyLoop:
+			apiRequestBodyPolicyLoop:
 				for _, policy := range matchedAPI.RequestInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -604,7 +653,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Request In-Built Policy validation failed")
-						break apiRequestPolicyLoop
+						break apiRequestBodyPolicyLoop
 					}
 				}
 			}
@@ -618,7 +667,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if matchedResource.RequestInBuiltPolicies != nil &&
 				len(matchedResource.RequestInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("Resource Level Request Policies Enabled")
-			resourceRequestPolicyLoop:
+			resourceRequestBodyPolicyLoop:
 				for _, policy := range matchedResource.RequestInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -628,7 +677,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Request In-Built Policy validation failed")
-						break resourceRequestPolicyLoop
+						break resourceRequestBodyPolicyLoop
 					}
 				}
 			}
@@ -895,6 +944,56 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
+
+			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
+			if matchedAPI.ResponseInBuiltPolicies != nil &&
+				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
+				s.cfg.Logger.Sugar().Debug("API Level Response Policies Enabled")
+			apiResponseHeadersPolicyLoop:
+				for _, policy := range matchedAPI.ResponseInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Response In-Built Policy: %T", policy))
+					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("API Level Response In-Built Policy validation failed")
+						break apiResponseHeadersPolicyLoop
+					}
+				}
+			}
+
+			if policyValdationResponse != nil {
+				s.cfg.Logger.Sugar().Debug("Response In-Built Policy validation failed")
+				resp = policyValdationResponse
+				break
+			}
+
+			if matchedResource.ResponseInBuiltPolicies != nil &&
+				len(matchedResource.ResponseInBuiltPolicies) > 0 {
+				s.cfg.Logger.Sugar().Debug("Resource Level Response Policies Enabled")
+			resourceResponseHeadersPolicyLoop:
+				for _, policy := range matchedResource.ResponseInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Response In-Built Policy: %T", policy))
+					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("Resource Level Response In-Built Policy validation failed")
+						break resourceResponseHeadersPolicyLoop
+					}
+				}
+			}
+
+			if policyValdationResponse != nil {
+				s.cfg.Logger.Sugar().Debug("Response In-Built Policy validation failed")
+				resp = policyValdationResponse
+				break
+			}
+
 			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 			if matchedAPI.AiProvider != nil &&
@@ -1088,7 +1187,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if matchedAPI.ResponseInBuiltPolicies != nil &&
 				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("API Level Response Policies Enabled")
-			apiResponsePolicyLoop:
+			apiResponseBodyPolicyLoop:
 				for _, policy := range matchedAPI.ResponseInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -1098,7 +1197,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Response In-Built Policy validation failed")
-						break apiResponsePolicyLoop
+						break apiResponseBodyPolicyLoop
 					}
 				}
 			}
@@ -1112,7 +1211,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if matchedResource.ResponseInBuiltPolicies != nil &&
 				len(matchedResource.ResponseInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("Resource Level Response Policies Enabled")
-			resourceResponsePolicyLoop:
+			resourceResponseBodyPolicyLoop:
 				for _, policy := range matchedResource.ResponseInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -1122,7 +1221,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Response In-Built Policy validation failed")
-						break resourceResponsePolicyLoop
+						break resourceResponseBodyPolicyLoop
 					}
 				}
 			}
