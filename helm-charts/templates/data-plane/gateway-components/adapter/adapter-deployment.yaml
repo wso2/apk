@@ -102,8 +102,10 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
+            {{- if and .Values.wso2.apk.dp.consul .Values.wso2.apk.dp.consul.enabled }}
             - name: adapter-truststore-consul-secret-volume
               mountPath: /home/wso2/security/truststore/consul
+            {{- end }}
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
             - name: enforcer-apikey-cert
@@ -155,9 +157,11 @@ spec:
             secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-server-cert
           {{- end }}
             defaultMode: 420
+      {{- if and .Values.wso2.apk.dp.consul .Values.wso2.apk.dp.consul.enabled }}
         - name: adapter-truststore-consul-secret-volume
           secret: 
             secretName: {{ template "apk-helm.resource.prefix" . }}-adapter-truststore-consul-secret
+      {{- end }}
         - name: log-conf-volume
           configMap: 
             name: {{ template "apk-helm.resource.prefix" . }}-log-conf

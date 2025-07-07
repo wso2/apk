@@ -75,6 +75,8 @@ wso2:
       #   headers:
       #     - name: "apiKey"
       #       value: "123-456-789"
+      consul:
+        enabled: false
       kvResolver:
         enabled: false
         serviceURL: "http://wso2apk-kv-resolver-service.apk.svc.cluster.local:8080"

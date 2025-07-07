@@ -164,6 +164,9 @@ wso2:
         retryInterval: 5
         # -- Key Value Resolver Retry count.
         maxRetryCount: 3
+      consul:
+        # -- Enable Consul for Data Plane.
+        enabled: false
       configdeployer:
         enabled: true
         deployment:
