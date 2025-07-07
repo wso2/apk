@@ -113,9 +113,6 @@ spec:
             - mountPath: /tmp/k8s-webhook-server/serving-certs
               name: adapter-webhook-server-cert
               readOnly: true
-            - mountPath: /home/wso2/security/sts/
-              name: sts-shared-auth-key
-              readOnly: true
           readinessProbe:
             exec:
               command: [ "sh", "check_health.sh" ]
@@ -156,10 +153,6 @@ spec:
         - name: adapter-webhook-server-cert
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
-            defaultMode: 420
-        - name: sts-shared-auth-key
-          secret:
-            secretName: {{ template "apk-helm.resource.prefix" . }}-sts-shared-auth-key
             defaultMode: 420
       {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
         - name: ratelimiter-truststore-secret-volume
