@@ -1,0 +1,30 @@
+apiVersion: dp.wso2.com/v1alpha4
+kind: AIProvider
+metadata:
+  name: ai-provider-anthropic-claude-ai
+  namespace: {{ .Release.Namespace }}
+spec:
+  providerName : "AnthropicClaudeAI"
+  providerAPIVersion : "v1"
+  organization : "default"
+  supportedModels:
+    - "gpt-4o"
+    - "o1-mini"
+    - "gpt-4o-mini"
+  requestModel:
+    in: "Body"
+    value: "model"
+  responseModel:
+    in: "Body"
+    value: "model"
+  rateLimitFields:
+    promptTokens: 
+      in: "Body"
+      value: "$usage.input_tokens"
+    completionToken:
+      in: "Body"
+      value: "$usage.output_tokens"
+    totalToken:
+      in: "Body"
+      value: "$usage.total_tokens"
+  
