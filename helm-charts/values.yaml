@@ -101,7 +101,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: docker.wso2.com/apk-config-deployer-service:1.3.0.0
+          image: apk-config-deployer-service:1.3.1-SNAPSHOT
         # debug: true
           # configs:
           #   tls:
@@ -128,7 +128,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: docker.wso2.com/apk-adapter:1.3.0.1
+          image: apk-adapter:1.3.1-SNAPSHOT
           security:
             sslHostname: "adapter"
           logging:
@@ -162,7 +162,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: docker.wso2.com/apk-common-controller:1.3.0.1
+          image: apk-common-controller:1.3.1-SNAPSHOT
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -189,7 +189,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: docker.wso2.com/apk-ratelimiter:1.3.0.0
+          image: apk-ratelimiter:1.3.1-SNAPSHOT
           security:
             sslHostname: "ratelimiter"
           # configs:
@@ -219,7 +219,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: docker.wso2.com/apk-router:1.3.0.0
+            image: apk-router:1.3.1-SNAPSHOT
             # configs:
             #   tls:
             #     secretName: "router-cert"
@@ -250,7 +250,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: docker.wso2.com/apk-enforcer:1.3.0.0
+            image: apk-enforcer:1.3.1-SNAPSHOT
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -327,7 +327,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: docker.wso2.com/apk-idp-domain-service:1.3.0.0
+      image: apk-idp-domain-service:1.3.1-SNAPSHOT
   idpui:
     deployment:
       resources:
@@ -348,7 +348,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: docker.wso2.com/apk-idp-ui:1.3.0.0
+      image: apk-idp-ui:1.3.1-SNAPSHOT
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
