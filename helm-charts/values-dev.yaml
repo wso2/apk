@@ -1,0 +1,39 @@
+wso2:
+  apk:
+    dp:
+      configdeployer:
+        enabled: false
+      adapter:
+        deployment:
+          imagePullPolicy: IfNotPresent
+      commonController:
+        deployment:
+          imagePullPolicy: IfNotPresent
+      ratelimiter:
+        enabled: true
+        deployment:
+          imagePullPolicy: IfNotPresent
+      gatewayRuntime:
+        deployment:
+          router:
+            imagePullPolicy: IfNotPresent
+          enforcer:
+            imagePullPolicy: IfNotPresent
+idp:
+  enabled: false
+  idpds:
+    deployment:
+      imagePullPolicy: IfNotPresent
+  idpui:
+    deployment:
+      imagePullPolicy: IfNotPresent
+
+gatewaySystem:
+  deployment:
+    imagePullPolicy: IfNotPresent
+
+postgresql:
+  enabled: false
+
+integrationTest:
+  addHelmConfigsRequiredForTests: false
