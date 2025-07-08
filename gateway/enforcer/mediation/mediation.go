@@ -1,18 +1,27 @@
 package mediation
 
 import (
+	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 const (
-	MediationAITokenRatelimit       = "AITokenRatelimit"
-	MediationSubscriptionRatelimit  = "SubscriptionRatelimit"
+	// MediationAITokenRatelimit holds the name of the AI Token Rate Limit mediation policy.
+	MediationAITokenRatelimit = "AITokenRatelimit"
+	// MediationSubscriptionRatelimit holds the name of the Subscription Rate Limit mediation policy.
+	MediationSubscriptionRatelimit = "SubscriptionRatelimit"
+	// MediationSubscriptionValidation holds the name of the Subscription Validation mediation policy.
 	MediationSubscriptionValidation = "SubscriptionValidation"
+	// MediationAIModelBasedRoundRobin holds the name of the AI Model Based Round Robin mediation policy.
 	MediationAIModelBasedRoundRobin = "AIModelBasedRoundRobin"
-	MediationAnalytics              = "Analytics"
-	MediationBackendJWT             = "BackendJWT"
-	MediationGraphQL                = "GraphQL"
+	// MediationAnalytics holds the name of the Analytics mediation policy.
+	MediationAnalytics = "Analytics"
+	// MediationBackendJWT holds the name of the Backend JWT mediation policy.
+	MediationBackendJWT = "BackendJWT"
+	// MediationGraphQL holds the name of the GraphQL mediation policy.
+	MediationGraphQL = "GraphQL"
 )
 
 // MediationAndRequestHeaderProcessing defines the mediation and request header processing
@@ -59,24 +68,28 @@ var MediationAndResponseBodyProcessing = map[string]bool{
 	MediationGraphQL:                false,
 }
 
-type MediationResult struct {
+// Result holds the result of mediation processing.
+type Result struct {
 	AddHeaders                   map[string]string
 	RemoveHeaders                []string
-	ReplaceHeaders               map[string]string
 	ModifyBody                   bool
 	Body                         string
 	ImmediateResponse            bool
-	ImmediateResponseCode        int
+	ImmediateResponseCode        v32.StatusCode
 	ImmediateResponseBody        string
+	ImmediateResponseDetail      string
 	ImmediateResponseHeaders     map[string]string
 	ImmediateResponseContentType string
 	StopFurtherProcessing        bool
+	Metadata                     map[string]*structpb.Value
 }
 
+// Mediation interface defines the methods that all mediation policies must implement.
 type Mediation interface {
-	Process(*requestconfig.Holder) *MediationResult
+	Process(*requestconfig.Holder) *Result
 }
 
+// CreateMediation creates a Mediation instance based on the provided Mediation object from the cluster.
 func CreateMediation(mediationFromCluster *dpv2alpha1.Mediation) Mediation {
 	switch mediationFromCluster.PolicyName {
 	case MediationAITokenRatelimit:
