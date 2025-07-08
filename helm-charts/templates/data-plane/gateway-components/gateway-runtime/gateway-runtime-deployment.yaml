@@ -233,13 +233,13 @@ spec:
               subPath: check_health.sh
             - name: enforcer-jwt-secret-volume
               mountPath: /home/wso2/security/keystore/mg.pem
-              subPath: mg.pem
+              subPath: tls.crt
             - name: enforcer-jwt-secret-volume
               mountPath: /home/wso2/security/truststore/mg.pem
-              subPath: mg.pem
+              subPath: ca.crt
             - name: enforcer-jwt-secret-volume
               mountPath: /home/wso2/security/keystore/mg.key
-              subPath: mg.key
+              subPath: tls.key
             {{ if and .Values.wso2.apk.idp.tls .Values.wso2.apk.idp.tls.fileName }}
             - name: idp-tls-certificate-secret-volume
               mountPath: /home/wso2/security/truststore/idp-tls.pem
@@ -456,7 +456,7 @@ spec:
           {{- end }}
         - name: enforcer-jwt-secret-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret
+            secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-jwks-cert
           {{ if and .Values.wso2.apk.idp.tls .Values.wso2.apk.idp.tls.secretName }}
         - name: idp-tls-certificate-secret-volume
           secret:
