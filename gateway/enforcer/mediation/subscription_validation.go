@@ -1,8 +1,8 @@
 package mediation
 
 import (
-	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
+	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 )
 
 // SubscriptionValidation represents the configuration for subscription validation in the API Gateway.
@@ -35,10 +35,10 @@ func NewSubscriptionValidation(mediation *dpv2alpha1.Mediation) *SubscriptionVal
 }
 
 // Process processes the request configuration for Subscription Validation.
-func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *MediationResult {
+func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *Result {
 	// Implement the logic to process the requestConfig for Subscription Validation
 	// This is a placeholder implementation
-	result := &MediationResult{}
+	result := &Result{}
 
 	// Add logic to handle subscription validation here
 

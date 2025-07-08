@@ -35,10 +35,10 @@ func NewSubscriptionRatelimit(meidation *dpv2alpha1.Mediation) *SubscriptionRate
 }
 
 // Process processes the request configuration for Subscription Rate Limit.
-func (s *SubscriptionRatelimit) Process(requestConfig *requestconfig.Holder) *MediationResult {
+func (s *SubscriptionRatelimit) Process(requestConfig *requestconfig.Holder) *Result {
 	// Implement the logic to process the requestConfig for Subscription Rate Limit
 	// This is a placeholder implementation
-	result := &MediationResult{}
+	result := &Result{}
 
 	// Add logic to handle subscription rate limiting here
 

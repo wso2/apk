@@ -30,12 +30,21 @@ type ModelBasedRoundRobinTracker struct {
 	suspended map[string]map[string]map[string]time.Time // Nested map: API -> Resource -> Model -> Suspension End Time
 }
 
-// NewModelBasedRoundRobinTracker creates a new RoundRobinTracker
-func NewModelBasedRoundRobinTracker() *ModelBasedRoundRobinTracker {
-	return &ModelBasedRoundRobinTracker{
-		counts:    make(map[string]map[string]map[string]int),
-		suspended: make(map[string]map[string]map[string]time.Time),
-	}
+var (
+	trackerInstance *ModelBasedRoundRobinTracker
+	once            sync.Once
+)
+
+// GetModelBasedRoundRobinTracker returns the singleton instance of ModelBasedRoundRobinTracker
+func GetModelBasedRoundRobinTracker() *ModelBasedRoundRobinTracker {
+	once.Do(func() {
+		trackerInstance = &ModelBasedRoundRobinTracker{
+			counts:    make(map[string]map[string]map[string]int),
+			suspended: make(map[string]map[string]map[string]time.Time),
+		}
+		go trackerInstance.ReactivateSuspendedModels()
+	})
+	return trackerInstance
 }
 
 // ModelWeight represents a model with its associated weight
