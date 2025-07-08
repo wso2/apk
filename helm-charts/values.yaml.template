@@ -979,3 +979,9 @@ redis:
 
 # -- Skip generate of CRD templates
 skipCrds: false
+
+# -- Integration test configurations
+integrationTest:
+    # -- create k8s configurations required for integration tests
+    # -- Ideally these should be not required and integration tests should be updated to cater Choreo use cases only
+  addHelmConfigsRequiredForTests: true

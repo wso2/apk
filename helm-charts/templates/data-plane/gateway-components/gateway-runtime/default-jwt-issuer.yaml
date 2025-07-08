@@ -1,0 +1,71 @@
+{{- if .Values.integrationTest.addHelmConfigsRequiredForTests }}
+{{- if .Values.wso2.apk.dp.enabled }}
+kind: TokenIssuer
+apiVersion: dp.wso2.com/v1alpha2
+metadata:
+  name: {{ template "apk-helm.resource.prefix" . }}-default-jwt-issuer
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+spec:
+  name: "default-jwt-issuer"
+  consumerKeyClaim: {{ .Values.wso2.apk.idp.consumerKeyClaim | default "azp" }}
+  scopesClaim: {{ .Values.wso2.apk.idp.scopeClaim | default "scope" }}
+  issuer: "{{ .Values.wso2.apk.idp.issuer }}"
+  organization: "default"
+  signatureValidation:
+  {{if and .Values.wso2.apk.idp.signing }}
+   {{if .Values.wso2.apk.idp.signing.secretName }}
+    certificate:
+      secretRef:
+        name: "{{.Values.wso2.apk.idp.signing.secretName}}"
+        key: "{{.Values.wso2.apk.idp.signing.fileName}}"
+    {{else if .Values.wso2.apk.idp.signing.configMapName }}
+    certificate:
+      configMapRef:
+        name: "{{.Values.wso2.apk.idp.signing.configMapName}}"
+        key: "{{.Values.wso2.apk.idp.signing.fileName}}"
+    {{else if .Values.wso2.apk.idp.signing.jwksEndpoint }}
+    jwks:
+      url: "{{ .Values.wso2.apk.idp.signing.jwksEndpoint }}"
+    {{if and .Values.wso2.apk.idp.tls}}
+      tls:
+        {{if .Values.wso2.apk.idp.tls.secretName }}
+        secretRef:
+            name: "{{.Values.wso2.apk.idp.tls.secretName}}"
+            key: "{{.Values.wso2.apk.idp.tls.fileName}}"
+        {{else if .Values.wso2.apk.idp.tls.configMapName }}
+        configMapRef:
+            name: "{{.Values.wso2.apk.idp.tls.configMapName}}"
+            key: "{{.Values.wso2.apk.idp.tls.fileName}}"
+        {{end}}
+    {{end}}
+    {{end}}
+    {{else}}
+    certificate:
+      secretRef:
+        name: "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
+        key: "wso2carbon.pem"
+    {{ end }}
+    {{ if .Values.wso2.apk.idp.organizationClaim }}
+  claimMappings:
+    - remoteClaim: "{{.Values.wso2.apk.idp.organizationClaim}}"
+      localClaim:  "x-wso2-organization"
+    {{ else }}
+  claimMappings:
+    - remoteClaim: "organization"
+      localClaim:  "x-wso2-organization"
+    {{ end }}
+    {{ if .Values.wso2.apk.idp.groupsClaim }}
+    - remoteClaim: "{{.Values.wso2.apk.idp.groupsClaim}}"
+      localClaim: "x-wso2-groups"
+    {{ else }}
+    - remoteClaim: "groups"
+      localClaim: "x-wso2-groups"
+    {{ end }}
+  targetRef:
+    kind: Gateway
+    name: {{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}
+    group: gateway.networking.k8s.io
+{{- end -}}
+{{- end -}}

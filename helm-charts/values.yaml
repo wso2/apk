@@ -429,3 +429,6 @@ redis:
     usePasswordFiles: false
   image:
     debug: true
+
+integrationTest:
+  addHelmConfigsRequiredForTests: true
