@@ -1,3 +1,4 @@
+{{- if .Values.integrationTest.addHelmConfigsRequiredForTests }}
 {{- if .Values.wso2.apk.dp.enabled }}
 kind: TokenIssuer
 apiVersion: dp.wso2.com/v1alpha2
@@ -66,4 +67,5 @@ spec:
     kind: Gateway
     name: {{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}
     group: gateway.networking.k8s.io
+{{- end -}}
 {{- end -}}

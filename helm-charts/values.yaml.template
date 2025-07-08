@@ -164,6 +164,9 @@ wso2:
         retryInterval: 5
         # -- Key Value Resolver Retry count.
         maxRetryCount: 3
+      consul:
+        # -- Enable Consul for Data Plane.
+        enabled: false
       configdeployer:
         enabled: true
         deployment:
@@ -976,3 +979,9 @@ redis:
 
 # -- Skip generate of CRD templates
 skipCrds: false
+
+# -- Integration test configurations
+integrationTest:
+    # -- create k8s configurations required for integration tests
+    # -- Ideally these should be not required and integration tests should be updated to cater Choreo use cases only
+  addHelmConfigsRequiredForTests: true
