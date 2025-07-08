@@ -24,6 +24,9 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: {{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
   extProc:
     - backendRefs:
         - group: ""
@@ -32,6 +35,14 @@ spec:
           namespace: {{ .Release.Namespace }}
           port: 8081
       processingMode:
-        request: {}
+        request: 
+          attributes:
+            - "xds.route_metadata"
         allowModeOverride: true
+      metadata:
+        accessibleNamespaces:
+          - "envoy.filters.http.ext_proc"
+          - "envoy-gateway"
+        # writableNamespaces:
+        #   - "envoy.filters.http.ext_proc"
 {{- end -}}
