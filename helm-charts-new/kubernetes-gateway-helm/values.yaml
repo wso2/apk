@@ -237,6 +237,7 @@ envoy:
           default: info
       extensionApis:
         enableBackend: true
+        enableEnvoyPatchPolicy: true
       extensionManager:
         resources:
         - group: dp.wso2.com
