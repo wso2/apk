@@ -55,7 +55,7 @@ type EventingGRPCClient struct {
 
 // NewEventingGRPCClient creates a new instance of EventingGRPCClient.
 // It initializes the client with the given host, port, retry parameters, TLS configuration, and logger.
-func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, dataStore *data_store.SubscriptionApplicationDataStore) *EventingGRPCClient {
+func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, dataStore *data_store.SubscriptionApplicationDataStore, routePolicyAndMetadataDS *data_store.RoutePolicyAndMetadataDataStore) *EventingGRPCClient {
 	// Create a new APIClient object
 	return &EventingGRPCClient{
 		Host:            host,
@@ -66,7 +66,7 @@ func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterv
 		grpcConn:        nil,
 		log:             cfg.Logger,
 		subAppDataStore: dataStore,
-		routePolicyMetatadataDatastore: data_store.NewRoutePolicyAndMetadataDataStore(cfg),
+		routePolicyMetatadataDatastore: routePolicyAndMetadataDS,
 	}
 }
 
