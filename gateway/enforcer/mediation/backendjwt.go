@@ -9,6 +9,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 )
 
+// BackendJWT represents the configuration for Backend JWT policy in the API Gateway.
 type BackendJWT struct {
 	PolicyName       string            `json:"policyName"`
 	PolicyVersion    string            `json:"policyVersion"`
@@ -99,10 +100,10 @@ func NewBackendJWT(mediation *dpv2alpha1.Mediation) *BackendJWT {
 }
 
 // Process processes the request configuration for Backend JWT.
-func (b *BackendJWT) Process(requestConfig *requestconfig.Holder) *MediationResult {
+func (b *BackendJWT) Process(requestConfig *requestconfig.Holder) *Result {
 	// Implement the logic to process the requestConfig for Backend JWT
 	// This is a placeholder implementation
-	result := &MediationResult{}
+	result := &Result{}
 
 	// Add logic to handle JWT creation and signing here
 

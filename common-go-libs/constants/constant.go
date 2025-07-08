@@ -102,3 +102,15 @@ const (
 	ExternalProcessingNamespace = "envoy.filters.http.ext_proc"
 	ExtensionRefs               = "ExtensionRefs"
 )
+
+// Metadata keys for AI Token Rate Limit mediation policy
+const (
+	PromptTokenCountIDMetadataKey     = "promptTokenCount"
+	CompletionTokenCountIDMetadataKey = "completionTokenCount"
+	TotalTokenCountIDMetadataKey      = "totalTokenCount"
+)
+
+// Metadata from external processing
+const (
+	MetadataNamespace = "com.wso2.kgw.ext_proc"
+)

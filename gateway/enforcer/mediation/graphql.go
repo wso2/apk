@@ -1,10 +1,11 @@
 package mediation
 
 import (
-	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
+	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 )
 
+// GraphQL represents the configuration for GraphQL policy in the API Gateway.
 type GraphQL struct {
 	PolicyName    string `json:"policyName"`
 	PolicyVersion string `json:"policyVersion"`
@@ -32,10 +33,10 @@ func NewGraphQL(mediation *dpv2alpha1.Mediation) *GraphQL {
 }
 
 // Process processes the request configuration for GraphQL.
-func (g *GraphQL) Process(requestConfig *requestconfig.Holder) *MediationResult {
+func (g *GraphQL) Process(requestConfig *requestconfig.Holder) *Result {
 	// Implement the logic to process the requestConfig for GraphQL
 	// This is a placeholder implementation
-	result := &MediationResult{}
+	result := &Result{}
 
 	// Add logic to handle GraphQL schema processing here
 
