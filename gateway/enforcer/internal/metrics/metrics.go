@@ -87,8 +87,7 @@ func (collector *enforcerCollector) Collect(ch chan<- prometheus.Metric) {
 }
 
 // RegisterDataSources registers the data sources that the metrics would be scraped from.
-func RegisterDataSources(transformer *transformer.JWTTransformer, dataStore *datastore.SubscriptionApplicationDataStore) {
-	jwtTransformer = transformer
+func RegisterDataSources(dataStore *datastore.SubscriptionApplicationDataStore) {
 	subAppDataStore = dataStore
 }
 

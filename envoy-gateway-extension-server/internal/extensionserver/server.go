@@ -14,6 +14,7 @@ import (
 	v31 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	"github.com/wso2/apk/envoy-gateway-extension-server/internal/config"
 	structpb "google.golang.org/protobuf/types/known/structpb"
+	constants "github.com/wso2/apk/common-go-libs/constants"
 )
 
 type Server struct {
@@ -108,7 +109,7 @@ func (s *Server) PostRouteModify(ctx context.Context, req *pb.PostRouteModifyReq
 	for _, id := range extenstionResourceIdentifiers {
 		values = append(values, structpb.NewStringValue(id))
 	}
-	req.Route.Metadata.FilterMetadata["ext_proc"] =  &structpb.Struct{
+	req.Route.Metadata.FilterMetadata[constants.ExternalProcessingNamespace] =  &structpb.Struct{
 		Fields: map[string]*structpb.Value{
 			"ExtensionRefs": structpb.NewListValue(&structpb.ListValue{
 				Values: values,

@@ -1,17 +1,17 @@
-# Build stage
-FROM golang:1.24.3-alpine AS builder
+# # Build stage
+# FROM golang:1.24.3-alpine AS builder
 
-WORKDIR /app
+# WORKDIR /app
 
-# Copy go mod files
-COPY go.mod go.sum ./
-RUN go mod download
+# # Copy go mod files
+# COPY go.mod go.sum ./
+# RUN go mod download
 
-# Copy source code
-COPY . .
+# # Copy source code
+# COPY . .
 
-# Build the binary
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/app -buildvcs=false ./cmd
+# # Build the binary
+# RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/app -buildvcs=false ./cmd
 
 # Final stage
 FROM alpine:3.20.3
@@ -64,7 +64,7 @@ USER ${APK_USER_ID}
 EXPOSE 5005
 
 # Copy binary from builder
-COPY --from=builder /go/bin/app envoy-gateway-extension-server
+COPY ./${TARGETARCH}/main envoy-gateway-extension-server
 
 # Run the binary
 ENTRYPOINT ["./envoy-gateway-extension-server"]

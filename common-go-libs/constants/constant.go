@@ -26,7 +26,7 @@ const (
 	ApplicationMappingController string = "ApplicationMappingController"
 	GatewayClassController       string = "GatewayClassController"
 	RoutePolicyController        string = "RoutePolicyController"
-	RouteMetadataController     string = "RouteMetadataController"
+	RouteMetadataController      string = "RouteMetadataController"
 )
 
 // API events related constants
@@ -95,4 +95,10 @@ const (
 // Application authentication types
 const (
 	OAuth2 = "OAuth2"
+)
+
+// XDSRoute Metadata
+const (
+	ExternalProcessingNamespace = "envoy.filters.http.ext_proc"
+	ExtensionRefs               = "ExtensionRefs"
 )
