@@ -26,28 +26,22 @@ import (
 	"net"
 	"strings"
 	"time"
+
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 
-	// "github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/mediation"
 
-	// "github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
-	// "github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
-	// "github.com/wso2/apk/gateway/enforcer/internal/requesthandler"
-	// "github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	types "k8s.io/apimachinery/pkg/types"
-
-	// "net"
-	// "time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -184,7 +178,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		// log req.Attributes
 		s.log.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
 		if requestConfigHolder.AttributesPopulated == false {
-			extRefs := s.extractExtensionRefs(req.Attributes)
+			extRefs, routeName := s.extractExtensionRefsAndRouteName(req.Attributes)
+			requestConfigHolder.RouteName = routeName
 			if len(extRefs) > 0 {
 				requestConfigHolder.AttributesPopulated = true
 				for _, extRef := range extRefs {
@@ -239,12 +234,21 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 		}
 
-		dynamicMetadataKeyValuePairs := make(map[string]string)
+		metadata := make(map[string]*structpb.Value)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
 			s.log.Sugar().Debug("Request Headers Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("request header %+v, ", v.RequestHeaders))
+			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseRequestHeaders
 			requestConfigHolder.RequestHeaders = req.GetRequestHeaders()
+			rhq := &envoy_service_proc_v3.HeadersResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{
+					ClearRouteCache: true,
+				},
+			}
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
+				RequestHeaders: rhq,
+			}
 			for key, value := range requestConfigHolder.RequestHeaders.Headers.Headers {
 				s.log.Sugar().Debugf("Request Header: %s: %s", key, value)
 			}
@@ -299,7 +303,17 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
 						if mediation.MediationAndRequestHeaderProcessing[policy.PolicyName] {
-							
+							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
+							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
+								mediationResult, 
+								resp, 
+								requestconfig.ProcessingPhaseRequestHeaders, 
+								metadata)
+							if stopProcessingMediations {
+								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
+								break
+							}
 						}
 					}
 				}
@@ -309,33 +323,263 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.log.Sugar().Debug("Request Body Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("request body %+v, ", v.RequestBody))
 			requestConfigHolder.RequestBody = req.GetRequestBody()
+			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseRequestBody
 
-			
+			rhq := &envoy_service_proc_v3.BodyResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{
+					ClearRouteCache: true,
+				},
+			}
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+				RequestBody: rhq,
+			}
+
+			if requestConfigHolder.RoutePolicy != nil {
+				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
+				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+						if mediation.MediationAndRequestBodyProcessing[policy.PolicyName] {
+							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
+							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
+								mediationResult, 
+								resp, 
+								requestconfig.ProcessingPhaseRequestHeaders, 
+								metadata)
+							if stopProcessingMediations {
+								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
+								break
+							}
+						}
+					}
+				}
+			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			s.log.Sugar().Debug("Response Headers Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			requestConfigHolder.ResponseHeaders = req.GetRequestHeaders()
+			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseResponseHeaders
+
+			rhq := &envoy_service_proc_v3.HeadersResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{
+					ClearRouteCache: true,
+				},
+			}
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_ResponseHeaders{
+				ResponseHeaders: rhq,
+			}
+
+			if requestConfigHolder.RoutePolicy != nil {
+				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
+				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+						if mediation.MediationAndResponseHeaderProcessing[policy.PolicyName] {
+							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
+							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
+								mediationResult, 
+								resp, 
+								requestconfig.ProcessingPhaseRequestHeaders, 
+								metadata)
+							if stopProcessingMediations {
+								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
+								break
+							}
+						}
+					}
+				}
+			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			s.log.Sugar().Debug("Response Body Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("response body %+v, ", v.ResponseBody))
 			requestConfigHolder.ResponseBody = req.GetResponseBody()
+			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseResponseBody
 
+			rhq := &envoy_service_proc_v3.BodyResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{
+					ClearRouteCache: true,
+				},
+			}
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_ResponseBody{
+				ResponseBody: rhq,
+			}
+
+			if requestConfigHolder.RoutePolicy != nil {
+				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
+				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+						if mediation.MediationAndResponseBodyProcessing[policy.PolicyName] {
+							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
+							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
+								mediationResult, 
+								resp, 
+								requestconfig.ProcessingPhaseRequestHeaders, 
+								metadata)
+							if stopProcessingMediations {
+								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
+								break
+							}
+						}
+					}
+				}
+			}
 		default:
 			s.log.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
 		}
 		// Set dynamic metadata
-		dynamicMetadata, err := buildDynamicMetadata(prepareMetadataKeyValuePairAndAddTo(dynamicMetadataKeyValuePairs, requestConfigHolder, s.cfg))
-		if err != nil {
-			s.log.Error(err, "failed to build dynamic metadata")
-		} else {
-			resp.DynamicMetadata = dynamicMetadata
+		resp.DynamicMetadata = &structpb.Struct{
+			Fields: map[string]*structpb.Value{
+				constants.MetadataNamespace: {
+					Kind: &structpb.Value_StructValue{
+						StructValue: &structpb.Struct{Fields: metadata},
+					},
+				},
+			},
 		}
 		if err := srv.Send(resp); err != nil {
 			s.log.Sugar().Debug(fmt.Sprintf("send error %v", err))
 		}
 	}
+}
+
+
+func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
+	mediationResult *mediation.Result,
+	resp *envoy_service_proc_v3.ProcessingResponse,
+	processingPhase requestconfig.ProcessingPhase,
+	metadata map[string]*structpb.Value) (stopProcessingMediations bool) {
+	if mediationResult == nil {
+		s.log.Sugar().Debug("Mediation Result is nil, skipping further processing")
+		return false
+	}
+	if len(mediationResult.Metadata) > 0 {
+		s.log.Sugar().Debugf("Mediation Result Metadata: %+v", mediationResult.Metadata)
+		for key, value := range mediationResult.Metadata {
+			metadata[key] = value
+		}
+	} else {
+		s.log.Sugar().Debug("No Metadata found in Mediation Result")
+	}
+	headerMutation := &envoy_service_proc_v3.HeaderMutation{}
+	if len(mediationResult.RemoveHeaders) > 0 {
+		s.log.Sugar().Debugf("Removing headers: %v", mediationResult.RemoveHeaders)
+		headerMutation.RemoveHeaders = mediationResult.RemoveHeaders
+	}
+	if len(mediationResult.AddHeaders) > 0 {
+		s.log.Sugar().Debugf("Adding headers: %v", mediationResult.AddHeaders)
+		for key, value := range mediationResult.AddHeaders {
+			headerMutation.SetHeaders = append(headerMutation.SetHeaders, &corev3.HeaderValueOption{
+				Header: &corev3.HeaderValue{
+					Key:   key,
+					Value: value,
+				},
+				AppendAction: corev3.HeaderValueOption_OVERWRITE_IF_EXISTS_OR_ADD,
+			})
+		}
+	}
+	bodyMutation := &envoy_service_proc_v3.BodyMutation{}
+	if mediationResult.ModifyBody {
+		bodyMutation = &envoy_service_proc_v3.BodyMutation{
+			Mutation: &envoy_service_proc_v3.BodyMutation_Body{
+				Body: []byte(mediationResult.Body),
+			},
+		}
+	}
+	if mediationResult.ImmediateResponse {
+		resp.Response = &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+			ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+				Status: &v32.HttpStatus{
+					Code: mediationResult.ImmediateResponseCode,
+				},
+				Body:    []byte(mediationResult.ImmediateResponseBody),
+				Details: mediationResult.ImmediateResponseDetail,
+				Headers: headerMutation,
+			},
+		}
+		return true
+	}
+	if processingPhase == requestconfig.ProcessingPhaseRequestHeaders {
+		if resp.Response == nil {
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{}
+		} else {
+			requestHeaderResp, ok := resp.Response.(*envoy_service_proc_v3.ProcessingResponse_RequestHeaders)
+			if !ok {
+				s.log.Sugar().Debugf("Unexpected response type: %T, expected RequestHeaders", resp.Response)
+				return false
+			}
+			if requestHeaderResp.RequestHeaders == nil {
+				requestHeaderResp.RequestHeaders = &envoy_service_proc_v3.HeadersResponse{}
+			}
+			if requestHeaderResp.RequestHeaders.Response == nil {
+				requestHeaderResp.RequestHeaders.Response = &envoy_service_proc_v3.CommonResponse{}
+			}
+			requestHeaderResp.RequestHeaders.Response.HeaderMutation = headerMutation
+
+		}
+	} else if processingPhase == requestconfig.ProcessingPhaseRequestBody {
+		if resp.Response == nil {
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{}
+		} else {
+			requestBodyResp, ok := resp.Response.(*envoy_service_proc_v3.ProcessingResponse_RequestBody)
+			if !ok {
+				s.log.Sugar().Debugf("Unexpected response type: %T, expected RequestBody", resp.Response)
+				return false
+			}
+			if requestBodyResp.RequestBody == nil {
+				requestBodyResp.RequestBody = &envoy_service_proc_v3.BodyResponse{}
+			}
+			if requestBodyResp.RequestBody.Response == nil {
+				requestBodyResp.RequestBody.Response = &envoy_service_proc_v3.CommonResponse{}
+			}
+			requestBodyResp.RequestBody.Response.BodyMutation = bodyMutation
+			requestBodyResp.RequestBody.Response.HeaderMutation = headerMutation
+		}
+	} else if processingPhase == requestconfig.ProcessingPhaseResponseHeaders {
+		if resp.Response == nil {
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_ResponseHeaders{}
+		} else {
+			responseHeaderResp, ok := resp.Response.(*envoy_service_proc_v3.ProcessingResponse_ResponseHeaders)
+			if !ok {
+				s.log.Sugar().Debugf("Unexpected response type: %T, expected ResponseHeaders", resp.Response)
+				return false
+			}
+			if responseHeaderResp.ResponseHeaders == nil {
+				responseHeaderResp.ResponseHeaders = &envoy_service_proc_v3.HeadersResponse{}
+			}
+			if responseHeaderResp.ResponseHeaders.Response == nil {
+				responseHeaderResp.ResponseHeaders.Response = &envoy_service_proc_v3.CommonResponse{}
+			}
+			responseHeaderResp.ResponseHeaders.Response.HeaderMutation = headerMutation
+		}
+	} else if processingPhase == requestconfig.ProcessingPhaseResponseBody {
+		if resp.Response == nil {
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_ResponseBody{}
+		} else {
+			responseBodyResp, ok := resp.Response.(*envoy_service_proc_v3.ProcessingResponse_ResponseBody)
+			if !ok {
+				s.log.Sugar().Debugf("Unexpected response type: %T, expected ResponseBody", resp.Response)
+				return false
+			}
+			if responseBodyResp.ResponseBody == nil {
+				responseBodyResp.ResponseBody = &envoy_service_proc_v3.BodyResponse{}
+			}
+			if responseBodyResp.ResponseBody.Response == nil {
+				responseBodyResp.ResponseBody.Response = &envoy_service_proc_v3.CommonResponse{}
+			}
+			responseBodyResp.ResponseBody.Response.BodyMutation = bodyMutation
+			responseBodyResp.ResponseBody.Response.HeaderMutation = headerMutation
+		}
+	} else {
+		s.log.Sugar().Debugf("Unknown processing phase: %s", processingPhase)
+		// Return false to indicate that processing should continue
+	}
+	return false
 }
 
 // func getFileNameAndContentTypeForDef(matchedAPI *requestconfig.API) (string, string) {
@@ -500,14 +744,14 @@ func ReadGzip(gzipData []byte) (string, error) {
 	return result.String(), nil
 }
 
-func (s *ExternalProcessingServer) extractExtensionRefs(data map[string]*structpb.Struct) []string {
+func (s *ExternalProcessingServer) extractExtensionRefsAndRouteName(data map[string]*structpb.Struct) ([]string, string) {
 	var extensionRefs []string
 
 	extProcData, exists := data[constants.ExternalProcessingNamespace]
 	if !exists || extProcData == nil {
 		s.cfg.Logger.Sugar().Debug("External processing data not found in attributes, Returning empty extensionRefs")
 		s.cfg.Logger.Sugar().Debugf("Attributes: %+v", data)
-		return extensionRefs
+		return extensionRefs, ""
 	}
 
 	// Check if `xds.route_metadata` is a stringified proto and extract the nested `filter_metadata`
@@ -536,8 +780,12 @@ func (s *ExternalProcessingServer) extractExtensionRefs(data map[string]*structp
 			}
 		}
 	}
+	routeName := ""
+	if stringVal, ok := extProcData.Fields["xds.route_name"]; ok {
+		routeName = stringVal.GetStringValue()
+	}
 
-	return extensionRefs
+	return extensionRefs, routeName
 }
 
 func getNestedStruct(base *structpb.Value, key string) *structpb.Struct {
@@ -550,7 +798,6 @@ func getNestedStruct(base *structpb.Value, key string) *structpb.Struct {
 	}
 	return val.GetStructValue()
 }
-
 
 func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, error) {
 	// Create the structBuilder

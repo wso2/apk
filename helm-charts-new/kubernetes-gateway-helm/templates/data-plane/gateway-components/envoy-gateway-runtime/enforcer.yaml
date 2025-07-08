@@ -23,6 +23,7 @@ spec:
   logging:
     level:
       default: warn
+      ext_proc: debug
   provider:
     type: Kubernetes
     kubernetes:
