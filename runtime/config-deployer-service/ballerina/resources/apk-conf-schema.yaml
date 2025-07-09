@@ -279,6 +279,8 @@ components:
           SentenceCountGuardrail: "#/components/schemas/CommonPolicy"
           ContentLengthGuardrail: "#/components/schemas/CommonPolicy"
           SemanticCache: "#/components/schemas/CommonPolicy"
+          URLGuardrail: "#/components/schemas/CommonPolicy"
+          AzureContentSafetyContentModeration: "#/components/schemas/CommonPolicy"
     APKResponseOperationPolicy:
       title: API Operation Policy
       oneOf:
@@ -299,6 +301,8 @@ components:
           SentenceCountGuardrail: "#/components/schemas/CommonPolicy"
           ContentLengthGuardrail: "#/components/schemas/CommonPolicy"
           SemanticCache: "#/components/schemas/CommonPolicy"
+          URLGuardrail: "#/components/schemas/CommonPolicy"
+          AzureContentSafetyContentModeration: "#/components/schemas/CommonPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -321,6 +325,8 @@ components:
             - SentenceCountGuardrail
             - ContentLengthGuardrail
             - SemanticCache
+            - URLGuardrail
+            - AzureContentSafetyContentModeration
         policyVersion:
           type: string
           default: "v1"

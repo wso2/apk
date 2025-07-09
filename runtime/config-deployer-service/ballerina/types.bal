@@ -121,7 +121,7 @@ public type APIKeyEndpointSecurity record {
 };
 
 # Configuration for AWS Key Endpoint Security.
-# 
+#
 # + service - The name of the service of the AWS key.
 # + in - The mode of sending Ex: header/query.
 # + regionRef - Reference to the AWS region.
@@ -446,7 +446,9 @@ public enum PolicyName {
     WordCountGuardrail,
     SentenceCountGuardrail,
     ContentLengthGuardrail,
-    SemanticCache
+    SemanticCache,
+    URLGuardrail,
+    AzureContentSafetyContentModeration
 }
 
 # Configuration for authentication types.

@@ -294,6 +294,8 @@ schemas:
           - SentenceCountGuardrail
           - ContentLengthGuardrail
           - SemanticCache
+          - URLGuardrail
+          - AzureContentSafetyContentModeration
       policyVersion:
         type: string
         default: v1
@@ -331,6 +333,8 @@ schemas:
           - SentenceCountGuardrail
           - ContentLengthGuardrail
           - SemanticCache
+          - URLGuardrail
+          - AzureContentSafetyContentModeration
       policyVersion:
         type: string
         default: v1

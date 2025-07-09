@@ -1765,7 +1765,7 @@ public class APIClient {
                             sandboxModels: sandboxModels
                         };
                         policyReferences.push(modelBasedRoundRobin);
-                    } else if (policyName == RegexGuardrail || policyName == WordCountGuardrail || policyName == SentenceCountGuardrail || policyName == ContentLengthGuardrail || policyName == SemanticCache) {
+                    } else if (policyName == RegexGuardrail || policyName == WordCountGuardrail || policyName == SentenceCountGuardrail || policyName == ContentLengthGuardrail || policyName == SemanticCache || policyName == AzureContentSafetyContentModeration) {
                         CommonPolicy commonPolicy = check policy.cloneWithType(CommonPolicy);
                         model:InBuiltPolicyParameter[] parametersArray = [];
                         CommonPolicy_parameter[] commonPolicyParameters = [];
