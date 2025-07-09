@@ -18,8 +18,10 @@
 package util
 
 import (
+	"bytes"
 	"crypto/tls"
 	"net/http"
+	"time"
 )
 
 // MakeGETRequest HTTP client for making GET requests with custom TLS config
@@ -43,4 +45,35 @@ func MakeGETRequest(url string, tlsConfig *tls.Config, headers map[string]string
 	}
 	// Execute the request
 	return client.Do(req)
+}
+
+// MakeHTTPRequestWithRetry makes an HTTP request with the given method, headers, timeout, and retry logic.
+func MakeHTTPRequestWithRetry(method, url string, tlsConfig *tls.Config, headers map[string]string, body []byte, timeoutMs int, retryCount int, retryIntervalMs int) (*http.Response, error) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   time.Duration(timeoutMs) * time.Millisecond,
+	}
+
+	var lastErr error
+	for i := 0; i < retryCount; i++ {
+		req, err := http.NewRequest(method, url, bytes.NewReader(body))
+		if err != nil {
+			return nil, err
+		}
+		for key, value := range headers {
+			req.Header.Set(key, value)
+		}
+		resp, err := client.Do(req)
+		if err == nil {
+			return resp, nil
+		}
+		lastErr = err
+		if i < retryCount-1 {
+			time.Sleep(time.Duration(retryIntervalMs) * time.Millisecond)
+		}
+	}
+	return nil, lastErr
 }
