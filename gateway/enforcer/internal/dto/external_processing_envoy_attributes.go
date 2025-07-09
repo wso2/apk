@@ -34,4 +34,5 @@ type ExternalProcessingEnvoyAttributes struct {
 	ApplicationID                          string `json:"applicationIdAttribute"`
 	CorrelationID                          string `json:"correlationIdAttribute"`
 	EndpointBasepath                       string `json:"endpointBasepath"`
+	URI                                    string `json:"uriAttribute"`
 }

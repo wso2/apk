@@ -187,8 +187,8 @@ func NewAPIController(mgr manager.Manager, operatorDataStore *synchronizer.Opera
 		return err
 	}
 
-	predicateBackend := []predicate.TypedPredicate[*dpv1alpha2.Backend]{predicate.NewTypedPredicateFuncs[*dpv1alpha2.Backend](utils.FilterBackendByNamespaces(conf.Adapter.Operator.Namespaces))}
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackend),
+	predicateBackend := []predicate.TypedPredicate[*dpv1alpha5.Backend]{predicate.NewTypedPredicateFuncs[*dpv1alpha5.Backend](utils.FilterBackendByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha5.Backend{}, handler.TypedEnqueueRequestsFromMapFunc(apiReconciler.populateAPIReconcileRequestsForBackend),
 		predicateBackend...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching Backend resources: %v", err))
 		return err
@@ -683,7 +683,7 @@ func (apiReconciler *APIReconciler) concatGRPCRoutes(ctx context.Context, grpcRo
 	}
 	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 	if resolvedBackend != nil {
-		grpcRouteState.BackendMapping = map[string]*dpv1alpha4.ResolvedBackend{
+		grpcRouteState.BackendMapping = map[string]*dpv1alpha5.ResolvedBackend{
 			backendNamespacedName.String(): resolvedBackend,
 		}
 		return grpcRouteState, nil
@@ -717,7 +717,7 @@ func (apiReconciler *APIReconciler) concatGQLRoutes(ctx context.Context, gqlRout
 	}
 	resolvedBackend := utils.GetResolvedBackend(ctx, apiReconciler.client, apiReconciler.kvClient, backendNamespacedName, &api)
 	if resolvedBackend != nil {
-		gqlRouteState.BackendMapping = map[string]*dpv1alpha4.ResolvedBackend{
+		gqlRouteState.BackendMapping = map[string]*dpv1alpha5.ResolvedBackend{
 			backendNamespacedName.String(): resolvedBackend,
 		}
 		return gqlRouteState, nil
@@ -1021,7 +1021,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 		}
 	}
 	for _, apiPolicy := range apiPolicies {
-		backendMapping := make(map[string]*dpv1alpha4.ResolvedBackend)
+		backendMapping := make(map[string]*dpv1alpha5.ResolvedBackend)
 		if apiPolicy.Spec.Default != nil {
 			if apiPolicy.Spec.Default.ModelBasedRoundRobin != nil {
 				loggers.LoggerAPKOperator.Infof("ModelBasedRoundRobin Default found in API Policy. ModelBasedRoundRobin Model %v", apiPolicy.Spec.Default.ModelBasedRoundRobin)
@@ -1033,7 +1033,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					loggers.LoggerAPKOperator.Infof("ProductionModels Default found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.ProductionModels)
 					productionModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.ProductionModels
 					for _, model := range productionModels {
-						resolvedBackend := &dpv1alpha4.ResolvedBackend{}
+						resolvedBackend := &dpv1alpha5.ResolvedBackend{}
 						if model.BackendRef.Name != "" {
 							backendNamespacedName := types.NamespacedName{
 								Name:      string(model.BackendRef.Name),
@@ -1062,7 +1062,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					loggers.LoggerAPKOperator.Infof("SandboxModels Default found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.SandboxModels)
 					sandboxModels := apiPolicy.Spec.Default.ModelBasedRoundRobin.SandboxModels
 					for _, model := range sandboxModels {
-						resolvedBackend := &dpv1alpha4.ResolvedBackend{}
+						resolvedBackend := &dpv1alpha5.ResolvedBackend{}
 						if model.BackendRef.Name != "" {
 							backendNamespacedName := types.NamespacedName{
 								Name:      string(model.BackendRef.Name),
@@ -1100,7 +1100,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					loggers.LoggerAPKOperator.Infof("ProductionModels override found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.ProductionModels)
 					productionModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.ProductionModels
 					for _, model := range productionModels {
-						resolvedBackend := &dpv1alpha4.ResolvedBackend{}
+						resolvedBackend := &dpv1alpha5.ResolvedBackend{}
 						if model.BackendRef.Name != "" {
 							backendNamespacedName := types.NamespacedName{
 								Name:      string(model.BackendRef.Name),
@@ -1129,7 +1129,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 					loggers.LoggerAPKOperator.Infof("SandboxModels override found in API Policy. ModelBasedRoundRobin Model %v", modelBasedRoundRobin.SandboxModels)
 					sandboxModels := apiPolicy.Spec.Override.ModelBasedRoundRobin.SandboxModels
 					for _, model := range sandboxModels {
-						resolvedBackend := &dpv1alpha4.ResolvedBackend{}
+						resolvedBackend := &dpv1alpha5.ResolvedBackend{}
 						if model.BackendRef.Name != "" {
 							backendNamespacedName := types.NamespacedName{
 								Name:      string(model.BackendRef.Name),
@@ -1253,8 +1253,8 @@ func (apiReconciler *APIReconciler) resolveAuthentications(ctx context.Context,
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Context,
 	httpRouteState *synchronizer.HTTPRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha3.API) (map[string]*dpv1alpha4.ResolvedBackend, *dpv1alpha3.AIRateLimitPolicy, error) {
-	backendMapping := make(map[string]*dpv1alpha4.ResolvedBackend)
+	api dpv1alpha3.API) (map[string]*dpv1alpha5.ResolvedBackend, *dpv1alpha3.AIRateLimitPolicy, error) {
+	backendMapping := make(map[string]*dpv1alpha5.ResolvedBackend)
 	var airl *dpv1alpha3.AIRateLimitPolicy
 	// Resolve backends in HTTPRoute
 	httpRoute := httpRouteState.HTTPRouteCombined
@@ -1336,8 +1336,8 @@ func (apiReconciler *APIReconciler) getResolvedBackendsMapping(ctx context.Conte
 
 func (apiReconciler *APIReconciler) getResolvedBackendsMappingForGRPC(ctx context.Context,
 	grpcRouteState *synchronizer.GRPCRouteState, interceptorServiceMapping map[string]dpv1alpha1.InterceptorService,
-	api dpv1alpha3.API) (map[string]*dpv1alpha4.ResolvedBackend, error) {
-	backendMapping := make(map[string]*dpv1alpha4.ResolvedBackend)
+	api dpv1alpha3.API) (map[string]*dpv1alpha5.ResolvedBackend, error) {
+	backendMapping := make(map[string]*dpv1alpha5.ResolvedBackend)
 	grpcRoute := grpcRouteState.GRPCRouteCombined
 
 	for _, rule := range grpcRoute.Spec.Rules {
@@ -1467,7 +1467,7 @@ func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForScope(ctx con
 	return requests
 }
 
-func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx context.Context, obj *dpv1alpha2.Backend) []reconcile.Request {
+func (apiReconciler *APIReconciler) populateAPIReconcileRequestsForBackend(ctx context.Context, obj *dpv1alpha5.Backend) []reconcile.Request {
 	requests := apiReconciler.getAPIsForBackend(ctx, obj)
 	if len(requests) > 0 {
 		apiReconciler.handleOwnerReference(ctx, obj, &requests)
@@ -1590,8 +1590,8 @@ func (apiReconciler *APIReconciler) traverseAPIStateAndUpdateOwnerReferences(ctx
 func (apiReconciler *APIReconciler) retrieveParentAPIsAndUpdateOwnerReference(ctx context.Context, obj k8client.Object) {
 	var requests []reconcile.Request
 	switch obj.(type) {
-	case *dpv1alpha2.Backend:
-		var backend dpv1alpha2.Backend
+	case *dpv1alpha5.Backend:
+		var backend dpv1alpha5.Backend
 		namesapcedName := types.NamespacedName{
 			Name:      string(obj.GetName()),
 			Namespace: string(obj.GetNamespace()),
@@ -1870,7 +1870,7 @@ func (apiReconciler *APIReconciler) getAPIsForConfigMap(ctx context.Context, obj
 		return []reconcile.Request{}
 	}
 
-	backendList := &dpv1alpha2.BackendList{}
+	backendList := &dpv1alpha5.BackendList{}
 	err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	})
@@ -1916,7 +1916,7 @@ func (apiReconciler *APIReconciler) getAPIsForSecret(ctx context.Context, obj k8
 		return []reconcile.Request{}
 	}
 
-	backendList := &dpv1alpha2.BackendList{}
+	backendList := &dpv1alpha5.BackendList{}
 	if err := apiReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
@@ -1942,7 +1942,7 @@ func (apiReconciler *APIReconciler) getAPIsForAIRatelimitPolicy(ctx context.Cont
 	}
 
 	if aiRatelimitPolicy.Spec.TargetRef.Kind == constants.KindBackend {
-		backend := &dpv1alpha2.Backend{}
+		backend := &dpv1alpha5.Backend{}
 		namespacedName := types.NamespacedName{
 			Name:      string(aiRatelimitPolicy.Spec.TargetRef.Name),
 			Namespace: utils.GetNamespace(aiRatelimitPolicy.Spec.TargetRef.Namespace, aiRatelimitPolicy.GetNamespace()),
@@ -2200,7 +2200,7 @@ func (apiReconciler *APIReconciler) getAPIsForScope(ctx context.Context, obj k8c
 // getAPIsForBackend triggers the API controller reconcile method based on the changes detected
 // in backend resources.
 func (apiReconciler *APIReconciler) getAPIsForBackend(ctx context.Context, obj k8client.Object) []reconcile.Request {
-	backend, ok := obj.(*dpv1alpha2.Backend)
+	backend, ok := obj.(*dpv1alpha5.Backend)
 	if !ok {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2622, logging.TRIVIAL, "Unexpected object type, bypassing reconciliation: %v", backend))
 		return []reconcile.Request{}
@@ -2600,9 +2600,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// ConfigMap to Backend indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Backend{}, configMapBackend,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha5.Backend{}, configMapBackend,
 		func(rawObj k8client.Object) []string {
-			backend := rawObj.(*dpv1alpha2.Backend)
+			backend := rawObj.(*dpv1alpha5.Backend)
 			var configMaps []string
 			if backend.Spec.TLS != nil && backend.Spec.TLS.ConfigMapRef != nil && len(backend.Spec.TLS.ConfigMapRef.Name) > 0 {
 				configMaps = append(configMaps,
@@ -2617,9 +2617,9 @@ func addIndexes(ctx context.Context, mgr manager.Manager) error {
 	}
 
 	// Secret to Backend indexer
-	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha2.Backend{}, secretBackend,
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpv1alpha5.Backend{}, secretBackend,
 		func(rawObj k8client.Object) []string {
-			backend := rawObj.(*dpv1alpha2.Backend)
+			backend := rawObj.(*dpv1alpha5.Backend)
 			var secrets []string
 			if backend.Spec.TLS != nil && backend.Spec.TLS.SecretRef != nil && len(backend.Spec.TLS.SecretRef.Name) > 0 {
 				secrets = append(secrets,

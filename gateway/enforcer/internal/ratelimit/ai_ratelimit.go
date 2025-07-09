@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"io"
 	"regexp"
 	"strconv"
@@ -201,13 +202,15 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 }
 
 // ExtractTokenCountFromExternalProcessingResponseBody extracts token counts from external processing response body.
-func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, promptPath, completionPath, totalPath, modelPath string) (*TokenCountAndModel, error) {
+func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, providerName, promptPath, completionPath,
+	totalPath, modelPath string, attributes *dto.ExternalProcessingEnvoyAttributes) (*TokenCountAndModel, error) {
 	bodyStr, err := ReadGzip(body)
 	if err != nil {
 		bodyStr = string(body)
 	}
 	sanitizedBody := sanitize(bodyStr)
-	tokenCount, err := extractUsageFromBody(sanitizedBody, promptPath, completionPath, totalPath, "model")
+	tokenCount, err := extractUsageFromBody(sanitizedBody, providerName, promptPath, completionPath,
+		totalPath, modelPath, attributes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract token count from the AI response body: %w", err)
 	}
@@ -272,7 +275,8 @@ func extractValueFromPath(data map[string]interface{}, path string) (interface{}
 }
 
 // extractUsageFromBody extracts usage data from the JSON body based on the provided paths.
-func extractUsageFromBody(body, promptTokenPath, completionTokenPath, totalTokenPath, modelPath string) (*TokenCountAndModel, error) {
+func extractUsageFromBody(body, providerName, promptTokenPath, completionTokenPath, totalTokenPath,
+	modelPath string, attributes *dto.ExternalProcessingEnvoyAttributes) (*TokenCountAndModel, error) {
 	body = sanitize(body)
 	var rootNode map[string]interface{}
 	if err := json.Unmarshal([]byte(body), &rootNode); err != nil {
@@ -282,11 +286,11 @@ func extractUsageFromBody(body, promptTokenPath, completionTokenPath, totalToken
 	usage := &TokenCountAndModel{}
 
 	// Extract prompt tokens
-	promt, err := extractValueFromPath(rootNode, promptTokenPath)
+	prompt, err := extractValueFromPath(rootNode, promptTokenPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract prompt tokens: %w", err)
 	}
-	if pt, ok := promt.(float64); ok { // JSON numbers are decoded as float64
+	if pt, ok := prompt.(float64); ok { // JSON numbers are decoded as float64
 		usage.Prompt = int(pt) - 1
 	} else {
 		return nil, errors.New("invalid type for prompt tokens")
@@ -315,15 +319,45 @@ func extractUsageFromBody(body, promptTokenPath, completionTokenPath, totalToken
 	}
 
 	// Extract model
-	model, err := extractValueFromPath(rootNode, modelPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract model: %w", err)
-	}
-	if m, ok := model.(string); ok {
-		usage.Model = m
+	if providerName == "AWSBedrock" {
+		model, err := extractCaptureGroup(attributes.Path, attributes.URI)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return nil, errors.New("failed to extract model from path")
+		}
+		usage.Model = model
 	} else {
-		return nil, errors.New("invalid type for model")
+		model, err := extractValueFromPath(rootNode, modelPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to extract model: %w", err)
+		}
+		if m, ok := model.(string); ok {
+			usage.Model = m
+		} else {
+			return nil, errors.New("invalid type for model")
+		}
 	}
 
 	return usage, nil
+}
+
+func extractCaptureGroup(pathPattern, uri string) (string, error) {
+	// Escape special regex characters in the pattern except (.*)
+	pattern := strings.ReplaceAll(pathPattern, "(.*)", "PLACEHOLDER")
+	pattern = regexp.QuoteMeta(pattern)
+	pattern = strings.ReplaceAll(pattern, "PLACEHOLDER", "(.*)")
+
+	// Compile the regex
+	re, err := regexp.Compile("^" + pattern + "$")
+	if err != nil {
+		return "", fmt.Errorf("failed to compile regex: %v", err)
+	}
+
+	// Find matches
+	matches := re.FindStringSubmatch(uri)
+	if len(matches) < 2 {
+		return "", fmt.Errorf("no match found")
+	}
+
+	return matches[1], nil
 }

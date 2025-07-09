@@ -25,7 +25,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/loggers"
 	gatewayapi "github.com/wso2/apk/adapter/internal/operator/gateway-api"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	dpv1alpha5 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5"
 	corev1 "k8s.io/api/core/v1"
 	k8errors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/fields"
@@ -95,7 +95,7 @@ func (r *gatewayReconcilerNew) validateServiceForReconcile(obj *corev1.Service) 
 // validateBackendForReconcile tries finding the owning Gateway of the Service
 // if it exists, finds the Gateway's Deployment, and further updates the Gateway
 // status Ready condition. All Services are pushed for reconciliation.
-func (r *gatewayReconcilerNew) validateBackendForReconcile(obj *dpv1alpha2.Backend) bool {
+func (r *gatewayReconcilerNew) validateBackendForReconcile(obj *dpv1alpha5.Backend) bool {
 	backend := obj
 	nsName := utils.NamespacedName(backend)
 	return r.isRouteReferencingBackend(&nsName)

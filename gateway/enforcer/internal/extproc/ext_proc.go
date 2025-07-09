@@ -100,6 +100,7 @@ const (
 	matchedResourceMetadataKey                      string = "request:matchedresource"
 	matchedSubscriptionMetadataKey                  string = "request:matchedsubscription"
 	matchedApplicationMetadataKey                   string = "request:matchedapplication"
+	uriAttribute                                    string = "uriAttribute"
 
 	modelMetadataKey string = "aitoken:model"
 )
@@ -473,6 +474,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 									RawValue: []byte(es.CustomParameters["value"]),
 								},
 							})
+						} else if es.SecurityType == "AWSKey" {
+							requestConfigHolder.MatchedAPI.ResourceMap[metadata.MatchedResourceIdentifier].RouteMetadataAttributes.URI = extractURIHeader(req)
 						}
 					}
 				}
@@ -499,6 +502,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 									RawValue: []byte(es.CustomParameters["value"]),
 								},
 							})
+						} else if es.SecurityType == "AWSKey" {
+							requestConfigHolder.MatchedResource.RouteMetadataAttributes.URI = extractURIHeader(req)
 						}
 					}
 				}
@@ -652,7 +657,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					// Unmarshal the JSON data into the map
 					err := json.Unmarshal(httpBody, &jsonData)
 					if err != nil {
-						s.log.Error(err, "Error unmarshaling JSON Reuqest Body")
+						s.log.Error(err, "Error unmarshalling JSON Request Body")
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
 					// Change the model to the selected model
@@ -797,6 +802,42 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("resp %+v\n", resp))
 					//req.GetRequestBody().Body = newHTTPBody
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body after %+v\n", newHTTPBody))
+				}
+			}
+
+			if matchedAPI.EndpointSecurity != nil {
+				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Inside API Level Endpoint Security: %+v", matchedAPI.EndpointSecurity))
+				for _, es := range matchedAPI.EndpointSecurity {
+					if es.Enabled {
+						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Enabled API Level Endpoint Security: %+v", es))
+						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Enabled API Level Security Type: %s", es.SecurityType))
+						if es.SecurityType == "AWSKey" {
+							awsResponse, err := s.handleAWSSignatureHeaders(matchedAPI, matchedResource, req)
+							if err != nil {
+								s.cfg.Logger.Sugar().Error(err, "Failed to generate AWS signature headers")
+								break
+							}
+							resp = awsResponse
+						}
+					}
+				}
+			}
+
+			if matchedResource.EndpointSecurity != nil {
+				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Endpoint Security: %+v", matchedResource.EndpointSecurity))
+				for _, es := range matchedResource.EndpointSecurity {
+					if es.Enabled {
+						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Endpoint Security: %+v", es))
+						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Security Type: %s", es.SecurityType))
+						if es.SecurityType == "AWSKey" {
+							awsResponse, err := s.handleAWSSignatureHeaders(matchedAPI, matchedResource, req)
+							if err != nil {
+								s.cfg.Logger.Sugar().Error(err, "Failed to generate AWS signature headers")
+								break
+							}
+							resp = awsResponse
+						}
+					}
 				}
 			}
 
@@ -1053,10 +1094,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
 				s.log.Sugar().Debug("AI rate limit enabled using body")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
+					matchedAPI.AiProvider.ProviderName,
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
 					matchedAPI.AiProvider.TotalToken.Value,
-					matchedAPI.AiProvider.ResponseModel.Value)
+					matchedAPI.AiProvider.ResponseModel.Value,
+					matchedResource.RouteMetadataAttributes)
 				if err != nil {
 					s.log.Error(err, "failed to extract token count from response body")
 				} else {
@@ -1350,6 +1393,7 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 			backendBasedAIRatelimitDescriptorValueAttribute,
 			suspendAIModelValueAttribute,
 			endpointBasepath,
+			uriAttribute,
 		}
 
 		for _, key := range keysToExtract {
@@ -1379,6 +1423,8 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 					attributes.SuspendAIModel = extractedValues[key]
 				case endpointBasepath:
 					attributes.EndpointBasepath = extractedValues[key]
+				case uriAttribute:
+					attributes.URI = extractedValues[key]
 				}
 			}
 		}
@@ -1452,4 +1498,51 @@ func prepareMetadataKeyValuePairAndAddTo(metadataKeyValuePair map[string]string,
 		}
 	}
 	return &metadataKeyValuePair
+}
+
+// extractURIHeader extracts the URI from the request for AWS signature calculation.
+func extractURIHeader(req *envoy_service_proc_v3.ProcessingRequest) (rawURI string) {
+	for _, header := range req.GetRequestHeaders().GetHeaders().Headers {
+		if header.Key == ":path" {
+			rawURI = string(header.RawValue)
+			break
+		}
+	}
+	return
+}
+
+// handleAWSSignatureHeaders generates AWS signature headers and creates the appropriate response
+func (s *ExternalProcessingServer) handleAWSSignatureHeaders(matchedAPI *requestconfig.API, matchedResource *requestconfig.Resource,
+	req *envoy_service_proc_v3.ProcessingRequest) (*envoy_service_proc_v3.ProcessingResponse, error) {
+	awsHeaders, err := util.GenerateAWSSignatureHeaders(matchedAPI, matchedResource, req)
+	if err != nil {
+		s.cfg.Logger.Sugar().Error(err, "Failed to generate AWS signature headers")
+		return nil, err
+	}
+
+	// Add AWS authorization headers to the response
+	var setHeaders []*corev3.HeaderValueOption
+	for key, value := range awsHeaders {
+		setHeaders = append(setHeaders, &corev3.HeaderValueOption{
+			Header: &corev3.HeaderValue{
+				Key:      key,
+				RawValue: []byte(value),
+			},
+		})
+	}
+
+	rbq := &envoy_service_proc_v3.BodyResponse{
+		Response: &envoy_service_proc_v3.CommonResponse{
+			Status: envoy_service_proc_v3.CommonResponse_CONTINUE_AND_REPLACE,
+			HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
+				SetHeaders: setHeaders,
+			},
+		},
+	}
+
+	return &envoy_service_proc_v3.ProcessingResponse{
+		Response: &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+			RequestBody: rbq,
+		},
+	}, nil
 }

@@ -60,7 +60,7 @@ public type ErrorListItem record {
 # + securityType - Configuration for the basic endpoint security.
 public type EndpointSecurity record {
     boolean enabled?;
-    BasicEndpointSecurity|APIKeyEndpointSecurity securityType?;
+    BasicEndpointSecurity|APIKeyEndpointSecurity|AWSKeyEndpointSecurity securityType?;
 };
 
 # Configuration for Custom Claims.
@@ -118,6 +118,21 @@ public type APIKeyEndpointSecurity record {
     string 'in;
     string apiKeyNameKey;
     string apiKeyValueKey;
+};
+
+# Configuration for AWS Key Endpoint Security.
+# 
+# + service - The name of the service of the AWS key.
+# + in - The mode of sending Ex: header/query.
+# + regionRef - Reference to the AWS region.
+# + accessKeyRef - Reference to the AWS access key.
+# + secretKeyRef - Reference to the AWS secret key.
+public type AWSKeyEndpointSecurity record {
+    string 'service;
+    string 'in;
+    string regionRef;
+    string accessKeyRef;
+    string secretKeyRef;
 };
 
 # Configuration for APK Operations.

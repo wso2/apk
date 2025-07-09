@@ -39,9 +39,7 @@ import (
 	"github.com/wso2/apk/adapter/internal/operator/synchronizer"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
 	dpv1alpha5 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5"
 	ctrl "sigs.k8s.io/controller-runtime"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
@@ -137,8 +135,8 @@ func NewGatewayController(mgr manager.Manager, operatorDataStore *synchronizer.O
 		return err
 	}
 
-	predicateBackend := []predicate.TypedPredicate[*dpv1alpha2.Backend]{predicate.NewTypedPredicateFuncs[*dpv1alpha2.Backend](utils.FilterBackendByNamespaces(conf.Adapter.Operator.Namespaces))}
-	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha2.Backend{}, handler.TypedEnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
+	predicateBackend := []predicate.TypedPredicate[*dpv1alpha5.Backend]{predicate.NewTypedPredicateFuncs[*dpv1alpha5.Backend](utils.FilterBackendByNamespaces(conf.Adapter.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &dpv1alpha5.Backend{}, handler.TypedEnqueueRequestsFromMapFunc(r.getGatewaysForBackend),
 		predicateBackend...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2615, logging.BLOCKER, "Error watching Backend resources: %v", err))
 		return err
@@ -333,8 +331,8 @@ func (gatewayReconciler *GatewayReconciler) getInterceptorServicesForGateway(ctx
 }
 
 func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx context.Context,
-	gatewayStateData *synchronizer.GatewayStateData) map[string]*dpv1alpha4.ResolvedBackend {
-	backendMapping := make(map[string]*dpv1alpha4.ResolvedBackend)
+	gatewayStateData *synchronizer.GatewayStateData) map[string]*dpv1alpha5.ResolvedBackend {
+	backendMapping := make(map[string]*dpv1alpha5.ResolvedBackend)
 	if gatewayStateData.GatewayInterceptorServiceMapping != nil {
 		interceptorServices := maps.Values(gatewayStateData.GatewayInterceptorServiceMapping)
 		for _, interceptorService := range interceptorServices {
@@ -347,7 +345,7 @@ func (gatewayReconciler *GatewayReconciler) getResolvedBackendsMapping(ctx conte
 
 // getGatewaysForBackend triggers the Gateway controller reconcile method based on the changes detected
 // in backend resources.
-func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(ctx context.Context, obj *dpv1alpha2.Backend) []reconcile.Request {
+func (gatewayReconciler *GatewayReconciler) getGatewaysForBackend(ctx context.Context, obj *dpv1alpha5.Backend) []reconcile.Request {
 	backend := obj
 
 	requests := []reconcile.Request{}
@@ -418,7 +416,7 @@ func (gatewayReconciler *GatewayReconciler) getAPIsForBackendJWT(ctx context.Con
 func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(ctx context.Context, obj *corev1.Secret) []reconcile.Request {
 	secret := obj
 
-	backendList := &dpv1alpha2.BackendList{}
+	backendList := &dpv1alpha5.BackendList{}
 	if err := gatewayReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(secretBackend, utils.NamespacedName(secret).String()),
 	}); err != nil {
@@ -452,7 +450,7 @@ func (gatewayReconciler *GatewayReconciler) getGatewaysForSecret(ctx context.Con
 func (gatewayReconciler *GatewayReconciler) getGatewaysForConfigMap(ctx context.Context, obj *corev1.ConfigMap) []reconcile.Request {
 	configMap := obj
 
-	backendList := &dpv1alpha2.BackendList{}
+	backendList := &dpv1alpha5.BackendList{}
 	if err := gatewayReconciler.client.List(ctx, backendList, &k8client.ListOptions{
 		FieldSelector: fields.OneTermEqualSelector(configMapBackend, utils.NamespacedName(configMap).String()),
 	}); err != nil {

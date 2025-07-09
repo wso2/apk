@@ -696,6 +696,18 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 							"value": string(resolvedBackend.Security.APIKey.Value),
 						},
 					})
+				case "AWSKey":
+					securityConfig = append(securityConfig, EndpointSecurity{
+						Type:    string(resolvedBackend.Security.Type),
+						Enabled: true,
+						CustomParameters: map[string]string{
+							"service": string(resolvedBackend.Security.AWSKey.Service),
+						    "in":         string(resolvedBackend.Security.AWSKey.In),
+							"region":     string(resolvedBackend.Security.AWSKey.Region),
+							"accessKey":  string(resolvedBackend.Security.AWSKey.AccessKey),
+							"secretKey":  string(resolvedBackend.Security.AWSKey.SecretKey),
+						},
+					})
 				}
 			} else {
 				return fmt.Errorf("backend: %s has not been resolved", backendName)
@@ -1152,7 +1164,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 }
 
 // ExtractModelBasedRoundRobinFromPolicy extracts the ModelBasedRoundRobin from the API Policy
-func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha5.APIPolicy, backendMapping map[string]*dpv1alpha4.ResolvedBackend, adapterInternalAPI *AdapterInternalAPI, resourcePath string, vHost string, namespace string) *InternalModelBasedRoundRobin {
+func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha5.APIPolicy, backendMapping map[string]*dpv1alpha5.ResolvedBackend, adapterInternalAPI *AdapterInternalAPI, resourcePath string, vHost string, namespace string) *InternalModelBasedRoundRobin {
 	if apiPolicy == nil {
 		return nil
 	}
