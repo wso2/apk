@@ -150,6 +150,8 @@ func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies [
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
 		case inbuiltpolicy.SemanticCacheName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy))
+        case inbuiltpolicy.AzureContentSafetyContentModerationName:
+            dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
@@ -186,6 +188,8 @@ func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, responsePolicies
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
 		case inbuiltpolicy.SemanticCacheName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSemanticCachingPolicy(logger,basePolicy))
+        case inbuiltpolicy.AzureContentSafetyContentModerationName:
+            dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
