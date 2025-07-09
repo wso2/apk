@@ -319,7 +319,7 @@ func extractUsageFromBody(body, providerName, promptTokenPath, completionTokenPa
 	}
 
 	// Extract model
-	if providerName == "AWSBedrock" {
+	if providerName == "AWSBedrockAI" {
 		model, err := extractCaptureGroup(attributes.Path, attributes.URI)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
