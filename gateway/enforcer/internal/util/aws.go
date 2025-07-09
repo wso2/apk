@@ -54,9 +54,8 @@ func GenerateAWSSignatureHeaders(matchedAPI *requestconfig.API, matchedResource 
 	host, method, service, uri, queryString, payload, region, accessKey, secretKey,
 		sessionToken, incomingHeaders := extractAWSSignatureParameters(matchedAPI, matchedResource, req)
 	if accessKey != "" && secretKey != "" && host != "" {
-		canonicalRequest, stringToSign, awsHeaders, err := generateAWSSignature(host, method, service, uri, queryString, payload,
+		awsHeaders, err := generateAWSSignature(host, method, service, uri, queryString, payload,
 			accessKey, secretKey, region, sessionToken, incomingHeaders)
-		fmt.Printf("Canonical Request: \n%s\nString to Sign: \n%s\n", canonicalRequest, stringToSign)
 		if err != nil {
 			return nil, fmt.Errorf("missing required fields: 'accessKey', 'secretKey', or 'region'")
 		}
@@ -153,9 +152,9 @@ func extractAWSCredentials(matchedAPI *requestconfig.API, matchedResource *reque
 // generateAWSSignature creates AWS Signature Version 4 headers for authenticating requests.
 // It constructs the signature based on the provided request parameters and AWS credentials.
 func generateAWSSignature(host, method, service, uri, queryString, payload, accessKey, secretKey, region,
-	sessionToken string, incomingHeaders map[string]string) (string, string, map[string]string, error) {
+	sessionToken string, incomingHeaders map[string]string) (map[string]string, error) {
 	if accessKey == "" || secretKey == "" || region == "" {
-		return "", "", nil, fmt.Errorf("missing required fields: 'accessKey', 'secretKey', or 'region'")
+		return nil, fmt.Errorf("missing required fields: 'accessKey', 'secretKey', or 'region'")
 	}
 
 	// Step 1: Create date stamps
@@ -208,7 +207,7 @@ func generateAWSSignature(host, method, service, uri, queryString, payload, acce
 	// Step 5: Calculate signature
 	signingKey, err := getSignatureKey(secretKey, dateStamp, region, service)
 	if err != nil {
-		return "", "", nil, fmt.Errorf("error getting signature key: %w", err)
+		return nil, fmt.Errorf("error getting signature key: %w", err)
 	}
 	signature := hex.EncodeToString(hmacSHA256([]byte(stringToSign), signingKey))
 
@@ -223,7 +222,7 @@ func generateAWSSignature(host, method, service, uri, queryString, payload, acce
 	}
 	authHeaders[authorizationHeader] = authorizationHeaderValue
 
-	return canonicalRequest, stringToSign, authHeaders, nil
+	return authHeaders, nil
 }
 
 // createCanonicalQueryString sorts the query string parameters into canonical form.

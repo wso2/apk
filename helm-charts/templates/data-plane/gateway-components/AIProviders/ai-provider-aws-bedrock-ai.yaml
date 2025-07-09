@@ -12,6 +12,9 @@ spec:
     - "o1-mini"
     - "gpt-4o-mini"
     - "us.meta.llama3-3-70b-instruct-v1:0"
+  requestModel:
+    in: "Body"
+    value: "model"
   responseModel:
     in: "Body"
     value: "model"
@@ -25,4 +28,3 @@ spec:
     totalToken:
       in: "Body"
       value: "usage.totalTokens"
-  
