@@ -406,6 +406,7 @@ components:
           oneOf:
             - $ref: "#/components/schemas/BasicEndpointSecurity"
             - $ref: "#/components/schemas/APIKeyEndpointSecurity"
+            - $ref: "#/components/schemas/AWSKeyEndpointSecurity"
       additionalProperties: false
     BasicEndpointSecurity:
       type: object
@@ -432,6 +433,28 @@ components:
           type: string
         apiKeyValueKey:
           type: string
+      additionalProperties: false
+    AWSKeyEndpointSecurity:
+      type: object
+      properties:
+        service:
+          type: string
+          description: The AWS service to which the request is made.
+        in:
+          type: string
+          enum:
+            - Header
+            - Query
+          default: Header
+        regionRef:
+          type: string
+          description: Reference to the region where the AWS service is hosted.
+        accessKeyRef:
+          type: string
+          description: Reference to the access key for AWS authentication.
+        secretKeyRef:
+          type: string
+          description: Reference to the secret key for AWS authentication.
       additionalProperties: false
     Resiliency:
       type: object

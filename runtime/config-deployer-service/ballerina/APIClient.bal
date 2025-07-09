@@ -1513,7 +1513,7 @@ public class APIClient {
             if endpointSecurity?.enabled ?: false {
                 // When user adds basic auth endpoint security username and password should be provided.
                 // When user adds api key endpoint security api key name and api key value should be provided.
-                BasicEndpointSecurity|APIKeyEndpointSecurity? securityType = endpointSecurity.securityType;
+                BasicEndpointSecurity|APIKeyEndpointSecurity|AWSKeyEndpointSecurity? securityType = endpointSecurity.securityType;
                 log:printDebug("Security Type: "+ securityType.toString());
 
                 if securityType is BasicEndpointSecurity {
@@ -1536,6 +1536,17 @@ public class APIClient {
                                 name: <string>securityType.secretName, 
                                 valueKey: <string>securityType.apiKeyValueKey
                             }
+                        }
+                    };
+                }
+                if securityType is AWSKeyEndpointSecurity {
+                    securityConfig = {
+                        awsKey: {
+                            'service: <string>securityType.'service,
+                            'in: <string>securityType.'in,
+                            regionRef: <string>securityType.regionRef,
+                            accessKeyRef: <string>securityType.accessKeyRef,
+                            secretKeyRef: <string>securityType.secretKeyRef
                         }
                     };
                 }

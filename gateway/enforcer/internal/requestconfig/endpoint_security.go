@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
- 
+
 package requestconfig
 
 // EndpointSecurity represents the endpoint security configuration
@@ -22,6 +22,6 @@ type EndpointSecurity struct {
 	Password         string            `json:"password"`         // Password as a slice of runes
 	Username         string            `json:"username"`         // Username for the endpoint
 	Enabled          bool              `json:"enabled"`          // Whether security is enabled
-	SecurityType     string            `json:"securityType"`     // Type of security (e.g., basic, OAuth)
+	SecurityType     string            `json:"securityType"`     // Type of security (e.g., basic, OAuth, APIKey, AWSKey)
 	CustomParameters map[string]string `json:"customParameters"` // Custom parameters for security
 }

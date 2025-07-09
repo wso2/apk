@@ -184,22 +184,22 @@ isolated function deleteScopeCr(string name, string namespace) returns http:Resp
 }
 
 isolated function deleteBackendPolicyCR(string name, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha5/namespaces/" + namespace + "/backends/" + name;
     return k8sApiServerEp->delete(endpoint, targetType = http:Response);
 }
 
 isolated function getBackendCR(string name, string namespace) returns model:Backend|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends/" + name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha5/namespaces/" + namespace + "/backends/" + name;
     return k8sApiServerEp->get(endpoint, targetType = model:Backend);
 }
 
 isolated function deployBackendCR(model:Backend backend, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends";
+    string endpoint = "/apis/dp.wso2.com/v1alpha5/namespaces/" + namespace + "/backends";
     return k8sApiServerEp->post(endpoint, backend, targetType = http:Response);
 }
 
 isolated function updateBackendCR(model:Backend backend, string namespace) returns http:Response|http:ClientError {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends/" + backend.metadata.name;
+    string endpoint = "/apis/dp.wso2.com/v1alpha5/namespaces/" + namespace + "/backends/" + backend.metadata.name;
     return k8sApiServerEp->put(endpoint, backend, targetType = http:Response);
 }
 
@@ -219,7 +219,7 @@ isolated function updateScopeCR(model:Scope scope, string namespace) returns htt
 }
 
 isolated function getBackendPolicyCRsForAPI(string apiName, string apiVersion, string namespace, string organization) returns model:BackendList|http:ClientError|error {
-    string endpoint = "/apis/dp.wso2.com/v1alpha2/namespaces/" + namespace + "/backends?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
+    string endpoint = "/apis/dp.wso2.com/v1alpha5/namespaces/" + namespace + "/backends?labelSelector=" + check generateUrlEncodedLabelSelector(apiName, apiVersion, organization);
     return k8sApiServerEp->get(endpoint, targetType = model:BackendList);
 }
 

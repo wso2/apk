@@ -16,7 +16,7 @@ require (
 	github.com/prometheus/client_golang v1.21.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/telepresenceio/watchable v0.0.0-20220726211108-9bb86f92afa7
-	github.com/wso2/apk/common-go-libs v0.0.0-20250224134508-7ca95f9483ca
+	github.com/wso2/apk/common-go-libs v0.0.0-20250626100811-fc4cb3388967
 	go.opentelemetry.io/proto/otlp v1.5.0
 	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa
 	google.golang.org/grpc v1.70.0

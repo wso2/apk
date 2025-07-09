@@ -76,7 +76,7 @@ type ResolvedModelBasedRoundRobin struct {
 // ResolvedModelWeight holds the model configurations
 type ResolvedModelWeight struct {
 	Model           string                    `json:"model"`
-	ResolvedBackend *v1alpha4.ResolvedBackend `json:"resolvedBackend"`
+	ResolvedBackend *v1alpha5.ResolvedBackend `json:"resolvedBackend"`
 	Weight          int                       `json:"weight,omitempty"`
 }
 
@@ -86,7 +86,7 @@ type ResolvedModelWeight struct {
 type HTTPRouteState struct {
 	HTTPRouteCombined                 *gwapiv1.HTTPRoute
 	HTTPRoutePartitions               map[string]*gwapiv1.HTTPRoute
-	BackendMapping                    map[string]*v1alpha4.ResolvedBackend
+	BackendMapping                    map[string]*v1alpha5.ResolvedBackend
 	Scopes                            map[string]v1alpha1.Scope
 	RuleIdxToAiRatelimitPolicyMapping map[int]*v1alpha3.AIRateLimitPolicy
 }
@@ -97,7 +97,7 @@ type HTTPRouteState struct {
 type GQLRouteState struct {
 	GQLRouteCombined   *v1alpha2.GQLRoute
 	GQLRoutePartitions map[string]*v1alpha2.GQLRoute
-	BackendMapping     map[string]*v1alpha4.ResolvedBackend
+	BackendMapping     map[string]*v1alpha5.ResolvedBackend
 	Scopes             map[string]v1alpha1.Scope
 }
 
@@ -107,6 +107,6 @@ type GQLRouteState struct {
 type GRPCRouteState struct {
 	GRPCRouteCombined   *gwapiv1.GRPCRoute
 	GRPCRoutePartitions map[string]*gwapiv1.GRPCRoute
-	BackendMapping      map[string]*v1alpha4.ResolvedBackend
+	BackendMapping      map[string]*v1alpha5.ResolvedBackend
 	Scopes              map[string]v1alpha1.Scope
 }

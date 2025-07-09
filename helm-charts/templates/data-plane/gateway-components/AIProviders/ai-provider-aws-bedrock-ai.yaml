@@ -11,6 +11,7 @@ spec:
     - "gpt-4o"
     - "o1-mini"
     - "gpt-4o-mini"
+    - "us.meta.llama3-3-70b-instruct-v1:0"
   requestModel:
     in: "Body"
     value: "model"
@@ -20,11 +21,10 @@ spec:
   rateLimitFields:
     promptTokens: 
       in: "Body"
-      value: "$usage.inputTokens"
+      value: "usage.inputTokens"
     completionToken:
       in: "Body"
-      value: "$usage.outputTokens"
+      value: "usage.outputTokens"
     totalToken:
       in: "Body"
-      value: "$usage.totalTokens"
-  
+      value: "usage.totalTokens"

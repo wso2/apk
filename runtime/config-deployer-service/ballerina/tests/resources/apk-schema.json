@@ -583,6 +583,9 @@
             },
             {
               "$ref": "#/schemas/APIKeyEndpointSecurity"
+            },
+            {
+              "$ref": "#/schemas/AWSKeyEndpointSecurity"
             }
           ],
           "description": "The type of security to be applied to the API endpoint."
@@ -630,6 +633,36 @@
         "apiKeyValueKey": {
           "type": "string",
           "description": "The value of key in the request."
+        }
+      },
+      "additionalProperties": false
+    },
+    "AWSKeyEndpointSecurity": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "type": "string",
+          "description": "The AWS service for which the key is used."
+        },
+        "in": {
+          "type": "string",
+          "enum": [
+            "Header",
+            "Query"
+          ],
+          "description": "The location of the AWS key in the request."
+        },
+        "regionRef": {
+          "type": "string",
+          "description": "Reference to the region where the AWS service is hosted."
+        },
+        "accessKeyRef": {
+          "type": "string",
+          "description": "Reference to the access key for AWS authentication."
+        },
+        "secretKeyRef": {
+          "type": "string",
+          "description": "Reference to the secret key for AWS authentication."
         }
       },
       "additionalProperties": false
