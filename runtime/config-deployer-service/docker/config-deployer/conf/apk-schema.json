@@ -373,7 +373,8 @@
             "RegexGuardrail",
             "WordCountGuardrail",
             "SentenceCountGuardrail",
-            "ContentLengthGuardrail"
+            "ContentLengthGuardrail",
+            "SemanticCache"
           ]
         },
         "policyVersion": {
@@ -432,7 +433,8 @@
             "RegexGuardrail",
             "WordCountGuardrail",
             "SentenceCountGuardrail",
-            "ContentLengthGuardrail"
+            "ContentLengthGuardrail",
+            "SemanticCache"
           ]
         },
         "policyVersion": {

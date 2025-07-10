@@ -23,6 +23,8 @@ type ExternalProcessingEnvoyMetadata struct {
 	MatchedResourceIdentifier     string              `json:"matchedResourceIdentifier"`
 	MatchedSubscriptionIdentifier string              `json:"matchedSubscriptionIdentifier"`
 	MatchedApplicationIdentifier  string              `json:"matchedApplicationIdentifier"`
+	SemanticEmbedding             string              `json:"semanticEmbedding,omitempty"`
+	ResponseStatus                string              `json:"responseStatus,omitempty"`
 }
 
 // AuthenticationData represents the authentication data.

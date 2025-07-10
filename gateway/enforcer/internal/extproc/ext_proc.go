@@ -32,6 +32,7 @@ import (
 	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
+
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
 	"github.com/wso2/apk/gateway/enforcer/internal/authorization"
@@ -39,11 +40,13 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/graphql"
+	"github.com/wso2/apk/gateway/enforcer/internal/inbuiltpolicy"
 	"github.com/wso2/apk/gateway/enforcer/internal/jwtbackend"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/requesthandler"
+
 	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 
@@ -101,8 +104,8 @@ const (
 	matchedSubscriptionMetadataKey                  string = "request:matchedsubscription"
 	matchedApplicationMetadataKey                   string = "request:matchedapplication"
 	uriAttribute                                    string = "uriAttribute"
-
-	modelMetadataKey string = "aitoken:model"
+	semanticCacheEmbeddingKey                       string = "semanticcache:embedding"
+	modelMetadataKey                                string = "aitoken:model"
 )
 
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
@@ -141,7 +144,8 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 			cfg,
 			jwtTransformer,
 			modelBasedRoundRobinTracker,
-			revokedJTIStore, authenticator.NewAuthenticator(cfg, subAppDatastore, jwtTransformer, revokedJTIStore)})
+			revokedJTIStore, authenticator.NewAuthenticator(cfg, subAppDatastore, jwtTransformer, revokedJTIStore),
+		})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -377,6 +381,22 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				// s.cfg.Logger.Sugar().Info("444")
 				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
 			}
+
+			if requestConfigHolder.MatchedResource.RequestInBuiltPolicies != nil &&
+				len(requestConfigHolder.MatchedResource.RequestInBuiltPolicies) > 0 {
+				s.cfg.Logger.Sugar().Debug("Checking for semantic cahche policy to trigger response header case")
+				for _, policy := range requestConfigHolder.MatchedResource.ResponseInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
+						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
+						break
+					}
+				}
+			}
+
 			requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 			dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
 			dynamicMetadataKeyValuePairs[analytics.APIResourceTemplateKey] = requestConfigHolder.MatchedResource.Path
@@ -570,6 +590,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
 
 			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
+			props := map[string]interface{}{"matchedAPIUUID": matchedAPI.UUID, "dynamicMetadataMap": dynamicMetadataKeyValuePairs, "ctx": ctx}
+			s.cfg.Logger.Sugar().Debugf("Props content for Request flow policies: %+v", props)
 			if matchedAPI.RequestInBuiltPolicies != nil &&
 				len(matchedAPI.RequestInBuiltPolicies) > 0 {
 			apiRequestPolicyLoop:
@@ -579,7 +601,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Request In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req)
+					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Request In-Built Policy validation failed")
 						break apiRequestPolicyLoop
@@ -603,7 +625,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Request In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req)
+					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Request In-Built Policy validation failed")
 						break resourceRequestPolicyLoop
@@ -999,6 +1021,29 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
 				}
 			}
+			semanticCacheEnabled := false
+			if matchedResource.RequestInBuiltPolicies != nil &&
+				len(matchedResource.RequestInBuiltPolicies) > 0 {
+				s.cfg.Logger.Sugar().Debug("Checking for semantic cahche policy to trigger response header case")
+				for _, policy := range matchedResource.ResponseInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
+						semanticCacheEnabled = true
+						break
+					}
+				}
+			}
+			if semanticCacheEnabled {
+				for _, header := range req.GetResponseHeaders().GetHeaders().GetHeaders() {
+					if header.Key == ":status" {
+						s.log.Sugar().Debugf("Status code found: %s", header.RawValue)
+						dynamicMetadataKeyValuePairs["response_status"] = string(header.RawValue)
+					}
+				}
+			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
 			// s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
@@ -1038,6 +1083,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 
 			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
+			props := map[string]interface{}{"matchedAPIUUID": matchedAPI.UUID, "embedding": metadata.SemanticEmbedding, "responseHeaders": metadata.ResponseStatus, "ctx": ctx} // NEED TO REMOVE THE HARDCODED HEADER VALUE
+			s.cfg.Logger.Sugar().Debugf("Props content for Response flow policies: %+v", props)
 			if matchedAPI.ResponseInBuiltPolicies != nil &&
 				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("API Level Response Policies Enabled")
@@ -1048,7 +1095,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Response In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req)
+					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Response In-Built Policy validation failed")
 						break apiResponsePolicyLoop
@@ -1072,7 +1119,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Response In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req)
+					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Response In-Built Policy validation failed")
 						break resourceResponsePolicyLoop
@@ -1172,6 +1219,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				duration := matchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
 				s.modelBasedRoundRobinTracker.SuspendModel(matchedAPI.UUID, matchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 			}
+
 		default:
 			s.log.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
 		}
@@ -1316,7 +1364,12 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 			if matchedSubscriptionKey, exists := extProcMetadata.Fields[matchedSubscriptionMetadataKey]; exists {
 				externalProcessingEnvoyMetadata.MatchedSubscriptionIdentifier = matchedSubscriptionKey.GetStringValue()
 			}
-
+			if embeddingKey, exists := extProcMetadata.Fields[semanticCacheEmbeddingKey]; exists {
+				externalProcessingEnvoyMetadata.SemanticEmbedding = embeddingKey.GetStringValue()
+			}
+			if responseStatus, exists := extProcMetadata.Fields["response_status"]; exists {
+				externalProcessingEnvoyMetadata.ResponseStatus = responseStatus.GetStringValue()
+			}
 		}
 		return externalProcessingEnvoyMetadata, nil
 	}

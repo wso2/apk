@@ -39,7 +39,7 @@ type RegexGuardrail struct {
 }
 
 // HandleRequestBody is a method that implements the mediation logic for the RegexGuardrail policy on request.
-func (r *RegexGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
+func (r *RegexGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for RegexGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
 	if !validationResult {
@@ -51,7 +51,7 @@ func (r *RegexGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_se
 }
 
 // HandleResponseBody is a method that implements the mediation logic for the RegexGuardrail policy on response.
-func (r *RegexGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
+func (r *RegexGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for RegexGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
 	if !validationResult {
