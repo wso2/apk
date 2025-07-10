@@ -382,21 +382,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
 			}
 
-			if requestConfigHolder.MatchedResource.RequestInBuiltPolicies != nil &&
-				len(requestConfigHolder.MatchedResource.RequestInBuiltPolicies) > 0 {
-				s.cfg.Logger.Sugar().Debug("Checking for semantic cahche policy to trigger response header case")
-				for _, policy := range requestConfigHolder.MatchedResource.ResponseInBuiltPolicies {
-					if policy == nil {
-						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
-						continue
-					}
-					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
-						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
-						break
-					}
-				}
-			}
-
 			requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 			dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
 			dynamicMetadataKeyValuePairs[analytics.APIResourceTemplateKey] = requestConfigHolder.MatchedResource.Path
@@ -462,7 +447,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Request In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req)
+					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
+						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
+					}
+					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req, nil)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Request In-Built Policy validation failed")
 						break apiRequestHeadersPolicyLoop
@@ -486,7 +474,10 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Request In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req)
+					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
+						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
+					}
+					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req, nil)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Request In-Built Policy validation failed")
 						break resourceRequestHeadersPolicyLoop
@@ -956,7 +947,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Response In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req)
+					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req, nil)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Response In-Built Policy validation failed")
 						break apiResponseHeadersPolicyLoop
@@ -980,7 +971,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Response In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req)
+					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req, nil)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Response In-Built Policy validation failed")
 						break resourceResponseHeadersPolicyLoop
