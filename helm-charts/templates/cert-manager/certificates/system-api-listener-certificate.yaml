@@ -27,6 +27,7 @@ spec:
   dnsNames:
   - "*.{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
   - "{{ .Values.wso2.apk.listener.hostname | default "api.am.wso2.com"}}"
+  - "localhost"
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
     {{ if .Values.certmanager.listeners -}}

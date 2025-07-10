@@ -30,10 +30,10 @@ data:
       {{- end }} 
 
     [deployment.gateway.volumes]
-      ratelimiterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert"
-      enforcerKeystoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert"
+      ratelimiterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-apk-server-cert"
+      enforcerKeystoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-apk-server-cert"
       routerKeystoreSecretVolume = "envoy-cert"
-      adapterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-adapter-server-cert"
+      adapterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-apk-server-cert"
       enforcerJwtSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret"
       enforcerTrustedCerts = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
       enforcerApikeyCert = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"

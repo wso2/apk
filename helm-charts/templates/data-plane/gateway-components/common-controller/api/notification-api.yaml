@@ -58,7 +58,7 @@ spec:
       name: {{ .Values.wso2.apk.dp.commonController.deployment.configs.tls.secretName}}
       key: {{ .Values.wso2.apk.dp.commonController.deployment.configs.tls.certKeyFilename }}
     {{- else }}
-      name: {{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
+      name: {{ template "apk-helm.resource.prefix" . }}-apk-server-cert
       key: tls.crt
     {{- end }}
 ---
