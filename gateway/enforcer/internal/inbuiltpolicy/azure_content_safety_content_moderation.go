@@ -51,7 +51,7 @@ type AzureContentSafetyContentModeration struct {
 }
 
 // HandleRequestBody is a method that implements the mediation logic for the AzureContentSafetyContentModeration policy on request.
-func (r *AzureContentSafetyContentModeration) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
+func (r *AzureContentSafetyContentModeration) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for AzureContentSafetyContentModeration policy: %s", r.Name)
 	result, ok := r.validatePayload(logger, req.GetRequestBody().Body, false)
 	if !ok {
@@ -63,7 +63,7 @@ func (r *AzureContentSafetyContentModeration) HandleRequestBody(logger *logging.
 }
 
 // HandleResponseBody is a method that implements the mediation logic for the AzureContentSafetyContentModeration policy on response.
-func (r *AzureContentSafetyContentModeration) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest) *envoy_service_proc_v3.ProcessingResponse {
+func (r *AzureContentSafetyContentModeration) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for AzureContentSafetyContentModeration policy: %s", r.Name)
 	result, ok := r.validatePayload(logger, req.GetResponseBody().Body, true)
 	if !ok {
