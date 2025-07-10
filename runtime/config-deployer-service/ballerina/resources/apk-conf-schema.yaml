@@ -278,6 +278,7 @@ components:
           WordCountGuardrail: "#/components/schemas/CommonPolicy"
           SentenceCountGuardrail: "#/components/schemas/CommonPolicy"
           ContentLengthGuardrail: "#/components/schemas/CommonPolicy"
+          SemanticCache: "#/components/schemas/CommonPolicy"
     APKResponseOperationPolicy:
       title: API Operation Policy
       oneOf:
@@ -297,6 +298,7 @@ components:
           WordCountGuardrail: "#/components/schemas/CommonPolicy"
           SentenceCountGuardrail: "#/components/schemas/CommonPolicy"
           ContentLengthGuardrail: "#/components/schemas/CommonPolicy"
+          SemanticCache: "#/components/schemas/CommonPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -318,6 +320,7 @@ components:
             - WordCountGuardrail
             - SentenceCountGuardrail
             - ContentLengthGuardrail
+            - SemanticCache
         policyVersion:
           type: string
           default: "v1"

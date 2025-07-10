@@ -293,6 +293,7 @@ schemas:
           - WordCountGuardrail
           - SentenceCountGuardrail
           - ContentLengthGuardrail
+          - SemanticCache
       policyVersion:
         type: string
         default: v1
@@ -329,6 +330,7 @@ schemas:
           - WordCountGuardrail
           - SentenceCountGuardrail
           - ContentLengthGuardrail
+          - SemanticCache
       policyVersion:
         type: string
         default: v1

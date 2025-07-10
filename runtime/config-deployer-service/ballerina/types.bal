@@ -445,7 +445,8 @@ public enum PolicyName {
     RegexGuardrail,
     WordCountGuardrail,
     SentenceCountGuardrail,
-    ContentLengthGuardrail
+    ContentLengthGuardrail,
+    SemanticCache
 }
 
 # Configuration for authentication types.

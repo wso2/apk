@@ -26,6 +26,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/inbuiltpolicy"
+	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
@@ -86,12 +87,12 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			AIModelBasedRoundRobin:            convertAIModelBasedRoundRobinToDTO(api.AiModelBasedRoundRobin),
 			DoSubscriptionAIRLInHeaderReponse: api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InHeader,
 			DoSubscriptionAIRLInBodyReponse:   api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InBody,
-			RequestInBuiltPolicies:            covertRequestInBuiltPoliciesToDTO(api.RequestInBuiltPolicies),
-			ResponseInBuiltPolicies:           covertResponseInBuiltPoliciesToDTO(api.ResponseInBuiltPolicies),
+			RequestInBuiltPolicies:            covertRequestInBuiltPoliciesToDTO(&s.cfg.Logger, api.RequestInBuiltPolicies),
+			ResponseInBuiltPolicies:           covertResponseInBuiltPoliciesToDTO(&s.cfg.Logger, api.ResponseInBuiltPolicies),
 		}
 		for _, resource := range api.Resources {
 			for _, operation := range resource.Methods {
-				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), covertRequestInBuiltPoliciesToDTO(resource.RequestInBuiltPolicies), covertResponseInBuiltPoliciesToDTO(resource.ResponseInBuiltPolicies), func() []*requestconfig.EndpointSecurity {
+				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), covertRequestInBuiltPoliciesToDTO(&s.cfg.Logger, resource.RequestInBuiltPolicies), covertResponseInBuiltPoliciesToDTO(&s.cfg.Logger, resource.ResponseInBuiltPolicies), func() []*requestconfig.EndpointSecurity {
 					endpointSecurity := make([]*requestconfig.EndpointSecurity, len(resource.EndpointSecurity))
 					for i, es := range resource.EndpointSecurity {
 						endpointSecurity[i] = &requestconfig.EndpointSecurity{
@@ -123,7 +124,7 @@ func (s *APIStore) GetAPIs() map[string]*requestconfig.API {
 }
 
 // convertRequestInBuiltPoliciesToDTO converts a slice of InBuiltPolicy to a slice of dto.InBuiltPolicy.
-func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
+func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
 	if requestPolicies == nil {
 		return nil
 	}
@@ -147,6 +148,8 @@ func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []d
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewContentLengthGuardrail(basePolicy))
 		case inbuiltpolicy.URLGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
+		case inbuiltpolicy.SemanticCacheName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
@@ -157,7 +160,7 @@ func covertRequestInBuiltPoliciesToDTO(requestPolicies []*api.InBuiltPolicy) []d
 }
 
 // convertResponseInBuiltPoliciesToDTO converts a slice of InBuiltPolicy to a slice of dto.InBuiltPolicy.
-func covertResponseInBuiltPoliciesToDTO(responsePolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
+func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, responsePolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
 	if responsePolicies == nil {
 		return nil
 	}
@@ -181,6 +184,8 @@ func covertResponseInBuiltPoliciesToDTO(responsePolicies []*api.InBuiltPolicy) [
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewContentLengthGuardrail(basePolicy))
 		case inbuiltpolicy.URLGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
+		case inbuiltpolicy.SemanticCacheName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSemanticCachingPolicy(logger,basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
