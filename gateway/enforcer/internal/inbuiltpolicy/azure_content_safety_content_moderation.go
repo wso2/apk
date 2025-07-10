@@ -35,7 +35,7 @@ const (
 	azureContentSafetyContentModerationEndpoint = "/contentsafety/text:analyze?api-version=2024-09-01"
 )
 
-// AzureContentSafetyContentModeration is a struct that represents a URL guardrail policy.
+// AzureContentSafetyContentModeration is a struct that represents a Azure Content Safety Content Moderation policy.
 type AzureContentSafetyContentModeration struct {
 	dto.BaseInBuiltPolicy
 	Name                      string
@@ -48,16 +48,6 @@ type AzureContentSafetyContentModeration struct {
 	JSONPath                  string
 	PassthroughOnError        bool
 	ShowAssessment            bool
-}
-
-// assessmentResult holds the result of payload validation for assessment reporting
-// (not exported, just for internal passing)
-type assessmentResult struct {
-	inspectedContent   string
-	categoriesAnalysis []map[string]interface{}
-	categoryMap        map[string]int
-	error              string
-	isResponse         bool
 }
 
 // HandleRequestBody is a method that implements the mediation logic for the AzureContentSafetyContentModeration policy on request.
@@ -85,10 +75,10 @@ func (r *AzureContentSafetyContentModeration) HandleResponseBody(logger *logging
 }
 
 // validatePayload validates the payload against the AzureContentSafetyContentModeration policy.
-func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) (assessmentResult, bool) {
-	var result assessmentResult
-	result.isResponse = isResponse
-	result.categoryMap = map[string]int{
+func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) (AssessmentResult, bool) {
+	var result AssessmentResult
+	result.IsResponse = isResponse
+	result.CategoryMap = map[string]int{
 		"Hate":     r.HateCategory,
 		"Sexual":   r.SexualCategory,
 		"SelfHarm": r.SelfHarmCategory,
@@ -97,17 +87,17 @@ func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Lo
 
 	extractedValue, err := ExtractStringValueFromJsonpath(logger, payload, r.JSONPath)
 	if err != nil {
-		result.error = "Error extracting value from JSON using JSONPath: " + err.Error()
-		logger.Error(err, result.error)
+		result.Error = "Error extracting value from JSON using JSONPath: " + err.Error()
+		logger.Error(err, result.Error)
 		return result, false
 	}
 	// Clean and trim
 	extractedValue = TextCleanRegexCompiled.ReplaceAllString(extractedValue, "")
 	extractedValue = strings.TrimSpace(extractedValue)
-	result.inspectedContent = extractedValue
+	result.InspectedContent = extractedValue
 
 	categories := []string{}
-	for name, val := range result.categoryMap {
+	for name, val := range result.CategoryMap {
 		if val >= 0 && val <= 7 {
 			categories = append(categories, name)
 		} else {
@@ -128,8 +118,8 @@ func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Lo
 
 	bodyBytes, err := json.Marshal(requestBody)
 	if err != nil {
-		result.error = "Failed to marshal request body for Azure Content Safety API: " + err.Error()
-		logger.Error(err, result.error)
+		result.Error = "Failed to marshal request body for Azure Content Safety API: " + err.Error()
+		logger.Error(err, result.Error)
 		return result, false
 	}
 
@@ -141,8 +131,8 @@ func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Lo
 	serviceURL := r.AzureContentSafetyEnpoint + azureContentSafetyContentModerationEndpoint
 	resp, err := util.MakeHTTPRequestWithRetry("POST", serviceURL, nil, headers, bodyBytes, 30000, 5, 1000)
 	if err != nil {
-		result.error = "Failed to call Azure Content Safety API: " + err.Error()
-		logger.Error(err, result.error)
+		result.Error = "Failed to call Azure Content Safety API: " + err.Error()
+		logger.Error(err, result.Error)
 		if r.PassthroughOnError {
 			return result, true
 		}
@@ -151,8 +141,8 @@ func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Lo
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		result.error = "Azure Content Safety API returned non-200 status code: " + strconv.Itoa(resp.StatusCode)
-		logger.Sugar().Debugf(result.error)
+		result.Error = "Azure Content Safety API returned non-200 status code: " + strconv.Itoa(resp.StatusCode)
+		logger.Sugar().Debugf(result.Error)
 		if r.PassthroughOnError {
 			return result, true
 		}
@@ -161,8 +151,8 @@ func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Lo
 
 	responseBody := make(map[string]interface{})
 	if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
-		result.error = "Failed to decode response body from Azure Content Safety API: " + err.Error()
-		logger.Error(err, result.error)
+		result.Error = "Failed to decode response body from Azure Content Safety API: " + err.Error()
+		logger.Error(err, result.Error)
 		if r.PassthroughOnError {
 			return result, true
 		}
@@ -171,8 +161,8 @@ func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Lo
 
 	categoriesAnalysis, ok := responseBody["categoriesAnalysis"].([]interface{})
 	if !ok {
-		result.error = "categoriesAnalysis missing or invalid in Azure Content Safety API response"
-		logger.Sugar().Debugf(result.error)
+		result.Error = "categoriesAnalysis missing or invalid in Azure Content Safety API response"
+		logger.Sugar().Debugf(result.Error)
 		if r.PassthroughOnError {
 			return result, true
 		}
@@ -186,14 +176,14 @@ func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Lo
 			assessments = append(assessments, analysis)
 		}
 	}
-	result.categoriesAnalysis = assessments
+	result.CategoriesAnalysis = assessments
 
 	// Check for violations
 	for _, analysis := range assessments {
 		category, _ := analysis["category"].(string)
 		severityFloat, _ := analysis["severity"].(float64)
 		severity := int(severityFloat)
-		threshold := result.categoryMap[category]
+		threshold := result.CategoryMap[category]
 		if threshold >= 0 && severity >= threshold {
 			return result, false
 		}
@@ -202,7 +192,7 @@ func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Lo
 }
 
 // buildResponse is a method that builds the response body for the AzureContentSafetyContentModeration policy.
-func (r *AzureContentSafetyContentModeration) buildResponse(logger *logging.Logger, result assessmentResult) *envoy_service_proc_v3.ProcessingResponse {
+func (r *AzureContentSafetyContentModeration) buildResponse(logger *logging.Logger, result AssessmentResult) *envoy_service_proc_v3.ProcessingResponse {
 	responseBody := make(map[string]interface{})
 	responseBody[ErrorCode] = GuardrailAPIMExceptionCode
 	responseBody[ErrorType] = AzureContentSafetyContentModerationConstant
@@ -239,12 +229,12 @@ func (r *AzureContentSafetyContentModeration) buildResponse(logger *logging.Logg
 }
 
 // buildAssessmentObject builds a detailed assessment object for the AzureContentSafetyContentModeration policy.
-func (r *AzureContentSafetyContentModeration) buildAssessmentObject(logger *logging.Logger, result assessmentResult) map[string]interface{} {
+func (r *AzureContentSafetyContentModeration) buildAssessmentObject(logger *logging.Logger, result AssessmentResult) map[string]interface{} {
 	logger.Sugar().Debugf("Building assessment object for AzureContentSafetyContentModeration policy: %s", r.Name)
 	assessment := make(map[string]interface{})
 	assessment[AssessmentAction] = "GUARDRAIL_INTERVENED"
 	assessment[InterveningGuardrail] = r.Name
-	if result.isResponse {
+	if result.IsResponse {
 		assessment[Direction] = "RESPONSE"
 	} else {
 		assessment[Direction] = "REQUEST"
@@ -253,19 +243,19 @@ func (r *AzureContentSafetyContentModeration) buildAssessmentObject(logger *logg
 	assessment[AssessmentReason] = "Violation of Azure content safety content moderation detected."
 
 	if r.ShowAssessment {
-		if result.error != "" {
-			assessment[Assessments] = result.error
+		if result.Error != "" {
+			assessment[Assessments] = result.Error
 			return assessment
 		}
-		if len(result.categoriesAnalysis) > 0 && len(result.categoryMap) > 0 {
+		if len(result.CategoriesAnalysis) > 0 && len(result.CategoryMap) > 0 {
 			assessmentsWrapper := make(map[string]interface{})
-			assessmentsWrapper["inspectedContent"] = result.inspectedContent
+			assessmentsWrapper["inspectedContent"] = result.InspectedContent
 			var assessmentsArray []map[string]interface{}
-			for _, analysis := range result.categoriesAnalysis {
+			for _, analysis := range result.CategoriesAnalysis {
 				category, _ := analysis["category"].(string)
 				severityFloat, _ := analysis["severity"].(float64)
 				severity := int(severityFloat)
-				threshold := result.categoryMap[category]
+				threshold := result.CategoryMap[category]
 				categoryAssessment := map[string]interface{}{
 					"category":  category,
 					"severity":  severity,
@@ -282,7 +272,7 @@ func (r *AzureContentSafetyContentModeration) buildAssessmentObject(logger *logg
 			assessmentsWrapper["categories"] = assessmentsArray
 			assessment[Assessments] = assessmentsWrapper
 		} else {
-			assessment[Assessments] = result.categoriesAnalysis
+			assessment[Assessments] = result.CategoriesAnalysis
 		}
 	}
 	return assessment
