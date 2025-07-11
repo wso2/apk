@@ -25,6 +25,16 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 )
 
+// AssessmentResult holds the result of payload validation for assessment reporting
+type AssessmentResult struct {
+	InspectedContent   string
+	CategoriesAnalysis []map[string]interface{}
+	CategoryMap        map[string]int
+	Error              string
+	IsResponse         bool
+	GuardrailOutput    interface{} // For storing AWS Bedrock Guardrail output or other specific outputs
+}
+
 // ExtractStringValueFromJsonpath extracts a value from a nested JSON structure based on a JSON path.
 func ExtractStringValueFromJsonpath(logger *logging.Logger, payload []byte, jsonpath string) (string, error) {
 	if jsonpath == "" {

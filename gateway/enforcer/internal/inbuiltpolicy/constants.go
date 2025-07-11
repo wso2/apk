@@ -41,6 +41,7 @@ const (
 	ContentLengthGuardrailName = "ContentLengthGuardrail"
 	URLGuardrailName           = "URLGuardrail"
 	SemanticCacheName          = "SemanticCache"
+    AzureContentSafetyContentModerationName = "AzureContentSafetyContentModeration"
 
 	RegexGuardrailConstant         = "REGEX_GUARDRAIL"
 	WordCountGuardrailConstant     = "WORD_COUNT_GUARDRAIL"
@@ -48,6 +49,7 @@ const (
 	ContentLengthGuardrailConstant = "CONTENT_LENGTH_GUARDRAIL"
 	URLGuardrailConstant           = "URL_GUARDRAIL"
 	SemanticCacheConstant          = "SEMANTIC_CACHE"
+    AzureContentSafetyContentModerationConstant = "AZURE_CONTENT_SAFETY_CONTENT_MODERATION"
 
 	TextCleanRegex     = "^\"|\"$"
 	WordSplitRegex     = "\\s+"

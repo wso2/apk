@@ -75,7 +75,7 @@ func (p *BaseInBuiltPolicy) GetPolicyOrder() int {
 
 // HandleRequestHeaders is a method that implements the mediation logic for the policy on request headers.
 func (p *BaseInBuiltPolicy) HandleRequestHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
-	cfg.Sugar().Debugf("BaseInBuiltPolicy HandleRequest called for policy: %s", p.PolicyName)
+	cfg.Sugar().Debugf("BaseInBuiltPolicy HandleRequestHeaders called for policy: %s", p.PolicyName)
 	return nil // Default implementation does nothing
 }
 

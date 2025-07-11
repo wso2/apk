@@ -386,7 +386,9 @@
             "WordCountGuardrail",
             "SentenceCountGuardrail",
             "ContentLengthGuardrail",
-            "SemanticCache"
+            "SemanticCache",
+            "URLGuardrail",
+            "AzureContentSafetyContentModeration"
           ]
         },
         "policyVersion": {
@@ -446,7 +448,9 @@
             "WordCountGuardrail",
             "SentenceCountGuardrail",
             "ContentLengthGuardrail",
-            "SemanticCache"
+            "SemanticCache",
+            "URLGuardrail",
+            "AzureContentSafetyContentModeration"
           ]
         },
         "policyVersion": {

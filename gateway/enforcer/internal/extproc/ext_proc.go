@@ -193,15 +193,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
 		requestConfigHolder := &requestconfig.Holder{}
 		// log req.Attributes
-		s.log.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
+		s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
 		dynamicMetadataKeyValuePairs := make(map[string]string)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
-			s.log.Sugar().Debug("Request Headers Flow")
+			s.cfg.Logger.Sugar().Debug("Request Headers Flow")
 			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
 			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
 			if err != nil {
-				s.log.Error(err, "failed to extract context attributes")
+				s.cfg.Logger.Error(err, "failed to extract context attributes")
 				resp = &envoy_service_proc_v3.ProcessingResponse{
 					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
 						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
@@ -217,7 +217,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			// Handling cors
 			if attributes.RequestMethod == "OPTIONS" {
-				s.log.Sugar().Debug("Handling CORS preflight request")
+				s.cfg.Logger.Sugar().Debug("Handling CORS preflight request")
 				resp = &envoy_service_proc_v3.ProcessingResponse{
 					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
 						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
@@ -382,41 +382,26 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
 			}
 
-			if requestConfigHolder.MatchedResource.RequestInBuiltPolicies != nil &&
-				len(requestConfigHolder.MatchedResource.RequestInBuiltPolicies) > 0 {
-				s.cfg.Logger.Sugar().Debug("Checking for semantic cahche policy to trigger response header case")
-				for _, policy := range requestConfigHolder.MatchedResource.ResponseInBuiltPolicies {
-					if policy == nil {
-						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
-						continue
-					}
-					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
-						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
-						break
-					}
-				}
-			}
-
 			requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
 			dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
 			dynamicMetadataKeyValuePairs[analytics.APIResourceTemplateKey] = requestConfigHolder.MatchedResource.Path
-			s.log.Sugar().Debug(fmt.Sprintf("Matched Resource Endpoints: %+v", requestConfigHolder.MatchedResource.Endpoints))
+			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource Endpoints: %+v", requestConfigHolder.MatchedResource.Endpoints))
 			if requestConfigHolder.MatchedResource.Endpoints != nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
 				dynamicMetadataKeyValuePairs[analytics.DestinationKey] = requestConfigHolder.MatchedResource.Endpoints.URLs[0]
 			}
 
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
+				s.cfg.Logger.Error(err, "failed to extract context metadata")
 				// return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
 				break
 			}
 			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
 
-			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
-			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
-			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
-			s.log.Sugar().Debug(fmt.Sprintf("req holderrr: %+v\n s: %+v", requestConfigHolder, s))
+			// s.cfg.Logger.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
+			// s.cfg.Logger.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
+			// s.cfg.Logger.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
+			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("req holderrr: %+v\n s: %+v", requestConfigHolder, s))
 			if requestConfigHolder.MatchedResource != nil && requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !requestConfigHolder.MatchedAPI.DisableAuthentication {
 				if immediateResponse := authorization.Validate(s.authenticator, requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
 					// Update the Content-Type header
@@ -444,17 +429,72 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					break
 				}
 				if requestConfigHolder.MatchedSubscription != nil && requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
-					s.log.Sugar().Debug(fmt.Sprintf("Ratelimit Tier: %s", requestConfigHolder.MatchedSubscription.RatelimitTier))
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Ratelimit Tier: %s", requestConfigHolder.MatchedSubscription.RatelimitTier))
 					dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = fmt.Sprintf("%s:%s%s", requestConfigHolder.MatchedSubscription.SubscribedAPI.Name, requestConfigHolder.MatchedApplication.UUID, requestConfigHolder.MatchedSubscription.UUID)
 					dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = requestConfigHolder.MatchedSubscription.RatelimitTier
 					dynamicMetadataKeyValuePairs[organizationMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
 					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", requestConfigHolder.MatchedAPI.OrganizationID, requestConfigHolder.MatchedSubscription.RatelimitTier)
 				}
 			}
+
+			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
+			if requestConfigHolder.MatchedAPI.RequestInBuiltPolicies != nil &&
+				len(requestConfigHolder.MatchedAPI.RequestInBuiltPolicies) > 0 {
+			apiRequestHeadersPolicyLoop:
+				for _, policy := range requestConfigHolder.MatchedAPI.RequestInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Request In-Built Policy: %T", policy))
+					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
+						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
+					}
+					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req, nil)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("API Level Request In-Built Policy validation failed")
+						break apiRequestHeadersPolicyLoop
+					}
+				}
+			}
+
+			if policyValdationResponse != nil {
+				s.cfg.Logger.Sugar().Debug("Request In-Built Policy validation failed")
+				resp = policyValdationResponse
+				break
+			}
+
+			if requestConfigHolder.MatchedResource.RequestInBuiltPolicies != nil &&
+				len(requestConfigHolder.MatchedResource.RequestInBuiltPolicies) > 0 {
+				s.cfg.Logger.Sugar().Debug("Resource Level Request Policies Enabled")
+			resourceRequestHeadersPolicyLoop:
+				for _, policy := range requestConfigHolder.MatchedResource.RequestInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Request In-Built Policy: %T", policy))
+					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
+						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
+					}
+					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req, nil)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("Resource Level Request In-Built Policy validation failed")
+						break resourceRequestHeadersPolicyLoop
+					}
+				}
+			}
+
+			if policyValdationResponse != nil {
+				s.cfg.Logger.Sugar().Debug("Request In-Built Policy validation failed")
+				resp = policyValdationResponse
+				break
+			}
+
 			backendJWT := ""
 			if requestConfigHolder.MatchedAPI.BackendJwtConfiguration != nil && requestConfigHolder.MatchedAPI.BackendJwtConfiguration.Enabled {
 				backendJWT = jwtbackend.CreateBackendJWT(requestConfigHolder, s.cfg)
-				s.log.Sugar().Debug("generated backendJWT==%v", backendJWT)
+				s.cfg.Logger.Sugar().Debug("generated backendJWT==%v", backendJWT)
 			}
 
 			if backendJWT != "" {
@@ -531,20 +571,20 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
 			// httpBody := req.GetRequestBody()
-			s.log.Sugar().Debug("Request Body Flow")
+			s.cfg.Logger.Sugar().Debug("Request Body Flow")
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
 				RequestBody: &envoy_service_proc_v3.BodyResponse{
 					Response: &envoy_service_proc_v3.CommonResponse{},
 				},
 			}
-			s.log.Sugar().Debug("Request Body Flow")
+			s.cfg.Logger.Sugar().Debug("Request Body Flow")
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
+				s.cfg.Logger.Error(err, "failed to extract context metadata")
 				break
 			}
 			if metadata == nil {
-				s.log.Error(err, "metadata is nil")
+				s.cfg.Logger.Error(err, "metadata is nil")
 				break
 			}
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
@@ -594,7 +634,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.cfg.Logger.Sugar().Debugf("Props content for Request flow policies: %+v", props)
 			if matchedAPI.RequestInBuiltPolicies != nil &&
 				len(matchedAPI.RequestInBuiltPolicies) > 0 {
-			apiRequestPolicyLoop:
+			apiRequestBodyPolicyLoop:
 				for _, policy := range matchedAPI.RequestInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -604,7 +644,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Request In-Built Policy validation failed")
-						break apiRequestPolicyLoop
+						break apiRequestBodyPolicyLoop
 					}
 				}
 			}
@@ -618,7 +658,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if matchedResource.RequestInBuiltPolicies != nil &&
 				len(matchedResource.RequestInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("Resource Level Request Policies Enabled")
-			resourceRequestPolicyLoop:
+			resourceRequestBodyPolicyLoop:
 				for _, policy := range matchedResource.RequestInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -628,7 +668,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Request In-Built Policy validation failed")
-						break resourceRequestPolicyLoop
+						break resourceRequestBodyPolicyLoop
 					}
 				}
 			}
@@ -662,9 +702,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						Weight:   model.Weight,
 					})
 				}
-				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
-				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
-				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
+				s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
+				s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
+				s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
 				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(matchedAPI.UUID, matchedResource.Path, modelWeights)
 				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
 				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
@@ -679,7 +719,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					// Unmarshal the JSON data into the map
 					err := json.Unmarshal(httpBody, &jsonData)
 					if err != nil {
-						s.log.Error(err, "Error unmarshalling JSON Request Body")
+						s.cfg.Logger.Error(err, "Error unmarshalling JSON Request Body")
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
 					// Change the model to the selected model
@@ -687,7 +727,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					// Convert the JSON object to a []byte
 					newHTTPBody, err := json.Marshal(jsonData)
 					if err != nil {
-						s.log.Error(err, "Error marshaling JSON")
+						s.cfg.Logger.Error(err, "Error marshaling JSON")
 					}
 
 					// Calculate the new body length
@@ -756,9 +796,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						Weight:   model.Weight,
 					})
 				}
-				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
-				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
-				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
+				s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
+				s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
+				s.cfg.Logger.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
 				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(matchedAPI.UUID, matchedResource.Path, modelWeights)
 				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
 				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
@@ -773,7 +813,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					// Unmarshal the JSON data into the map
 					err := json.Unmarshal(httpBody, &jsonData)
 					if err != nil {
-						s.log.Error(err, "Error unmarshaling JSON Reuqest Body")
+						s.cfg.Logger.Error(err, "Error unmarshaling JSON Reuqest Body")
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
 					// Change the model to the selected model
@@ -781,7 +821,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					// Convert the JSON object to a []byte
 					newHTTPBody, err := json.Marshal(jsonData)
 					if err != nil {
-						s.log.Error(err, "Error marshaling JSON")
+						s.cfg.Logger.Error(err, "Error marshaling JSON")
 					}
 
 					// Calculate the new body length
@@ -864,8 +904,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
-			s.log.Sugar().Debug("Response Headers Flow")
-			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
+			s.cfg.Logger.Sugar().Debug("Response Headers Flow")
+			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
 			}
@@ -876,11 +916,11 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
+				s.cfg.Logger.Error(err, "failed to extract context metadata")
 				break
 			}
 			if metadata == nil {
-				s.log.Error(err, "metadata is nil")
+				s.cfg.Logger.Error(err, "metadata is nil")
 				break
 			}
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %+v", metadata))
@@ -895,6 +935,56 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
+
+			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
+			if matchedAPI.ResponseInBuiltPolicies != nil &&
+				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
+				s.cfg.Logger.Sugar().Debug("API Level Response Policies Enabled")
+			apiResponseHeadersPolicyLoop:
+				for _, policy := range matchedAPI.ResponseInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Response In-Built Policy: %T", policy))
+					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req, nil)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("API Level Response In-Built Policy validation failed")
+						break apiResponseHeadersPolicyLoop
+					}
+				}
+			}
+
+			if policyValdationResponse != nil {
+				s.cfg.Logger.Sugar().Debug("Response In-Built Policy validation failed")
+				resp = policyValdationResponse
+				break
+			}
+
+			if matchedResource.ResponseInBuiltPolicies != nil &&
+				len(matchedResource.ResponseInBuiltPolicies) > 0 {
+				s.cfg.Logger.Sugar().Debug("Resource Level Response Policies Enabled")
+			resourceResponseHeadersPolicyLoop:
+				for _, policy := range matchedResource.ResponseInBuiltPolicies {
+					if policy == nil {
+						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
+						continue
+					}
+					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Response In-Built Policy: %T", policy))
+					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req, nil)
+					if policyValdationResponse != nil {
+						s.cfg.Logger.Sugar().Debug("Resource Level Response In-Built Policy validation failed")
+						break resourceResponseHeadersPolicyLoop
+					}
+				}
+			}
+
+			if policyValdationResponse != nil {
+				s.cfg.Logger.Sugar().Debug("Response In-Built Policy validation failed")
+				resp = policyValdationResponse
+				break
+			}
+
 			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 			if matchedAPI.AiProvider != nil &&
@@ -904,14 +994,14 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedResource.RouteMetadataAttributes != nil &&
 				matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true" &&
 				matchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
-				s.log.Sugar().Debug("Backend based AI rate limit enabled using headers")
+				s.cfg.Logger.Sugar().Debug("Backend based AI rate limit enabled using headers")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(),
 					matchedAPI.AiProvider.PromptTokens.Value,
 					matchedAPI.AiProvider.CompletionToken.Value,
 					matchedAPI.AiProvider.TotalToken.Value,
 					matchedAPI.AiProvider.ResponseModel.Value)
 				if err != nil {
-					s.log.Error(err, "failed to extract token count from response headers")
+					s.cfg.Logger.Error(err, "failed to extract token count from response headers")
 				} else {
 					go s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
 						matchedAPI.DoSubscriptionAIRLInHeaderReponse,
@@ -930,9 +1020,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AiProvider.SupportedModels != nil &&
 				matchedAPI.AIModelBasedRoundRobin != nil &&
 				matchedAPI.AIModelBasedRoundRobin.Enabled {
-				s.log.Sugar().Debug("API Level Model Based Round Robin enabled")
+				s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
 				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
-				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
+				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
 				remainingTokenCount := 100
 				remainingRequestCount := 100
 				remainingCount := 100
@@ -941,33 +1031,33 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					if headerValue.Key == "x-ratelimit-remaining-tokens" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining token count by header")
+							s.cfg.Logger.Error(err, "Unable to retrieve remaining token count by header")
 						}
 						remainingTokenCount = value
 					}
 					if headerValue.Key == "x-ratelimit-remaining-requests" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining request count by header")
+							s.cfg.Logger.Error(err, "Unable to retrieve remaining request count by header")
 						}
 						remainingRequestCount = value
 					}
 					if headerValue.Key == "status" {
 						status, err = util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
-							s.log.Error(err, "Unable to retrieve status code by header")
+							s.cfg.Logger.Error(err, "Unable to retrieve status code by header")
 						}
 					}
 					if headerValue.Key == "x-ratelimit-remaining" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining count by header")
+							s.cfg.Logger.Error(err, "Unable to retrieve remaining count by header")
 						}
 						remainingCount = value
 					}
 				}
 				if remainingCount <= 0 || remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
-					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
+					s.cfg.Logger.Sugar().Debug("Token/request are exhausted. Suspending the model")
 					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
 					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
 					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
@@ -978,9 +1068,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AIModelBasedRoundRobin == nil &&
 				matchedResource.AIModelBasedRoundRobin != nil &&
 				matchedResource.AIModelBasedRoundRobin.Enabled {
-				s.log.Sugar().Debug("Resource Level Model Based Round Robin enabled")
+				s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
 				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
-				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
+				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
 				remainingTokenCount := 100
 				remainingRequestCount := 100
 				remainingCount := 100
@@ -989,33 +1079,33 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					if headerValue.Key == "x-ratelimit-remaining-tokens" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining token count by header")
+							s.cfg.Logger.Error(err, "Unable to retrieve remaining token count by header")
 						}
 						remainingTokenCount = value
 					}
 					if headerValue.Key == "x-ratelimit-remaining-requests" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining request count by header")
+							s.cfg.Logger.Error(err, "Unable to retrieve remaining request count by header")
 						}
 						remainingRequestCount = value
 					}
 					if headerValue.Key == "status" {
 						status, err = util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
-							s.log.Error(err, "Unable to retrieve status code by header")
+							s.cfg.Logger.Error(err, "Unable to retrieve status code by header")
 						}
 					}
 					if headerValue.Key == "x-ratelimit-remaining" {
 						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
 						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining count by header")
+							s.cfg.Logger.Error(err, "Unable to retrieve remaining count by header")
 						}
 						remainingCount = value
 					}
 				}
 				if remainingCount <= 0 || remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
-					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
+					s.cfg.Logger.Sugar().Debug("Token/request are exhausted. Suspending the model")
 					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
 					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
 					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
@@ -1039,15 +1129,15 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if semanticCacheEnabled {
 				for _, header := range req.GetResponseHeaders().GetHeaders().GetHeaders() {
 					if header.Key == ":status" {
-						s.log.Sugar().Debugf("Status code found: %s", header.RawValue)
+						s.cfg.Logger.Sugar().Debugf("Status code found: %s", header.RawValue)
 						dynamicMetadataKeyValuePairs["response_status"] = string(header.RawValue)
 					}
 				}
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
-			// s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
-			s.log.Sugar().Debug("Response Body Flow")
+			// s.cfg.Logger.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
+			s.cfg.Logger.Sugar().Debug("Response Body Flow")
 
 			rbq := &envoy_service_proc_v3.BodyResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{},
@@ -1059,11 +1149,11 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
 			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
+				s.cfg.Logger.Error(err, "failed to extract context metadata")
 				break
 			}
 			if metadata == nil {
-				s.log.Error(err, "metadata is nil")
+				s.cfg.Logger.Error(err, "metadata is nil")
 				break
 			}
 			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
@@ -1088,7 +1178,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if matchedAPI.ResponseInBuiltPolicies != nil &&
 				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("API Level Response Policies Enabled")
-			apiResponsePolicyLoop:
+			apiResponseBodyPolicyLoop:
 				for _, policy := range matchedAPI.ResponseInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -1098,7 +1188,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Response In-Built Policy validation failed")
-						break apiResponsePolicyLoop
+						break apiResponseBodyPolicyLoop
 					}
 				}
 			}
@@ -1112,7 +1202,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if matchedResource.ResponseInBuiltPolicies != nil &&
 				len(matchedResource.ResponseInBuiltPolicies) > 0 {
 				s.cfg.Logger.Sugar().Debug("Resource Level Response Policies Enabled")
-			resourceResponsePolicyLoop:
+			resourceResponseBodyPolicyLoop:
 				for _, policy := range matchedResource.ResponseInBuiltPolicies {
 					if policy == nil {
 						s.cfg.Logger.Sugar().Warn("Encountered nil policy in RequestInBuiltPolicies, skipping")
@@ -1122,7 +1212,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Response In-Built Policy validation failed")
-						break resourceResponsePolicyLoop
+						break resourceResponseBodyPolicyLoop
 					}
 				}
 			}
@@ -1139,7 +1229,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				matchedAPI.AiProvider.TotalToken != nil &&
 				matchedResource.RouteMetadataAttributes != nil &&
 				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-				s.log.Sugar().Debug("AI rate limit enabled using body")
+				s.cfg.Logger.Sugar().Debug("AI rate limit enabled using body")
 				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
 					matchedAPI.AiProvider.ProviderName,
 					matchedAPI.AiProvider.PromptTokens.Value,
@@ -1148,7 +1238,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					matchedAPI.AiProvider.ResponseModel.Value,
 					matchedResource.RouteMetadataAttributes)
 				if err != nil {
-					s.log.Error(err, "failed to extract token count from response body")
+					s.cfg.Logger.Error(err, "failed to extract token count from response body")
 				} else {
 					go s.ratelimitHelper.DoAIRatelimit(*tokenCount, matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true",
 						matchedAPI.DoSubscriptionAIRLInBodyReponse,
@@ -1221,17 +1311,17 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 
 		default:
-			s.log.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
+			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
 		}
 		// Set dynamic metadata
 		dynamicMetadata, err := buildDynamicMetadata(prepareMetadataKeyValuePairAndAddTo(dynamicMetadataKeyValuePairs, requestConfigHolder, s.cfg))
 		if err != nil {
-			s.log.Error(err, "failed to build dynamic metadata")
+			s.cfg.Logger.Error(err, "failed to build dynamic metadata")
 		} else {
 			resp.DynamicMetadata = dynamicMetadata
 		}
 		if err := srv.Send(resp); err != nil {
-			s.log.Sugar().Debug(fmt.Sprintf("send error %v", err))
+			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("send error %v", err))
 		}
 	}
 }
