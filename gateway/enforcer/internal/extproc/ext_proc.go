@@ -249,9 +249,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				RequestHeaders: rhq,
 			}
 			resp.ModeOverride = &v31.ProcessingMode{
-				RequestBodyMode:    v31.ProcessingMode_NONE,
-				ResponseHeaderMode: v31.ProcessingMode_HeaderSendMode(v31.ProcessingMode_SKIP),
-				ResponseBodyMode:   v31.ProcessingMode_NONE,
+				RequestBodyMode:    v31.ProcessingMode_BUFFERED,
+				ResponseHeaderMode: v31.ProcessingMode_HeaderSendMode(v31.ProcessingMode_BUFFERED),
+				ResponseBodyMode:   v31.ProcessingMode_BUFFERED,
 			}
 			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
 
