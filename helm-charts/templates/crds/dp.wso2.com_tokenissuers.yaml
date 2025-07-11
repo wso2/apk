@@ -5,7 +5,6 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
-    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
   creationTimestamp: null
   name: tokenissuers.dp.wso2.com
 spec:

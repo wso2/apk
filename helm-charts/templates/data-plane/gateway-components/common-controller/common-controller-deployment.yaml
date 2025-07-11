@@ -147,9 +147,9 @@ spec:
         - name: common-controller-keystore-secret-volume
           secret:
           {{- if and .Values.wso2.apk.dp.commonController.deployment.configs .Values.wso2.apk.dp.commonController.deployment.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.commonController.deployment.configs.tls.secretName | default (printf "%s-common-controller-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.commonController.deployment.configs.tls.secretName | default (printf "%s-apk-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
+            secretName: {{ template "apk-helm.resource.prefix" . }}-apk-server-cert
           {{- end }}
             defaultMode: 420
         - name: log-conf-volume
@@ -157,7 +157,7 @@ spec:
             name: {{ template "apk-helm.resource.prefix" . }}-common-log-conf
         - name: adapter-webhook-server-cert
           secret:
-            secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
+            secretName: {{ template "apk-helm.resource.prefix" . }}-apk-server-cert
             defaultMode: 420
       {{- if .Values.integrationTest.addHelmConfigsRequiredForTests }}
         - name: sts-shared-auth-key
@@ -169,9 +169,9 @@ spec:
         - name: ratelimiter-truststore-secret-volume
           secret:
             {{- if and .Values.wso2.apk.dp.ratelimiter.deployment.configs .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls.secretName | default (printf "%s-ratelimiter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls.secretName | default (printf "%s-apk-server-cert" (include "apk-helm.resource.prefix" .)) }}
           {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
+            secretName: {{ template "apk-helm.resource.prefix" . }}-apk-server-cert
           {{- end }}
       {{ end }}
 {{- end -}}

@@ -21,7 +21,7 @@ metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-mutating-webhook-configuration
   namespace : {{ .Release.Namespace }}
   annotations:
-    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ template "apk-helm.resource.prefix" . }}-apk-server-cert
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "1"
 webhooks:

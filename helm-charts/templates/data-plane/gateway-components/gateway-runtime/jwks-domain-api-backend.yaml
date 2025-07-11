@@ -31,6 +31,6 @@ spec:
   allowedSANs:
    - {{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc
   secretRef:
-    name: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
+    name: {{ template "apk-helm.resource.prefix" . }}-apk-server-cert
     key: tls.crt    
 {{- end -}}
