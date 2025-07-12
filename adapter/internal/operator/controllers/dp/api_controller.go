@@ -947,6 +947,9 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 	resolvedRequestInBuiltPolicies := []synchronizer.ResolvedInBuiltPolicy{}
 	resolvedResponseInBuiltPolicies := []synchronizer.ResolvedInBuiltPolicy{}
 
+	conf := config.ReadConfigs()
+	enableControllerNamespaceAIProviderDeployment := conf.Adapter.EnableControllerNamespaceAIProviderDeployment
+
 	subscriptionValidation := false
 	for _, apiPolicy := range allAPIPolicies {
 		if apiPolicy.Spec.Default != nil {
@@ -980,12 +983,19 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 				}
 			}
 			if apiPolicy.Spec.Default.AIProvider != nil {
-				loggers.LoggerAPKOperator.Debugf("AIProvider Default found in API Policy. AI Provider Name %s", apiPolicy.Spec.Default.AIProvider.Name)
-				aiProviderPtr := utils.GetAIProvider(ctx, apiReconciler.client, apiPolicy.Namespace,
+				loggers.LoggerAPKOperator.Infof("AIProvider Default found in API Policy. AI Provider Name %s", apiPolicy.Spec.Default.AIProvider.Name)
+				namespace := apiPolicy.Namespace
+				if enableControllerNamespaceAIProviderDeployment {
+					loggers.LoggerAPKOperator.Infof("Controller Namespace AI Provider Deployment is enabled. Using controller namespace for AI Provider %s",
+						utils.GetOperatorPodNamespace())
+					namespace = utils.GetOperatorPodNamespace()
+				}
+				aiProviderPtr := utils.GetAIProvider(ctx, apiReconciler.client, namespace,
 					apiPolicy.Spec.Default.AIProvider.Name, &api)
 				if aiProviderPtr != nil {
 					aiProvider = aiProviderPtr
 				}
+				loggers.LoggerAPKOperator.Infof("AIProvider Default found in API Policy. AI Provider %v", aiProvider)
 			}
 		}
 		if apiPolicy.Spec.Override != nil {
@@ -1011,12 +1021,19 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 				}
 			}
 			if apiPolicy.Spec.Override.AIProvider != nil {
-				loggers.LoggerAPKOperator.Debugf("AIProvider override found in API Policy. AI Provider Name %s", apiPolicy.Spec.Override.AIProvider.Name)
-				aiProviderPtr := utils.GetAIProvider(ctx, apiReconciler.client, apiPolicy.Namespace,
+				loggers.LoggerAPKOperator.Infof("AIProvider override found in API Policy. AI Provider Name %s", apiPolicy.Spec.Override.AIProvider.Name)
+				namespace := apiPolicy.Namespace
+				if enableControllerNamespaceAIProviderDeployment {
+					loggers.LoggerAPKOperator.Infof("Controller Namespace AI Provider Deployment is enabled. Using controller namespace for AI Provider %s",
+						utils.GetOperatorPodNamespace())
+					namespace = utils.GetOperatorPodNamespace()
+				}
+				aiProviderPtr := utils.GetAIProvider(ctx, apiReconciler.client, namespace,
 					apiPolicy.Spec.Override.AIProvider.Name, &api)
 				if aiProviderPtr != nil {
 					aiProvider = aiProviderPtr
 				}
+				loggers.LoggerAPKOperator.Infof("AIProvider override found in API Policy. AI Provider %v", aiProvider)
 			}
 		}
 	}

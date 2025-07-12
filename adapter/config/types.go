@@ -102,6 +102,8 @@ type adapter struct {
 	EnableGatewayClassController bool
 	// Decides whether to deploy resources with cluster role bindings
 	DeployResourcesWithClusterRoleBindings bool
+	// Enable ControllerNamesapce AI Provder Deployment
+	EnableControllerNamespaceAIProviderDeployment bool
 }
 
 // Envoy Listener Component related configurations.

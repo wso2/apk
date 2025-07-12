@@ -46,7 +46,8 @@ var defaultConfig = &Config{
 			APIsRestPath:         "/apis",
 			SkipSSLVerification:  false,
 		},
-		DeployResourcesWithClusterRoleBindings: true,
+		DeployResourcesWithClusterRoleBindings:        true,
+		EnableControllerNamespaceAIProviderDeployment: true,
 	},
 	Envoy: envoy{
 		ListenerCodecType: "AUTO",
