@@ -138,6 +138,7 @@ wso2:
         # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
           configs: 
             enableGatewayClassController: false
+            enableControllerNamespaceAIProviderDeployment: true
             # apiNamespaces:
             #   - "apk-v12"
         #   tls:

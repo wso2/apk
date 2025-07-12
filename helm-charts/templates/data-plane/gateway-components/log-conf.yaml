@@ -53,6 +53,7 @@ data:
       
     {{ if .Values.wso2.apk.dp.adapter.deployment.configs }}
       enableGatewayClassController = {{ .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController | default false }}
+      enableControllerNamespaceAIProviderDeployment = {{ .Values.wso2.apk.dp.adapter.deployment.configs.enableControllerNamespaceAIProviderDeployment | default true }}
     {{ if .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}
     [adapter.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces}}]
