@@ -13,18 +13,18 @@ spec:
     - "gpt-4.5"
   requestModel:
     in: "Body"
-    value: "model"
+    value: "$.model"
   responseModel:
     in: "Body"
-    value: "model"
+    value: "$.model"
   rateLimitFields:
     promptTokens: 
       in: "Body"
-      value: "$usage.promptTokens"
+      value: "$.usage.prompt_tokens"
     completionToken:
       in: "Body"
-      value: "$usage.completionTokens"
+      value: "$.usage.completion_tokens"
     totalToken:
       in: "Body"
-      value: "$usage.totalTokens"
+      value: "$.usage.total_tokens"
   
