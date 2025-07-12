@@ -78,3 +78,10 @@ const (
 	REST    = "REST"
 	GRPC    = "GRPC"
 )
+
+// Guardrail related constants
+const (
+	// Azure Content Safety Content Moderation related constants
+	AzureContentSafetyContentModeration = "AzureContentSafetyContentModeration"
+	AzureContentSafetyKey               = "azureContentSafetyKey"
+)

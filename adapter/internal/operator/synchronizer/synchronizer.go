@@ -19,6 +19,7 @@ package synchronizer
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -28,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/clients/kvresolver"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/operator/constants"
@@ -79,7 +81,7 @@ func init() {
 }
 
 // HandleAPILifeCycleEvents handles the API events generated from OperatorDataStore
-func HandleAPILifeCycleEvents(ch *chan *APIEvent, successChannel *chan SuccessEvent) {
+func HandleAPILifeCycleEvents(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, ch *chan *APIEvent, successChannel *chan SuccessEvent) {
 	loggers.LoggerAPKOperator.Info("Operator synchronizer listening for API lifecycle events...")
 	for event := range *ch {
 		var err error
@@ -94,9 +96,9 @@ func HandleAPILifeCycleEvents(ch *chan *APIEvent, successChannel *chan SuccessEv
 				}
 			}
 		case constants.Create:
-			deployMultipleAPIsInGateway(event, successChannel)
+			deployMultipleAPIsInGateway(ctx, kvClient, event, successChannel)
 		case constants.Update:
-			deployMultipleAPIsInGateway(event, successChannel)
+			deployMultipleAPIsInGateway(ctx, kvClient, event, successChannel)
 		}
 		if err != nil {
 			loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2629, logging.CRITICAL, "API deployment failed for %s event : %v", event.EventType, err))
@@ -131,7 +133,7 @@ func undeployAPIInGateway(apiEvent *APIEvent) error {
 }
 
 // deployMultipleAPIsInGateway deploys the related API in CREATE and UPDATE events.
-func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEvent) {
+func deployMultipleAPIsInGateway(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, event *APIEvent, successChannel *chan SuccessEvent) {
 	updatedLabelsMap := make(map[string]struct{})
 	var updatedAPIs []types.NamespacedName
 	for i, apiState := range event.Events {
@@ -143,7 +145,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 		}
 		if apiState.APIDefinition.Spec.APIType == constants.REST {
 			if apiState.ProdHTTPRoute != nil {
-				_, updatedLabels, err := UpdateInternalMapsFromHTTPRoute(apiState, apiState.ProdHTTPRoute, constants.Production)
+				_, updatedLabels, err := UpdateInternalMapsFromHTTPRoute(ctx, kvClient, apiState, apiState.ProdHTTPRoute, constants.Production)
 				if err != nil {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2665, logging.CRITICAL,
 						"Error deploying prod httpRoute of API : %v in Organization %v from environments %v. Error: %v",
@@ -165,7 +167,7 @@ func deployMultipleAPIsInGateway(event *APIEvent, successChannel *chan SuccessEv
 			}
 
 			if apiState.SandHTTPRoute != nil {
-				_, updatedLabels, err := UpdateInternalMapsFromHTTPRoute(apiState, apiState.SandHTTPRoute, constants.Sandbox)
+				_, updatedLabels, err := UpdateInternalMapsFromHTTPRoute(ctx, kvClient, apiState, apiState.SandHTTPRoute, constants.Sandbox)
 				if err != nil {
 					loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2666, logging.CRITICAL,
 						"Error deploying sand httpRoute of API : %v in Organization %v from environments %v. Error: %v",

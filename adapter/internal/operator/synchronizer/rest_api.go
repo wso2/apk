@@ -18,10 +18,12 @@
 package synchronizer
 
 import (
+	"context"
 	"errors"
 	"strings"
 
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/clients/kvresolver"
 	"github.com/wso2/apk/adapter/internal/dataholder"
 	"github.com/wso2/apk/adapter/internal/discovery/xds"
 	"github.com/wso2/apk/adapter/internal/discovery/xds/common"
@@ -51,8 +53,8 @@ func undeployRestAPIInGateway(apiState APIState) error {
 }
 
 // UpdateInternalMapsFromHTTPRoute extracts the API details from the HTTPRoute.
-func UpdateInternalMapsFromHTTPRoute(apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
-	adapterInternalAPI, err := generateAdapterInternalAPI(apiState, httpRoute, envType)
+func UpdateInternalMapsFromHTTPRoute(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, apiState APIState, httpRoute *HTTPRouteState, envType string) (*model.AdapterInternalAPI, map[string]struct{}, error) {
+	adapterInternalAPI, err := generateAdapterInternalAPI(ctx, kvClient, apiState, httpRoute, envType)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2632, logging.MAJOR, "Error generating AdapterInternalAPI for HTTPRoute: %v. %v", httpRoute.HTTPRouteCombined.Name, err))
 		return nil, nil, err
@@ -79,7 +81,7 @@ func UpdateInternalMapsFromHTTPRoute(apiState APIState, httpRoute *HTTPRouteStat
 }
 
 // generateAdapterInternalAPI this will populate a AdapterInternalAPI representation for an HTTPRoute
-func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
+func generateAdapterInternalAPI(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, apiState APIState, httpRouteState *HTTPRouteState, envType string) (*model.AdapterInternalAPI, error) {
 	var adapterInternalAPI model.AdapterInternalAPI
 	adapterInternalAPI.SetIsDefaultVersion(apiState.APIDefinition.Spec.IsDefaultVersion)
 	adapterInternalAPI.SetInfoAPICR(*apiState.APIDefinition)
@@ -108,7 +110,7 @@ func generateAdapterInternalAPI(apiState APIState, httpRouteState *HTTPRouteStat
 		RateLimitPolicies:         apiState.RateLimitPolicies,
 		ResourceRateLimitPolicies: apiState.ResourceRateLimitPolicies,
 	}
-	if err := adapterInternalAPI.SetInfoHTTPRouteCR(httpRouteState.HTTPRouteCombined, resourceParams, httpRouteState.RuleIdxToAiRatelimitPolicyMapping, apiState.AIProvider.Spec.RateLimitFields.PromptTokens.In); err != nil {
+	if err := adapterInternalAPI.SetInfoHTTPRouteCR(ctx, kvClient, httpRouteState.HTTPRouteCombined, resourceParams, httpRouteState.RuleIdxToAiRatelimitPolicyMapping, apiState.AIProvider.Spec.RateLimitFields.PromptTokens.In); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2631, logging.MAJOR, "Error setting HttpRoute CR info to adapterInternalAPI. %v", err))
 		return nil, err
 	}

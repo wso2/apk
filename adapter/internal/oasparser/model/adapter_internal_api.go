@@ -18,6 +18,7 @@
 package model
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -27,10 +28,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/clients/kvresolver"
 	"github.com/wso2/apk/adapter/internal/interceptor"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	"github.com/wso2/apk/adapter/internal/oasparser/constants"
 	"github.com/wso2/apk/adapter/internal/operator/utils"
+	"github.com/wso2/apk/adapter/pkg/logging"
 	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
@@ -577,7 +580,7 @@ func (adapterInternalAPI *AdapterInternalAPI) Validate() error {
 
 // SetInfoHTTPRouteCR populates resources and endpoints of adapterInternalAPI. httpRoute.Spec.Rules.Matches
 // are used to create resources and httpRoute.Spec.Rules.BackendRefs are used to create EndpointClusters.
-func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams, ruleIdxToAiRatelimitPolicyMapping map[int]*dpv1alpha3.AIRateLimitPolicy, extractTokenFrom string) error {
+func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, httpRoute *gwapiv1.HTTPRoute, resourceParams ResourceParams, ruleIdxToAiRatelimitPolicyMapping map[int]*dpv1alpha3.AIRateLimitPolicy, extractTokenFrom string) error {
 	var resources []*Resource
 	outputAuthScheme := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.AuthSchemes)))
 	outputAPIPolicy := utils.TieBreaker(utils.GetPtrSlice(maps.Values(resourceParams.APIPolicies)))
@@ -701,11 +704,11 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 						Type:    string(resolvedBackend.Security.Type),
 						Enabled: true,
 						CustomParameters: map[string]string{
-							"service": string(resolvedBackend.Security.AWSKey.Service),
-						    "in":         string(resolvedBackend.Security.AWSKey.In),
-							"region":     string(resolvedBackend.Security.AWSKey.Region),
-							"accessKey":  string(resolvedBackend.Security.AWSKey.AccessKey),
-							"secretKey":  string(resolvedBackend.Security.AWSKey.SecretKey),
+							"service":   string(resolvedBackend.Security.AWSKey.Service),
+							"in":        string(resolvedBackend.Security.AWSKey.In),
+							"region":    string(resolvedBackend.Security.AWSKey.Region),
+							"accessKey": string(resolvedBackend.Security.AWSKey.AccessKey),
+							"secretKey": string(resolvedBackend.Security.AWSKey.SecretKey),
 						},
 					})
 				}
@@ -1039,12 +1042,12 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(httpRoute *gwap
 
 			var requestInBuiltPolicies []*InternalInBuiltPolicy
 			var responseInBuiltPolicies []*InternalInBuiltPolicy
-			if extracted := extractRequestInBuiltPolicies(resourceAPIPolicy); extracted != nil {
+			if extracted := extractRequestInBuiltPolicies(ctx, kvClient, resourceAPIPolicy); extracted != nil {
 				loggers.LoggerAPI.Debugf("Request In-Built Policies extracted %v", extracted)
 				requestInBuiltPolicies = extracted
 			}
 
-			if extracted := extractResponseInBuiltPolicies(resourceAPIPolicy); extracted != nil {
+			if extracted := extractResponseInBuiltPolicies(ctx, kvClient, resourceAPIPolicy); extracted != nil {
 				loggers.LoggerAPI.Debugf("Response In-Built Policies extracted %v", extracted)
 				responseInBuiltPolicies = extracted
 			}
@@ -1322,7 +1325,7 @@ func extractModelBasedRoundRobinFromPolicy(apiPolicy *dpv1alpha5.APIPolicy, back
 }
 
 // extractRequestInBuiltPolicies extracts the request in-built policies from the API Policy
-func extractRequestInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*InternalInBuiltPolicy {
+func extractRequestInBuiltPolicies(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, apiPolicy *dpv1alpha5.APIPolicy) []*InternalInBuiltPolicy {
 	if apiPolicy == nil {
 		return nil
 	}
@@ -1332,7 +1335,7 @@ func extractRequestInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*InternalI
 		index := 0
 		loggers.LoggerAPI.Debugf("RequestPolicies Override section  %v", apiPolicy.Spec.Override.RequestPolicies)
 		for _, policy := range apiPolicy.Spec.Override.RequestPolicies {
-			resolvedParameters, err := getResolvedPolicyParameters(policy, apiPolicy.Namespace)
+			resolvedParameters, err := getResolvedPolicyParameters(ctx, kvClient, policy, apiPolicy.Namespace)
 			if err != nil {
 				loggers.LoggerAPI.Errorf("Error resolving parameters for policy %s: %v", policy.PolicyName, err)
 				continue
@@ -1353,7 +1356,7 @@ func extractRequestInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*InternalI
 		loggers.LoggerAPI.Debugf("RequestPolicies Default section  %v", apiPolicy.Spec.Default.RequestPolicies)
 		index := 0
 		for _, policy := range apiPolicy.Spec.Default.RequestPolicies {
-			resolvedParameters, err := getResolvedPolicyParameters(policy, apiPolicy.Namespace)
+			resolvedParameters, err := getResolvedPolicyParameters(ctx, kvClient, policy, apiPolicy.Namespace)
 			if err != nil {
 				loggers.LoggerAPI.Errorf("Error resolving parameters for policy %s: %v", policy.PolicyName, err)
 				continue
@@ -1378,7 +1381,7 @@ func extractRequestInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*InternalI
 }
 
 // extractResponseInBuiltPolicies extracts the response in-built policies from the API Policy
-func extractResponseInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*InternalInBuiltPolicy {
+func extractResponseInBuiltPolicies(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, apiPolicy *dpv1alpha5.APIPolicy) []*InternalInBuiltPolicy {
 	if apiPolicy == nil {
 		return nil
 	}
@@ -1389,7 +1392,7 @@ func extractResponseInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*Internal
 		loggers.LoggerAPI.Debugf("ResponsePolicies Override section  %v", apiPolicy.Spec.Override.ResponsePolicies)
 		index := 0
 		for _, policy := range apiPolicy.Spec.Override.ResponsePolicies {
-			resolvedParameters, err := getResolvedPolicyParameters(policy, apiPolicy.Namespace)
+			resolvedParameters, err := getResolvedPolicyParameters(ctx, kvClient, policy, apiPolicy.Namespace)
 			if err != nil {
 				loggers.LoggerAPI.Errorf("Error resolving parameters for policy %s: %v", policy.PolicyName, err)
 				continue
@@ -1410,7 +1413,7 @@ func extractResponseInBuiltPolicies(apiPolicy *dpv1alpha5.APIPolicy) []*Internal
 		loggers.LoggerAPI.Debugf("ResponsePolicies Default section  %v", apiPolicy.Spec.Default.ResponsePolicies)
 		index := 0
 		for _, policy := range apiPolicy.Spec.Default.ResponsePolicies {
-			resolvedParameters, err := getResolvedPolicyParameters(policy, apiPolicy.Namespace)
+			resolvedParameters, err := getResolvedPolicyParameters(ctx, kvClient, policy, apiPolicy.Namespace)
 			if err != nil {
 				loggers.LoggerAPI.Errorf("Error resolving parameters for policy %s: %v", policy.PolicyName, err)
 				continue
@@ -1446,10 +1449,18 @@ func getClusterName(epPrefix string, organizationID string, vHost string, swagge
 }
 
 // getResolvedPolicyParameters resolves the policy parameters of policies
-func getResolvedPolicyParameters(policy dpv1alpha5.Policy, namespace string) (map[string]string, error) {
+func getResolvedPolicyParameters(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, policy dpv1alpha5.Policy, namespace string) (map[string]string, error) {
 	resolvedParams := make(map[string]string)
 
 	for _, paramValue := range policy.Parameters {
+		if policy.PolicyName == constants.AzureContentSafetyContentModeration && paramValue.Key == constants.AzureContentSafetyKey {
+			value, err := getResolvedSecretParameterValue(ctx, kvClient, namespace, paramValue)
+			if err != nil {
+				return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
+			}
+			resolvedParams[paramValue.Key] = value
+			continue
+		}
 		value, err := getResolvedParameterValue(namespace, paramValue)
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
@@ -1460,7 +1471,24 @@ func getResolvedPolicyParameters(policy dpv1alpha5.Policy, namespace string) (ma
 	return resolvedParams, nil
 }
 
-// ResolveParameterValue resolves a ParameterValue to its actual string value
+// getResolvedSecretParameterValue resolves a secret ParameterValue to its actual string value
+func getResolvedSecretParameterValue(ctx context.Context, kvClient *kvresolver.KVResolverClientImpl, namespace string, paramValue dpv1alpha5.Parameter) (string, error) {
+	// Resolve the secret using the KVResolverClientImpl
+	kvRefKeys := []string{*paramValue.Value}
+	secrets, err := kvClient.GetSecrets(ctx, kvRefKeys)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2648, logging.CRITICAL, "Error while reading key from kv client: %s", paramValue.Key))
+	}
+	// Iterate through the secrets to find the keyName and valueKey
+	for _, secret := range secrets.Secrets {
+		if secret.Key == paramValue.Key {
+			return secret.Value, nil
+		}
+	}
+	return "", fmt.Errorf("secret not found for key: %s", paramValue.Key)
+}
+
+// getResolvedParameterValue resolves a ParameterValue to its actual string value
 func getResolvedParameterValue(namespace string, paramValue dpv1alpha5.Parameter) (string, error) {
 	// If it's a direct value, return it
 	if paramValue.Value != nil {

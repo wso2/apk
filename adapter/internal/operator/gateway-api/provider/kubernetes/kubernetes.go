@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	"github.com/wso2/apk/adapter/config"
+	"github.com/wso2/apk/adapter/internal/clients/kvresolver"
 	"github.com/wso2/apk/adapter/internal/loggers"
 	dpcontrollers "github.com/wso2/apk/adapter/internal/operator/controllers/dp"
 	"github.com/wso2/apk/adapter/internal/operator/gateway-api/provider"
@@ -151,7 +152,10 @@ func New(cfg *rest.Config, resources *message.ProviderResources) (*Provider, err
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2603, logging.BLOCKER, "Unable to set up ready check: %v", err))
 	}
 
-	go synchronizer.HandleAPILifeCycleEvents(&ch, &successChannel)
+	kvClient := kvresolver.InitializeKVResolverClient()
+	ctx := context.Background()
+
+	go synchronizer.HandleAPILifeCycleEvents(ctx, kvClient, &ch, &successChannel)
 	go synchronizer.HandleGatewayLifeCycleEvents(&gatewaych)
 	if config.ReadConfigs().PartitionServer.Enabled {
 		go synchronizer.SendEventToPartitionServer()
