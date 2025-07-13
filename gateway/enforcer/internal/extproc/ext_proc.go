@@ -360,7 +360,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				break
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil {
-				// s.cfg.Logger.Sugar().Info("222")
+				s.cfg.Logger.Sugar().Debugf("Setting Processing request body mode to BUFFERED for AI Provider")
 				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
@@ -369,7 +369,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-				// s.cfg.Logger.Sugar().Info("333")
+				s.cfg.Logger.Sugar().Debugf("Setting Processing response body mode to BUFFERED for AI Provider")
 				resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
@@ -378,7 +378,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
 				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
-				// s.cfg.Logger.Sugar().Info("444")
+				s.cfg.Logger.Sugar().Debugf("Setting Processing response header mode to SEND for AI Provider")
 				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
 			}
 

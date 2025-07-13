@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"io"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	subscription_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
@@ -208,7 +209,9 @@ func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, providerNa
 	if err != nil {
 		bodyStr = string(body)
 	}
+	fmt.Printf("Response Body: %s\n", bodyStr)
 	sanitizedBody := sanitize(bodyStr)
+	fmt.Printf("Sanitized body: %s\n", sanitizedBody)
 	tokenCount, err := extractUsageFromBody(sanitizedBody, providerName, promptPath, completionPath,
 		totalPath, modelPath, attributes)
 	if err != nil {
@@ -308,14 +311,16 @@ func extractUsageFromBody(body, providerName, promptTokenPath, completionTokenPa
 	}
 
 	// Extract total tokens
-	total, err := extractValueFromPath(rootNode, totalTokenPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract total tokens: %w", err)
-	}
-	if tt, ok := total.(float64); ok {
-		usage.Total = int(tt) - 1
-	} else {
-		return nil, errors.New("invalid type for total tokens")
+	if providerName != "AnthropicClaudeAI" {
+		total, err := extractValueFromPath(rootNode, totalTokenPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to extract total tokens: %w", err)
+		}
+		if tt, ok := total.(float64); ok {
+			usage.Total = int(tt) - 1
+		} else {
+			return nil, errors.New("invalid type for total tokens")
+		}
 	}
 
 	// Extract model
