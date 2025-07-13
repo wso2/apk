@@ -154,3 +154,10 @@ const (
 	APIKey string = "APIKey"
 	JWT    string = "JWT"
 )
+
+// Guardrail related constants
+const (
+	// Azure Content Safety Content Moderation related constants
+	AzureContentSafetyContentModeration = "AzureContentSafetyContentModeration"
+	AzureContentSafetyKey               = "azureContentSafetyKey"
+)

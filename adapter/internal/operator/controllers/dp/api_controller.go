@@ -1181,7 +1181,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 			loggers.LoggerAPKOperator.Debugf("RequestPolicies Override section  %v", apiPolicy.Spec.Override.RequestPolicies)
 			index := 0
 			for _, policy := range apiPolicy.Spec.Override.RequestPolicies {
-				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiPolicy.Namespace, policy)
+				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiReconciler.kvClient, apiPolicy.Namespace, policy)
 				if err != nil {
 					return nil, nil, false, nil, nil, nil, nil, fmt.Errorf("error resolving parameters for policy %s: %w", policy.PolicyName, err)
 				}
@@ -1199,7 +1199,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 			loggers.LoggerAPKOperator.Debugf("ResponsePolicies Override section  %v", apiPolicy.Spec.Override.ResponsePolicies)
 			index := 0
 			for _, policy := range apiPolicy.Spec.Override.ResponsePolicies {
-				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiPolicy.Namespace, policy)
+				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiReconciler.kvClient, apiPolicy.Namespace, policy)
 				if err != nil {
 					return nil, nil, false, nil, nil, nil, nil, fmt.Errorf("error resolving parameters for policy %s: %w", policy.PolicyName, err)
 				}
@@ -1219,7 +1219,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 			loggers.LoggerAPKOperator.Debugf("RequestPolicies Default section  %v", apiPolicy.Spec.Default.RequestPolicies)
 			index := 0
 			for _, policy := range apiPolicy.Spec.Default.RequestPolicies {
-				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiPolicy.Namespace, policy)
+				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiReconciler.kvClient, apiPolicy.Namespace, policy)
 				if err != nil {
 					return nil, nil, false, nil, nil, nil, nil, fmt.Errorf("error resolving parameters for policy %s: %w", policy.PolicyName, err)
 				}
@@ -1237,7 +1237,7 @@ func (apiReconciler *APIReconciler) getAPIPolicyChildrenRefs(ctx context.Context
 			loggers.LoggerAPKOperator.Debugf("ResponsePolicies Default section  %v", apiPolicy.Spec.Default.ResponsePolicies)
 			index := 0
 			for _, policy := range apiPolicy.Spec.Default.ResponsePolicies {
-				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiPolicy.Namespace, policy)
+				resolvedParameters, err := utils.GetResolvedPolicyParameters(ctx, apiReconciler.client, apiReconciler.kvClient, apiPolicy.Namespace, policy)
 				if err != nil {
 					return nil, nil, false, nil, nil, nil, nil, fmt.Errorf("error resolving parameters for policy %s: %w", policy.PolicyName, err)
 				}

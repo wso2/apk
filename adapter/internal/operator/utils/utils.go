@@ -755,11 +755,11 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client, kvC
 			resolvedSecurity = dpv1alpha5.ResolvedSecurityConfig{
 				Type: "AWSKey",
 				AWSKey: dpv1alpha5.ResolvedAWSKeySecurityConfig{
-					Service:    service,
-					In:         in,
-					Region:     regionRef,
-					AccessKey:  accessKeyRef,
-					SecretKey:  secretKeyRef,
+					Service:   service,
+					In:        in,
+					Region:    regionRef,
+					AccessKey: accessKeyRef,
+					SecretKey: secretKeyRef,
 				},
 			}
 		} else {
@@ -790,7 +790,7 @@ func getResolvedBackendSecurity(ctx context.Context, client k8client.Client, kvC
 				Type: "AWSKey",
 				AWSKey: dpv1alpha5.ResolvedAWSKeySecurityConfig{
 					Service:   service,
-					In:    	   in,
+					In:        in,
 					Region:    region,
 					AccessKey: accessKey,
 					SecretKey: secretKey,
@@ -1054,11 +1054,19 @@ func ConvertPemCertificatetoJWK(cert string) string {
 }
 
 // ResolvePolicyParameters resolves all parameters in a Policy
-func GetResolvedPolicyParameters(ctx context.Context, client client.Client, namespace string, policy dpv1alpha5.Policy) (map[string]string, error) {
+func GetResolvedPolicyParameters(ctx context.Context, client client.Client, kvClient *kvresolver.KVResolverClientImpl, namespace string, policy dpv1alpha5.Policy) (map[string]string, error) {
 	resolvedParams := make(map[string]string)
 
 	for _, paramValue := range policy.Parameters {
-		value, err := GetResolvedParameterValue(ctx, client, namespace, paramValue)
+		if policy.PolicyName == constants.AzureContentSafetyContentModeration && paramValue.Key == "azureContentSafetyKey" {
+			value, err := GetResolvedSecretParameterValue(ctx, client, kvClient, namespace, paramValue)
+			if err != nil {
+				return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
+			}
+			resolvedParams[paramValue.Key] = value
+			continue
+		}
+		value, err := GetResolvedParameterValue(ctx, client, kvClient, namespace, paramValue)
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
 		}
@@ -1069,7 +1077,7 @@ func GetResolvedPolicyParameters(ctx context.Context, client client.Client, name
 }
 
 // ResolveParameterValue resolves a ParameterValue to its actual string value
-func GetResolvedParameterValue(ctx context.Context, client client.Client, namespace string, paramValue dpv1alpha5.Parameter) (string, error) {
+func GetResolvedParameterValue(ctx context.Context, client client.Client, kvClient *kvresolver.KVResolverClientImpl, namespace string, paramValue dpv1alpha5.Parameter) (string, error) {
 	// If it's a direct value, return it
 	if paramValue.Value != nil {
 		return *paramValue.Value, nil
@@ -1081,4 +1089,20 @@ func GetResolvedParameterValue(ctx context.Context, client client.Client, namesp
 	}
 
 	return "", nil
+}
+
+func GetResolvedSecretParameterValue(ctx context.Context, client client.Client, kvClient *kvresolver.KVResolverClientImpl, namespace string, paramValue dpv1alpha5.Parameter) (string, error) {
+	// Resolve the secret using the KVResolverClientImpl
+	kvRefKeys := []string{*paramValue.Value}
+	secrets, err := kvClient.GetSecrets(ctx, kvRefKeys)
+	if err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2648, logging.CRITICAL, "Error while reading key from kv client: %s", paramValue.Key))
+	}
+	// Iterate through the secrets to find the keyName and valueKey
+	for _, secret := range secrets.Secrets {
+		if secret.Key == paramValue.Key {
+			return secret.Value, nil
+		}
+	}
+	return "", fmt.Errorf("secret not found for key: %s", paramValue.Key)
 }
