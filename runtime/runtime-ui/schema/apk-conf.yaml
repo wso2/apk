@@ -296,6 +296,7 @@ schemas:
           - SemanticCache
           - URLGuardrail
           - AzureContentSafetyContentModeration
+          - AWSBedrockGuardrail
       policyVersion:
         type: string
         default: v1
@@ -335,6 +336,7 @@ schemas:
           - SemanticCache
           - URLGuardrail
           - AzureContentSafetyContentModeration
+          - AWSBedrockGuardrail
       policyVersion:
         type: string
         default: v1
