@@ -33,6 +33,7 @@ type AssessmentResult struct {
 	Error              string
 	IsResponse         bool
 	GuardrailOutput    interface{} // For storing AWS Bedrock Guardrail output or other specific outputs
+	ModifiedPayload    *[]byte     // For storing modified payload content (PII masking/redaction)
 }
 
 // ExtractStringValueFromJsonpath extracts a value from a nested JSON structure based on a JSON path.

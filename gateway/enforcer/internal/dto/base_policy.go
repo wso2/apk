@@ -29,10 +29,10 @@ type InBuiltPolicy interface {
 	GetPolicyVersion() string
 	GetParameters() map[string]string
 	GetPolicyOrder() int
-	HandleRequestHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse
-	HandleRequestBody(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse
-	HandleResponseHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse
-	HandleResponseBody(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse
+	HandleRequestHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse
+	HandleRequestBody(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse
+	HandleResponseHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse
+	HandleResponseBody(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse
 }
 
 // BaseInBuiltPolicy is a struct that implements the Policy interface.
@@ -74,25 +74,25 @@ func (p *BaseInBuiltPolicy) GetPolicyOrder() int {
 }
 
 // HandleRequestHeaders is a method that implements the mediation logic for the policy on request headers.
-func (p *BaseInBuiltPolicy) HandleRequestHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (p *BaseInBuiltPolicy) HandleRequestHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	cfg.Sugar().Debugf("BaseInBuiltPolicy HandleRequestHeaders called for policy: %s", p.PolicyName)
 	return nil // Default implementation does nothing
 }
 
 // HandleRequestBody is a method that implements the mediation logic for the policy on request body.
-func (p *BaseInBuiltPolicy) HandleRequestBody(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (p *BaseInBuiltPolicy) HandleRequestBody(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	cfg.Sugar().Debugf("BaseInBuiltPolicy HandleRequestBody called for policy: %s", p.PolicyName)
 	return nil // Default implementation does nothing
 }
 
 // HandleResponseHeaders is a method that implements the mediation logic for the policy on response headers.
-func (p *BaseInBuiltPolicy) HandleResponseHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (p *BaseInBuiltPolicy) HandleResponseHeaders(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	cfg.Sugar().Debugf("BaseInBuiltPolicy HandleResponseHeaders called for policy: %s", p.PolicyName)
 	return nil // Default implementation does nothing
 }
 
 // HandleResponseBody is a method that implements the mediation logic for the policy on response body.
-func (p *BaseInBuiltPolicy) HandleResponseBody(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (p *BaseInBuiltPolicy) HandleResponseBody(cfg *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	cfg.Sugar().Debugf("BaseInBuiltPolicy HandleResponseBody called for policy: %s", p.PolicyName)
 	return nil // Default implementation does nothing
 }

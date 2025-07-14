@@ -41,7 +41,7 @@ type ContentLengthGuardrail struct {
 }
 
 // HandleRequestBody is a method that implements the mediation logic for the ContentLengthGuardrail policy on request.
-func (r *ContentLengthGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (r *ContentLengthGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for ContentLengthGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
 	if !validationResult {
@@ -53,7 +53,7 @@ func (r *ContentLengthGuardrail) HandleRequestBody(logger *logging.Logger, req *
 }
 
 // HandleResponseBody is a method that implements the mediation logic for the ContentLengthGuardrail policy on response.
-func (r *ContentLengthGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (r *ContentLengthGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for ContentLengthGuardrail policy: %s", r.Name)
 	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
 	if !validationResult {

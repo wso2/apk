@@ -44,7 +44,7 @@ type URLGuardrail struct {
 }
 
 // HandleRequestBody is a method that implements the mediation logic for the URLGuardrail policy on request.
-func (r *URLGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (r *URLGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for URLGuardrail policy: %s", r.Name)
 	validationResult, invalidURLs := r.validatePayload(logger, req.GetRequestBody().Body)
 	if !validationResult {
@@ -56,7 +56,7 @@ func (r *URLGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_serv
 }
 
 // HandleResponseBody is a method that implements the mediation logic for the URLGuardrail policy on response.
-func (r *URLGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (r *URLGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for URLGuardrail policy: %s", r.Name)
 	validationResult, invalidURLs := r.validatePayload(logger, req.GetResponseBody().Body)
 	if !validationResult {
