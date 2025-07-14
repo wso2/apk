@@ -25,6 +25,7 @@ func (transformer *JWTTransformer) TransformJWTClaims(organization string, jwtAu
 		return nil
 	}
 	tokenissuers := transformer.tokenissuerStore.GetJWTISsuersByOrganization(organization)
+	transformer.cfg.Logger.Sugar().Debugf("Token issuers for organization %s: %v", organization, tokenissuers)
 	if tokenissuers == nil {
 		return nil
 	}
