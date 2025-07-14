@@ -99,3 +99,104 @@ func extractRecursive(current interface{}, keys []string) (interface{}, error) {
 	}
 	return nil, errors.New("invalid structure for key: " + key)
 }
+
+// setValueAtJSONPath sets a value at the specified JSONPath in the given JSON object
+func setValueAtJSONPath(jsonData map[string]interface{}, jsonPath, value string) error {
+	// Remove the leading "$." if present
+	path := strings.TrimPrefix(jsonPath, "$.")
+	if path == "" {
+		return errors.New("invalid empty path")
+	}
+
+	// Split the path into components
+	pathComponents := strings.Split(path, ".")
+
+	// Navigate to the parent object/array
+	current := interface{}(jsonData)
+	for i := 0; i < len(pathComponents)-1; i++ {
+		key := pathComponents[i]
+		
+		// Check if this key contains array indexing
+		if matches := arrayIndexRegex.FindStringSubmatch(key); len(matches) == 3 {
+			arrayName := matches[1]
+			idxStr := matches[2]
+			idx, err := strconv.Atoi(idxStr)
+			if err != nil {
+				return errors.New("invalid array index: " + idxStr)
+			}
+			
+			if node, ok := current.(map[string]interface{}); ok {
+				if arrVal, exists := node[arrayName]; exists {
+					if arr, ok := arrVal.([]interface{}); ok {
+						if idx < 0 {
+							idx = len(arr) + idx
+						}
+						if idx < 0 || idx >= len(arr) {
+							return errors.New("array index out of range: " + idxStr)
+						}
+						current = arr[idx]
+					} else {
+						return errors.New("not an array: " + arrayName)
+					}
+				} else {
+					return errors.New("key not found: " + arrayName)
+				}
+			} else {
+				return errors.New("invalid structure for key: " + arrayName)
+			}
+		} else {
+			// Regular object key
+			if node, ok := current.(map[string]interface{}); ok {
+				if val, exists := node[key]; exists {
+					current = val
+				} else {
+					return errors.New("key not found: " + key)
+				}
+			} else {
+				return errors.New("invalid structure for key: " + key)
+			}
+		}
+	}
+
+	// Handle the final key (could be array index or object key)
+	finalKey := pathComponents[len(pathComponents)-1]
+	
+	// Check if the final key contains array indexing
+	if matches := arrayIndexRegex.FindStringSubmatch(finalKey); len(matches) == 3 {
+		arrayName := matches[1]
+		idxStr := matches[2]
+		idx, err := strconv.Atoi(idxStr)
+		if err != nil {
+			return errors.New("invalid array index: " + idxStr)
+		}
+		
+		if node, ok := current.(map[string]interface{}); ok {
+			if arrVal, exists := node[arrayName]; exists {
+				if arr, ok := arrVal.([]interface{}); ok {
+					if idx < 0 {
+						idx = len(arr) + idx
+					}
+					if idx < 0 || idx >= len(arr) {
+						return errors.New("array index out of range: " + idxStr)
+					}
+					arr[idx] = value
+				} else {
+					return errors.New("not an array: " + arrayName)
+				}
+			} else {
+				return errors.New("key not found: " + arrayName)
+			}
+		} else {
+			return errors.New("invalid structure for key: " + arrayName)
+		}
+	} else {
+		// Regular object key
+		if node, ok := current.(map[string]interface{}); ok {
+			node[finalKey] = value
+		} else {
+			return errors.New("invalid structure for final key: " + finalKey)
+		}
+	}
+
+	return nil
+}
