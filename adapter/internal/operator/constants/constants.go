@@ -84,4 +84,7 @@ const (
 	// Azure Content Safety Content Moderation related constants
 	AzureContentSafetyContentModeration = "AzureContentSafetyContentModeration"
 	AzureContentSafetyKey               = "azureContentSafetyKey"
+	SemanticCaching                     = "SemanticCache"
+	SemanticCacheEmbeddingAPIKey        = "embeddingModelAPIKey"
+	SemanticCacheVectorDBPassword       = "vectorDBPassword"
 )
