@@ -79,6 +79,7 @@ func NewJWTIssuerXDSClient(host string, port string, maxRetries int, retryInterv
 // InitiateSubscriptionXDSConnection establishes and maintains a gRPC connection to the API Discovery Service.
 // It also handles reconnection logic on errors and listens for incoming JWT issuer configuration streams.
 func (c *JWTIssuerXDSClient) InitiateSubscriptionXDSConnection() {
+	c.log.Sugar().Debugf("Initiating XDS connection with JWT Issuer Discovery Service")
 	grpcConn := util.CreateGRPCConnectionWithRetryAndPanic(nil, c.Host, c.Port, c.tlsConfig, c.maxRetries, c.retryInterval)
 	c.grpcConn = grpcConn
 	client := jwt_issuer_ads.NewJWTIssuerDiscoveryServiceClient(grpcConn)
@@ -122,7 +123,7 @@ func (c *JWTIssuerXDSClient) InitiateSubscriptionXDSConnection() {
 				c.waitAndRetry()
 				return
 			}
-			// c.log.Info(fmt.Sprintf("Received jwtossier resp: %v", resp))
+			c.log.Sugar().Debugf(fmt.Sprintf("Received jwt issuer resp: %v", resp))
 			c.latestReceived = resp
 			handleRespErr := c.handleResponse(resp)
 			if handleRespErr != nil {
@@ -155,7 +156,7 @@ func (c *JWTIssuerXDSClient) handleResponse(response *v3.DiscoveryResponse) erro
 	for _, res := range response.GetResources() {
 		var jwtIssuerResource subscription.JWTIssuerList
 		if err := proto.Unmarshal(res.GetValue(), &jwtIssuerResource); err != nil {
-			c.log.Sugar().Debug(fmt.Sprintf("tFailed to unmarshal jwt issuers resource: %v", err))
+			c.log.Sugar().Debug(fmt.Sprintf("Failed to unmarshal jwt issuers resource: %v", err))
 			return err
 		}
 		jwtIssuerLists = append(jwtIssuerLists, &jwtIssuerResource)
@@ -165,7 +166,7 @@ func (c *JWTIssuerXDSClient) handleResponse(response *v3.DiscoveryResponse) erro
 		jwtIssuers = append(jwtIssuers, jwtIssuerList.GetList()...)
 	}
 	c.jwtIssuersDatastore.AddJWTIssuers(jwtIssuers)
-	c.log.Sugar().Debug(fmt.Sprintf("Number of jwt issuers received: %d", len(jwtIssuerLists)))
+	c.log.Sugar().Debug(fmt.Sprintf("Number of jwt issuers received: %d", len(jwtIssuers)))
 	return nil
 }
 
