@@ -1453,7 +1453,8 @@ func getResolvedPolicyParameters(ctx context.Context, kvClient *kvresolver.KVRes
 	resolvedParams := make(map[string]string)
 
 	for _, paramValue := range policy.Parameters {
-		if policy.PolicyName == constants.AzureContentSafetyContentModeration && paramValue.Key == constants.AzureContentSafetyKey {
+		if (policy.PolicyName == constants.AzureContentSafetyContentModeration && paramValue.Key == constants.AzureContentSafetyKey) ||
+		   (policy.PolicyName == constants.SemanticCaching && (paramValue.Key == constants.SemanticCacheEmbeddingAPIKey || paramValue.Key == constants.SemanticCacheVectorDBPassword)) {
 			value, err := getResolvedSecretParameterValue(ctx, kvClient, namespace, paramValue)
 			if err != nil {
 				return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
