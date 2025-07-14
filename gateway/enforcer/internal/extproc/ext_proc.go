@@ -250,7 +250,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			}
 			resp.ModeOverride = &v31.ProcessingMode{
 				RequestBodyMode:    v31.ProcessingMode_BUFFERED,
-				ResponseHeaderMode: v31.ProcessingMode_HeaderSendMode(v31.ProcessingMode_BUFFERED),
+				ResponseHeaderMode: v31.ProcessingMode_HeaderSendMode(v31.ProcessingMode_SEND),
 				ResponseBodyMode:   v31.ProcessingMode_BUFFERED,
 			}
 			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
