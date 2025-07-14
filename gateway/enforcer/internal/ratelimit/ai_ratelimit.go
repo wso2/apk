@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/andybalholm/brotli"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -205,7 +206,7 @@ func ExtractTokenCountFromExternalProcessingResponseHeaders(headerValues []*v3.H
 // ExtractTokenCountFromExternalProcessingResponseBody extracts token counts from external processing response body.
 func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, providerName, promptPath, completionPath,
 	totalPath, modelPath string, attributes *dto.ExternalProcessingEnvoyAttributes) (*TokenCountAndModel, error) {
-	bodyStr, err := ReadGzip(body)
+	bodyStr, err := decompress(body)
 	if err != nil {
 		bodyStr = string(body)
 	}
@@ -219,6 +220,31 @@ func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, providerNa
 	}
 	return tokenCount, nil
 
+}
+
+func decompress(body []byte) (string, error) {
+	asString := string(body)
+	if util.IsValidJSON(asString) {
+		return asString, nil
+	}
+
+	// Try GZIP first
+	gzipReader, err := gzip.NewReader(bytes.NewReader(body))
+	if err == nil {
+		defer gzipReader.Close()
+		unzipped, err := io.ReadAll(gzipReader)
+		if err == nil {
+			return string(unzipped), nil
+		}
+	}
+
+	// If GZIP failed, try Brotli
+	brReader := brotli.NewReader(bytes.NewReader(body))
+	unbr, err := io.ReadAll(brReader)
+	if err != nil {
+		return "", fmt.Errorf("failed to decompress response body: %w", err)
+	}
+	return string(unbr), nil
 }
 
 // ReadGzip decompresses a GZIP-compressed byte slice and returns the string output
