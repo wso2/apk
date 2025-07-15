@@ -664,6 +664,7 @@ func marshalJWTIssuerList(jwtIssuerMapping map[string]*v1alpha1.ResolvedJWTIssue
 		jwtIssuer.ClaimMapping = internalJWTIssuer.ClaimMappings
 		jwtIssuer.Certificate = certificate
 		jwtIssuer.Environments = internalJWTIssuer.Environments
+		loggers.LoggerAPKOperator.Debugf("JWT Issuer: %+v", jwtIssuer)
 		jwtIssuers = append(jwtIssuers, jwtIssuer)
 
 	}
@@ -674,10 +675,13 @@ func marshalJWTIssuerList(jwtIssuerMapping map[string]*v1alpha1.ResolvedJWTIssue
 
 // UpdateEnforcerJWTIssuers sets new update to the enforcer's Applications
 func UpdateEnforcerJWTIssuers(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer) {
+	loggers.LoggerAPKOperator.Debugf("Updating Enforcer JWT Issuers: %+v", jwtIssuers)
 	resolvedJWTIssuerList := marshalJWTIssuerList(jwtIssuers)
+	loggers.LoggerAPKOperator.Debugf("Resolved JWT Issuer List: %+v", resolvedJWTIssuerList)
 	logger.LoggerXds.Debug("Updating Enforcer JWT Issuer Cache")
 	label := commonEnforcerLabel
 	jwtIssuerList := append(enforcerLabelMap[label].jwtIssuers, resolvedJWTIssuerList)
+	loggers.LoggerAPKOperator.Debugf("JWT Issuer List: %+v", jwtIssuerList)
 
 	version, _ := crand.Int(crand.Reader, maxRandomBigInt())
 	snap, _ := wso2_cache.NewSnapshot(fmt.Sprint(version), map[wso2_resource.Type][]types.Resource{
@@ -690,6 +694,7 @@ func UpdateEnforcerJWTIssuers(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer)
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
 	enforcerLabelMap[label].jwtIssuers = jwtIssuerList
+	loggers.LoggerXds.Debugf("Enforcer Label Map: %s ", enforcerLabelMap[label].jwtIssuers)
 	logger.LoggerXds.Debugf("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
