@@ -270,7 +270,9 @@ func (gatewayReconciler *GatewayReconciler) resolveGatewayState(ctx context.Cont
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3126, logging.MAJOR, "Error while getting token issuers: %s", err))
 	}
+	loggers.LoggerAPKOperator.Debugf("tokenIssuers: %v", tokenIssuers)
 	gatewayState.TokenIssuers = tokenIssuers
+	loggers.LoggerAPKOperator.Debugf("gatewayStateData TokenIssuers: %v", gatewayState.TokenIssuers)
 	gatewayState.GatewayCustomRateLimitPolicies = customRateLimitPolicies
 	gatewayState.GatewayBackendMapping = gatewayReconciler.getResolvedBackendsMapping(ctx, gatewayState)
 	return gatewayState, nil
