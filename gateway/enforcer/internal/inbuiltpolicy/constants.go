@@ -56,7 +56,7 @@ const (
 	TextCleanRegex     = "^\"|\"$"
 	WordSplitRegex     = "\\s+"
 	SentenceSplitRegex = "[.!?]"
-	URLRegex           = "https?://[^\\s,\"'{}\\[\\]\\\\`]+"
+	URLRegex           = "https?://[^\\s,\"'{}\\[\\]\\\\`*]+"
 
 	semanticCacheEmbeddingKey         string = "semanticcache:embedding"
 	awsBedrockGuardrailPIIEntitiesKey string = "awsbedrockguardrail:pii_entities"
