@@ -41,8 +41,8 @@ import (
 type AWSBedrockGuardrail struct {
 	dto.BaseInBuiltPolicy
 	Name               string
-	AWSAccessKey       string
-	AWSSecretKey       string
+	AWSAccessKeyID     string
+	AWSSecretAccessKey string
 	AWSSessionToken    string
 	AWSRoleARN         string
 	AWSRoleRegion      string
@@ -118,7 +118,6 @@ func (r *AWSBedrockGuardrail) validatePayload(logger *logging.Logger, req *envoy
 				return result, true // Continue processing after PII restoration
 			}
 		}
-		return result, true
 	}
 
 	extractedValue, err := ExtractStringValueFromJsonpath(logger, payload, r.JSONPath)
@@ -269,7 +268,7 @@ func (r *AWSBedrockGuardrail) loadAWSConfig(ctx context.Context, logger *logging
 	if r.AWSRoleARN != "" && r.AWSRoleRegion != "" {
 		logger.Sugar().Debugf("Using role-based authentication with ARN: %s", r.AWSRoleARN)
 		cfg, err = r.loadAWSConfigWithAssumeRole(ctx, logger)
-	} else if r.AWSAccessKey != "" && r.AWSSecretKey != "" {
+	} else if r.AWSAccessKeyID != "" && r.AWSSecretAccessKey != "" {
 		logger.Sugar().Debugf("Using direct AWS credentials for authentication")
 		cfg, err = r.loadAWSConfigWithStaticCredentials(ctx, logger)
 	} else {
@@ -287,15 +286,15 @@ func (r *AWSBedrockGuardrail) loadAWSConfigWithStaticCredentials(ctx context.Con
 	if r.AWSSessionToken != "" {
 		// With session token
 		credsProvider = credentials.NewStaticCredentialsProvider(
-			r.AWSAccessKey,
-			r.AWSSecretKey,
+			r.AWSAccessKeyID,
+			r.AWSSecretAccessKey,
 			r.AWSSessionToken,
 		)
 	} else {
 		// Without session token
 		credsProvider = credentials.NewStaticCredentialsProvider(
-			r.AWSAccessKey,
-			r.AWSSecretKey,
+			r.AWSAccessKeyID,
+			r.AWSSecretAccessKey,
 			"",
 		)
 	}
@@ -318,19 +317,19 @@ func (r *AWSBedrockGuardrail) loadAWSConfigWithAssumeRole(ctx context.Context, l
 	var baseCfg aws.Config
 	var err error
 
-	if r.AWSAccessKey != "" && r.AWSSecretKey != "" {
+	if r.AWSAccessKeyID != "" && r.AWSSecretAccessKey != "" {
 		// Use provided credentials as base
 		var baseCredsProvider aws.CredentialsProvider
 		if r.AWSSessionToken != "" {
 			baseCredsProvider = credentials.NewStaticCredentialsProvider(
-				r.AWSAccessKey,
-				r.AWSSecretKey,
+				r.AWSAccessKeyID,
+				r.AWSSecretAccessKey,
 				r.AWSSessionToken,
 			)
 		} else {
 			baseCredsProvider = credentials.NewStaticCredentialsProvider(
-				r.AWSAccessKey,
-				r.AWSSecretKey,
+				r.AWSAccessKeyID,
+				r.AWSSecretAccessKey,
 				"",
 			)
 		}
@@ -811,10 +810,10 @@ func NewAWSBedrockGuardrail(inBuiltPolicy dto.InBuiltPolicy) *AWSBedrockGuardrai
 		switch key {
 		case "name":
 			awsBedrockGuardrail.Name = value
-		case "awsAccessKey":
-			awsBedrockGuardrail.AWSAccessKey = value
-		case "awsSecretKey":
-			awsBedrockGuardrail.AWSSecretKey = value
+		case "awsAccessKeyID":
+			awsBedrockGuardrail.AWSAccessKeyID = value
+		case "awsSecretAccessKey":
+			awsBedrockGuardrail.AWSSecretAccessKey = value
 		case "awsSessionToken":
 			awsBedrockGuardrail.AWSSessionToken = value
 		case "awsRoleARN":
