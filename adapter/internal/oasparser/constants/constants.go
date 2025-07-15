@@ -160,7 +160,16 @@ const (
 	// Azure Content Safety Content Moderation related constants
 	AzureContentSafetyContentModeration = "AzureContentSafetyContentModeration"
 	AzureContentSafetyKey               = "azureContentSafetyKey"
-	SemanticCaching                     = "SemanticCache"
-	SemanticCacheEmbeddingAPIKey        = "embeddingModelAPIKey"
-	SemanticCacheVectorDBPassword       = "vectorDBPassword"
+
+	// Semantic Caching related constants
+	SemanticCaching               = "SemanticCache"
+	SemanticCacheEmbeddingAPIKey  = "embeddingModelAPIKey"
+	SemanticCacheVectorDBPassword = "vectorDBPassword"
+
+	// AWS Bedrock Guardrail related constants
+	AWSBedrockGuardrail = "AWSBedrockGuardrail"
+	AWSAccessKeyID      = "awsAccessKeyID"
+	AWSSecretAccessKey  = "awsSecretAccessKey"
+	AWSSessionToken     = "awsSessionToken"
+	AWSRoleExternalID   = "awsRoleExternalID"
 )
