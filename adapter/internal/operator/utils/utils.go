@@ -1056,28 +1056,33 @@ func ConvertPemCertificatetoJWK(cert string) string {
 // ResolvePolicyParameters resolves all parameters in a Policy
 func GetResolvedPolicyParameters(ctx context.Context, client client.Client, kvClient *kvresolver.KVResolverClientImpl, namespace string, policy dpv1alpha5.Policy) (map[string]string, error) {
 	resolvedParams := make(map[string]string)
+	loggers.LoggerAPKOperator.Debugf("Resolving parameters for policy: %s", policy.PolicyName)
 
 	for _, paramValue := range policy.Parameters {
+		loggers.LoggerAPKOperator.Debugf("Processing parameter: %s", paramValue.Key)
 		if (policy.PolicyName == constants.AzureContentSafetyContentModeration && paramValue.Key == constants.AzureContentSafetyKey) ||
 			(policy.PolicyName == constants.SemanticCaching && (paramValue.Key == constants.SemanticCacheEmbeddingAPIKey ||
 				paramValue.Key == constants.SemanticCacheVectorDBPassword)) ||
 			(policy.PolicyName == constants.AWSBedrockGuardrail && (paramValue.Key == constants.AWSAccessKeyID ||
 				paramValue.Key == constants.AWSSecretAccessKey || paramValue.Key == constants.AWSSessionToken ||
 				paramValue.Key == constants.AWSRoleExternalID)) {
-			value, err := GetResolvedSecretParameterValue(ctx, client, kvClient, namespace, paramValue)
-			if err != nil {
-				return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
-			}
-			resolvedParams[paramValue.Key] = value
-			continue
+								loggers.LoggerAPKOperator.Debugf("Parameter %s is a secret parameter, resolving via KV client", paramValue.Key)
+								value, err := GetResolvedSecretParameterValue(ctx, client, kvClient, namespace, paramValue)
+								if err != nil {
+									return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
+								}
+								resolvedParams[paramValue.Key] = value
+								continue
 		}
+		loggers.LoggerAPKOperator.Debugf("Parameter %s is a regular parameter", paramValue.Key)
 		value, err := GetResolvedParameterValue(ctx, client, kvClient, namespace, paramValue)
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve parameter %s: %w", paramValue.Key, err)
 		}
 		resolvedParams[paramValue.Key] = value
 	}
-
+	
+	loggers.LoggerAPKOperator.Debugf("Resolved %d parameters for policy %s", len(resolvedParams), policy.PolicyName)
 	return resolvedParams, nil
 }
 
@@ -1096,19 +1101,28 @@ func GetResolvedParameterValue(ctx context.Context, client client.Client, kvClie
 	return "", nil
 }
 
+// GetResolvedSecretParameterValue resolves a secret ParameterValue to its actual string value
 func GetResolvedSecretParameterValue(ctx context.Context, client client.Client, kvClient *kvresolver.KVResolverClientImpl, namespace string, paramValue dpv1alpha5.Parameter) (string, error) {
 	// Resolve the secret using the KVResolverClientImpl
 	kvRefKeys := []string{*paramValue.Value}
+	loggers.LoggerAPKOperator.Debugf("Resolving secret parameter: key=%s, secretID=%s", paramValue.Key, *paramValue.Value)
+	
 	secrets, err := kvClient.GetSecrets(ctx, kvRefKeys)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2648, logging.CRITICAL, "Error while reading key from kv client: %s", paramValue.Key))
+		return "", fmt.Errorf("failed to get secrets from kv client: %w", err)
 	}
+	
+	loggers.LoggerAPKOperator.Debugf("Retrieved %d secrets from KV client", len(secrets.Secrets))
 	// Iterate through the secrets to find the keyName and valueKey
 	for _, secret := range secrets.Secrets {
+		loggers.LoggerAPKOperator.Debugf("Checking secret: ID=%s, Key=%s", secret.ID, secret.Key)
 		if secret.Key == paramValue.Key {
-			loggers.LoggerAPKOperator.Debugf("Resolved secret for key: %s, value: %s", paramValue.Key, secret.Value)
+			loggers.LoggerAPKOperator.Debugf("Found matching secret for key: %s", paramValue.Key)
 			return secret.Value, nil
 		}
 	}
+	
+	loggers.LoggerAPKOperator.Debugf("Secret not found for key: %s", paramValue.Key)
 	return "", fmt.Errorf("secret not found for key: %s", paramValue.Key)
 }

@@ -114,7 +114,10 @@ func (k *KVResolverClientImpl) GetSecrets(ctx context.Context, secrets []string)
 		loggers.LoggerAPK.Error("Error while decoding response body", err.Error())
 		return Secrets{}, err
 	}
-	loggers.LoggerAPK.Debugf("Response from KV Resolver: %v", secretResp)
+	loggers.LoggerAPK.Debugf("KV Resolver returned %d secrets", len(secretResp.Secrets))
+	for i, secret := range secretResp.Secrets {
+		loggers.LoggerAPK.Debugf("Secret %d: ID=%s, Key=%s, ValueType=%s", i, secret.ID, secret.Key, secret.ValueType)
+	}
 	return secretResp, nil
 }
 
