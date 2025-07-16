@@ -1497,14 +1497,14 @@ func getResolvedSecretParameterValue(ctx context.Context, kvClient *kvresolver.K
 	// Iterate through the secrets to find the keyName and valueKey
 	for _, secret := range secrets.Secrets {
 		loggers.LoggerAPI.Debugf("Checking secret: ID=%s, Key=%s", secret.ID, secret.Key)
-		if secret.Key == paramValue.Key {
-			loggers.LoggerAPI.Debugf("Found matching secret for key: %s", paramValue.Key)
+		if secret.Key == *paramValue.Value {
+			loggers.LoggerAPI.Debugf("Found matching secret for key: %s", *paramValue.Value)
 			return secret.Value, nil
 		}
 	}
-	
-	loggers.LoggerAPI.Debugf("Secret not found for key: %s", paramValue.Key)
-	return "", fmt.Errorf("secret not found for key: %s", paramValue.Key)
+
+	loggers.LoggerAPI.Debugf("Secret not found for key: %s", *paramValue.Value)
+	return "", fmt.Errorf("secret not found for key: %s", *paramValue.Value)
 }
 
 // getResolvedParameterValue resolves a ParameterValue to its actual string value
