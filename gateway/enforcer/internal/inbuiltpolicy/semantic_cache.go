@@ -21,8 +21,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 	"strconv"
+	"sync"
 	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
@@ -45,14 +45,14 @@ var (
 // SemanticCachePolicy is a struct that represents a semantic cache policy.
 type SemanticCachePolicy struct {
 	dto.BaseInBuiltPolicy
-	embeddingConfig   semanticcache.EmbeddingProviderConfig
-	vectorStoreConfig semanticcache.VectorDBProviderConfig
-	embeddingProvider semanticcache.EmbeddingProvider
-    vectorStoreProvider semanticcache.VectorDBProvider
+	embeddingConfig     semanticcache.EmbeddingProviderConfig
+	vectorStoreConfig   semanticcache.VectorDBProviderConfig
+	embeddingProvider   semanticcache.EmbeddingProvider
+	vectorStoreProvider semanticcache.VectorDBProvider
 }
 
 // HandleRequestBody is a method that implements the mediation logic for the Semantic Caching policy on request.
-func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request body validation for Semantic Caching policy: %s", s.PolicyID)
 	ctx := props["ctx"].(context.Context)
 	if len(req.GetRequestBody().Body) == 0 {
@@ -72,7 +72,7 @@ func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *env
 	cacheRetrieveConfig := map[string]interface{}{
 		"threshold": s.vectorStoreConfig.Threshold,
 		"api_id":    props["matchedAPIUUID"].(string),
-		"ctx": ctx,
+		"ctx":       ctx,
 	}
 	logger.Sugar().Debug("Checking for a cached response in Vector Store")
 	cacheResponse, err := s.vectorStoreProvider.Retrieve(logger, embedding, cacheRetrieveConfig)
@@ -102,12 +102,12 @@ func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *env
 		resp := s.buildImmediateResponse(logger, responseBodyBytes)
 		return resp
 	}
-			
+
 	return nil
 }
 
 // HandleResponseBody is a method that implements the mediation logic for the Semantic Caching policy on response.
-func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
+func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for Semantic Caching policy: %s", s.PolicyID)
 	ctx := props["ctx"].(context.Context)
 
@@ -142,16 +142,16 @@ func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *en
 			}
 			err = s.vectorStoreProvider.Store(logger, embedding, cr, map[string]interface{}{
 				"api_id": props["matchedAPIUUID"].(string),
-				"ctx": ctx,
+				"ctx":    ctx,
 			})
 			if err != nil {
 				logger.Error(err, "Failed to store response in vector DB")
 				return nil
 			}
-			logger.Sugar().Debug("Response stored in the cahce store.")	
+			logger.Sugar().Debug("Response stored in the cahce store.")
 		}
 	}
-		
+
 	return nil
 }
 
@@ -185,11 +185,12 @@ func NewSemanticCachingPolicy(logger *logging.Logger, inBuiltPolicy dto.InBuiltP
 		case "embedding_dimention":
 			semanticCachePolicy.vectorStoreConfig.EmbeddingDimention = value
 		case "threshold":
-				semanticCachePolicy.vectorStoreConfig.Threshold = value
+			semanticCachePolicy.vectorStoreConfig.Threshold = value
 		case "db_host":
 			semanticCachePolicy.vectorStoreConfig.DBHost = value
 		case "db_port":
-			port, err := strconv.Atoi(value); if err == nil {
+			port, err := strconv.Atoi(value)
+			if err == nil {
 				semanticCachePolicy.vectorStoreConfig.DBPort = port
 			}
 		case "username":
@@ -252,7 +253,7 @@ func (s *SemanticCachePolicy) buildImmediateResponse(logger *logging.Logger, cac
 					Code: v32.StatusCode_OK,
 				},
 				Headers: headers,
-				Body: cachedResponseBytes,
+				Body:    cachedResponseBytes,
 			},
 		},
 	}
@@ -305,7 +306,7 @@ func initializeVectorDBProvider(logger *logging.Logger, vectorStoreProviderConfi
 		logger.Sugar().Errorf("Failed to initialize %s vector DB provider: %s", vectorStoreProvider.GetType(), err)
 	}
 	logger.Sugar().Infof("Successfully initialized %s vector DB provider", vectorStoreProvider.GetType())
-    // Creating the index in the vector store
+	// Creating the index in the vector store
 	indexCreationErr := vectorStoreProvider.CreateIndex(logger)
 	if indexCreationErr != nil {
 		logger.Error(indexCreationErr, "Failed to create index in the vector DB")

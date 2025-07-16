@@ -376,7 +376,8 @@
             "ContentLengthGuardrail",
             "SemanticCache",
             "URLGuardrail",
-            "AzureContentSafetyContentModeration"
+            "AzureContentSafetyContentModeration",
+            "AWSBedrockGuardrail"
           ]
         },
         "policyVersion": {
@@ -438,7 +439,8 @@
             "ContentLengthGuardrail",
             "SemanticCache",
             "URLGuardrail",
-            "AzureContentSafetyContentModeration"
+            "AzureContentSafetyContentModeration",
+            "AWSBedrockGuardrail"
           ]
         },
         "policyVersion": {

@@ -106,6 +106,7 @@ const (
 	uriAttribute                                    string = "uriAttribute"
 	semanticCacheEmbeddingKey                       string = "semanticcache:embedding"
 	modelMetadataKey                                string = "aitoken:model"
+	awsBedrockGuardrailPIIEntitiesKey               string = "awsbedrockguardrail:pii_entities"
 )
 
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
@@ -194,7 +195,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		requestConfigHolder := &requestconfig.Holder{}
 		// log req.Attributes
 		s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
-		dynamicMetadataKeyValuePairs := make(map[string]string)
+		dynamicMetadataKeyValuePairs := make(map[string]interface{})
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
 			s.cfg.Logger.Sugar().Debug("Request Headers Flow")
@@ -362,6 +363,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			if requestConfigHolder.MatchedAPI.AiProvider != nil {
 				s.cfg.Logger.Sugar().Debugf("Setting Processing request body mode to BUFFERED for AI Provider")
 				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
+				resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
 			}
 			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
 				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
@@ -450,7 +452,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
 						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
 					}
-					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req, nil)
+					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req, resp, nil)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Request In-Built Policy validation failed")
 						break apiRequestHeadersPolicyLoop
@@ -477,7 +479,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					if policy.GetPolicyName() == inbuiltpolicy.SemanticCacheName {
 						resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
 					}
-					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req, nil)
+					policyValdationResponse = policy.HandleRequestHeaders(&s.cfg.Logger, req, resp, nil)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Request In-Built Policy validation failed")
 						break resourceRequestHeadersPolicyLoop
@@ -641,7 +643,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Request In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, props)
+					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, resp, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Request In-Built Policy validation failed")
 						break apiRequestBodyPolicyLoop
@@ -665,7 +667,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Request In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, props)
+					policyValdationResponse = policy.HandleRequestBody(&s.cfg.Logger, req, resp, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Request In-Built Policy validation failed")
 						break resourceRequestBodyPolicyLoop
@@ -947,7 +949,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Response In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req, nil)
+					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req, resp, nil)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Response In-Built Policy validation failed")
 						break apiResponseHeadersPolicyLoop
@@ -971,7 +973,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Response In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req, nil)
+					policyValdationResponse = policy.HandleResponseHeaders(&s.cfg.Logger, req, resp, nil)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Response In-Built Policy validation failed")
 						break resourceResponseHeadersPolicyLoop
@@ -1173,7 +1175,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 
 			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
-			props := map[string]interface{}{"matchedAPIUUID": matchedAPI.UUID, "embedding": metadata.SemanticEmbedding, "responseHeaders": metadata.ResponseStatus, "ctx": ctx} // NEED TO REMOVE THE HARDCODED HEADER VALUE
+			props := map[string]interface{}{"matchedAPIUUID": matchedAPI.UUID, "embedding": metadata.SemanticEmbedding, "responseHeaders": metadata.ResponseStatus, "ctx": ctx, "awsBedrockGuardrailPIIEntities": metadata.AWSBedrockGuardrailPIIEntities} // NEED TO REMOVE THE HARDCODED HEADER VALUE
 			s.cfg.Logger.Sugar().Debugf("Props content for Response flow policies: %+v", props)
 			if matchedAPI.ResponseInBuiltPolicies != nil &&
 				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
@@ -1185,7 +1187,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing API Level Response In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, props)
+					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, resp, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("API Level Response In-Built Policy validation failed")
 						break apiResponseBodyPolicyLoop
@@ -1209,7 +1211,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						continue
 					}
 					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Processing Resource Level Response In-Built Policy: %T", policy))
-					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, props)
+					policyValdationResponse = policy.HandleResponseBody(&s.cfg.Logger, req, resp, props)
 					if policyValdationResponse != nil {
 						s.cfg.Logger.Sugar().Debug("Resource Level Response In-Built Policy validation failed")
 						break resourceResponseBodyPolicyLoop
@@ -1460,6 +1462,15 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 			if responseStatus, exists := extProcMetadata.Fields["response_status"]; exists {
 				externalProcessingEnvoyMetadata.ResponseStatus = responseStatus.GetStringValue()
 			}
+			if awsBedrockGuardrailPIIEntitiesMap, exists := extProcMetadata.Fields[awsBedrockGuardrailPIIEntitiesKey]; exists {
+				if structVal := awsBedrockGuardrailPIIEntitiesMap.GetStructValue(); structVal != nil {
+					piiEntities := make(map[string]string)
+					for k, v := range structVal.Fields {
+						piiEntities[k] = v.GetStringValue()
+					}
+					externalProcessingEnvoyMetadata.AWSBedrockGuardrailPIIEntities = piiEntities
+				}
+			}
 		}
 		return externalProcessingEnvoyMetadata, nil
 	}
@@ -1579,7 +1590,7 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 	return nil, fmt.Errorf("key xds.route_metadata not found")
 }
 
-func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, error) {
+func buildDynamicMetadata(keyValuePairs *map[string]interface{}) (*structpb.Struct, error) {
 	// Create the structBuilder
 	structBuilder := &structpb.Struct{
 		Fields: map[string]*structpb.Value{},
@@ -1587,6 +1598,26 @@ func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, e
 
 	// Helper function to add metadata
 	addMetadata := func(builder *structpb.Struct, key string, value interface{}) error {
+
+		// Special handling for PII entities map
+		if key == awsBedrockGuardrailPIIEntitiesKey {
+			if piiMap, ok := value.(map[string]string); ok {
+				// Convert map[string]string to *structpb.Struct
+				piiStruct := &structpb.Struct{
+					Fields: make(map[string]*structpb.Value),
+				}
+				for k, v := range piiMap {
+					piiStruct.Fields[k] = &structpb.Value{
+						Kind: &structpb.Value_StringValue{StringValue: v},
+					}
+				}
+				builder.Fields[key] = &structpb.Value{
+					Kind: &structpb.Value_StructValue{StructValue: piiStruct},
+				}
+				return nil
+			}
+		}
+
 		val, err := structpb.NewValue(value)
 		if err != nil {
 			return err
@@ -1612,7 +1643,7 @@ func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, e
 	return rootStruct, nil
 }
 
-func prepareMetadataKeyValuePairAndAddTo(metadataKeyValuePair map[string]string, requestConfigHolder *requestconfig.Holder, cfg *config.Server) *map[string]string {
+func prepareMetadataKeyValuePairAndAddTo(metadataKeyValuePair map[string]interface{}, requestConfigHolder *requestconfig.Holder, cfg *config.Server) *map[string]interface{} {
 	if requestConfigHolder != nil && requestConfigHolder.MatchedAPI != nil {
 		metadataKeyValuePair[analytics.APIIDKey] = requestConfigHolder.MatchedAPI.UUID
 		metadataKeyValuePair[analytics.APIContextKey] = requestConfigHolder.MatchedAPI.BasePath

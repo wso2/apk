@@ -281,6 +281,7 @@ components:
           SemanticCache: "#/components/schemas/CommonPolicy"
           URLGuardrail: "#/components/schemas/CommonPolicy"
           AzureContentSafetyContentModeration: "#/components/schemas/CommonPolicy"
+          AWSBedrockGuardrail: "#/components/schemas/CommonPolicy"
     APKResponseOperationPolicy:
       title: API Operation Policy
       oneOf:
@@ -303,6 +304,7 @@ components:
           SemanticCache: "#/components/schemas/CommonPolicy"
           URLGuardrail: "#/components/schemas/CommonPolicy"
           AzureContentSafetyContentModeration: "#/components/schemas/CommonPolicy"
+          AWSBedrockGuardrail: "#/components/schemas/CommonPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -327,6 +329,7 @@ components:
             - SemanticCache
             - URLGuardrail
             - AzureContentSafetyContentModeration
+            - AWSBedrockGuardrail
         policyVersion:
           type: string
           default: "v1"

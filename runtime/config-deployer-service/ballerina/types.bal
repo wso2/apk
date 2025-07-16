@@ -448,7 +448,8 @@ public enum PolicyName {
     ContentLengthGuardrail,
     SemanticCache,
     URLGuardrail,
-    AzureContentSafetyContentModeration
+    AzureContentSafetyContentModeration,
+    AWSBedrockGuardrail
 }
 
 # Configuration for authentication types.
