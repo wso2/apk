@@ -1117,12 +1117,12 @@ func GetResolvedSecretParameterValue(ctx context.Context, client client.Client, 
 	// Iterate through the secrets to find the keyName and valueKey
 	for _, secret := range secrets.Secrets {
 		loggers.LoggerAPKOperator.Debugf("Checking secret: ID=%s, Key=%s", secret.ID, secret.Key)
-		if secret.Key == paramValue.Key {
-			loggers.LoggerAPKOperator.Debugf("Found matching secret for key: %s", paramValue.Key)
+		if secret.Key == *paramValue.Value {
+			loggers.LoggerAPKOperator.Debugf("Found matching secret for key: %s", *paramValue.Value)
 			return secret.Value, nil
 		}
 	}
-	
-	loggers.LoggerAPKOperator.Debugf("Secret not found for key: %s", paramValue.Key)
-	return "", fmt.Errorf("secret not found for key: %s", paramValue.Key)
+
+	loggers.LoggerAPKOperator.Debugf("Secret not found for key: %s", *paramValue.Value)
+	return "", fmt.Errorf("secret not found for key: %s", *paramValue.Value)
 }
