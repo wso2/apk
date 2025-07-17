@@ -149,11 +149,13 @@ func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies [
 		case inbuiltpolicy.URLGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
 		case inbuiltpolicy.SemanticCacheName:
-			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy))
-        case inbuiltpolicy.AzureContentSafetyContentModerationName:
-            dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
-        case inbuiltpolicy.AWSBedrockGuardrailName:
-            dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAWSBedrockGuardrail(basePolicy))
+			if policy := inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy); policy != nil {
+				dtoPolicies = append(dtoPolicies, policy)
+			}
+		case inbuiltpolicy.AzureContentSafetyContentModerationName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
+		case inbuiltpolicy.AWSBedrockGuardrailName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAWSBedrockGuardrail(basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
@@ -189,9 +191,11 @@ func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, responsePolicies
 		case inbuiltpolicy.URLGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
 		case inbuiltpolicy.SemanticCacheName:
-			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewSemanticCachingPolicy(logger,basePolicy))
-        case inbuiltpolicy.AzureContentSafetyContentModerationName:
-            dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
+			if policy := inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy); policy != nil {
+				dtoPolicies = append(dtoPolicies, policy)
+			}
+		case inbuiltpolicy.AzureContentSafetyContentModerationName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
 		case inbuiltpolicy.AWSBedrockGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAWSBedrockGuardrail(basePolicy))
 		}

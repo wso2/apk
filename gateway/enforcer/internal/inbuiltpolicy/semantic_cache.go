@@ -220,6 +220,9 @@ func NewSemanticCachingPolicy(logger *logging.Logger, inBuiltPolicy dto.InBuiltP
 		}
 	})
 
+	if globalEmbeddingProvider == nil || globalVectorStoreProvider == nil {
+		return nil
+	}
 	semanticCachePolicy.embeddingProvider = globalEmbeddingProvider
 	semanticCachePolicy.vectorStoreProvider = globalVectorStoreProvider
 	return semanticCachePolicy
@@ -265,7 +268,7 @@ func initializeEmbeddingProvider(logger *logging.Logger, embeddingProviderConfig
 	logger.Sugar().Debugf("Initializing embedding provider with config: %+v", embeddingProviderConfig)
 	var embeddingProvider semanticcache.EmbeddingProvider
 	switch embeddingProviderConfig.EmbeddingProvider {
-	case "MISTRAL_AI":
+	case "MISTRAL":
 		logger.Info("Initializing Mistral Embedding Provider...")
 		embeddingProvider = &semanticcache.MistralEmbeddingProvider{}
 	case "OPENAI":
@@ -304,14 +307,15 @@ func initializeVectorDBProvider(logger *logging.Logger, vectorStoreProviderConfi
 	err := vectorStoreProvider.Init(logger, vectorStoreProviderConfig)
 	if err != nil {
 		logger.Sugar().Errorf("Failed to initialize %s vector DB provider: %s", vectorStoreProvider.GetType(), err)
+		return nil, err
 	}
 	logger.Sugar().Infof("Successfully initialized %s vector DB provider", vectorStoreProvider.GetType())
 	// Creating the index in the vector store
 	indexCreationErr := vectorStoreProvider.CreateIndex(logger)
 	if indexCreationErr != nil {
 		logger.Error(indexCreationErr, "Failed to create index in the vector DB")
-	} else {
-		logger.Sugar().Infof("Successfully created the index")
+		return nil, indexCreationErr
 	}
+	logger.Sugar().Infof("Successfully created the index")
 	return vectorStoreProvider, nil
 }
