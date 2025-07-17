@@ -25,8 +25,8 @@ ENV LANG=C.UTF-8 KUBERNETES_SERVICE_PORT=8443 KUBERNETES_SERVICE_HOST=192.168.49
 
 ARG APK_USER=wso2
 ARG APK_USER_ID=10001
-ARG CHECKSUM_AMD64="8302d54fc41d4ffbfea6871b6a04584265d5eabbe738aee2966f9a574b6f17d1"
-ARG CHECKSUM_ARM64="8ebe934e7cf29a65ca31d671a97949467fba6977d656b5e6d6c40902ae7402f6"
+ARG CHECKSUM_AMD64="8dc862813cae02e043bda90237ae369529b9bbc3ce8a9cf49937fb3acdbd66e3"
+ARG CHECKSUM_ARM64="4eb10347c7e5058ff4d79f4e40c08f90c18de7615d647c7d6219894971597593"
 ARG APK_USER_GROUP=wso2
 ARG APK_USER_GROUP_ID=10001
 ARG APK_USER_HOME=/home/${APK_USER}
@@ -50,7 +50,7 @@ RUN \
     && echo '[ ! -z "${TERM}" -a -r /etc/motd ] && cat /etc/motd' >> /etc/bash.bashrc; echo "${MOTD}" > /etc/motd
 
 RUN \
-    wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.37/grpc_health_probe-linux-${TARGETARCH} \
+    wget -q https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.39/grpc_health_probe-linux-${TARGETARCH} \
     && mv grpc_health_probe-linux-${TARGETARCH} ${GRPC_HEALTH_PROBE_PATH} \
     && if [ "${TARGETARCH}" = "amd64" ]; then echo "${CHECKSUM_AMD64}  ${GRPC_HEALTH_PROBE_PATH}" | sha256sum -c -; fi
     
