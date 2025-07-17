@@ -39,6 +39,7 @@ spec:
           attributes:
             - "xds.route_metadata"
             - "xds.route_name"
+            - "request.id"
         allowModeOverride: true
       metadata:
         accessibleNamespaces:

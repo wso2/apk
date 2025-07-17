@@ -8,6 +8,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/envoyproxy/gateway v1.4.1 h1:taIKWv2Euso4gFQQA8BgFuu2JordhOjLm9bjTyKv6xA=
 github.com/envoyproxy/gateway v1.4.1/go.mod h1:U8s2bB4VWRd7J9moxcFT95Wmq0d2YoiRFTu/PI/62Mw=
+github.com/envoyproxy/go-control-plane v0.13.5-0.20250408134212-157c26b62099 h1:Shucu2sY2a/KjKzO10Y0st2iN0Flzj5QsTEgMFtd0MY=
+github.com/envoyproxy/go-control-plane v0.13.5-0.20250408134212-157c26b62099/go.mod h1:Kf4hNGzgvzKhoKdlSXD+IZtG55h9r2SOpO1kRKLI03o=
 github.com/envoyproxy/go-control-plane/envoy v1.32.5-0.20250408134212-157c26b62099 h1:LFmrrIXbGktG4DrXsvFFyvZLe+HnimGn6Ed+xuiP6TU=
 github.com/envoyproxy/go-control-plane/envoy v1.32.5-0.20250408134212-157c26b62099/go.mod h1:pY0vLp032ToSdejxKtzWZs/TzoAtdK0+50ELjTkXiYA=
 github.com/envoyproxy/protoc-gen-validate v1.2.1 h1:DEo3O99U8j4hBFwbJfrz9VtgcDfUKS7KJ7spH3d86P8=

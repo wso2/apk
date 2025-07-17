@@ -20,6 +20,7 @@ package extproc
 import (
 	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -35,11 +36,11 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/mediation"
 
-	"github.com/wso2/apk/gateway/enforcer/internal/logging"
-	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/wso2/apk/common-go-libs/constants"
+	"github.com/wso2/apk/gateway/enforcer/internal/logging"
+	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	types "k8s.io/apimachinery/pkg/types"
 
@@ -178,8 +179,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		// log req.Attributes
 		s.log.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
 		if requestConfigHolder.AttributesPopulated == false {
-			extRefs, routeName := s.extractExtensionRefsAndRouteName(req.Attributes)
-			requestConfigHolder.RouteName = routeName
+			extRefs, requestAttributes := s.extractExtensionRefsAndRouteAttributes(req.Attributes)
+			requestConfigHolder.RequestAttributes = requestAttributes
 			if len(extRefs) > 0 {
 				requestConfigHolder.AttributesPopulated = true
 				for _, extRef := range extRefs {
@@ -241,6 +242,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			s.log.Sugar().Debug(fmt.Sprintf("request header %+v, ", v.RequestHeaders))
 			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseRequestHeaders
 			requestConfigHolder.RequestHeaders = req.GetRequestHeaders()
+			requestConfigHolder.JWTAuthnPayloaClaims = s.extractJWTAuthnNamespaceData(req.GetMetadataContext())
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 					ClearRouteCache: true,
@@ -306,9 +308,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
-								mediationResult, 
-								resp, 
-								requestconfig.ProcessingPhaseRequestHeaders, 
+								mediationResult,
+								resp,
+								requestconfig.ProcessingPhaseRequestHeaders,
 								metadata)
 							if stopProcessingMediations {
 								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
@@ -343,9 +345,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
-								mediationResult, 
-								resp, 
-								requestconfig.ProcessingPhaseRequestHeaders, 
+								mediationResult,
+								resp,
+								requestconfig.ProcessingPhaseRequestHeaders,
 								metadata)
 							if stopProcessingMediations {
 								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
@@ -380,9 +382,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
-								mediationResult, 
-								resp, 
-								requestconfig.ProcessingPhaseRequestHeaders, 
+								mediationResult,
+								resp,
+								requestconfig.ProcessingPhaseRequestHeaders,
 								metadata)
 							if stopProcessingMediations {
 								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
@@ -417,9 +419,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
-								mediationResult, 
-								resp, 
-								requestconfig.ProcessingPhaseRequestHeaders, 
+								mediationResult,
+								resp,
+								requestconfig.ProcessingPhaseRequestHeaders,
 								metadata)
 							if stopProcessingMediations {
 								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
@@ -447,7 +449,6 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		}
 	}
 }
-
 
 func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 	mediationResult *mediation.Result,
@@ -623,104 +624,6 @@ func DetectFileType(data []byte) (string, error) {
 	return "zip", nil
 }
 
-// extractExternalProcessingMetadata extracts the external processing metadata from the given data.
-// func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProcessingEnvoyMetadata, error) {
-// 	filterMatadata := data.GetFilterMetadata()
-// 	if filterMatadata != nil {
-// 		externalProcessingEnvoyMetadata := &dto.ExternalProcessingEnvoyMetadata{}
-// 		jwtFilterdata := filterMatadata["envoy.filters.http.jwt_authn"]
-// 		if jwtFilterdata != nil {
-// 			authenticationData := &dto.AuthenticationData{}
-
-// 			for key, structValue := range jwtFilterdata.Fields {
-// 				if strings.HasSuffix(key, "-payload") {
-// 					sucessData := dto.AuthenticationSuccessData{}
-// 					jwtPayload := structValue.GetStructValue()
-// 					if jwtPayload != nil {
-// 						claims := make(map[string]interface{})
-// 						for key, value := range jwtPayload.GetFields() {
-// 							if value != nil {
-// 								if key == "iss" {
-// 									sucessData.Issuer = value.GetStringValue()
-// 								}
-// 								switch value.Kind.(type) {
-// 								case *structpb.Value_StringValue:
-// 									claims[key] = value.GetStringValue()
-// 								case *structpb.Value_NumberValue:
-// 									claims[key] = value.GetNumberValue()
-// 								case *structpb.Value_BoolValue:
-// 									claims[key] = value.GetBoolValue()
-// 								case *structpb.Value_ListValue:
-// 									jsonData, err := value.MarshalJSON()
-// 									if err != nil {
-// 										return nil, err
-// 									}
-// 									var list []interface{}
-// 									err = json.Unmarshal(jsonData, &list)
-// 									if err != nil {
-// 										return nil, err
-// 									}
-// 									claims[key] = list
-// 								case *structpb.Value_StructValue:
-// 									jsonData, err := value.MarshalJSON()
-// 									if err != nil {
-// 										return nil, err
-// 									}
-// 									var mapData map[string]interface{}
-// 									err = json.Unmarshal(jsonData, &mapData)
-// 									if err != nil {
-// 										return nil, err
-// 									}
-// 									claims[key] = mapData
-// 								}
-// 							}
-// 						}
-// 						sucessData.Claims = claims
-// 					}
-// 					if authenticationData.SucessData == nil {
-// 						authenticationData.SucessData = make(map[string]*dto.AuthenticationSuccessData)
-// 					}
-// 					authenticationData.SucessData[key] = &sucessData
-// 				}
-// 				if strings.HasSuffix(key, "-failed") {
-// 					failureStatusStruct := structValue.GetStructValue()
-// 					if failureStatusStruct != nil {
-// 						code := failureStatusStruct.Fields["code"].GetNumberValue()
-// 						message := failureStatusStruct.Fields["message"].GetStringValue()
-// 						authenticationFailureData := &dto.AuthenticationFailureData{Code: int(code), Message: message}
-// 						if authenticationData.FailedData == nil {
-// 							authenticationData.FailedData = make(map[string]*dto.AuthenticationFailureData)
-// 						}
-// 						authenticationData.FailedData[key] = authenticationFailureData
-// 					}
-// 				}
-// 			}
-// 			externalProcessingEnvoyMetadata.AuthenticationData = authenticationData
-// 		}
-// 		if extProcMetadata, exists := filterMatadata[externalProessingMetadataContextKey]; exists {
-// 			if matchedAPIKey, exists := extProcMetadata.Fields[matchedAPIMetadataKey]; exists {
-// 				externalProcessingEnvoyMetadata.MatchedAPIIdentifier = matchedAPIKey.GetStringValue()
-// 			}
-// 			if matchedResourceKey, exists := extProcMetadata.Fields[matchedResourceMetadataKey]; exists {
-// 				externalProcessingEnvoyMetadata.MatchedResourceIdentifier = matchedResourceKey.GetStringValue()
-// 			}
-// 			if matchedApplicationKey, exists := extProcMetadata.Fields[matchedApplicationMetadataKey]; exists {
-// 				externalProcessingEnvoyMetadata.MatchedApplicationIdentifier = matchedApplicationKey.GetStringValue()
-// 			}
-// 			if matchedSubscriptionKey, exists := extProcMetadata.Fields[matchedSubscriptionMetadataKey]; exists {
-// 				externalProcessingEnvoyMetadata.MatchedSubscriptionIdentifier = matchedSubscriptionKey.GetStringValue()
-// 			}
-
-// 		}
-// 		return externalProcessingEnvoyMetadata, nil
-// 	}
-// 	return nil, nil
-// }
-
-func readStructData() {
-
-}
-
 // ReadGzip decompresses a GZIP-compressed byte slice and returns the string output
 func ReadGzip(gzipData []byte) (string, error) {
 	// Create a bytes.Reader from the gzip data
@@ -744,14 +647,73 @@ func ReadGzip(gzipData []byte) (string, error) {
 	return result.String(), nil
 }
 
-func (s *ExternalProcessingServer) extractExtensionRefsAndRouteName(data map[string]*structpb.Struct) ([]string, string) {
+func (s *ExternalProcessingServer) extractJWTAuthnNamespaceData(data *corev3.Metadata) map[string]interface{} {
+	claims := make(map[string]interface{})
+	filterMatadata := data.GetFilterMetadata()
+	if filterMatadata != nil {
+		jwtAuthnData, exists := filterMatadata[constants.JWTAuthnMetadataNamespace]
+		if !exists || jwtAuthnData == nil {
+			s.cfg.Logger.Sugar().Debug("JWT Authn data not found")
+		} else {
+			for key, structValue := range jwtAuthnData.Fields {
+				if key == constants.JWTAuthnPayloadInMetadata {
+					s.cfg.Logger.Sugar().Debugf("JWT Authn Payload: %s", structValue.GetStringValue())
+					jwtPayload := structValue.GetStructValue()
+					if jwtPayload != nil {
+						for key, value := range jwtPayload.GetFields() {
+							if value != nil {
+								switch value.Kind.(type) {
+								case *structpb.Value_StringValue:
+									claims[key] = value.GetStringValue()
+								case *structpb.Value_NumberValue:
+									claims[key] = value.GetNumberValue()
+								case *structpb.Value_BoolValue:
+									claims[key] = value.GetBoolValue()
+								case *structpb.Value_ListValue:
+									jsonData, err := value.MarshalJSON()
+									if err == nil {
+										var list []interface{}
+										err = json.Unmarshal(jsonData, &list)
+										if err == nil {
+											claims[key] = list
+										} else {
+											s.cfg.Logger.Sugar().Errorf("Failed to unmarshal list value for key %s: %v", key, err)
+										}
+									} else {
+										s.cfg.Logger.Sugar().Errorf("Failed to marshal JSON for list value for key %s: %v", key, err)
+									}
+								case *structpb.Value_StructValue:
+									jsonData, err := value.MarshalJSON()
+									if err == nil {
+										var mapData map[string]interface{}
+										err = json.Unmarshal(jsonData, &mapData)
+										if err == nil {
+											claims[key] = mapData
+										} else {
+											s.cfg.Logger.Sugar().Errorf("Failed to unmarshal struct value for key %s: %v", key, err)
+										}
+									} else {
+										s.cfg.Logger.Sugar().Errorf("Failed to marshal JSON for struct value for key %s: %v", key, err)
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return claims
+}
+
+func (s *ExternalProcessingServer) extractExtensionRefsAndRouteAttributes(data map[string]*structpb.Struct) ([]string, *requestconfig.Attributes) {
 	var extensionRefs []string
 
 	extProcData, exists := data[constants.ExternalProcessingNamespace]
 	if !exists || extProcData == nil {
 		s.cfg.Logger.Sugar().Debug("External processing data not found in attributes, Returning empty extensionRefs")
 		s.cfg.Logger.Sugar().Debugf("Attributes: %+v", data)
-		return extensionRefs, ""
+		return extensionRefs, &requestconfig.Attributes{}
 	}
 
 	// Check if `xds.route_metadata` is a stringified proto and extract the nested `filter_metadata`
@@ -784,8 +746,15 @@ func (s *ExternalProcessingServer) extractExtensionRefsAndRouteName(data map[str
 	if stringVal, ok := extProcData.Fields["xds.route_name"]; ok {
 		routeName = stringVal.GetStringValue()
 	}
+	requestId := ""
+	if stringVal, ok := extProcData.Fields["request.id"]; ok {
+		requestId = stringVal.GetStringValue()
+	}
 
-	return extensionRefs, routeName
+	return extensionRefs, &requestconfig.Attributes{
+		RouteName: routeName,
+		RequestID: requestId,
+	}
 }
 
 func getNestedStruct(base *structpb.Value, key string) *structpb.Struct {
