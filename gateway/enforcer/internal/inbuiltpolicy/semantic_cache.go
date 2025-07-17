@@ -85,7 +85,7 @@ func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *env
 		if err != nil {
 			logger.Error(err, "failed to marshal embedding")
 		} else {
-			dynamicMetadataKeyValuePairs, ok := props["dynamicMetadataMap"].(map[string]string)
+			dynamicMetadataKeyValuePairs, ok := props["dynamicMetadataMap"].(map[string]interface{})
 			if ok {
 				dynamicMetadataKeyValuePairs[semanticCacheEmbeddingKey] = string(embeddingBytes)
 			}
