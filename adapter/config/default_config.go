@@ -29,7 +29,8 @@ var defaultConfig = &Config{
 		},
 		SoapErrorInXMLEnabled: false,
 		Operator: operator{
-			Namespaces: nil,
+			Namespaces:       nil,
+			GatewayClassName: "wso2-apk-default",
 		},
 		Environment: "Default",
 		Metrics: Metrics{

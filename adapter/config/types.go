@@ -511,6 +511,8 @@ type responseDirection struct {
 
 type operator struct {
 	Namespaces []string
+	// GatewayClassName is the name of the GatewayClass used by the operator
+	GatewayClassName string `default:"wso2-apk-default"`
 }
 
 type controlplane struct {

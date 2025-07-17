@@ -197,6 +197,12 @@ func (gatewayReconciler *GatewayReconciler) Reconcile(ctx context.Context, req c
 	}
 	var gwCondition []metav1.Condition = gatewayDef.Status.Conditions
 
+	if gatewayDef.Spec.GatewayClassName != gwapiv1.ObjectName(config.ReadConfigs().Adapter.Operator.GatewayClassName) {
+		loggers.LoggerAPKOperator.Infof("Gateway CR related to the reconcile request with key: %s is not using the APK GatewayClassName: %s",
+			req.NamespacedName.String(), config.ReadConfigs().Adapter.Operator.GatewayClassName)
+		return ctrl.Result{}, nil
+	}
+
 	gatewayStateData, err := gatewayReconciler.resolveGatewayState(ctx, gatewayDef)
 	if err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3122, logging.BLOCKER, "Error resolving Gateway State %s: %v", req.NamespacedName.String(), err))
