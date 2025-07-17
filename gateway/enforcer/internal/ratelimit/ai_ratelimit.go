@@ -210,9 +210,7 @@ func ExtractTokenCountFromExternalProcessingResponseBody(body []byte, providerNa
 	if err != nil {
 		bodyStr = string(body)
 	}
-	fmt.Printf("Response Body: %s\n", bodyStr)
 	sanitizedBody := sanitize(bodyStr)
-	fmt.Printf("Sanitized body: %s\n", sanitizedBody)
 	tokenCount, err := extractUsageFromBody(sanitizedBody, providerName, promptPath, completionPath,
 		totalPath, modelPath, attributes)
 	if err != nil {
