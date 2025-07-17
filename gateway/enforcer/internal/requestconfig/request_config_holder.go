@@ -39,7 +39,13 @@ type Holder struct {
 	RequestBody                     *envoy_service_proc_v3.HttpBody
 	ProcessingPhase                 ProcessingPhase
 	AI                              AIConfig
-	RouteName					   string
+	RequestAttributes               *Attributes
+	JWTAuthnPayloaClaims            map[string]interface{}
+}
+
+type Attributes struct {
+	RouteName string
+	RequestID string
 }
 
 // ProcessingPhase represents the phase of processing in the request configuration.
@@ -47,13 +53,13 @@ type ProcessingPhase string
 
 const (
 	// ProcessingPhaseRequestHeaders represents the request headers processing phase.
-	ProcessingPhaseRequestHeaders  ProcessingPhase = "request_headers"
+	ProcessingPhaseRequestHeaders ProcessingPhase = "request_headers"
 	// ProcessingPhaseResponseHeaders represents the response headers processing phase.
 	ProcessingPhaseResponseHeaders ProcessingPhase = "response_headers"
 	// ProcessingPhaseRequestBody represents the request body processing phase.
-	ProcessingPhaseRequestBody     ProcessingPhase = "request_body"
+	ProcessingPhaseRequestBody ProcessingPhase = "request_body"
 	// ProcessingPhaseResponseBody represents the response body processing phase.
-	ProcessingPhaseResponseBody    ProcessingPhase = "response_body"
+	ProcessingPhaseResponseBody ProcessingPhase = "response_body"
 )
 
 // AIConfig holds the configuration for AI model suspension.

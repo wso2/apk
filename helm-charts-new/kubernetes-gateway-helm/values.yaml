@@ -250,6 +250,7 @@ envoy:
           xdsTranslator:
             post:
             - Route
+            - HTTPListener
         service:
           fqdn:
             hostname: envoy-gateway-extension-server-service.default.svc.cluster.local

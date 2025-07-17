@@ -32,13 +32,12 @@ func main() {
 
 	//Create the TLS configuration
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
-	subAppDatastore := datastore.NewSubAppDataStore(cfg)
+	subAppDatastore := datastore.GetSubAppDataStore(cfg)
 	routePolicyAndMetadataDS := datastore.NewRoutePolicyAndMetadataDataStore(cfg)
 	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, subAppDatastore, routePolicyAndMetadataDS)
 	// Start the connection
 	client.InitiateEventingGRPCConnection()
 
-	
 	var revokedJTIStore *datastore.RevokedJTIStore
 	if cfg.TokenRevocationEnabled {
 		revokedJTIStore = datastore.NewRevokedJTIStore()
@@ -56,8 +55,7 @@ func main() {
 	}
 	go extproc.StartExternalProcessingServer(cfg, subAppDatastore, routePolicyAndMetadataDS, revokedJTIStore)
 	go jwtbackend.StartJWKSServer(cfg)
-	
-	
+
 	// Start the metrics server
 	if cfg.Metrics.Enabled && strings.EqualFold(cfg.Metrics.Type, "prometheus") {
 		metrics.RegisterDataSources(subAppDatastore)
