@@ -57,6 +57,7 @@ data:
     {{ if .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}
     [adapter.operator]
       namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces}}]
+      gatewayClassName = "{{ .Values.wso2.apk.dp.gatewayClass.name | default "wso2-apk-default" }}"
     {{ end}} 
     {{ end}} 
     {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
