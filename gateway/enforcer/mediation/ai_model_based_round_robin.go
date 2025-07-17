@@ -83,6 +83,10 @@ func NewAIModelBasedRoundRobin(mediation *dpv2alpha1.Mediation) *AIModelBasedRou
 // Process processes the request configuration for AI Model Based Round Robin.
 func (a *AIModelBasedRoundRobin) Process(requestConfigHolder *requestconfig.Holder) *Result {
 	result := &Result{}
+	if requestConfigHolder.RequestAttributes == nil {
+		a.logger.Sugar().Error("RequestAttributes are not populated in requestConfigHolder, hence cannot process AI Model Based Round Robin")
+		return result
+	}
 	if requestConfigHolder.ProcessingPhase == requestconfig.ProcessingPhaseRequestHeaders {
 		var modelWeights []datastore.ModelWeight
 		for _, model := range a.ModelsClusterPair {
@@ -95,7 +99,7 @@ func (a *AIModelBasedRoundRobin) Process(requestConfigHolder *requestconfig.Hold
 		a.logger.Sugar().Debugf(fmt.Sprintf("Supported Models: %+v", a.ModelsClusterPair))
 		a.logger.Sugar().Debugf(fmt.Sprintf("Model Weights: %+v", modelWeights))
 		a.logger.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", a.OnQuotaExceedSuspendDuration))
-		selectedModel, selectedEndpoint := datastore.GetModelBasedRoundRobinTracker().GetNextModel(requestConfigHolder.RouteMetadata.Spec.API.Name, requestConfigHolder.RouteName, modelWeights)
+		selectedModel, selectedEndpoint := datastore.GetModelBasedRoundRobinTracker().GetNextModel(requestConfigHolder.RouteMetadata.Spec.API.Name, requestConfigHolder.RequestAttributes.RouteName, modelWeights)
 		a.logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
 		a.logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
 		if selectedModel == "" || selectedEndpoint == "" {
@@ -193,7 +197,7 @@ func (a *AIModelBasedRoundRobin) Process(requestConfigHolder *requestconfig.Hold
 		}
 		a.logger.Sugar().Debug("Suspending model: " + model)
 		duration := a.OnQuotaExceedSuspendDuration
-		datastore.GetModelBasedRoundRobinTracker().SuspendModel(requestConfigHolder.RouteMetadata.Spec.API.Name, requestConfigHolder.RouteName, model, time.Duration(time.Duration(duration*1000*1000*1000)))
+		datastore.GetModelBasedRoundRobinTracker().SuspendModel(requestConfigHolder.RouteMetadata.Spec.API.Name, requestConfigHolder.RequestAttributes.RouteName, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 	}
 	return result
 }

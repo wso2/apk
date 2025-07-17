@@ -9,6 +9,7 @@ import (
 	"github.com/tidwall/gjson"
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/common-go-libs/constants"
+	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
@@ -122,6 +123,18 @@ func (a *AITokenRateLimit) Process(requestConfig *requestconfig.Holder) *Result 
 	result.Metadata[constants.PromptTokenCountIDMetadataKey] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(promptTokenCount)}}
 	result.Metadata[constants.CompletionTokenCountIDMetadataKey] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(completionTokenCount)}}
 	result.Metadata[constants.TotalTokenCountIDMetadataKey] = &structpb.Value{Kind: &structpb.Value_NumberValue{NumberValue: float64(totalTokenCount)}}
+	result.Metadata[analytics.PromptTokenCountMetadataKey], err = structpb.NewValue(promptTokenCount)
+	if err != nil {
+		a.logger.Sugar().Errorf("Error creating structpb value for PromptTokenCountMetadata with value %d: %v", promptTokenCount, err)
+	}
+	result.Metadata[analytics.CompletionTokenCountMetadataKey], err = structpb.NewValue(completionTokenCount)
+	if err != nil {
+		a.logger.Sugar().Errorf("Error creating structpb value for CompletionTokenCountMetadata with value %d: %v", completionTokenCount, err)
+	}
+	result.Metadata[analytics.TotalTokenCountMetadataKey], err = structpb.NewValue(totalTokenCount)
+	if err != nil {
+		a.logger.Sugar().Errorf("Error creating structpb value for TotalTokenCountMetadata with value %d: %v", totalTokenCount, err)
+	}
 	return result
 }
 

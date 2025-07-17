@@ -43,6 +43,11 @@ type API struct {
 	// +optional
 	// +nullable
 	Environment string `json:"environment,omitempty"`
+	// EnvType denotes the environment type of the API.
+	// +optional
+	// +kubebuilder:default:=production
+	// +kubebuilder:validation:Enum=production;staging;development
+	EnvType      string `json:"envType,omitempty"`
 	// Context is the context of the API
 	Context      string `json:"context,omitempty"`
 	// APIProperties denotes the custom properties of the API.
@@ -61,6 +66,25 @@ type API struct {
 	// +kubebuilder:default:=/api-definition
 	// +kubebuilder:validation:MinLength=1
 	DefinitionPath string `json:"definitionPath"`
+
+	// Definition is the API definition.
+	// +optional
+	Definition string `json:"definition,omitempty"`
+	
+	// UUID is the unique identifier for the API.
+	// +optional
+	// +kubebuilder:validation:MinLength=1
+	UUID string `json:"uuid,omitempty"`
+
+	// APICreator is the creator of the API.
+	// +optional
+	// +kubebuilder:validation:MinLength=1
+	APICreator string `json:"apiCreator,omitempty"`
+
+	// APICreatorTenantDomain is the tenant domain of the API creator.
+	// +optional
+	// +kubebuilder:validation:MinLength=1
+	APICreatorTenantDomain string `json:"apiCreatorTenantDomain,omitempty"`
 }
 
 // Property holds key value pair of APIProperties
