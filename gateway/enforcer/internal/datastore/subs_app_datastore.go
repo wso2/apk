@@ -31,6 +31,11 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
+var (
+	subAppDataStore     *SubscriptionApplicationDataStore
+	subAppDataStoreOnce sync.Once
+)
+
 // SubscriptionApplicationDataStore is a data store that holds information about applications,
 // application mappings, application key mappings, and subscriptions. It provides thread-safe
 // access to these data structures using a read-write mutex.
@@ -51,15 +56,18 @@ type SubscriptionApplicationDataStore struct {
 	commonControllerRestBaseURL string
 }
 
-// NewSubAppDataStore Initialize the datastore
-func NewSubAppDataStore(cfg *config.Server) *SubscriptionApplicationDataStore {
-	return &SubscriptionApplicationDataStore{
-		applications:                make(map[string]map[string]*subscription_model.Application),
-		applicationMappings:         make(map[string]map[string]map[string]*subscription_model.ApplicationMapping),
-		applicationKeyMappings:      make(map[string]map[string]*subscription_model.ApplicationKeyMapping),
-		subscriptions:               make(map[string]map[string]*subscription_model.Subscription),
-		commonControllerRestBaseURL: "https://" + cfg.CommonControllerHost + ":" + cfg.CommonControllerRestPort,
-	}
+// GetSubAppDataStore Initialize the datastore
+func GetSubAppDataStore(cfg *config.Server) *SubscriptionApplicationDataStore {
+	subAppDataStoreOnce.Do(func() {
+		subAppDataStore = &SubscriptionApplicationDataStore{
+			applications:                make(map[string]map[string]*subscription_model.Application),
+			applicationMappings:         make(map[string]map[string]map[string]*subscription_model.ApplicationMapping),
+			applicationKeyMappings:      make(map[string]map[string]*subscription_model.ApplicationKeyMapping),
+			subscriptions:               make(map[string]map[string]*subscription_model.Subscription),
+			commonControllerRestBaseURL: "https://" + cfg.CommonControllerHost + ":" + cfg.CommonControllerRestPort,
+		}
+	})
+	return subAppDataStore
 }
 
 // AddApplication adds a new Application

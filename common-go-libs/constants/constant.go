@@ -100,6 +100,7 @@ const (
 // XDSRoute Metadata
 const (
 	ExternalProcessingNamespace = "envoy.filters.http.ext_proc"
+	JWTAuthnMetadataNamespace = "envoy.filters.http.jwt_authn"
 	ExtensionRefs               = "ExtensionRefs"
 )
 
@@ -113,4 +114,16 @@ const (
 // Metadata from external processing
 const (
 	MetadataNamespace = "com.wso2.kgw.ext_proc"
+	// JWTAuthnPayloadInMetadata is the key used to store JWT authentication payload in metadata
+	JWTAuthnPayloadInMetadata = "jwt_authn_payload"
+)
+
+// SecurityPolicy header claims to header
+const (
+	ClientIDHeaderKey = "X-WSO2-Clinet-ID"
+)
+
+// Subscription ratelimit header names
+const (
+	SubscriptionUUIDHeaderName = "X-WSO2-Subscription-UUID"
 )

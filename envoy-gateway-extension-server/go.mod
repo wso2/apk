@@ -6,6 +6,7 @@ toolchain go1.24.4
 
 require (
 	github.com/envoyproxy/gateway v1.4.1
+	github.com/envoyproxy/go-control-plane v0.13.5-0.20250408134212-157c26b62099
 	github.com/envoyproxy/go-control-plane/envoy v1.32.5-0.20250408134212-157c26b62099
 	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/zapr v1.3.0
