@@ -151,6 +151,8 @@ func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies [
 		case inbuiltpolicy.SemanticCacheName:
 			if policy := inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy); policy != nil {
 				dtoPolicies = append(dtoPolicies, policy)
+			} else {
+				logger.Sugar().Debug("Skipping the Semantic Cache Policy...")
 			}
 		case inbuiltpolicy.AzureContentSafetyContentModerationName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
@@ -193,6 +195,8 @@ func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, responsePolicies
 		case inbuiltpolicy.SemanticCacheName:
 			if policy := inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy); policy != nil {
 				dtoPolicies = append(dtoPolicies, policy)
+			} else {
+				logger.Info("Skipping the Semantic Cache Policy...")
 			}
 		case inbuiltpolicy.AzureContentSafetyContentModerationName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
