@@ -1042,14 +1042,26 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(ctx context.Con
 
 			var requestInBuiltPolicies []*InternalInBuiltPolicy
 			var responseInBuiltPolicies []*InternalInBuiltPolicy
+			var semanticCachePolicy *InternalInBuiltPolicy
 			if extracted := extractRequestInBuiltPolicies(ctx, kvClient, resourceAPIPolicy); extracted != nil {
 				loggers.LoggerAPI.Debugf("Request In-Built Policies extracted %v", extracted)
 				requestInBuiltPolicies = extracted
+				// Check for semantic cache policy and store it to the semantic policy list
+				for _, policy := range requestInBuiltPolicies {
+					if policy.PolicyName == "SemanticCache" {
+						loggers.LoggerAPI.Debugf("Semantic cache policy found in request flow %+v", policy)
+						semanticCachePolicy = policy
+					}
+				}
 			}
 
 			if extracted := extractResponseInBuiltPolicies(ctx, kvClient, resourceAPIPolicy); extracted != nil {
 				loggers.LoggerAPI.Debugf("Response In-Built Policies extracted %v", extracted)
 				responseInBuiltPolicies = extracted
+			}
+			if (semanticCachePolicy != nil){ // Append semantic cache policy to end
+				responseInBuiltPolicies = append(responseInBuiltPolicies, semanticCachePolicy)
+				loggers.LoggerAPI.Debugf("Added semantic cache policy to response flow")
 			}
 
 			resource := &Resource{

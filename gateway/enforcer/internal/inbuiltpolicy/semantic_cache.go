@@ -157,7 +157,7 @@ func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *en
 
 // NewSemanticCachingPolicy initializes the NewSemanticCachingPolicy policy from the given InBuiltPolicy.
 func NewSemanticCachingPolicy(logger *logging.Logger, inBuiltPolicy dto.InBuiltPolicy) *SemanticCachePolicy {
-	logger.Sugar().Debugf("Initializing Semantic Caching policy: %s", inBuiltPolicy.GetPolicyName())
+	logger.Sugar().Debugf("Initializing Semantic Caching policy: %s", inBuiltPolicy.GetPolicyID())
 	semanticCachePolicy := &SemanticCachePolicy{
 		BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
 			PolicyName:    inBuiltPolicy.GetPolicyName(),
