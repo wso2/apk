@@ -177,4 +177,12 @@ const (
 	anonymousValye = "anonymous"
 	// Unknown is the default value used for unassigned properties.
 	Unknown = "UNKNOWN"
+	// APIUUIDKey is the key for the API UUID.
+	APIUUIDKey = "apiUUID"
+	// OriginalHostKey is the key for the original host.
+	OriginalHostKey = "originalHost"
+	// OriginalPathKey is the key for the original path.
+	OriginalPathKey = "originalPath"
+	// ExtAuthDetailsKey is the key for the external authentication details.
+	ExtAuthDetailsKey = "extAuthDetails"
 )

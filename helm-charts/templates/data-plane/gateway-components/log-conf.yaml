@@ -361,13 +361,52 @@ data:
     {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs }}
     [accessLogs]
     enable = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.enable | default false }}
-    format = "[%START_TIME%] '%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%' %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% '%REQ(X-FORWARDED-FOR)%' '%REQ(USER-AGENT)%' '%REQ(X-REQUEST-ID)%' '%REQ(:AUTHORITY)%' '%UPSTREAM_HOST%'\n"
+    logfile = "/dev/stdout"
+    logType = "json"
+    
+    [accessLogs.jSONFormat]
+    time = "%START_TIME%"
+    gwHost = "%DYNAMIC_METADATA(envoy.filters.http.ext_proc:originalHost)%"
+    host = "%REQ(:AUTHORITY)%"
+    method = "%REQ(:METHOD)%"
+    apiPath = "%DYNAMIC_METADATA(envoy.filters.http.ext_proc:originalPath)%"
+    upstrmPath = "%REQ(:PATH)%"
+    prot = "%PROTOCOL%"
+    respCode = "%RESPONSE_CODE%"
+    respCodeDtls = "%RESPONSE_CODE_DETAILS%"
+    respFlag = "%RESPONSE_FLAGS%"
+    ua = "%REQ(USER-AGENT)%"
+    reqId = "%REQ(X-REQUEST-ID)%"
+    xff = "%REQ(X-FORWARDED-FOR)%"
+    upstrmHost = "%UPSTREAM_HOST%"
+    bytesRecv = "%BYTES_RECEIVED%"
+    bytesSent = "%BYTES_SENT%"
+    dur = "%DURATION%"
+    upstrmSvcTime = "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%"
+    reqTxDur = "%REQUEST_TX_DURATION%"
+    respTxDur = "%RESPONSE_TX_DURATION%"
+    reqDur = "%REQUEST_DURATION%"
+    respDur = "%RESPONSE_DURATION%"
+    apiUUID = "%DYNAMIC_METADATA(envoy.filters.http.ext_proc:apiUUID)%"
+    extAuthDtls = "%DYNAMIC_METADATA(envoy.filters.http.ext_proc:extAuthDetails)%"
     {{- else }}
     [accessLogs]
     enable = false
-    format = "[%START_TIME%] '%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%' %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% '%REQ(X-FORWARDED-FOR)%' '%REQ(USER-AGENT)%' '%REQ(X-REQUEST-ID)%' '%REQ(:AUTHORITY)%' '%UPSTREAM_HOST%'\n"
+    logfile = "/dev/stdout"
+    logType = "json"
     {{- end }}
-
+    
+    {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.excludes }}
+    [accessLogs.excludes]
+    [accessLogs.excludes.systemHost]
+    enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.excludes.enable | default false }}
+    pathRegex = "^(/health|/ready)$"
+    {{- else }}
+    [accessLogs.excludes]
+    [accessLogs.excludes.systemHost]
+    enabled = false
+    pathRegex = "^(/health|/ready)$"
+    {{- end }}
   log4j2.properties: |
     monitorInterval=20
 

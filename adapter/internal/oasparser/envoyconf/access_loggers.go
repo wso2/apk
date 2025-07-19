@@ -18,22 +18,30 @@
 package envoyconf
 
 import (
+	"fmt"
+	"regexp"
+	"strings"
+
 	config_access_logv3 "github.com/envoyproxy/go-control-plane/envoy/config/accesslog/v3"
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
+	routev3 "github.com/envoyproxy/go-control-plane/envoy/config/route/v3"
+	file_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/file/v3"
 	grpc_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/grpc/v3"
-	stream_accesslogv3 "github.com/envoyproxy/go-control-plane/envoy/extensions/access_loggers/stream/v3"
+	matcherv3 "github.com/envoyproxy/go-control-plane/envoy/type/matcher/v3"
 	"github.com/envoyproxy/go-control-plane/pkg/wellknown"
 	"github.com/wso2/apk/adapter/config"
 	logger "github.com/wso2/apk/adapter/internal/loggers"
 	logging "github.com/wso2/apk/adapter/internal/logging"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // getAccessLogConfigs provides file access log configurations for envoy
 func getFileAccessLogConfigs() *config_access_logv3.AccessLog {
-	var logFormat *stream_accesslogv3.StdoutAccessLog_LogFormat
+	var logFormat *file_accesslogv3.FileAccessLog_LogFormat
+	logpath := defaultAccessLogPath //default access log path
 
 	logConf := config.ReadLogConfigs()
 
@@ -42,43 +50,72 @@ func getFileAccessLogConfigs() *config_access_logv3.AccessLog {
 		return nil
 	}
 
-	logFormat = &stream_accesslogv3.StdoutAccessLog_LogFormat{
-		LogFormat: &corev3.SubstitutionFormatString{
-			Format: &corev3.SubstitutionFormatString_TextFormatSource{
-				TextFormatSource: &corev3.DataSource{
-					Specifier: &corev3.DataSource_InlineString{
-						InlineString: logConf.AccessLogs.Format,
+	// Set the default log format
+	loggingFormat := logConf.AccessLogs.ReservedLogFormat +
+		strings.TrimLeft(logConf.AccessLogs.SecondaryLogFormat, "'") + "\n"
+	logFormat = getDefaultTextLogFormat(loggingFormat, false)
+
+	// Configure the log format based on the log type
+	switch logConf.AccessLogs.LogType {
+	case AccessLogTypeJSON:
+		logFields := map[string]*structpb.Value{}
+		for k, v := range logConf.AccessLogs.JSONFormat {
+			logFields[k] = &structpb.Value{Kind: &structpb.Value_StringValue{StringValue: v}}
+		}
+		formattedSecondaryLogFormat := strings.ReplaceAll(logConf.AccessLogs.SecondaryLogFormat, "'", "")
+		secondaryLogFields := strings.Split(formattedSecondaryLogFormat, " ")
+		// iterate through secondary log fields and update the logfields map
+		for _, field := range secondaryLogFields {
+			if field == "" {
+				continue
+			}
+			logFields[strings.ReplaceAll(field, "%", "")] =
+				&structpb.Value{Kind: &structpb.Value_StringValue{StringValue: field}}
+		}
+		logFormat = &file_accesslogv3.FileAccessLog_LogFormat{
+			LogFormat: &corev3.SubstitutionFormatString{
+				Format: &corev3.SubstitutionFormatString_JsonFormat{
+					JsonFormat: &structpb.Struct{
+						Fields: logFields,
 					},
 				},
+				Formatters: getDefaultFormatters(),
 			},
-			Formatters: []*corev3.TypedExtensionConfig{
-				{
-					Name: "envoy.formatter.req_without_query",
-					TypedConfig: &anypb.Any{
-						TypeUrl: "type.googleapis.com/envoy.extensions.formatter.req_without_query.v3.ReqWithoutQuery",
-					},
-				},
-			},
-		},
+		}
+		logger.LoggerOasparser.Infof("Access log type is set to json.")
+	case AccessLogTypeText:
+		logger.LoggerOasparser.Infof("Access log type is set to text.")
+	default:
+		logger.LoggerOasparser.Errorf("Error setting access log type. Invalid Access log type %q. Continue with default log type %q",
+			logConf.AccessLogs.LogType, AccessLogTypeText)
 	}
 
-	accessLogConf := &stream_accesslogv3.StdoutAccessLog{
+	logpath = logConf.AccessLogs.LogFile
+
+	accessLogConf := &file_accesslogv3.FileAccessLog{
+		Path:            logpath,
 		AccessLogFormat: logFormat,
 	}
 
 	accessLogTypedConf, err := anypb.New(accessLogConf)
 	if err != nil {
-		logger.LoggerOasparser.ErrorC(logging.PrintError(logging.Error2200, logging.CRITICAL, "Error marsheling access log configs. %v", err.Error()))
+		logger.LoggerOasparser.Error("Error marsheling access log configs. ", err)
 		return nil
 	}
 
 	accessLog := config_access_logv3.AccessLog{
-		Name:   wellknown.FileAccessLog,
-		Filter: nil,
+		Name:   fileAccessLogName,
+		Filter: getAccessLogFilterConfig(),
 		ConfigType: &config_access_logv3.AccessLog_TypedConfig{
 			TypedConfig: accessLogTypedConf,
 		},
 	}
+
+	err = accessLog.Validate()
+	if err != nil {
+		logger.LoggerOasparser.Error("Error while validating file access log configs. ", err)
+	}
+
 	return &accessLog
 }
 
@@ -134,4 +171,99 @@ func getAccessLogs() []*config_access_logv3.AccessLog {
 		accessLoggers = append(accessLoggers, getGRPCAccessLogConfigs(conf))
 	}
 	return accessLoggers
+}
+
+// getDefaultTextLogFormat provides default text log format
+func getDefaultTextLogFormat(loggingFormat string, omitEmptyValues bool) *file_accesslogv3.FileAccessLog_LogFormat {
+	formatters := getDefaultFormatters()
+
+	return &file_accesslogv3.FileAccessLog_LogFormat{
+		LogFormat: &corev3.SubstitutionFormatString{
+			Format: &corev3.SubstitutionFormatString_TextFormatSource{
+				TextFormatSource: &corev3.DataSource{
+					Specifier: &corev3.DataSource_InlineString{
+						InlineString: loggingFormat,
+					},
+				},
+			},
+			Formatters:      formatters,
+			OmitEmptyValues: omitEmptyValues,
+		},
+	}
+}
+
+// getAccessLogConfigs provides default formatters
+func getDefaultFormatters() []*corev3.TypedExtensionConfig {
+	return []*corev3.TypedExtensionConfig{
+		{
+			Name: "envoy.formatter.req_without_query",
+			TypedConfig: &anypb.Any{
+				TypeUrl: "type.googleapis.com/envoy.extensions.formatter.req_without_query.v3.ReqWithoutQuery",
+			},
+		},
+	}
+}
+
+// getAccessLogFilterConfig provides exclude path configurations for envoy access logs
+func getAccessLogFilterConfig() *config_access_logv3.AccessLogFilter {
+	logConf := config.ReadLogConfigs()
+	conf := config.ReadConfigs()
+
+	if !logConf.AccessLogs.Excludes.SystemHost.Enabled {
+		return nil
+	}
+	logger.LoggerOasparser.Debugf("Access log excludes for system host is enabled with path regex: %q",
+		logConf.AccessLogs.Excludes.SystemHost.PathRegex)
+
+	systemHostFilter := &config_access_logv3.AccessLogFilter{
+		FilterSpecifier: &config_access_logv3.AccessLogFilter_HeaderFilter{
+			HeaderFilter: &config_access_logv3.HeaderFilter{
+				Header: &routev3.HeaderMatcher{
+					Name: ":authority",
+					HeaderMatchSpecifier: &routev3.HeaderMatcher_SafeRegexMatch{
+						SafeRegexMatch: &matcherv3.RegexMatcher{
+							Regex: fmt.Sprintf("^%s(:\\d+)?$", conf.Envoy.SystemHost),
+						},
+					},
+					InvertMatch: true,
+				},
+			},
+		},
+	}
+
+	if logConf.AccessLogs.Excludes.SystemHost.PathRegex != "" {
+		_, err := regexp.Compile(logConf.AccessLogs.Excludes.SystemHost.PathRegex)
+		if err != nil {
+			logger.LoggerOasparser.Fatal("Error compiling access log exclude path regex. ", err)
+		}
+
+		// if path regex is specified, use the OrFilter to combine the system host filter and the path regex filter
+		return &config_access_logv3.AccessLogFilter{
+			FilterSpecifier: &config_access_logv3.AccessLogFilter_OrFilter{
+				OrFilter: &config_access_logv3.OrFilter{
+					Filters: []*config_access_logv3.AccessLogFilter{
+						systemHostFilter,
+						{
+							FilterSpecifier: &config_access_logv3.AccessLogFilter_HeaderFilter{
+								HeaderFilter: &config_access_logv3.HeaderFilter{
+									Header: &routev3.HeaderMatcher{
+										Name: ":path",
+										HeaderMatchSpecifier: &routev3.HeaderMatcher_SafeRegexMatch{
+											SafeRegexMatch: &matcherv3.RegexMatcher{
+												Regex: logConf.AccessLogs.Excludes.SystemHost.PathRegex,
+											},
+										},
+										InvertMatch: true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
+	// if path regex is not specified, use the system host filter alone
+	return systemHostFilter
 }

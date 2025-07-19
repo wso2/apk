@@ -263,7 +263,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 		mirrorClusterNames := map[string][]string{}
 		resourcePath := resource.GetPath()
 		endpoint := resource.GetEndpoints()
-		
+
 		allWeightsAreOne := true
 		for _, ep := range endpoint.Endpoints {
 			if ep.Weight != 1 {
@@ -275,8 +275,8 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			logger.LoggerOasparser.Infof("Multiple endpoints detected with weights that are not all equal to 1 for resource: %s", resourcePath)
 			basePath := ""
 			basePath = strings.TrimSuffix(endpoint.Endpoints[0].Basepath, "/")
-			
-			for _, ep := range endpoint.Endpoints {	
+
+			for _, ep := range endpoint.Endpoints {
 				clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, ep.Host+ep.Basepath)
 				cluster, address, err := processEndpoints(clusterName, endpoint, timeout, basePath, &ep)
 				if err != nil {
@@ -288,13 +288,13 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 			}
 
 			clusterName = getClusterName(endpoint.EndpointPrefix, organizationID, vHost, adapterInternalAPI.GetTitle(), apiVersion, endpoint.Endpoints[0].Host+endpoint.Endpoints[0].Basepath)
-			
+
 			// Create resource level interceptor clusters if required
 			clustersI, endpointsI, operationalReqInterceptors, operationalRespInterceptorVal := createInterceptorResourceClusters(adapterInternalAPI,
 				interceptorCerts, vHost, organizationID, apiRequestInterceptor, apiResponseInterceptor, resource)
 			clusters = append(clusters, clustersI...)
 			endpoints = append(endpoints, endpointsI...)
-			
+
 			routeParams := genRouteCreateParams(adapterInternalAPI, resource, vHost, basePath, clusterName, *operationalReqInterceptors, *operationalRespInterceptorVal, organizationID,
 				false, false, nil)
 
@@ -314,7 +314,7 @@ func CreateRoutesWithClusters(adapterInternalAPI *model.AdapterInternalAPI, inte
 					return nil, nil, nil, fmt.Errorf("error while creating routes. %v", errDefaultPath)
 				}
 				routes = append(routes, defaultRoutes...)
-			}			
+			}
 		} else {
 			logger.LoggerOasparser.Infof("Single endpoint or mulitple endpoints all with weight equal to 1 detected for resource: %s", resourcePath)
 			for _, ep := range endpoint.Endpoints {
@@ -948,6 +948,26 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 							StringValue: endpointBasepath,
 						},
 					},
+					apiUUIDAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: params.apiID,
+						},
+					},
+					originalHostAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: vHost,
+						},
+					},
+					originalPathAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: resourcePath,
+						},
+					},
+					extAuthDetailsAttribute: &structpb.Value{
+						Kind: &structpb.Value_StringValue{
+							StringValue: "",
+						},
+					},
 				},
 			},
 		},
@@ -1199,7 +1219,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 		for _, endpoint := range routeEndpoints.Endpoints {
 			clusterName := getClusterName(routeEndpoints.EndpointPrefix, params.organizationID, params.vHost, params.title, params.version, endpoint.Host+params.endpointBasePath)
 			weightedCluster.Clusters = append(weightedCluster.Clusters, &routev3.WeightedCluster_ClusterWeight{
-				Name: clusterName,
+				Name:   clusterName,
 				Weight: &wrapperspb.UInt32Value{Value: uint32(endpoint.Weight)},
 			})
 		}

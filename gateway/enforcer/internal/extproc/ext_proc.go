@@ -90,6 +90,10 @@ const (
 	customOrgMetadataKey                            string = "customorg"
 	endpointBasepath                                string = "endpointBasepath"
 	suspendAIModelValueAttribute                    string = "ai:suspendmodel"
+	apiUUID                                         string = "apiUUID"
+	originalHost                                    string = "originalHost"
+	originalPath                                    string = "originalPath"
+	extAuthDetails                                  string = "externalAuthDetails"
 	externalProessingMetadataContextKey             string = "envoy.filters.http.ext_proc"
 	subscriptionMetadataKey                         string = "ratelimit:subscription"
 	usagePolicyMetadataKey                          string = "ratelimit:usage-policy"
@@ -1141,7 +1145,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						SetHeaders: []*corev3.HeaderValueOption{},
 					}
 				}
-				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, 
+				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders,
 					&corev3.HeaderValueOption{
 						Header: &corev3.HeaderValue{
 							Key:      "X-Cache-Status",
@@ -1551,6 +1555,10 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 		extractedValues := make(map[string]string)
 
 		keysToExtract := []string{
+			apiUUID,
+			originalHost,
+			originalPath,
+			extAuthDetails,
 			pathAttribute,
 			vHostAttribute,
 			basePathAttribute,
@@ -1594,6 +1602,14 @@ func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*struct
 					attributes.EndpointBasepath = extractedValues[key]
 				case uriAttribute:
 					attributes.URI = extractedValues[key]
+				case originalHost:
+					attributes.OriginalHost = extractedValues[key]
+				case originalPath:
+					attributes.OriginalPath = extractedValues[key]
+				case apiUUID:
+					attributes.APIUUID = extractedValues[key]
+				case extAuthDetails:
+					attributes.ExtAuthDetails = extractedValues[key]
 				}
 			}
 		}
@@ -1685,6 +1701,10 @@ func prepareMetadataKeyValuePairAndAddTo(metadataKeyValuePair map[string]interfa
 			metadataKeyValuePair[analytics.AppNameKey] = requestConfigHolder.MatchedApplication.Name
 			metadataKeyValuePair[analytics.AppOwnerKey] = requestConfigHolder.MatchedApplication.Owner
 		}
+		metadataKeyValuePair[analytics.APIUUIDKey] = requestConfigHolder.ExternalProcessingEnvoyAttributes.APIUUID
+		metadataKeyValuePair[analytics.OriginalHostKey] = requestConfigHolder.ExternalProcessingEnvoyAttributes.OriginalHost
+		metadataKeyValuePair[analytics.OriginalPathKey] = requestConfigHolder.ExternalProcessingEnvoyAttributes.OriginalPath
+		metadataKeyValuePair[analytics.ExtAuthDetailsKey] = requestConfigHolder.ExternalProcessingEnvoyAttributes.ExtAuthDetails
 	}
 	return &metadataKeyValuePair
 }
