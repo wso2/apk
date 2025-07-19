@@ -1631,7 +1631,6 @@ spec:
                                       required:
                                         - type
                                       type: object
-
                                     maxItems: 16
                                     type: array
                                   group:
@@ -4579,43 +4578,27 @@ spec:
                               backendRef:
                                 description: |-
                                   HTTPBackendRef defines how a HTTPRoute forwards a HTTP request.
-
-
                                   Note that when a namespace different than the local namespace is specified, a
                                   ReferenceGrant object is required in the referent namespace to allow that
                                   namespace's owner to accept the reference. See the ReferenceGrant
                                   documentation for details.
-
-
                                   <gateway:experimental:description>
-
-
                                   When the BackendRef points to a Kubernetes Service, implementations SHOULD
                                   honor the appProtocol field if it is set for the target Service Port.
-
-
                                   Implementations supporting appProtocol SHOULD recognize the Kubernetes
                                   Standard Application Protocols defined in KEP-3726.
-
-
                                   If a Service appProtocol isn't specified, an implementation MAY infer the
                                   backend protocol through its own means. Implementations MAY infer the
                                   protocol from the Route type referring to the backend Service.
-
-
                                   If a Route is not able to send traffic to the backend using the specified
                                   protocol then the backend is considered invalid. Implementations MUST set the
                                   "ResolvedRefs" condition to "False" with the "UnsupportedProtocol" reason.
-
-
                                   </gateway:experimental:description>
                                 properties:
                                   filters:
                                     description: |-
                                       Filters defined at this level should be executed if and only if the
                                       request is being forwarded to the backend defined here.
-
-
                                       Support: Implementation-specific (For broader support of filters, use the
                                       Filters field in HTTPRouteRule.)
                                     items:
@@ -4633,11 +4616,7 @@ spec:
                                             "filter" behavior.  For example, resource "myroutefilter" in group
                                             "networking.example.net"). ExtensionRef MUST NOT be used for core and
                                             extended filters.
-
-
                                             This filter can be used multiple times within the same rule.
-
-
                                             Support: Implementation-specific
                                           properties:
                                             group:
@@ -4668,8 +4647,6 @@ spec:
                                           description: |-
                                             RequestHeaderModifier defines a schema for a filter that modifies request
                                             headers.
-
-
                                             Support: Core
                                           properties:
                                             add:
@@ -4677,19 +4654,13 @@ spec:
                                                 Add adds the given header(s) (name, value) to the request
                                                 before the action. It appends to any existing values associated
                                                 with the header name.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   add:
                                                   - name: "my-header"
                                                     value: "bar,baz"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo,bar,baz
@@ -4702,8 +4673,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -4734,19 +4703,13 @@ spec:
                                                 value of Remove is a list of HTTP header names. Note that the header
                                                 names are case-insensitive (see
                                                 https://datatracker.ietf.org/doc/html/rfc2616#section-4.2).
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header1: foo
                                                   my-header2: bar
                                                   my-header3: baz
-
-
                                                 Config:
                                                   remove: ["my-header1", "my-header3"]
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header2: bar
@@ -4759,19 +4722,13 @@ spec:
                                               description: |-
                                                 Set overwrites the request with the given header (name, value)
                                                 before the action.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   set:
                                                   - name: "my-header"
                                                     value: "bar"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: bar
@@ -4784,8 +4741,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -4816,48 +4771,30 @@ spec:
                                             RequestMirror defines a schema for a filter that mirrors requests.
                                             Requests are sent to the specified destination, but responses from
                                             that destination are ignored.
-
-
                                             This filter can be used multiple times within the same rule. Note that
                                             not all implementations will be able to support mirroring to multiple
                                             backends.
-
-
                                             Support: Extended
-
-
                                             <gateway:experimental:validation:XValidation:message="Only one of percent or fraction may be specified in HTTPRequestMirrorFilter",rule="!(has(self.percent) && has(self.fraction))">
                                           properties:
                                             backendRef:
                                               description: |-
                                                 BackendRef references a resource where mirrored requests are sent.
-
-
                                                 Mirrored requests must be sent only to a single destination endpoint
                                                 within this BackendRef, irrespective of how many endpoints are present
                                                 within this BackendRef.
-
-
                                                 If the referent cannot be found, this BackendRef is invalid and must be
                                                 dropped from the Gateway. The controller must ensure the "ResolvedRefs"
                                                 condition on the Route status is set to `status: False` and not configure
                                                 this backend in the underlying implementation.
-
-
                                                 If there is a cross-namespace reference to an *existing* object
                                                 that is not allowed by a ReferenceGrant, the controller must ensure the
                                                 "ResolvedRefs"  condition on the Route is set to `status: False`,
                                                 with the "RefNotPermitted" reason and not configure this backend in the
                                                 underlying implementation.
-
-
                                                 In either error case, the Message of the `ResolvedRefs` Condition
                                                 should be used to provide more detail about the problem.
-
-
                                                 Support: Extended for Kubernetes Service
-
-
                                                 Support: Implementation-specific for any other resource
                                               properties:
                                                 group:
@@ -4873,21 +4810,13 @@ spec:
                                                   description: |-
                                                     Kind is the Kubernetes resource kind of the referent. For example
                                                     "Service".
-
-
                                                     Defaults to "Service" when not specified.
-
-
                                                     ExternalName services can refer to CNAME DNS records that may live
                                                     outside of the cluster and as such are difficult to reason about in
                                                     terms of conformance. They also may not be safe to forward to (see
                                                     CVE-2021-25740 for more information). Implementations SHOULD NOT
                                                     support ExternalName Services.
-
-
                                                     Support: Core (Services with a type other than ExternalName)
-
-
                                                     Support: Implementation-specific (Services with type ExternalName)
                                                   maxLength: 63
                                                   minLength: 1
@@ -4903,14 +4832,10 @@ spec:
                                                   description: |-
                                                     Namespace is the namespace of the backend. When unspecified, the local
                                                     namespace is inferred.
-
-
                                                     Note that when a namespace different than the local namespace is specified,
                                                     a ReferenceGrant object is required in the referent namespace to allow that
                                                     namespace's owner to accept the reference. See the ReferenceGrant
                                                     documentation for details.
-
-
                                                     Support: Core
                                                   maxLength: 63
                                                   minLength: 1
@@ -4934,12 +4859,8 @@ spec:
                                               description: |-
                                                 Fraction represents the fraction of requests that should be
                                                 mirrored to BackendRef.
-
-
                                                 Only one of Fraction or Percent may be specified. If neither field
                                                 is specified, 100% of requests will be mirrored.
-
-
                                                 <gateway:experimental>
                                               properties:
                                                 denominator:
@@ -4959,12 +4880,8 @@ spec:
                                                 Percent represents the percentage of requests that should be
                                                 mirrored to BackendRef. Its minimum value is 0 (indicating 0% of
                                                 requests) and its maximum value is 100 (indicating 100% of requests).
-
-
                                                 Only one of Fraction or Percent may be specified. If neither field
                                                 is specified, 100% of requests will be mirrored.
-
-
                                                 <gateway:experimental>
                                               format: int32
                                               maximum: 100
@@ -4977,8 +4894,6 @@ spec:
                                           description: |-
                                             RequestRedirect defines a schema for a filter that responds to the
                                             request with an HTTP redirection.
-
-
                                             Support: Core
                                           properties:
                                             hostname:
@@ -4986,8 +4901,6 @@ spec:
                                                 Hostname is the hostname to be used in the value of the `Location`
                                                 header in the response.
                                                 When empty, the hostname in the `Host` header of the request is used.
-
-
                                                 Support: Core
                                               maxLength: 253
                                               minLength: 1
@@ -4998,8 +4911,6 @@ spec:
                                                 Path defines parameters used to modify the path of the incoming request.
                                                 The modified path is then used to construct the `Location` header. When
                                                 empty, the request path is used as-is.
-
-
                                                 Support: Extended
                                               properties:
                                                 replaceFullPath:
@@ -5014,20 +4925,14 @@ spec:
                                                     match of a request during a rewrite or redirect. For example, a request
                                                     to "/foo/bar" with a prefix match of "/foo" and a ReplacePrefixMatch
                                                     of "/xyz" would be modified to "/xyz/bar".
-
-
                                                     Note that this matches the behavior of the PathPrefix match type. This
                                                     matches full path elements. A path element refers to the list of labels
                                                     in the path split by the `/` separator. When specified, a trailing `/` is
                                                     ignored. For example, the paths `/abc`, `/abc/`, and `/abc/def` would all
                                                     match the prefix `/abc`, but the path `/abcd` would not.
-
-
                                                     ReplacePrefixMatch is only compatible with a `PathPrefix` HTTPRouteMatch.
                                                     Using any other HTTPRouteMatch type on the same HTTPRouteRule will result in
                                                     the implementation setting the Accepted Condition for the Route to `status: False`.
-
-
                                                     Request Path | Prefix Match | Replace Prefix | Modified Path
                                                     -------------|--------------|----------------|----------
                                                     /foo/bar     | /foo         | /xyz           | /xyz/bar
@@ -5047,12 +4952,8 @@ spec:
                                                   description: |-
                                                     Type defines the type of path modifier. Additional types may be
                                                     added in a future release of the API.
-
-
                                                     Note that values may be added to this enum, implementations
                                                     must ensure that unknown values will not cause a crash.
-
-
                                                     Unknown values here must result in the implementation setting the
                                                     Accepted Condition for the Route to `status: False`, with a
                                                     Reason of `UnsupportedValue`.
@@ -5067,30 +4968,20 @@ spec:
                                               description: |-
                                                 Port is the port to be used in the value of the `Location`
                                                 header in the response.
-
-
                                                 If no port is specified, the redirect port MUST be derived using the
                                                 following rules:
-
-
                                                 * If redirect scheme is not-empty, the redirect port MUST be the well-known
                                                   port associated with the redirect scheme. Specifically "http" to port 80
                                                   and "https" to port 443. If the redirect scheme does not have a
                                                   well-known port, the listener port of the Gateway SHOULD be used.
                                                 * If redirect scheme is empty, the redirect port MUST be the Gateway
                                                   Listener port.
-
-
                                                 Implementations SHOULD NOT add the port number in the 'Location'
                                                 header in the following cases:
-
-
                                                 * A Location header that will use HTTP (whether that is determined via
                                                   the Listener protocol or the Scheme field) _and_ use port 80.
                                                 * A Location header that will use HTTPS (whether that is determined via
                                                   the Listener protocol or the Scheme field) _and_ use port 443.
-
-
                                                 Support: Extended
                                               format: int32
                                               maximum: 65535
@@ -5100,21 +4991,13 @@ spec:
                                               description: |-
                                                 Scheme is the scheme to be used in the value of the `Location` header in
                                                 the response. When empty, the scheme of the request is used.
-
-
                                                 Scheme redirects can affect the port of the redirect, for more information,
                                                 refer to the documentation for the port field of this filter.
-
-
                                                 Note that values may be added to this enum, implementations
                                                 must ensure that unknown values will not cause a crash.
-
-
                                                 Unknown values here must result in the implementation setting the
                                                 Accepted Condition for the Route to `status: False`, with a
                                                 Reason of `UnsupportedValue`.
-
-
                                                 Support: Extended
                                               enum:
                                               - http
@@ -5124,17 +5007,11 @@ spec:
                                               default: 302
                                               description: |-
                                                 StatusCode is the HTTP status code to be used in response.
-
-
                                                 Note that values may be added to this enum, implementations
                                                 must ensure that unknown values will not cause a crash.
-
-
                                                 Unknown values here must result in the implementation setting the
                                                 Accepted Condition for the Route to `status: False`, with a
                                                 Reason of `UnsupportedValue`.
-
-
                                                 Support: Core
                                               enum:
                                               - 301
@@ -5145,8 +5022,6 @@ spec:
                                           description: |-
                                             ResponseHeaderModifier defines a schema for a filter that modifies response
                                             headers.
-
-
                                             Support: Extended
                                           properties:
                                             add:
@@ -5154,19 +5029,13 @@ spec:
                                                 Add adds the given header(s) (name, value) to the request
                                                 before the action. It appends to any existing values associated
                                                 with the header name.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   add:
                                                   - name: "my-header"
                                                     value: "bar,baz"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo,bar,baz
@@ -5179,8 +5048,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -5211,19 +5078,13 @@ spec:
                                                 value of Remove is a list of HTTP header names. Note that the header
                                                 names are case-insensitive (see
                                                 https://datatracker.ietf.org/doc/html/rfc2616#section-4.2).
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header1: foo
                                                   my-header2: bar
                                                   my-header3: baz
-
-
                                                 Config:
                                                   remove: ["my-header1", "my-header3"]
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header2: bar
@@ -5236,19 +5097,13 @@ spec:
                                               description: |-
                                                 Set overwrites the request with the given header (name, value)
                                                 before the action.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   set:
                                                   - name: "my-header"
                                                     value: "bar"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: bar
@@ -5261,8 +5116,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -5292,18 +5145,12 @@ spec:
                                           description: |-
                                             Type identifies the type of filter to apply. As with other API fields,
                                             types are classified into three conformance levels:
-
-
                                             - Core: Filter types and their corresponding configuration defined by
                                               "Support: Core" in this package, e.g. "RequestHeaderModifier". All
                                               implementations must support core filters.
-
-
                                             - Extended: Filter types and their corresponding configuration defined by
                                               "Support: Extended" in this package, e.g. "RequestMirror". Implementers
                                               are encouraged to support extended filters.
-
-
                                             - Implementation-specific: Filters that are defined and supported by
                                               specific vendors.
                                               In the future, filters showing convergence in behavior across multiple
@@ -5311,21 +5158,13 @@ spec:
                                               conformance levels. Filter-specific configuration for such filters
                                               is specified using the ExtensionRef field. `Type` should be set to
                                               "ExtensionRef" for custom filters.
-
-
                                             Implementers are encouraged to define custom implementation types to
                                             extend the core API with implementation-specific behavior.
-
-
                                             If a reference to a custom filter type cannot be resolved, the filter
                                             MUST NOT be skipped. Instead, requests that would have been processed by
                                             that filter MUST receive a HTTP error response.
-
-
                                             Note that values may be added to this enum, implementations
                                             must ensure that unknown values will not cause a crash.
-
-
                                             Unknown values here must result in the implementation setting the
                                             Accepted Condition for the Route to `status: False`, with a
                                             Reason of `UnsupportedValue`.
@@ -5340,16 +5179,12 @@ spec:
                                         urlRewrite:
                                           description: |-
                                             URLRewrite defines a schema for a filter that modifies a request during forwarding.
-
-
                                             Support: Extended
                                           properties:
                                             hostname:
                                               description: |-
                                                 Hostname is the value to be used to replace the Host header value during
                                                 forwarding.
-
-
                                                 Support: Extended
                                               maxLength: 253
                                               minLength: 1
@@ -5358,8 +5193,6 @@ spec:
                                             path:
                                               description: |-
                                                 Path defines a path rewrite.
-
-
                                                 Support: Extended
                                               properties:
                                                 replaceFullPath:
@@ -5374,20 +5207,14 @@ spec:
                                                     match of a request during a rewrite or redirect. For example, a request
                                                     to "/foo/bar" with a prefix match of "/foo" and a ReplacePrefixMatch
                                                     of "/xyz" would be modified to "/xyz/bar".
-
-
                                                     Note that this matches the behavior of the PathPrefix match type. This
                                                     matches full path elements. A path element refers to the list of labels
                                                     in the path split by the `/` separator. When specified, a trailing `/` is
                                                     ignored. For example, the paths `/abc`, `/abc/`, and `/abc/def` would all
                                                     match the prefix `/abc`, but the path `/abcd` would not.
-
-
                                                     ReplacePrefixMatch is only compatible with a `PathPrefix` HTTPRouteMatch.
                                                     Using any other HTTPRouteMatch type on the same HTTPRouteRule will result in
                                                     the implementation setting the Accepted Condition for the Route to `status: False`.
-
-
                                                     Request Path | Prefix Match | Replace Prefix | Modified Path
                                                     -------------|--------------|----------------|----------
                                                     /foo/bar     | /foo         | /xyz           | /xyz/bar
@@ -5407,12 +5234,8 @@ spec:
                                                   description: |-
                                                     Type defines the type of path modifier. Additional types may be
                                                     added in a future release of the API.
-
-
                                                     Note that values may be added to this enum, implementations
                                                     must ensure that unknown values will not cause a crash.
-
-
                                                     Unknown values here must result in the implementation setting the
                                                     Accepted Condition for the Route to `status: False`, with a
                                                     Reason of `UnsupportedValue`.
@@ -5442,21 +5265,13 @@ spec:
                                     description: |-
                                       Kind is the Kubernetes resource kind of the referent. For example
                                       "Service".
-
-
                                       Defaults to "Service" when not specified.
-
-
                                       ExternalName services can refer to CNAME DNS records that may live
                                       outside of the cluster and as such are difficult to reason about in
                                       terms of conformance. They also may not be safe to forward to (see
                                       CVE-2021-25740 for more information). Implementations SHOULD NOT
                                       support ExternalName Services.
-
-
                                       Support: Core (Services with a type other than ExternalName)
-
-
                                       Support: Implementation-specific (Services with type ExternalName)
                                     maxLength: 63
                                     minLength: 1
@@ -5471,14 +5286,10 @@ spec:
                                     description: |-
                                       Namespace is the namespace of the backend. When unspecified, the local
                                       namespace is inferred.
-
-
                                       Note that when a namespace different than the local namespace is specified,
                                       a ReferenceGrant object is required in the referent namespace to allow that
                                       namespace's owner to accept the reference. See the ReferenceGrant
                                       documentation for details.
-
-
                                       Support: Core
                                     maxLength: 63
                                     minLength: 1
@@ -5504,14 +5315,10 @@ spec:
                                       the exact proportion defined here depending on the precision an
                                       implementation supports. Weight is not a percentage and the sum of
                                       weights does not need to equal 100.
-
-
                                       If only one backend is specified and it has a weight greater than 0, 100%
                                       of the traffic is forwarded to that backend. If weight is set to 0, no
                                       traffic should be forwarded for this entry. If unspecified, weight
                                       defaults to 1.
-
-
                                       Support for this field varies based on the context where used.
                                     format: int32
                                     maximum: 1000000
@@ -5535,43 +5342,27 @@ spec:
                               backendRef:
                                 description: |-
                                   HTTPBackendRef defines how a HTTPRoute forwards a HTTP request.
-
-
                                   Note that when a namespace different than the local namespace is specified, a
                                   ReferenceGrant object is required in the referent namespace to allow that
                                   namespace's owner to accept the reference. See the ReferenceGrant
                                   documentation for details.
-
-
                                   <gateway:experimental:description>
-
-
                                   When the BackendRef points to a Kubernetes Service, implementations SHOULD
                                   honor the appProtocol field if it is set for the target Service Port.
-
-
                                   Implementations supporting appProtocol SHOULD recognize the Kubernetes
                                   Standard Application Protocols defined in KEP-3726.
-
-
                                   If a Service appProtocol isn't specified, an implementation MAY infer the
                                   backend protocol through its own means. Implementations MAY infer the
                                   protocol from the Route type referring to the backend Service.
-
-
                                   If a Route is not able to send traffic to the backend using the specified
                                   protocol then the backend is considered invalid. Implementations MUST set the
                                   "ResolvedRefs" condition to "False" with the "UnsupportedProtocol" reason.
-
-
                                   </gateway:experimental:description>
                                 properties:
                                   filters:
                                     description: |-
                                       Filters defined at this level should be executed if and only if the
                                       request is being forwarded to the backend defined here.
-
-
                                       Support: Implementation-specific (For broader support of filters, use the
                                       Filters field in HTTPRouteRule.)
                                     items:
@@ -5589,11 +5380,7 @@ spec:
                                             "filter" behavior.  For example, resource "myroutefilter" in group
                                             "networking.example.net"). ExtensionRef MUST NOT be used for core and
                                             extended filters.
-
-
                                             This filter can be used multiple times within the same rule.
-
-
                                             Support: Implementation-specific
                                           properties:
                                             group:
@@ -5624,8 +5411,6 @@ spec:
                                           description: |-
                                             RequestHeaderModifier defines a schema for a filter that modifies request
                                             headers.
-
-
                                             Support: Core
                                           properties:
                                             add:
@@ -5633,19 +5418,13 @@ spec:
                                                 Add adds the given header(s) (name, value) to the request
                                                 before the action. It appends to any existing values associated
                                                 with the header name.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   add:
                                                   - name: "my-header"
                                                     value: "bar,baz"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo,bar,baz
@@ -5658,8 +5437,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -5690,19 +5467,13 @@ spec:
                                                 value of Remove is a list of HTTP header names. Note that the header
                                                 names are case-insensitive (see
                                                 https://datatracker.ietf.org/doc/html/rfc2616#section-4.2).
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header1: foo
                                                   my-header2: bar
                                                   my-header3: baz
-
-
                                                 Config:
                                                   remove: ["my-header1", "my-header3"]
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header2: bar
@@ -5715,19 +5486,13 @@ spec:
                                               description: |-
                                                 Set overwrites the request with the given header (name, value)
                                                 before the action.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   set:
                                                   - name: "my-header"
                                                     value: "bar"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: bar
@@ -5740,8 +5505,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -5772,48 +5535,30 @@ spec:
                                             RequestMirror defines a schema for a filter that mirrors requests.
                                             Requests are sent to the specified destination, but responses from
                                             that destination are ignored.
-
-
                                             This filter can be used multiple times within the same rule. Note that
                                             not all implementations will be able to support mirroring to multiple
                                             backends.
-
-
                                             Support: Extended
-
-
                                             <gateway:experimental:validation:XValidation:message="Only one of percent or fraction may be specified in HTTPRequestMirrorFilter",rule="!(has(self.percent) && has(self.fraction))">
                                           properties:
                                             backendRef:
                                               description: |-
                                                 BackendRef references a resource where mirrored requests are sent.
-
-
                                                 Mirrored requests must be sent only to a single destination endpoint
                                                 within this BackendRef, irrespective of how many endpoints are present
                                                 within this BackendRef.
-
-
                                                 If the referent cannot be found, this BackendRef is invalid and must be
                                                 dropped from the Gateway. The controller must ensure the "ResolvedRefs"
                                                 condition on the Route status is set to `status: False` and not configure
                                                 this backend in the underlying implementation.
-
-
                                                 If there is a cross-namespace reference to an *existing* object
                                                 that is not allowed by a ReferenceGrant, the controller must ensure the
                                                 "ResolvedRefs"  condition on the Route is set to `status: False`,
                                                 with the "RefNotPermitted" reason and not configure this backend in the
                                                 underlying implementation.
-
-
                                                 In either error case, the Message of the `ResolvedRefs` Condition
                                                 should be used to provide more detail about the problem.
-
-
                                                 Support: Extended for Kubernetes Service
-
-
                                                 Support: Implementation-specific for any other resource
                                               properties:
                                                 group:
@@ -5829,21 +5574,13 @@ spec:
                                                   description: |-
                                                     Kind is the Kubernetes resource kind of the referent. For example
                                                     "Service".
-
-
                                                     Defaults to "Service" when not specified.
-
-
                                                     ExternalName services can refer to CNAME DNS records that may live
                                                     outside of the cluster and as such are difficult to reason about in
                                                     terms of conformance. They also may not be safe to forward to (see
                                                     CVE-2021-25740 for more information). Implementations SHOULD NOT
                                                     support ExternalName Services.
-
-
                                                     Support: Core (Services with a type other than ExternalName)
-
-
                                                     Support: Implementation-specific (Services with type ExternalName)
                                                   maxLength: 63
                                                   minLength: 1
@@ -5859,14 +5596,10 @@ spec:
                                                   description: |-
                                                     Namespace is the namespace of the backend. When unspecified, the local
                                                     namespace is inferred.
-
-
                                                     Note that when a namespace different than the local namespace is specified,
                                                     a ReferenceGrant object is required in the referent namespace to allow that
                                                     namespace's owner to accept the reference. See the ReferenceGrant
                                                     documentation for details.
-
-
                                                     Support: Core
                                                   maxLength: 63
                                                   minLength: 1
@@ -5890,12 +5623,8 @@ spec:
                                               description: |-
                                                 Fraction represents the fraction of requests that should be
                                                 mirrored to BackendRef.
-
-
                                                 Only one of Fraction or Percent may be specified. If neither field
                                                 is specified, 100% of requests will be mirrored.
-
-
                                                 <gateway:experimental>
                                               properties:
                                                 denominator:
@@ -5915,12 +5644,8 @@ spec:
                                                 Percent represents the percentage of requests that should be
                                                 mirrored to BackendRef. Its minimum value is 0 (indicating 0% of
                                                 requests) and its maximum value is 100 (indicating 100% of requests).
-
-
                                                 Only one of Fraction or Percent may be specified. If neither field
                                                 is specified, 100% of requests will be mirrored.
-
-
                                                 <gateway:experimental>
                                               format: int32
                                               maximum: 100
@@ -5933,8 +5658,6 @@ spec:
                                           description: |-
                                             RequestRedirect defines a schema for a filter that responds to the
                                             request with an HTTP redirection.
-
-
                                             Support: Core
                                           properties:
                                             hostname:
@@ -5942,8 +5665,6 @@ spec:
                                                 Hostname is the hostname to be used in the value of the `Location`
                                                 header in the response.
                                                 When empty, the hostname in the `Host` header of the request is used.
-
-
                                                 Support: Core
                                               maxLength: 253
                                               minLength: 1
@@ -5954,8 +5675,6 @@ spec:
                                                 Path defines parameters used to modify the path of the incoming request.
                                                 The modified path is then used to construct the `Location` header. When
                                                 empty, the request path is used as-is.
-
-
                                                 Support: Extended
                                               properties:
                                                 replaceFullPath:
@@ -5970,20 +5689,14 @@ spec:
                                                     match of a request during a rewrite or redirect. For example, a request
                                                     to "/foo/bar" with a prefix match of "/foo" and a ReplacePrefixMatch
                                                     of "/xyz" would be modified to "/xyz/bar".
-
-
                                                     Note that this matches the behavior of the PathPrefix match type. This
                                                     matches full path elements. A path element refers to the list of labels
                                                     in the path split by the `/` separator. When specified, a trailing `/` is
                                                     ignored. For example, the paths `/abc`, `/abc/`, and `/abc/def` would all
                                                     match the prefix `/abc`, but the path `/abcd` would not.
-
-
                                                     ReplacePrefixMatch is only compatible with a `PathPrefix` HTTPRouteMatch.
                                                     Using any other HTTPRouteMatch type on the same HTTPRouteRule will result in
                                                     the implementation setting the Accepted Condition for the Route to `status: False`.
-
-
                                                     Request Path | Prefix Match | Replace Prefix | Modified Path
                                                     -------------|--------------|----------------|----------
                                                     /foo/bar     | /foo         | /xyz           | /xyz/bar
@@ -6003,12 +5716,8 @@ spec:
                                                   description: |-
                                                     Type defines the type of path modifier. Additional types may be
                                                     added in a future release of the API.
-
-
                                                     Note that values may be added to this enum, implementations
                                                     must ensure that unknown values will not cause a crash.
-
-
                                                     Unknown values here must result in the implementation setting the
                                                     Accepted Condition for the Route to `status: False`, with a
                                                     Reason of `UnsupportedValue`.
@@ -6023,30 +5732,20 @@ spec:
                                               description: |-
                                                 Port is the port to be used in the value of the `Location`
                                                 header in the response.
-
-
                                                 If no port is specified, the redirect port MUST be derived using the
                                                 following rules:
-
-
                                                 * If redirect scheme is not-empty, the redirect port MUST be the well-known
                                                   port associated with the redirect scheme. Specifically "http" to port 80
                                                   and "https" to port 443. If the redirect scheme does not have a
                                                   well-known port, the listener port of the Gateway SHOULD be used.
                                                 * If redirect scheme is empty, the redirect port MUST be the Gateway
                                                   Listener port.
-
-
                                                 Implementations SHOULD NOT add the port number in the 'Location'
                                                 header in the following cases:
-
-
                                                 * A Location header that will use HTTP (whether that is determined via
                                                   the Listener protocol or the Scheme field) _and_ use port 80.
                                                 * A Location header that will use HTTPS (whether that is determined via
                                                   the Listener protocol or the Scheme field) _and_ use port 443.
-
-
                                                 Support: Extended
                                               format: int32
                                               maximum: 65535
@@ -6056,21 +5755,13 @@ spec:
                                               description: |-
                                                 Scheme is the scheme to be used in the value of the `Location` header in
                                                 the response. When empty, the scheme of the request is used.
-
-
                                                 Scheme redirects can affect the port of the redirect, for more information,
                                                 refer to the documentation for the port field of this filter.
-
-
                                                 Note that values may be added to this enum, implementations
                                                 must ensure that unknown values will not cause a crash.
-
-
                                                 Unknown values here must result in the implementation setting the
                                                 Accepted Condition for the Route to `status: False`, with a
                                                 Reason of `UnsupportedValue`.
-
-
                                                 Support: Extended
                                               enum:
                                               - http
@@ -6080,17 +5771,11 @@ spec:
                                               default: 302
                                               description: |-
                                                 StatusCode is the HTTP status code to be used in response.
-
-
                                                 Note that values may be added to this enum, implementations
                                                 must ensure that unknown values will not cause a crash.
-
-
                                                 Unknown values here must result in the implementation setting the
                                                 Accepted Condition for the Route to `status: False`, with a
                                                 Reason of `UnsupportedValue`.
-
-
                                                 Support: Core
                                               enum:
                                               - 301
@@ -6101,8 +5786,6 @@ spec:
                                           description: |-
                                             ResponseHeaderModifier defines a schema for a filter that modifies response
                                             headers.
-
-
                                             Support: Extended
                                           properties:
                                             add:
@@ -6110,19 +5793,13 @@ spec:
                                                 Add adds the given header(s) (name, value) to the request
                                                 before the action. It appends to any existing values associated
                                                 with the header name.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   add:
                                                   - name: "my-header"
                                                     value: "bar,baz"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo,bar,baz
@@ -6135,8 +5812,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -6167,19 +5842,13 @@ spec:
                                                 value of Remove is a list of HTTP header names. Note that the header
                                                 names are case-insensitive (see
                                                 https://datatracker.ietf.org/doc/html/rfc2616#section-4.2).
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header1: foo
                                                   my-header2: bar
                                                   my-header3: baz
-
-
                                                 Config:
                                                   remove: ["my-header1", "my-header3"]
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header2: bar
@@ -6192,19 +5861,13 @@ spec:
                                               description: |-
                                                 Set overwrites the request with the given header (name, value)
                                                 before the action.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   set:
                                                   - name: "my-header"
                                                     value: "bar"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: bar
@@ -6217,8 +5880,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -6248,18 +5909,12 @@ spec:
                                           description: |-
                                             Type identifies the type of filter to apply. As with other API fields,
                                             types are classified into three conformance levels:
-
-
                                             - Core: Filter types and their corresponding configuration defined by
                                               "Support: Core" in this package, e.g. "RequestHeaderModifier". All
                                               implementations must support core filters.
-
-
                                             - Extended: Filter types and their corresponding configuration defined by
                                               "Support: Extended" in this package, e.g. "RequestMirror". Implementers
                                               are encouraged to support extended filters.
-
-
                                             - Implementation-specific: Filters that are defined and supported by
                                               specific vendors.
                                               In the future, filters showing convergence in behavior across multiple
@@ -6267,21 +5922,13 @@ spec:
                                               conformance levels. Filter-specific configuration for such filters
                                               is specified using the ExtensionRef field. `Type` should be set to
                                               "ExtensionRef" for custom filters.
-
-
                                             Implementers are encouraged to define custom implementation types to
                                             extend the core API with implementation-specific behavior.
-
-
                                             If a reference to a custom filter type cannot be resolved, the filter
                                             MUST NOT be skipped. Instead, requests that would have been processed by
                                             that filter MUST receive a HTTP error response.
-
-
                                             Note that values may be added to this enum, implementations
                                             must ensure that unknown values will not cause a crash.
-
-
                                             Unknown values here must result in the implementation setting the
                                             Accepted Condition for the Route to `status: False`, with a
                                             Reason of `UnsupportedValue`.
@@ -6296,16 +5943,12 @@ spec:
                                         urlRewrite:
                                           description: |-
                                             URLRewrite defines a schema for a filter that modifies a request during forwarding.
-
-
                                             Support: Extended
                                           properties:
                                             hostname:
                                               description: |-
                                                 Hostname is the value to be used to replace the Host header value during
                                                 forwarding.
-
-
                                                 Support: Extended
                                               maxLength: 253
                                               minLength: 1
@@ -6314,8 +5957,6 @@ spec:
                                             path:
                                               description: |-
                                                 Path defines a path rewrite.
-
-
                                                 Support: Extended
                                               properties:
                                                 replaceFullPath:
@@ -6330,20 +5971,14 @@ spec:
                                                     match of a request during a rewrite or redirect. For example, a request
                                                     to "/foo/bar" with a prefix match of "/foo" and a ReplacePrefixMatch
                                                     of "/xyz" would be modified to "/xyz/bar".
-
-
                                                     Note that this matches the behavior of the PathPrefix match type. This
                                                     matches full path elements. A path element refers to the list of labels
                                                     in the path split by the `/` separator. When specified, a trailing `/` is
                                                     ignored. For example, the paths `/abc`, `/abc/`, and `/abc/def` would all
                                                     match the prefix `/abc`, but the path `/abcd` would not.
-
-
                                                     ReplacePrefixMatch is only compatible with a `PathPrefix` HTTPRouteMatch.
                                                     Using any other HTTPRouteMatch type on the same HTTPRouteRule will result in
                                                     the implementation setting the Accepted Condition for the Route to `status: False`.
-
-
                                                     Request Path | Prefix Match | Replace Prefix | Modified Path
                                                     -------------|--------------|----------------|----------
                                                     /foo/bar     | /foo         | /xyz           | /xyz/bar
@@ -6363,12 +5998,8 @@ spec:
                                                   description: |-
                                                     Type defines the type of path modifier. Additional types may be
                                                     added in a future release of the API.
-
-
                                                     Note that values may be added to this enum, implementations
                                                     must ensure that unknown values will not cause a crash.
-
-
                                                     Unknown values here must result in the implementation setting the
                                                     Accepted Condition for the Route to `status: False`, with a
                                                     Reason of `UnsupportedValue`.
@@ -6398,21 +6029,13 @@ spec:
                                     description: |-
                                       Kind is the Kubernetes resource kind of the referent. For example
                                       "Service".
-
-
                                       Defaults to "Service" when not specified.
-
-
                                       ExternalName services can refer to CNAME DNS records that may live
                                       outside of the cluster and as such are difficult to reason about in
                                       terms of conformance. They also may not be safe to forward to (see
                                       CVE-2021-25740 for more information). Implementations SHOULD NOT
                                       support ExternalName Services.
-
-
                                       Support: Core (Services with a type other than ExternalName)
-
-
                                       Support: Implementation-specific (Services with type ExternalName)
                                     maxLength: 63
                                     minLength: 1
@@ -6427,14 +6050,10 @@ spec:
                                     description: |-
                                       Namespace is the namespace of the backend. When unspecified, the local
                                       namespace is inferred.
-
-
                                       Note that when a namespace different than the local namespace is specified,
                                       a ReferenceGrant object is required in the referent namespace to allow that
                                       namespace's owner to accept the reference. See the ReferenceGrant
                                       documentation for details.
-
-
                                       Support: Core
                                     maxLength: 63
                                     minLength: 1
@@ -6460,14 +6079,10 @@ spec:
                                       the exact proportion defined here depending on the precision an
                                       implementation supports. Weight is not a percentage and the sum of
                                       weights does not need to equal 100.
-
-
                                       If only one backend is specified and it has a weight greater than 0, 100%
                                       of the traffic is forwarded to that backend. If weight is set to 0, no
                                       traffic should be forwarded for this entry. If unspecified, weight
                                       defaults to 1.
-
-
                                       Support for this field varies based on the context where used.
                                     format: int32
                                     maximum: 1000000
@@ -6527,8 +6142,6 @@ spec:
                                     referrer.
                                     The API object must be valid in the cluster; the Group and Kind must
                                     be registered in the cluster for this reference to be valid.
-
-
                                     References to objects with invalid Group and Kind are not valid, and must
                                     be rejected by the implementation, with appropriate Conditions set
                                     on the containing object.
@@ -6604,8 +6217,6 @@ spec:
                                     referrer.
                                     The API object must be valid in the cluster; the Group and Kind must
                                     be registered in the cluster for this reference to be valid.
-
-
                                     References to objects with invalid Group and Kind are not valid, and must
                                     be rejected by the implementation, with appropriate Conditions set
                                     on the containing object.
@@ -6728,43 +6339,27 @@ spec:
                               backendRef:
                                 description: |-
                                   HTTPBackendRef defines how a HTTPRoute forwards a HTTP request.
-
-
                                   Note that when a namespace different than the local namespace is specified, a
                                   ReferenceGrant object is required in the referent namespace to allow that
                                   namespace's owner to accept the reference. See the ReferenceGrant
                                   documentation for details.
-
-
                                   <gateway:experimental:description>
-
-
                                   When the BackendRef points to a Kubernetes Service, implementations SHOULD
                                   honor the appProtocol field if it is set for the target Service Port.
-
-
                                   Implementations supporting appProtocol SHOULD recognize the Kubernetes
                                   Standard Application Protocols defined in KEP-3726.
-
-
                                   If a Service appProtocol isn't specified, an implementation MAY infer the
                                   backend protocol through its own means. Implementations MAY infer the
                                   protocol from the Route type referring to the backend Service.
-
-
                                   If a Route is not able to send traffic to the backend using the specified
                                   protocol then the backend is considered invalid. Implementations MUST set the
                                   "ResolvedRefs" condition to "False" with the "UnsupportedProtocol" reason.
-
-
                                   </gateway:experimental:description>
                                 properties:
                                   filters:
                                     description: |-
                                       Filters defined at this level should be executed if and only if the
                                       request is being forwarded to the backend defined here.
-
-
                                       Support: Implementation-specific (For broader support of filters, use the
                                       Filters field in HTTPRouteRule.)
                                     items:
@@ -6782,11 +6377,7 @@ spec:
                                             "filter" behavior.  For example, resource "myroutefilter" in group
                                             "networking.example.net"). ExtensionRef MUST NOT be used for core and
                                             extended filters.
-
-
                                             This filter can be used multiple times within the same rule.
-
-
                                             Support: Implementation-specific
                                           properties:
                                             group:
@@ -6817,8 +6408,6 @@ spec:
                                           description: |-
                                             RequestHeaderModifier defines a schema for a filter that modifies request
                                             headers.
-
-
                                             Support: Core
                                           properties:
                                             add:
@@ -6826,19 +6415,13 @@ spec:
                                                 Add adds the given header(s) (name, value) to the request
                                                 before the action. It appends to any existing values associated
                                                 with the header name.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   add:
                                                   - name: "my-header"
                                                     value: "bar,baz"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo,bar,baz
@@ -6851,8 +6434,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -6883,19 +6464,13 @@ spec:
                                                 value of Remove is a list of HTTP header names. Note that the header
                                                 names are case-insensitive (see
                                                 https://datatracker.ietf.org/doc/html/rfc2616#section-4.2).
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header1: foo
                                                   my-header2: bar
                                                   my-header3: baz
-
-
                                                 Config:
                                                   remove: ["my-header1", "my-header3"]
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header2: bar
@@ -6908,19 +6483,13 @@ spec:
                                               description: |-
                                                 Set overwrites the request with the given header (name, value)
                                                 before the action.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   set:
                                                   - name: "my-header"
                                                     value: "bar"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: bar
@@ -6933,8 +6502,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -6965,48 +6532,30 @@ spec:
                                             RequestMirror defines a schema for a filter that mirrors requests.
                                             Requests are sent to the specified destination, but responses from
                                             that destination are ignored.
-
-
                                             This filter can be used multiple times within the same rule. Note that
                                             not all implementations will be able to support mirroring to multiple
                                             backends.
-
-
                                             Support: Extended
-
-
                                             <gateway:experimental:validation:XValidation:message="Only one of percent or fraction may be specified in HTTPRequestMirrorFilter",rule="!(has(self.percent) && has(self.fraction))">
                                           properties:
                                             backendRef:
                                               description: |-
                                                 BackendRef references a resource where mirrored requests are sent.
-
-
                                                 Mirrored requests must be sent only to a single destination endpoint
                                                 within this BackendRef, irrespective of how many endpoints are present
                                                 within this BackendRef.
-
-
                                                 If the referent cannot be found, this BackendRef is invalid and must be
                                                 dropped from the Gateway. The controller must ensure the "ResolvedRefs"
                                                 condition on the Route status is set to `status: False` and not configure
                                                 this backend in the underlying implementation.
-
-
                                                 If there is a cross-namespace reference to an *existing* object
                                                 that is not allowed by a ReferenceGrant, the controller must ensure the
                                                 "ResolvedRefs"  condition on the Route is set to `status: False`,
                                                 with the "RefNotPermitted" reason and not configure this backend in the
                                                 underlying implementation.
-
-
                                                 In either error case, the Message of the `ResolvedRefs` Condition
                                                 should be used to provide more detail about the problem.
-
-
                                                 Support: Extended for Kubernetes Service
-
-
                                                 Support: Implementation-specific for any other resource
                                               properties:
                                                 group:
@@ -7022,21 +6571,13 @@ spec:
                                                   description: |-
                                                     Kind is the Kubernetes resource kind of the referent. For example
                                                     "Service".
-
-
                                                     Defaults to "Service" when not specified.
-
-
                                                     ExternalName services can refer to CNAME DNS records that may live
                                                     outside of the cluster and as such are difficult to reason about in
                                                     terms of conformance. They also may not be safe to forward to (see
                                                     CVE-2021-25740 for more information). Implementations SHOULD NOT
                                                     support ExternalName Services.
-
-
                                                     Support: Core (Services with a type other than ExternalName)
-
-
                                                     Support: Implementation-specific (Services with type ExternalName)
                                                   maxLength: 63
                                                   minLength: 1
@@ -7052,14 +6593,10 @@ spec:
                                                   description: |-
                                                     Namespace is the namespace of the backend. When unspecified, the local
                                                     namespace is inferred.
-
-
                                                     Note that when a namespace different than the local namespace is specified,
                                                     a ReferenceGrant object is required in the referent namespace to allow that
                                                     namespace's owner to accept the reference. See the ReferenceGrant
                                                     documentation for details.
-
-
                                                     Support: Core
                                                   maxLength: 63
                                                   minLength: 1
@@ -7083,12 +6620,8 @@ spec:
                                               description: |-
                                                 Fraction represents the fraction of requests that should be
                                                 mirrored to BackendRef.
-
-
                                                 Only one of Fraction or Percent may be specified. If neither field
                                                 is specified, 100% of requests will be mirrored.
-
-
                                                 <gateway:experimental>
                                               properties:
                                                 denominator:
@@ -7108,12 +6641,8 @@ spec:
                                                 Percent represents the percentage of requests that should be
                                                 mirrored to BackendRef. Its minimum value is 0 (indicating 0% of
                                                 requests) and its maximum value is 100 (indicating 100% of requests).
-
-
                                                 Only one of Fraction or Percent may be specified. If neither field
                                                 is specified, 100% of requests will be mirrored.
-
-
                                                 <gateway:experimental>
                                               format: int32
                                               maximum: 100
@@ -7126,8 +6655,6 @@ spec:
                                           description: |-
                                             RequestRedirect defines a schema for a filter that responds to the
                                             request with an HTTP redirection.
-
-
                                             Support: Core
                                           properties:
                                             hostname:
@@ -7135,8 +6662,6 @@ spec:
                                                 Hostname is the hostname to be used in the value of the `Location`
                                                 header in the response.
                                                 When empty, the hostname in the `Host` header of the request is used.
-
-
                                                 Support: Core
                                               maxLength: 253
                                               minLength: 1
@@ -7147,8 +6672,6 @@ spec:
                                                 Path defines parameters used to modify the path of the incoming request.
                                                 The modified path is then used to construct the `Location` header. When
                                                 empty, the request path is used as-is.
-
-
                                                 Support: Extended
                                               properties:
                                                 replaceFullPath:
@@ -7163,20 +6686,14 @@ spec:
                                                     match of a request during a rewrite or redirect. For example, a request
                                                     to "/foo/bar" with a prefix match of "/foo" and a ReplacePrefixMatch
                                                     of "/xyz" would be modified to "/xyz/bar".
-
-
                                                     Note that this matches the behavior of the PathPrefix match type. This
                                                     matches full path elements. A path element refers to the list of labels
                                                     in the path split by the `/` separator. When specified, a trailing `/` is
                                                     ignored. For example, the paths `/abc`, `/abc/`, and `/abc/def` would all
                                                     match the prefix `/abc`, but the path `/abcd` would not.
-
-
                                                     ReplacePrefixMatch is only compatible with a `PathPrefix` HTTPRouteMatch.
                                                     Using any other HTTPRouteMatch type on the same HTTPRouteRule will result in
                                                     the implementation setting the Accepted Condition for the Route to `status: False`.
-
-
                                                     Request Path | Prefix Match | Replace Prefix | Modified Path
                                                     -------------|--------------|----------------|----------
                                                     /foo/bar     | /foo         | /xyz           | /xyz/bar
@@ -7196,12 +6713,8 @@ spec:
                                                   description: |-
                                                     Type defines the type of path modifier. Additional types may be
                                                     added in a future release of the API.
-
-
                                                     Note that values may be added to this enum, implementations
                                                     must ensure that unknown values will not cause a crash.
-
-
                                                     Unknown values here must result in the implementation setting the
                                                     Accepted Condition for the Route to `status: False`, with a
                                                     Reason of `UnsupportedValue`.
@@ -7216,30 +6729,20 @@ spec:
                                               description: |-
                                                 Port is the port to be used in the value of the `Location`
                                                 header in the response.
-
-
                                                 If no port is specified, the redirect port MUST be derived using the
                                                 following rules:
-
-
                                                 * If redirect scheme is not-empty, the redirect port MUST be the well-known
                                                   port associated with the redirect scheme. Specifically "http" to port 80
                                                   and "https" to port 443. If the redirect scheme does not have a
                                                   well-known port, the listener port of the Gateway SHOULD be used.
                                                 * If redirect scheme is empty, the redirect port MUST be the Gateway
                                                   Listener port.
-
-
                                                 Implementations SHOULD NOT add the port number in the 'Location'
                                                 header in the following cases:
-
-
                                                 * A Location header that will use HTTP (whether that is determined via
                                                   the Listener protocol or the Scheme field) _and_ use port 80.
                                                 * A Location header that will use HTTPS (whether that is determined via
                                                   the Listener protocol or the Scheme field) _and_ use port 443.
-
-
                                                 Support: Extended
                                               format: int32
                                               maximum: 65535
@@ -7249,21 +6752,13 @@ spec:
                                               description: |-
                                                 Scheme is the scheme to be used in the value of the `Location` header in
                                                 the response. When empty, the scheme of the request is used.
-
-
                                                 Scheme redirects can affect the port of the redirect, for more information,
                                                 refer to the documentation for the port field of this filter.
-
-
                                                 Note that values may be added to this enum, implementations
                                                 must ensure that unknown values will not cause a crash.
-
-
                                                 Unknown values here must result in the implementation setting the
                                                 Accepted Condition for the Route to `status: False`, with a
                                                 Reason of `UnsupportedValue`.
-
-
                                                 Support: Extended
                                               enum:
                                               - http
@@ -7273,17 +6768,11 @@ spec:
                                               default: 302
                                               description: |-
                                                 StatusCode is the HTTP status code to be used in response.
-
-
                                                 Note that values may be added to this enum, implementations
                                                 must ensure that unknown values will not cause a crash.
-
-
                                                 Unknown values here must result in the implementation setting the
                                                 Accepted Condition for the Route to `status: False`, with a
                                                 Reason of `UnsupportedValue`.
-
-
                                                 Support: Core
                                               enum:
                                               - 301
@@ -7294,8 +6783,6 @@ spec:
                                           description: |-
                                             ResponseHeaderModifier defines a schema for a filter that modifies response
                                             headers.
-
-
                                             Support: Extended
                                           properties:
                                             add:
@@ -7303,19 +6790,13 @@ spec:
                                                 Add adds the given header(s) (name, value) to the request
                                                 before the action. It appends to any existing values associated
                                                 with the header name.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   add:
                                                   - name: "my-header"
                                                     value: "bar,baz"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo,bar,baz
@@ -7328,8 +6809,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -7360,19 +6839,13 @@ spec:
                                                 value of Remove is a list of HTTP header names. Note that the header
                                                 names are case-insensitive (see
                                                 https://datatracker.ietf.org/doc/html/rfc2616#section-4.2).
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header1: foo
                                                   my-header2: bar
                                                   my-header3: baz
-
-
                                                 Config:
                                                   remove: ["my-header1", "my-header3"]
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header2: bar
@@ -7385,19 +6858,13 @@ spec:
                                               description: |-
                                                 Set overwrites the request with the given header (name, value)
                                                 before the action.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   set:
                                                   - name: "my-header"
                                                     value: "bar"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: bar
@@ -7410,8 +6877,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -7441,18 +6906,12 @@ spec:
                                           description: |-
                                             Type identifies the type of filter to apply. As with other API fields,
                                             types are classified into three conformance levels:
-
-
                                             - Core: Filter types and their corresponding configuration defined by
                                               "Support: Core" in this package, e.g. "RequestHeaderModifier". All
                                               implementations must support core filters.
-
-
                                             - Extended: Filter types and their corresponding configuration defined by
                                               "Support: Extended" in this package, e.g. "RequestMirror". Implementers
                                               are encouraged to support extended filters.
-
-
                                             - Implementation-specific: Filters that are defined and supported by
                                               specific vendors.
                                               In the future, filters showing convergence in behavior across multiple
@@ -7460,21 +6919,13 @@ spec:
                                               conformance levels. Filter-specific configuration for such filters
                                               is specified using the ExtensionRef field. `Type` should be set to
                                               "ExtensionRef" for custom filters.
-
-
                                             Implementers are encouraged to define custom implementation types to
                                             extend the core API with implementation-specific behavior.
-
-
                                             If a reference to a custom filter type cannot be resolved, the filter
                                             MUST NOT be skipped. Instead, requests that would have been processed by
                                             that filter MUST receive a HTTP error response.
-
-
                                             Note that values may be added to this enum, implementations
                                             must ensure that unknown values will not cause a crash.
-
-
                                             Unknown values here must result in the implementation setting the
                                             Accepted Condition for the Route to `status: False`, with a
                                             Reason of `UnsupportedValue`.
@@ -7489,16 +6940,12 @@ spec:
                                         urlRewrite:
                                           description: |-
                                             URLRewrite defines a schema for a filter that modifies a request during forwarding.
-
-
                                             Support: Extended
                                           properties:
                                             hostname:
                                               description: |-
                                                 Hostname is the value to be used to replace the Host header value during
                                                 forwarding.
-
-
                                                 Support: Extended
                                               maxLength: 253
                                               minLength: 1
@@ -7507,8 +6954,6 @@ spec:
                                             path:
                                               description: |-
                                                 Path defines a path rewrite.
-
-
                                                 Support: Extended
                                               properties:
                                                 replaceFullPath:
@@ -7523,20 +6968,14 @@ spec:
                                                     match of a request during a rewrite or redirect. For example, a request
                                                     to "/foo/bar" with a prefix match of "/foo" and a ReplacePrefixMatch
                                                     of "/xyz" would be modified to "/xyz/bar".
-
-
                                                     Note that this matches the behavior of the PathPrefix match type. This
                                                     matches full path elements. A path element refers to the list of labels
                                                     in the path split by the `/` separator. When specified, a trailing `/` is
                                                     ignored. For example, the paths `/abc`, `/abc/`, and `/abc/def` would all
                                                     match the prefix `/abc`, but the path `/abcd` would not.
-
-
                                                     ReplacePrefixMatch is only compatible with a `PathPrefix` HTTPRouteMatch.
                                                     Using any other HTTPRouteMatch type on the same HTTPRouteRule will result in
                                                     the implementation setting the Accepted Condition for the Route to `status: False`.
-
-
                                                     Request Path | Prefix Match | Replace Prefix | Modified Path
                                                     -------------|--------------|----------------|----------
                                                     /foo/bar     | /foo         | /xyz           | /xyz/bar
@@ -7556,12 +6995,8 @@ spec:
                                                   description: |-
                                                     Type defines the type of path modifier. Additional types may be
                                                     added in a future release of the API.
-
-
                                                     Note that values may be added to this enum, implementations
                                                     must ensure that unknown values will not cause a crash.
-
-
                                                     Unknown values here must result in the implementation setting the
                                                     Accepted Condition for the Route to `status: False`, with a
                                                     Reason of `UnsupportedValue`.
@@ -7591,21 +7026,13 @@ spec:
                                     description: |-
                                       Kind is the Kubernetes resource kind of the referent. For example
                                       "Service".
-
-
                                       Defaults to "Service" when not specified.
-
-
                                       ExternalName services can refer to CNAME DNS records that may live
                                       outside of the cluster and as such are difficult to reason about in
                                       terms of conformance. They also may not be safe to forward to (see
                                       CVE-2021-25740 for more information). Implementations SHOULD NOT
                                       support ExternalName Services.
-
-
                                       Support: Core (Services with a type other than ExternalName)
-
-
                                       Support: Implementation-specific (Services with type ExternalName)
                                     maxLength: 63
                                     minLength: 1
@@ -7620,14 +7047,10 @@ spec:
                                     description: |-
                                       Namespace is the namespace of the backend. When unspecified, the local
                                       namespace is inferred.
-
-
                                       Note that when a namespace different than the local namespace is specified,
                                       a ReferenceGrant object is required in the referent namespace to allow that
                                       namespace's owner to accept the reference. See the ReferenceGrant
                                       documentation for details.
-
-
                                       Support: Core
                                     maxLength: 63
                                     minLength: 1
@@ -7653,14 +7076,10 @@ spec:
                                       the exact proportion defined here depending on the precision an
                                       implementation supports. Weight is not a percentage and the sum of
                                       weights does not need to equal 100.
-
-
                                       If only one backend is specified and it has a weight greater than 0, 100%
                                       of the traffic is forwarded to that backend. If weight is set to 0, no
                                       traffic should be forwarded for this entry. If unspecified, weight
                                       defaults to 1.
-
-
                                       Support for this field varies based on the context where used.
                                     format: int32
                                     maximum: 1000000
@@ -7684,43 +7103,27 @@ spec:
                               backendRef:
                                 description: |-
                                   HTTPBackendRef defines how a HTTPRoute forwards a HTTP request.
-
-
                                   Note that when a namespace different than the local namespace is specified, a
                                   ReferenceGrant object is required in the referent namespace to allow that
                                   namespace's owner to accept the reference. See the ReferenceGrant
                                   documentation for details.
-
-
                                   <gateway:experimental:description>
-
-
                                   When the BackendRef points to a Kubernetes Service, implementations SHOULD
                                   honor the appProtocol field if it is set for the target Service Port.
-
-
                                   Implementations supporting appProtocol SHOULD recognize the Kubernetes
                                   Standard Application Protocols defined in KEP-3726.
-
-
                                   If a Service appProtocol isn't specified, an implementation MAY infer the
                                   backend protocol through its own means. Implementations MAY infer the
                                   protocol from the Route type referring to the backend Service.
-
-
                                   If a Route is not able to send traffic to the backend using the specified
                                   protocol then the backend is considered invalid. Implementations MUST set the
                                   "ResolvedRefs" condition to "False" with the "UnsupportedProtocol" reason.
-
-
                                   </gateway:experimental:description>
                                 properties:
                                   filters:
                                     description: |-
                                       Filters defined at this level should be executed if and only if the
                                       request is being forwarded to the backend defined here.
-
-
                                       Support: Implementation-specific (For broader support of filters, use the
                                       Filters field in HTTPRouteRule.)
                                     items:
@@ -7738,11 +7141,7 @@ spec:
                                             "filter" behavior.  For example, resource "myroutefilter" in group
                                             "networking.example.net"). ExtensionRef MUST NOT be used for core and
                                             extended filters.
-
-
                                             This filter can be used multiple times within the same rule.
-
-
                                             Support: Implementation-specific
                                           properties:
                                             group:
@@ -7773,8 +7172,6 @@ spec:
                                           description: |-
                                             RequestHeaderModifier defines a schema for a filter that modifies request
                                             headers.
-
-
                                             Support: Core
                                           properties:
                                             add:
@@ -7782,19 +7179,13 @@ spec:
                                                 Add adds the given header(s) (name, value) to the request
                                                 before the action. It appends to any existing values associated
                                                 with the header name.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   add:
                                                   - name: "my-header"
                                                     value: "bar,baz"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo,bar,baz
@@ -7807,8 +7198,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -7839,19 +7228,13 @@ spec:
                                                 value of Remove is a list of HTTP header names. Note that the header
                                                 names are case-insensitive (see
                                                 https://datatracker.ietf.org/doc/html/rfc2616#section-4.2).
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header1: foo
                                                   my-header2: bar
                                                   my-header3: baz
-
-
                                                 Config:
                                                   remove: ["my-header1", "my-header3"]
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header2: bar
@@ -7864,19 +7247,13 @@ spec:
                                               description: |-
                                                 Set overwrites the request with the given header (name, value)
                                                 before the action.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   set:
                                                   - name: "my-header"
                                                     value: "bar"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: bar
@@ -7889,8 +7266,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -7921,48 +7296,30 @@ spec:
                                             RequestMirror defines a schema for a filter that mirrors requests.
                                             Requests are sent to the specified destination, but responses from
                                             that destination are ignored.
-
-
                                             This filter can be used multiple times within the same rule. Note that
                                             not all implementations will be able to support mirroring to multiple
                                             backends.
-
-
                                             Support: Extended
-
-
                                             <gateway:experimental:validation:XValidation:message="Only one of percent or fraction may be specified in HTTPRequestMirrorFilter",rule="!(has(self.percent) && has(self.fraction))">
                                           properties:
                                             backendRef:
                                               description: |-
                                                 BackendRef references a resource where mirrored requests are sent.
-
-
                                                 Mirrored requests must be sent only to a single destination endpoint
                                                 within this BackendRef, irrespective of how many endpoints are present
                                                 within this BackendRef.
-
-
                                                 If the referent cannot be found, this BackendRef is invalid and must be
                                                 dropped from the Gateway. The controller must ensure the "ResolvedRefs"
                                                 condition on the Route status is set to `status: False` and not configure
                                                 this backend in the underlying implementation.
-
-
                                                 If there is a cross-namespace reference to an *existing* object
                                                 that is not allowed by a ReferenceGrant, the controller must ensure the
                                                 "ResolvedRefs"  condition on the Route is set to `status: False`,
                                                 with the "RefNotPermitted" reason and not configure this backend in the
                                                 underlying implementation.
-
-
                                                 In either error case, the Message of the `ResolvedRefs` Condition
                                                 should be used to provide more detail about the problem.
-
-
                                                 Support: Extended for Kubernetes Service
-
-
                                                 Support: Implementation-specific for any other resource
                                               properties:
                                                 group:
@@ -7978,21 +7335,13 @@ spec:
                                                   description: |-
                                                     Kind is the Kubernetes resource kind of the referent. For example
                                                     "Service".
-
-
                                                     Defaults to "Service" when not specified.
-
-
                                                     ExternalName services can refer to CNAME DNS records that may live
                                                     outside of the cluster and as such are difficult to reason about in
                                                     terms of conformance. They also may not be safe to forward to (see
                                                     CVE-2021-25740 for more information). Implementations SHOULD NOT
                                                     support ExternalName Services.
-
-
                                                     Support: Core (Services with a type other than ExternalName)
-
-
                                                     Support: Implementation-specific (Services with type ExternalName)
                                                   maxLength: 63
                                                   minLength: 1
@@ -8008,14 +7357,10 @@ spec:
                                                   description: |-
                                                     Namespace is the namespace of the backend. When unspecified, the local
                                                     namespace is inferred.
-
-
                                                     Note that when a namespace different than the local namespace is specified,
                                                     a ReferenceGrant object is required in the referent namespace to allow that
                                                     namespace's owner to accept the reference. See the ReferenceGrant
                                                     documentation for details.
-
-
                                                     Support: Core
                                                   maxLength: 63
                                                   minLength: 1
@@ -8039,12 +7384,8 @@ spec:
                                               description: |-
                                                 Fraction represents the fraction of requests that should be
                                                 mirrored to BackendRef.
-
-
                                                 Only one of Fraction or Percent may be specified. If neither field
                                                 is specified, 100% of requests will be mirrored.
-
-
                                                 <gateway:experimental>
                                               properties:
                                                 denominator:
@@ -8064,12 +7405,8 @@ spec:
                                                 Percent represents the percentage of requests that should be
                                                 mirrored to BackendRef. Its minimum value is 0 (indicating 0% of
                                                 requests) and its maximum value is 100 (indicating 100% of requests).
-
-
                                                 Only one of Fraction or Percent may be specified. If neither field
                                                 is specified, 100% of requests will be mirrored.
-
-
                                                 <gateway:experimental>
                                               format: int32
                                               maximum: 100
@@ -8082,8 +7419,6 @@ spec:
                                           description: |-
                                             RequestRedirect defines a schema for a filter that responds to the
                                             request with an HTTP redirection.
-
-
                                             Support: Core
                                           properties:
                                             hostname:
@@ -8091,8 +7426,6 @@ spec:
                                                 Hostname is the hostname to be used in the value of the `Location`
                                                 header in the response.
                                                 When empty, the hostname in the `Host` header of the request is used.
-
-
                                                 Support: Core
                                               maxLength: 253
                                               minLength: 1
@@ -8103,8 +7436,6 @@ spec:
                                                 Path defines parameters used to modify the path of the incoming request.
                                                 The modified path is then used to construct the `Location` header. When
                                                 empty, the request path is used as-is.
-
-
                                                 Support: Extended
                                               properties:
                                                 replaceFullPath:
@@ -8119,20 +7450,14 @@ spec:
                                                     match of a request during a rewrite or redirect. For example, a request
                                                     to "/foo/bar" with a prefix match of "/foo" and a ReplacePrefixMatch
                                                     of "/xyz" would be modified to "/xyz/bar".
-
-
                                                     Note that this matches the behavior of the PathPrefix match type. This
                                                     matches full path elements. A path element refers to the list of labels
                                                     in the path split by the `/` separator. When specified, a trailing `/` is
                                                     ignored. For example, the paths `/abc`, `/abc/`, and `/abc/def` would all
                                                     match the prefix `/abc`, but the path `/abcd` would not.
-
-
                                                     ReplacePrefixMatch is only compatible with a `PathPrefix` HTTPRouteMatch.
                                                     Using any other HTTPRouteMatch type on the same HTTPRouteRule will result in
                                                     the implementation setting the Accepted Condition for the Route to `status: False`.
-
-
                                                     Request Path | Prefix Match | Replace Prefix | Modified Path
                                                     -------------|--------------|----------------|----------
                                                     /foo/bar     | /foo         | /xyz           | /xyz/bar
@@ -8152,12 +7477,8 @@ spec:
                                                   description: |-
                                                     Type defines the type of path modifier. Additional types may be
                                                     added in a future release of the API.
-
-
                                                     Note that values may be added to this enum, implementations
                                                     must ensure that unknown values will not cause a crash.
-
-
                                                     Unknown values here must result in the implementation setting the
                                                     Accepted Condition for the Route to `status: False`, with a
                                                     Reason of `UnsupportedValue`.
@@ -8172,30 +7493,20 @@ spec:
                                               description: |-
                                                 Port is the port to be used in the value of the `Location`
                                                 header in the response.
-
-
                                                 If no port is specified, the redirect port MUST be derived using the
                                                 following rules:
-
-
                                                 * If redirect scheme is not-empty, the redirect port MUST be the well-known
                                                   port associated with the redirect scheme. Specifically "http" to port 80
                                                   and "https" to port 443. If the redirect scheme does not have a
                                                   well-known port, the listener port of the Gateway SHOULD be used.
                                                 * If redirect scheme is empty, the redirect port MUST be the Gateway
                                                   Listener port.
-
-
                                                 Implementations SHOULD NOT add the port number in the 'Location'
                                                 header in the following cases:
-
-
                                                 * A Location header that will use HTTP (whether that is determined via
                                                   the Listener protocol or the Scheme field) _and_ use port 80.
                                                 * A Location header that will use HTTPS (whether that is determined via
                                                   the Listener protocol or the Scheme field) _and_ use port 443.
-
-
                                                 Support: Extended
                                               format: int32
                                               maximum: 65535
@@ -8205,21 +7516,13 @@ spec:
                                               description: |-
                                                 Scheme is the scheme to be used in the value of the `Location` header in
                                                 the response. When empty, the scheme of the request is used.
-
-
                                                 Scheme redirects can affect the port of the redirect, for more information,
                                                 refer to the documentation for the port field of this filter.
-
-
                                                 Note that values may be added to this enum, implementations
                                                 must ensure that unknown values will not cause a crash.
-
-
                                                 Unknown values here must result in the implementation setting the
                                                 Accepted Condition for the Route to `status: False`, with a
                                                 Reason of `UnsupportedValue`.
-
-
                                                 Support: Extended
                                               enum:
                                               - http
@@ -8229,17 +7532,11 @@ spec:
                                               default: 302
                                               description: |-
                                                 StatusCode is the HTTP status code to be used in response.
-
-
                                                 Note that values may be added to this enum, implementations
                                                 must ensure that unknown values will not cause a crash.
-
-
                                                 Unknown values here must result in the implementation setting the
                                                 Accepted Condition for the Route to `status: False`, with a
                                                 Reason of `UnsupportedValue`.
-
-
                                                 Support: Core
                                               enum:
                                               - 301
@@ -8250,8 +7547,6 @@ spec:
                                           description: |-
                                             ResponseHeaderModifier defines a schema for a filter that modifies response
                                             headers.
-
-
                                             Support: Extended
                                           properties:
                                             add:
@@ -8259,19 +7554,13 @@ spec:
                                                 Add adds the given header(s) (name, value) to the request
                                                 before the action. It appends to any existing values associated
                                                 with the header name.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   add:
                                                   - name: "my-header"
                                                     value: "bar,baz"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo,bar,baz
@@ -8284,8 +7573,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -8316,19 +7603,13 @@ spec:
                                                 value of Remove is a list of HTTP header names. Note that the header
                                                 names are case-insensitive (see
                                                 https://datatracker.ietf.org/doc/html/rfc2616#section-4.2).
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header1: foo
                                                   my-header2: bar
                                                   my-header3: baz
-
-
                                                 Config:
                                                   remove: ["my-header1", "my-header3"]
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header2: bar
@@ -8341,19 +7622,13 @@ spec:
                                               description: |-
                                                 Set overwrites the request with the given header (name, value)
                                                 before the action.
-
-
                                                 Input:
                                                   GET /foo HTTP/1.1
                                                   my-header: foo
-
-
                                                 Config:
                                                   set:
                                                   - name: "my-header"
                                                     value: "bar"
-
-
                                                 Output:
                                                   GET /foo HTTP/1.1
                                                   my-header: bar
@@ -8366,8 +7641,6 @@ spec:
                                                     description: |-
                                                       Name is the name of the HTTP Header to be matched. Name matching MUST be
                                                       case insensitive. (See https://tools.ietf.org/html/rfc7230#section-3.2).
-
-
                                                       If multiple entries specify equivalent header names, the first entry with
                                                       an equivalent name MUST be considered for a match. Subsequent entries
                                                       with an equivalent header name MUST be ignored. Due to the
@@ -8397,18 +7670,12 @@ spec:
                                           description: |-
                                             Type identifies the type of filter to apply. As with other API fields,
                                             types are classified into three conformance levels:
-
-
                                             - Core: Filter types and their corresponding configuration defined by
                                               "Support: Core" in this package, e.g. "RequestHeaderModifier". All
                                               implementations must support core filters.
-
-
                                             - Extended: Filter types and their corresponding configuration defined by
                                               "Support: Extended" in this package, e.g. "RequestMirror". Implementers
                                               are encouraged to support extended filters.
-
-
                                             - Implementation-specific: Filters that are defined and supported by
                                               specific vendors.
                                               In the future, filters showing convergence in behavior across multiple
@@ -8416,21 +7683,13 @@ spec:
                                               conformance levels. Filter-specific configuration for such filters
                                               is specified using the ExtensionRef field. `Type` should be set to
                                               "ExtensionRef" for custom filters.
-
-
                                             Implementers are encouraged to define custom implementation types to
                                             extend the core API with implementation-specific behavior.
-
-
                                             If a reference to a custom filter type cannot be resolved, the filter
                                             MUST NOT be skipped. Instead, requests that would have been processed by
                                             that filter MUST receive a HTTP error response.
-
-
                                             Note that values may be added to this enum, implementations
                                             must ensure that unknown values will not cause a crash.
-
-
                                             Unknown values here must result in the implementation setting the
                                             Accepted Condition for the Route to `status: False`, with a
                                             Reason of `UnsupportedValue`.
@@ -8445,16 +7704,12 @@ spec:
                                         urlRewrite:
                                           description: |-
                                             URLRewrite defines a schema for a filter that modifies a request during forwarding.
-
-
                                             Support: Extended
                                           properties:
                                             hostname:
                                               description: |-
                                                 Hostname is the value to be used to replace the Host header value during
                                                 forwarding.
-
-
                                                 Support: Extended
                                               maxLength: 253
                                               minLength: 1
@@ -8463,8 +7718,6 @@ spec:
                                             path:
                                               description: |-
                                                 Path defines a path rewrite.
-
-
                                                 Support: Extended
                                               properties:
                                                 replaceFullPath:
@@ -8479,20 +7732,14 @@ spec:
                                                     match of a request during a rewrite or redirect. For example, a request
                                                     to "/foo/bar" with a prefix match of "/foo" and a ReplacePrefixMatch
                                                     of "/xyz" would be modified to "/xyz/bar".
-
-
                                                     Note that this matches the behavior of the PathPrefix match type. This
                                                     matches full path elements. A path element refers to the list of labels
                                                     in the path split by the `/` separator. When specified, a trailing `/` is
                                                     ignored. For example, the paths `/abc`, `/abc/`, and `/abc/def` would all
                                                     match the prefix `/abc`, but the path `/abcd` would not.
-
-
                                                     ReplacePrefixMatch is only compatible with a `PathPrefix` HTTPRouteMatch.
                                                     Using any other HTTPRouteMatch type on the same HTTPRouteRule will result in
                                                     the implementation setting the Accepted Condition for the Route to `status: False`.
-
-
                                                     Request Path | Prefix Match | Replace Prefix | Modified Path
                                                     -------------|--------------|----------------|----------
                                                     /foo/bar     | /foo         | /xyz           | /xyz/bar
@@ -8512,12 +7759,8 @@ spec:
                                                   description: |-
                                                     Type defines the type of path modifier. Additional types may be
                                                     added in a future release of the API.
-
-
                                                     Note that values may be added to this enum, implementations
                                                     must ensure that unknown values will not cause a crash.
-
-
                                                     Unknown values here must result in the implementation setting the
                                                     Accepted Condition for the Route to `status: False`, with a
                                                     Reason of `UnsupportedValue`.
@@ -8547,21 +7790,13 @@ spec:
                                     description: |-
                                       Kind is the Kubernetes resource kind of the referent. For example
                                       "Service".
-
-
                                       Defaults to "Service" when not specified.
-
-
                                       ExternalName services can refer to CNAME DNS records that may live
                                       outside of the cluster and as such are difficult to reason about in
                                       terms of conformance. They also may not be safe to forward to (see
                                       CVE-2021-25740 for more information). Implementations SHOULD NOT
                                       support ExternalName Services.
-
-
                                       Support: Core (Services with a type other than ExternalName)
-
-
                                       Support: Implementation-specific (Services with type ExternalName)
                                     maxLength: 63
                                     minLength: 1
@@ -8576,14 +7811,10 @@ spec:
                                     description: |-
                                       Namespace is the namespace of the backend. When unspecified, the local
                                       namespace is inferred.
-
-
                                       Note that when a namespace different than the local namespace is specified,
                                       a ReferenceGrant object is required in the referent namespace to allow that
                                       namespace's owner to accept the reference. See the ReferenceGrant
                                       documentation for details.
-
-
                                       Support: Core
                                     maxLength: 63
                                     minLength: 1
@@ -8609,14 +7840,10 @@ spec:
                                       the exact proportion defined here depending on the precision an
                                       implementation supports. Weight is not a percentage and the sum of
                                       weights does not need to equal 100.
-
-
                                       If only one backend is specified and it has a weight greater than 0, 100%
                                       of the traffic is forwarded to that backend. If weight is set to 0, no
                                       traffic should be forwarded for this entry. If unspecified, weight
                                       defaults to 1.
-
-
                                       Support for this field varies based on the context where used.
                                     format: int32
                                     maximum: 1000000
@@ -8676,8 +7903,6 @@ spec:
                                     referrer.
                                     The API object must be valid in the cluster; the Group and Kind must
                                     be registered in the cluster for this reference to be valid.
-
-
                                     References to objects with invalid Group and Kind are not valid, and must
                                     be rejected by the implementation, with appropriate Conditions set
                                     on the containing object.
@@ -8753,8 +7978,6 @@ spec:
                                     referrer.
                                     The API object must be valid in the cluster; the Group and Kind must
                                     be registered in the cluster for this reference to be valid.
-
-
                                     References to objects with invalid Group and Kind are not valid, and must
                                     be rejected by the implementation, with appropriate Conditions set
                                     on the containing object.

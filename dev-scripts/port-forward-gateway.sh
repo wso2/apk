@@ -9,13 +9,13 @@
 # You may not alter or remove any copyright or other notice from copies of this content.
 #
 
-kubectl port-forward -n apk-egress-gateway deploy/apk-eg-wso2-apk-gateway-runtime-deployment 9000:9000 &
+kubectl port-forward -n apk-egress-gateway deploy/apk-eg-gateway-runtime 9000:9000 &
 GW_ADMIN_PID=$!
 
-kubectl port-forward -n apk-egress-gateway deploy/apk-eg-wso2-apk-gateway-runtime-deployment 9095:9095 &
+kubectl port-forward -n apk-egress-gateway deploy/apk-eg-gateway-runtime 9095:9095 &
 GW_HTTPS_LISTENER_PID=$!
 
-kubectl port-forward -n apk-egress-gateway deploy/apk-eg-wso2-apk-gateway-runtime-deployment 9080:9080 &
+kubectl port-forward -n apk-egress-gateway deploy/apk-eg-gateway-runtime 9080:9080 &
 GW_HTTP_LISTENER_PID=$!
 
 cleanup() {

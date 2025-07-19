@@ -107,7 +107,7 @@ spec:
       served: true
       storage: false
       subresources:
-        status: {}
+        status:
     - name: v1alpha4
       schema:
         openAPIV3Schema:
@@ -217,4 +217,4 @@ spec:
       served: true
       storage: true
       subresources:
-        status: {}
+        status:
