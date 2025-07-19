@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -35,11 +36,16 @@ import (
 )
 
 var (
-	globalEmbeddingProvider   semanticcache.EmbeddingProvider
-	initEmbeddingProviderOnce sync.Once
-
-	globalVectorStoreProvider   semanticcache.VectorDBProvider
-	initVectorStoreProviderOnce sync.Once
+	// Map of Policy UUID to its providers
+	embeddingProviders   = make(map[string]semanticcache.EmbeddingProvider)
+	vectorStoreProviders = make(map[string]semanticcache.VectorDBProvider)
+	
+	// Mutex to protect access to global providers
+	providerMutex sync.RWMutex
+	
+	// Map of Policy UUID to its configurations (to detect changes)
+	embeddingConfigs   = make(map[string]semanticcache.EmbeddingProviderConfig)
+	vectorStoreConfigs = make(map[string]semanticcache.VectorDBProviderConfig)
 )
 
 // SemanticCachePolicy is a struct that represents a semantic cache policy.
@@ -59,7 +65,7 @@ func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *env
 		logger.Sugar().Debug("Request body is empty, skipping semantic caching")
 		return nil
 	}
-
+	logger.Sugar().Debugf("Generating embedding using %s", s.embeddingProvider.GetType())
 	embedding, err := s.embeddingProvider.GetEmbedding(logger, string(req.GetRequestBody().Body))
 	if err != nil {
 		logger.Error(err, "Error in embedding generation.")
@@ -75,6 +81,7 @@ func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *env
 		"ctx":       ctx,
 	}
 	logger.Sugar().Debug("Checking for a cached response in Vector Store")
+	logger.Sugar().Debugf("Checking cache using %s", s.vectorStoreProvider.GetType())
 	cacheResponse, err := s.vectorStoreProvider.Retrieve(logger, embedding, cacheRetrieveConfig)
 	if err != nil {
 		logger.Error(err, "Error in retrieving cached response from VectorDB.")
@@ -140,6 +147,7 @@ func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *en
 				RequestHash:         uuid.New().String(),
 				ResponseFetchedTime: time.Now(),
 			}
+			logger.Sugar().Debugf("Storing in cache using %s", s.vectorStoreProvider.GetType())
 			err = s.vectorStoreProvider.Store(logger, embedding, cr, map[string]interface{}{
 				"api_id": props["matchedAPIUUID"].(string),
 				"ctx":    ctx,
@@ -202,30 +210,95 @@ func NewSemanticCachingPolicy(logger *logging.Logger, inBuiltPolicy dto.InBuiltP
 		}
 	}
 
-	initEmbeddingProviderOnce.Do(func() {
-		logger.Sugar().Debug("First semantic cache policy loaded. Initializing shared Embedding Provider...")
-		var err error
-		globalEmbeddingProvider, err = initializeEmbeddingProvider(logger, semanticCachePolicy.embeddingConfig)
-		if err != nil {
-			logger.Error(err, "Failed to initialize the shared Embedding Provider")
-		}
-	})
+	// Get read lock to check if we need to update providers
+	providerMutex.RLock()
+	policyID := inBuiltPolicy.GetPolicyID()
+	embeddingConfigChanged := !reflect.DeepEqual(semanticCachePolicy.embeddingConfig, embeddingConfigs[policyID])
+	vectorStoreConfigChanged := !reflect.DeepEqual(semanticCachePolicy.vectorStoreConfig, vectorStoreConfigs[policyID])
+	providerMutex.RUnlock()
 
-	initVectorStoreProviderOnce.Do(func() {
-		logger.Sugar().Debug("First semantic cache policy loaded. Initializing shared Vector DB Provider...")
-		var err error
-		globalVectorStoreProvider, err = initializeVectorDBProvider(logger, semanticCachePolicy.vectorStoreConfig)
-		if err != nil {
-			logger.Error(err, "Failed to initialize the shared Vector DB Provider")
+	// Initialize or update embedding provider if needed
+	if embeddingConfigChanged || embeddingProviders[policyID] == nil {
+		providerMutex.Lock()
+		// Check again after acquiring lock
+		if !reflect.DeepEqual(semanticCachePolicy.embeddingConfig, embeddingConfigs[policyID]) || embeddingProviders[policyID] == nil {
+			logger.Sugar().Infof("Initializing/updating embedding provider for Policy %s", policyID)
+			provider, err := initializeEmbeddingProvider(logger, semanticCachePolicy.embeddingConfig)
+			if err != nil {
+				logger.Error(err, "Failed to initialize embedding provider")
+				providerMutex.Unlock()
+				return nil
+			}
+			embeddingProviders[policyID] = provider
+			embeddingConfigs[policyID] = semanticCachePolicy.embeddingConfig
 		}
-	})
+		providerMutex.Unlock()
+	}
 
-	if globalEmbeddingProvider == nil || globalVectorStoreProvider == nil {
+	// Initialize or update vector store provider if needed
+	if vectorStoreConfigChanged || vectorStoreProviders[policyID] == nil {
+		providerMutex.Lock()
+		// Check again after acquiring lock
+		if !reflect.DeepEqual(semanticCachePolicy.vectorStoreConfig, vectorStoreConfigs[policyID]) || vectorStoreProviders[policyID] == nil {
+			logger.Sugar().Infof("Initializing/updating vector store provider for Policy %s", policyID)
+			provider, err := initializeVectorDBProvider(logger, semanticCachePolicy.vectorStoreConfig)
+			if err != nil {
+				logger.Error(err, "Failed to initialize vector store provider")
+				providerMutex.Unlock()
+				return nil
+			}
+			vectorStoreProviders[policyID] = provider
+			vectorStoreConfigs[policyID] = semanticCachePolicy.vectorStoreConfig
+		}
+		providerMutex.Unlock()
+	}
+
+	// Assign the Policy-specific providers to this policy instance
+	providerMutex.RLock()
+	semanticCachePolicy.embeddingProvider = embeddingProviders[policyID]
+	semanticCachePolicy.vectorStoreProvider = vectorStoreProviders[policyID]
+	providerMutex.RUnlock()
+	
+	if semanticCachePolicy.embeddingProvider == nil || semanticCachePolicy.vectorStoreProvider == nil {
 		return nil
 	}
-	semanticCachePolicy.embeddingProvider = globalEmbeddingProvider
-	semanticCachePolicy.vectorStoreProvider = globalVectorStoreProvider
+	
 	return semanticCachePolicy
+}
+
+// configChanged compares two configs to determine if there are any relevant changes
+// This is a generic function that uses reflection to compare struct fields
+func configChanged(newConfig, oldConfig interface{}) bool {
+	// If the types are different, consider it changed
+	if reflect.TypeOf(newConfig) != reflect.TypeOf(oldConfig) {
+		return true
+	}
+	
+	newVal := reflect.ValueOf(newConfig)
+	oldVal := reflect.ValueOf(oldConfig)
+	
+	// If either is not a struct, consider it changed
+	if newVal.Kind() != reflect.Struct || oldVal.Kind() != reflect.Struct {
+		return true
+	}
+	
+	// Compare each field
+	for i := 0; i < newVal.NumField(); i++ {
+		newField := newVal.Field(i)
+		oldField := oldVal.Field(i)
+		
+		// Skip unexported fields
+		if !newField.CanInterface() {
+			continue
+		}
+		
+		// Compare the field values
+		if !reflect.DeepEqual(newField.Interface(), oldField.Interface()) {
+			return true
+		}
+	}
+	
+	return false
 }
 
 // buildResponse is a method that builds the response body for the WordCountGuardrail policy.

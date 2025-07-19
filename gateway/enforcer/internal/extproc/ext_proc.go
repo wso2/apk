@@ -1135,6 +1135,21 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						dynamicMetadataKeyValuePairs["response_status"] = string(header.RawValue)
 					}
 				}
+				// Response Header triggered for semantic caching means its a miss
+				if rhq.Response.HeaderMutation == nil {
+					rhq.Response.HeaderMutation = &envoy_service_proc_v3.HeaderMutation{
+						SetHeaders: []*corev3.HeaderValueOption{},
+					}
+				}
+				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, 
+					&corev3.HeaderValueOption{
+						Header: &corev3.HeaderValue{
+							Key:      "X-Cache-Status",
+							RawValue: []byte("MISS"),
+						},
+					},
+				)
+				s.cfg.Logger.Sugar().Debug("Added header -> X-Cache-Status: MISS")
 			}
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
 			// httpBody := req.GetResponseBody()
