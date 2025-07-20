@@ -1767,7 +1767,7 @@ public class APIClient {
                         policyReferences.push(modelBasedRoundRobin);
                     } else if (policyName == RegexGuardrail || policyName == WordCountGuardrail || policyName == SentenceCountGuardrail || 
                                 policyName == ContentLengthGuardrail || policyName == URLGuardrail || policyName == SemanticCache || 
-                                policyName == AzureContentSafetyContentModeration || policyName == AWSBedrockGuardrail) {
+                                policyName == AzureContentSafetyContentModeration || policyName == AWSBedrockGuardrail || policyName == PIIMaskingRegex) {
                         CommonPolicy commonPolicy = check policy.cloneWithType(CommonPolicy);
                         model:InBuiltPolicyParameter[] parametersArray = [];
                         CommonPolicy_parameter[] commonPolicyParameters = [];

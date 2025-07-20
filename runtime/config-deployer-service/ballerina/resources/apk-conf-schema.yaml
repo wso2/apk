@@ -282,6 +282,7 @@ components:
           URLGuardrail: "#/components/schemas/CommonPolicy"
           AzureContentSafetyContentModeration: "#/components/schemas/CommonPolicy"
           AWSBedrockGuardrail: "#/components/schemas/CommonPolicy"
+          PIIMaskingRegex: "#/components/schemas/CommonPolicy"
     APKResponseOperationPolicy:
       title: API Operation Policy
       oneOf:
@@ -305,6 +306,7 @@ components:
           URLGuardrail: "#/components/schemas/CommonPolicy"
           AzureContentSafetyContentModeration: "#/components/schemas/CommonPolicy"
           AWSBedrockGuardrail: "#/components/schemas/CommonPolicy"
+          PIIMaskingRegex: "#/components/schemas/CommonPolicy"
     BaseOperationPolicy:
       title: API Operation Policy
       required:
@@ -330,6 +332,7 @@ components:
             - URLGuardrail
             - AzureContentSafetyContentModeration
             - AWSBedrockGuardrail
+            - PIIMaskingRegex
         policyVersion:
           type: string
           default: "v1"

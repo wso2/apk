@@ -389,7 +389,8 @@
             "SemanticCache",
             "URLGuardrail",
             "AzureContentSafetyContentModeration",
-            "AWSBedrockGuardrail"
+            "AWSBedrockGuardrail",
+            "PIIMaskingRegex"
           ]
         },
         "policyVersion": {
@@ -452,7 +453,8 @@
             "SemanticCache",
             "URLGuardrail",
             "AzureContentSafetyContentModeration",
-            "AWSBedrockGuardrail"
+            "AWSBedrockGuardrail",
+            "PIIMaskingRegex"
           ]
         },
         "policyVersion": {
