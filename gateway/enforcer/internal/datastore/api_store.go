@@ -158,6 +158,8 @@ func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies [
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
 		case inbuiltpolicy.AWSBedrockGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAWSBedrockGuardrail(basePolicy))
+		case inbuiltpolicy.PIIMaskingRegexName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewPIIMaskingRegex(logger, basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
@@ -202,6 +204,8 @@ func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, responsePolicies
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAzureContentSafetyContentModeration(basePolicy))
 		case inbuiltpolicy.AWSBedrockGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAWSBedrockGuardrail(basePolicy))
+		case inbuiltpolicy.PIIMaskingRegexName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewPIIMaskingRegex(logger, basePolicy))
 		}
 	}
 	// Sort by PolicyOrder

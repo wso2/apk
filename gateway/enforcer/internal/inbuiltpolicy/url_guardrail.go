@@ -18,8 +18,9 @@
 package inbuiltpolicy
 
 import (
+	"context"
 	"encoding/json"
-	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -112,43 +113,31 @@ func (r *URLGuardrail) checkDNS(logger *logging.Logger, target string) bool {
 		logger.Sugar().Errorf("Failed to parse URL: %v", err)
 		return false
 	}
+
 	host := parsedURL.Hostname()
-	dnsURL := "https://1.1.1.1/dns-query?name=" + host
 
-	client := &http.Client{
-		Timeout: time.Duration(r.Timeout) * time.Millisecond,
+	// Create a custom resolver with timeout
+	resolver := &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+			d := net.Dialer{
+				Timeout: time.Duration(r.Timeout) * time.Millisecond,
+			}
+			return d.DialContext(ctx, network, address)
+		},
 	}
-	req, err := http.NewRequest("GET", dnsURL, nil)
+
+	// Look up IP addresses
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(r.Timeout)*time.Millisecond)
+	defer cancel()
+
+	ips, err := resolver.LookupIP(ctx, "ip", host)
 	if err != nil {
-		logger.Sugar().Errorf("Failed to create DNS request: %v", err)
-		return false
-	}
-	req.Header.Set("Accept", "application/dns-json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		logger.Sugar().Errorf("DNS request failed: %v", err)
-		return false
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		logger.Sugar().Errorf("Failed to read DNS response: %v", err)
+		logger.Sugar().Debugf("DNS lookup failed for %s: %v", host, err)
 		return false
 	}
 
-	var dnsResp struct {
-		Status int             `json:"Status"`
-		Answer json.RawMessage `json:"Answer"`
-	}
-	if err := json.Unmarshal(body, &dnsResp); err != nil {
-		logger.Sugar().Errorf("Failed to parse DNS response: %v", err)
-		return false
-	}
-
-	// Check if status is 0 and Answer is present and non-empty
-	return dnsResp.Status == 0 && len(dnsResp.Answer) > 2 // [] means empty array, so >2 means at least one answer
+	return len(ips) > 0
 }
 
 // checkURL checks if the URL is reachable via HTTP HEAD request.

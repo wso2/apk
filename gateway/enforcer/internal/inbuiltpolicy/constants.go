@@ -26,11 +26,12 @@ const (
 	ErrorMessage = "message"
 
 	GuardrailErrorCode         = 446
+	APIMInternalErrorCode      = 500
 	GuardrailAPIMExceptionCode = 900514
+	APIMInternalExceptionCode  = 900967
 	GuardrailErrorType         = "ERROR_TYPE"
 	AssessmentAction           = "action"
 	InterveningGuardrail       = "interveningGuardrail"
-	APIMInternalExceptionCode  = 900967
 	AssessmentReason           = "actionReason"
 	Direction                  = "direction"
 	Assessments                = "assessments"
@@ -43,6 +44,7 @@ const (
 	SemanticCacheName                       = "SemanticCache"
 	AzureContentSafetyContentModerationName = "AzureContentSafetyContentModeration"
 	AWSBedrockGuardrailName                 = "AWSBedrockGuardrail"
+	PIIMaskingRegexName                     = "PIIMaskingRegex"
 
 	RegexGuardrailConstant                      = "REGEX_GUARDRAIL"
 	WordCountGuardrailConstant                  = "WORD_COUNT_GUARDRAIL"
@@ -52,6 +54,7 @@ const (
 	SemanticCacheConstant                       = "SEMANTIC_CACHE"
 	AzureContentSafetyContentModerationConstant = "AZURE_CONTENT_SAFETY_CONTENT_MODERATION"
 	AWSBedrockGuardrailConstant                 = "AWS_BEDROCK_GUARDRAIL"
+	PIIMaskingRegexConstant                     = "PII_MASKING_REGEX"
 
 	TextCleanRegex     = "^\"|\"$"
 	WordSplitRegex     = "\\s+"
@@ -60,6 +63,7 @@ const (
 
 	semanticCacheEmbeddingKey         string = "semanticcache:embedding"
 	awsBedrockGuardrailPIIEntitiesKey string = "awsbedrockguardrail:pii_entities"
+	piiMaskingRegexPIIEntitiesKey     string = "piimaskingregex:pii_entities"
 )
 
 var (

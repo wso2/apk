@@ -26,6 +26,7 @@ type ExternalProcessingEnvoyMetadata struct {
 	SemanticEmbedding              string              `json:"semanticEmbedding,omitempty"`
 	ResponseStatus                 string              `json:"responseStatus,omitempty"`
 	AWSBedrockGuardrailPIIEntities map[string]string   `json:"awsBedrockGuardrailPIIEntities,omitempty"`
+	PIIMaskingRegexPIIEntities     map[string]string   `json:"piiMaskingRegexPIIEntities,omitempty"`
 }
 
 // AuthenticationData represents the authentication data.
