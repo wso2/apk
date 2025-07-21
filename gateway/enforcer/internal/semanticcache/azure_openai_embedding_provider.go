@@ -37,6 +37,7 @@ func (a *AzureOpenAIEmbeddingProvider) Init(logger *logging.Logger, config Embed
 	a.client = &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
+	logger.Sugar().Debugf("API Key: %s | Endpoint: %s | Auth Header: %s", a.azureAPIKey, a.endpointURL, a.authHeaderName)
 	return nil
 }
 
