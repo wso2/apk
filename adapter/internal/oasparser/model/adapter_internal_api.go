@@ -48,6 +48,7 @@ import (
 // adapter internal representation. The values are populated from the operator. The pathItem level information is represented
 // by the resources array which contains the Resource entries.
 type AdapterInternalAPI struct {
+	APIUUID                  string
 	UUID                     string
 	apiType                  string
 	description              string
@@ -1059,7 +1060,7 @@ func (adapterInternalAPI *AdapterInternalAPI) SetInfoHTTPRouteCR(ctx context.Con
 				loggers.LoggerAPI.Debugf("Response In-Built Policies extracted %v", extracted)
 				responseInBuiltPolicies = extracted
 			}
-			if (semanticCachePolicy != nil){ // Append semantic cache policy to end
+			if semanticCachePolicy != nil { // Append semantic cache policy to end
 				responseInBuiltPolicies = append(responseInBuiltPolicies, semanticCachePolicy)
 				loggers.LoggerAPI.Debugf("Added semantic cache policy to response flow")
 			}
