@@ -23,9 +23,27 @@ type pkg struct {
 }
 
 type accessLog struct {
-	Enable  bool
-	LogFile string
-	Format  string
+	Enable   bool
+	LogFile  string
+	LogType  string
+	Excludes AccessLogExcludes
+	// ReservedLogFormat is reserved for Choreo Gateway Access Logs Observability feature. Changes to this may
+	// break the functionality in the observability feature.
+	ReservedLogFormat string
+	// SecondaryLogFormat can be used by dev to log properties for debug purposes
+	SecondaryLogFormat string
+	JSONFormat         map[string]string
+}
+
+// AccessLogExcludes represents the configurations related to excludes from access logs.
+type AccessLogExcludes struct {
+	SystemHost AccessLogExcludesSystemHost
+}
+
+// AccessLogExcludesSystemHost represents the configurations related to excludes from access logs for requests made to system host.
+type AccessLogExcludesSystemHost struct {
+	Enabled   bool
+	PathRegex string
 }
 
 type wireLogs struct {
@@ -61,9 +79,49 @@ func getDefaultLogConfig() *LogConfig {
 		AccessLogs: &accessLog{
 			Enable:  false,
 			LogFile: "/dev/stdout",
-			Format: "[%START_TIME%] '%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%' %RESPONSE_CODE% " +
-				"%RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%" +
-				"'%REQ(X-FORWARDED-FOR)%' '%REQ(USER-AGENT)%' '%REQ(X-REQUEST-ID)%' '%REQ(:AUTHORITY)%' '%UPSTREAM_HOST%'\n",
+			LogType: "text",
+			Excludes: AccessLogExcludes{
+				SystemHost: AccessLogExcludesSystemHost{
+					Enabled:   true,
+					PathRegex: "^(/health|/ready)$",
+				},
+			},
+			// Following default value of "ReservedLogFormat" is document in log_config.toml for references.
+			// Update log_config.toml if any changes are done here.
+			ReservedLogFormat: "[%START_TIME%]' '%DYNAMIC_METADATA(envoy.filters.http.ext_proc:originalHost)%' " +
+				"'%REQ(:AUTHORITY)%' '%REQ(:METHOD)%' '%DYNAMIC_METADATA(envoy.filters.http.ext_proc:originalPath)%' " +
+				"'%REQ(:PATH)%' '%PROTOCOL%' '%RESPONSE_CODE%' '%RESPONSE_CODE_DETAILS%' '%RESPONSE_FLAGS%' '%REQ(USER-AGENT)%' " +
+				"'%REQ(X-REQUEST-ID)%' '%REQ(X-FORWARDED-FOR)%' '%UPSTREAM_HOST%' '%BYTES_RECEIVED%' '%BYTES_SENT%' '%DURATION%' " +
+				"'%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%' '%REQUEST_TX_DURATION%' '%RESPONSE_TX_DURATION%' '%REQUEST_DURATION%' " +
+				"'%RESPONSE_DURATION%' '%DYNAMIC_METADATA(envoy.filters.http.ext_proc:apiUUID)%' " +
+				"'%DYNAMIC_METADATA(envoy.filters.http.ext_proc:extAuthDetails)%' '",
+			SecondaryLogFormat: "",
+			JSONFormat: map[string]string{
+				"time":          "%START_TIME%",
+				"gwHost":        "%DYNAMIC_METADATA(envoy.filters.http.ext_proc:originalHost)%",
+				"host":          "%REQ(:AUTHORITY)%",
+				"method":        "%REQ(:METHOD)%",
+				"apiPath":       "%DYNAMIC_METADATA(envoy.filters.http.ext_proc:originalPath)%",
+				"upstrmPath":    "%REQ(:PATH)%",
+				"prot":          "%PROTOCOL%",
+				"respCode":      "%RESPONSE_CODE%",
+				"respCodeDtls":  "%RESPONSE_CODE_DETAILS%",
+				"respFlag":      "%RESPONSE_FLAGS%",
+				"ua":            "%REQ(USER-AGENT)%",
+				"reqId":         "%REQ(X-REQUEST-ID)%",
+				"xff":           "%REQ(X-FORWARDED-FOR)%",
+				"upstrmHost":    "%UPSTREAM_HOST%",
+				"bytesRecv":     "%BYTES_RECEIVED%",
+				"bytesSent":     "%BYTES_SENT%",
+				"dur":           "%DURATION%",
+				"upstrmSvcTime": "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%",
+				"reqTxDur":      "%REQUEST_TX_DURATION%",
+				"respTxDur":     "%RESPONSE_TX_DURATION%",
+				"reqDur":        "%REQUEST_DURATION%",
+				"respDur":       "%RESPONSE_DURATION%",
+				"apiUuid":       "%DYNAMIC_METADATA(envoy.filters.http.ext_proc:apiUUID)%",
+				"extAuthDtls":   "%DYNAMIC_METADATA(envoy.filters.http.ext_proc:extAuthDetails)%",
+			},
 		},
 		WireLogs: &wireLogs{
 			Enable:  false,

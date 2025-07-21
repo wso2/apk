@@ -35,4 +35,8 @@ type ExternalProcessingEnvoyAttributes struct {
 	CorrelationID                          string `json:"correlationIdAttribute"`
 	EndpointBasepath                       string `json:"endpointBasepath"`
 	URI                                    string `json:"uriAttribute"`
+	APIUUID                                string `json:"apiUUID"`
+	OriginalHost                           string `json:"originalHost"`
+	OriginalPath                           string `json:"originalPath"`
+	ExtAuthDetails                         string `json:"extAuthDetails"`
 }

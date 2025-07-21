@@ -62,6 +62,10 @@ const (
 	endpointBasepathAttribute                       string = "endpointBasepath"
 	enableBackendBasedAIRatelimitAttribute          string = "enableBackendBasedAIRatelimit"
 	backendBasedAIRatelimitDescriptorValueAttribute string = "backendBasedAIRatelimitDescriptorValue"
+	apiUUIDAttribute                                string = "apiUUID"
+	originalHostAttribute                           string = "originalHost"
+	originalPathAttribute                           string = "originalPath"
+	extAuthDetailsAttribute                         string = "extAuthDetails"
 	retryPolicyRetriableStatusCodes                 string = "retriable-status-codes"
 )
 
@@ -155,3 +159,11 @@ const LuaLocal = "envoy.filters.http.lua.local"
 
 // EnvoyJWT is the jwt filter name
 const EnvoyJWT = "envoy.filters.http.jwt_authn"
+
+// Access Logs
+const (
+	fileAccessLogName    string = "envoy.access_loggers.file"
+	defaultAccessLogPath string = "/tmp/envoy.access.log"
+	AccessLogTypeText           = "text"
+	AccessLogTypeJSON           = "json"
+)
