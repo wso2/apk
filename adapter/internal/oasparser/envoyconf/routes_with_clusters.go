@@ -950,7 +950,7 @@ func createRoutes(params *routeCreateParams) (routes []*routev3.Route, err error
 					},
 					apiUUIDAttribute: &structpb.Value{
 						Kind: &structpb.Value_StringValue{
-							StringValue: params.apiID,
+							StringValue: params.apiUUID,
 						},
 					},
 					originalHostAttribute: &structpb.Value{
@@ -2003,6 +2003,7 @@ func genRouteCreateParams(swagger *model.AdapterInternalAPI, resource *model.Res
 	mirrorClusterNames map[string][]string) *routeCreateParams {
 
 	params := &routeCreateParams{
+		apiUUID:                      swagger.APIUUID,
 		apiID:                        swagger.UUID,
 		organizationID:               organizationID,
 		title:                        swagger.GetTitle(),
