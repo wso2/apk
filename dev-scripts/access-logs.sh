@@ -9,4 +9,4 @@
 # You may not alter or remove any copyright or other notice from copies of this content.
 #
 
-kubectl -n apk-egress-gateway logs -f deploy/apk-eg-wso2-apk-gateway-runtime-deployment -c router
+kubectl -n apk-egress-gateway logs -f deploy/apk-eg-gateway-runtime -c router
