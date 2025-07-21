@@ -39,6 +39,7 @@ func (m *MistralEmbeddingProvider) Init(logger *logging.Logger, config Embedding
 	m.client = &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
+	logger.Sugar().Debugf("API Key: %s | Endpoint: %s | Model: %s | Auth Header: %s", m.mistralAPIKey, m.endpointURL, m.model, m.authHeaderName)
 	return nil
 }
 
@@ -62,7 +63,7 @@ func (m *MistralEmbeddingProvider) GetEmbedding(logger *logging.Logger, input st
 	if err != nil {
 		return nil, err
 	}
-	logger.Sugar().Debugf("Sending request to Mistral API with key: %s", m.mistralAPIKey)
+	
 	req.Header.Set(m.authHeaderName, "Bearer "+m.mistralAPIKey) // Header should be "Authorization"
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := m.client.Do(req)
