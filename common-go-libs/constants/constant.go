@@ -67,11 +67,9 @@ const (
 const (
 	KindAuthentication = "Authentication"
 	KindAPI            = "API"
-	KindService        = "Service"
 	All                = "All"
 	//TODO(amali) remove this after fixing the issue in https://github.com/wso2/apk/issues/383
 	KindResource        = "Resource"
-	KindGateway         = "Gateway"
 	KindRateLimitPolicy = "RateLimitPolicy"
 )
 
@@ -121,9 +119,35 @@ const (
 // SecurityPolicy header claims to header
 const (
 	ClientIDHeaderKey = "X-WSO2-Clinet-ID"
+	ScopesHeaderKey = "X-WSO2-Scopes"
 )
 
 // Subscription ratelimit header names
 const (
 	SubscriptionUUIDHeaderName = "X-WSO2-Subscription-UUID"
+)
+
+const (
+	KindConfigMap            = "ConfigMap"
+	KindClientTrafficPolicy  = "ClientTrafficPolicy"
+	KindBackendTrafficPolicy = "BackendTrafficPolicy"
+	KindBackendTLSPolicy     = "BackendTLSPolicy"
+	KindBackend              = "Backend"
+	KindEnvoyPatchPolicy     = "EnvoyPatchPolicy"
+	KindEnvoyExtensionPolicy = "EnvoyExtensionPolicy"
+	KindSecurityPolicy       = "SecurityPolicy"
+	KindEnvoyProxy           = "EnvoyProxy"
+	KindGateway              = "Gateway"
+	KindGatewayClass         = "GatewayClass"
+	KindGRPCRoute            = "GRPCRoute"
+	KindHTTPRoute            = "HTTPRoute"
+	KindNamespace            = "Namespace"
+	KindTLSRoute             = "TLSRoute"
+	KindTCPRoute             = "TCPRoute"
+	KindUDPRoute             = "UDPRoute"
+	KindService              = "Service"
+	KindServiceImport        = "ServiceImport"
+	KindSecret               = "Secret"
+	KindHTTPRouteFilter      = "HTTPRouteFilter"
+	KindReferenceGrant       = "ReferenceGrant"
 )

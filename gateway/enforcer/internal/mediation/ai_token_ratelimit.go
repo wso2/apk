@@ -25,7 +25,7 @@ type AITokenRateLimit struct {
 	PromptTokenPath     string
 	CompletionTokenPath string
 	TotalTokenPath      string
-	logger        *logging.Logger
+	logger              *logging.Logger
 }
 
 const (
@@ -73,9 +73,7 @@ func NewAITokenRateLimit(mediation *dpv2alpha1.Mediation) *AITokenRateLimit {
 
 // Process processes the request configuration for AI token rate limiting.
 func (a *AITokenRateLimit) Process(requestConfig *requestconfig.Holder) *Result {
-	result := &Result{
-		StopFurtherProcessing: false,
-	}
+	result := NewResult()
 
 	if requestConfig == nil || requestConfig.ResponseHeaders == nil || requestConfig.ResponseHeaders.Headers == nil {
 		a.logger.Sugar().Debug("No response headers found in requestConfig, skipping analytics processing")
@@ -98,7 +96,7 @@ func (a *AITokenRateLimit) Process(requestConfig *requestconfig.Holder) *Result 
 		br, err = gzip.NewReader(bytes.NewReader(requestConfig.ResponseBody.Body))
 		if err != nil {
 			return result
-		} 
+		}
 	} else {
 		br = bytes.NewReader(requestConfig.ResponseBody.Body)
 	}

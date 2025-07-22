@@ -35,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const nodeIDArrayMaxLength int = 20
@@ -196,6 +197,31 @@ func FilterAPIByNamespaces(namespaces []string) func(object *dpv1alpha3.API) boo
 // and returns false otherwise
 func FilterHTTPRouteByNamespaces(namespaces []string) func(object *gwapiv1.HTTPRoute) bool {
 	return func(object *gwapiv1.HTTPRoute) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+
+// FilterConfigMapByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterConfigMapByNamespaces(namespaces []string) func(object *corev1.ConfigMap) bool {
+	return func(object *corev1.ConfigMap) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterSecretByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterSecretByNamespaces(namespaces []string) func(object *corev1.Secret) bool {
+	return func(object *corev1.Secret) bool {
 		if namespaces == nil {
 			return true
 		}

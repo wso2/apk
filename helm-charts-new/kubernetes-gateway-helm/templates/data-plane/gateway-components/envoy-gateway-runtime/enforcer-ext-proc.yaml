@@ -24,9 +24,6 @@ spec:
     - group: gateway.networking.k8s.io
       kind: Gateway
       name: {{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: eg
   extProc:
     - backendRefs:
         - group: ""
@@ -45,6 +42,7 @@ spec:
         accessibleNamespaces:
           - "envoy.filters.http.ext_proc"
           - "envoy-gateway"
+          - "envoy.filters.http.jwt_authn"
         # writableNamespaces:
         #   - "envoy.filters.http.ext_proc"
 {{- end -}}

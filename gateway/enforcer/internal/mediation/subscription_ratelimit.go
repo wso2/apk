@@ -43,7 +43,7 @@ func NewSubscriptionRatelimit(meidation *dpv2alpha1.Mediation) *SubscriptionRate
 
 // Process processes the request configuration for Subscription Rate Limit.
 func (s *SubscriptionRatelimit) Process(requestConfig *requestconfig.Holder) *Result {
-	result := &Result{}
+	result := NewResult()
 
 	if requestConfig.MatchedSubscription != nil {
 		// Add subscription rate limit headers to the requestConfig
