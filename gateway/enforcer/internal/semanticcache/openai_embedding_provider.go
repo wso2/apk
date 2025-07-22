@@ -79,7 +79,7 @@ func (o *OpenAIEmbeddingProvider) GetEmbedding(logger *logging.Logger, input str
 	if err := json.Unmarshal(respBody, &response); err != nil {
 		return nil, err
 	}
-
+	logger.Sugar().Debugf("Response from OpenAI Embedding API: %+v", response)
 	data := response["data"].([]interface{})[0].(map[string]interface{})
 	embedding := data["embedding"].([]interface{})
 	embeddingResult := make([]float32, len(embedding))

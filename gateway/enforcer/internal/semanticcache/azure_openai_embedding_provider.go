@@ -37,7 +37,6 @@ func (a *AzureOpenAIEmbeddingProvider) Init(logger *logging.Logger, config Embed
 	a.client = &http.Client{
 		Timeout: time.Duration(timeout) * time.Second,
 	}
-	logger.Sugar().Debugf("API Key: %s | Endpoint: %s | Auth Header: %s", a.azureAPIKey, a.endpointURL, a.authHeaderName)
 	return nil
 }
 
@@ -78,7 +77,7 @@ func (a *AzureOpenAIEmbeddingProvider) GetEmbedding(logger *logging.Logger, inpu
 	if err := json.Unmarshal(respBody, &response); err != nil {
 		return nil, err
 	}
-
+	logger.Sugar().Debugf("Response from Azure OpenAI Embedding API: %+v", response)
 	data := response["data"].([]interface{})[0].(map[string]interface{})
 	embedding := data["embedding"].([]interface{})
 	embeddingResult := make([]float32, len(embedding))
