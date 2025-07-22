@@ -17,7 +17,6 @@ import (
 
 var restrictedClaims = []string{"iss", "sub", "aud", "exp", "nbf", "iat", "jti", "application", "tierInfo", "subscribedAPIs", "aut"}
 
-
 // BackendJWT represents the configuration for Backend JWT policy in the API Gateway.
 type BackendJWT struct {
 	PolicyName       string            `json:"policyName"`
@@ -55,6 +54,7 @@ const (
 // NewBackendJWT creates a new BackendJWT instance with default values.
 func NewBackendJWT(mediation *dpv2alpha1.Mediation) *BackendJWT {
 	cfg := config.GetConfig()
+	cfg.Logger.Sugar().Infof("Creating BackendJWT policy with mediation: %p", mediation)
 	enabled := true
 	if val, ok := extractPolicyValue(mediation.Parameters, BackendJWTPolicyKeyEnabled); ok {
 		if val == "false" {
@@ -108,7 +108,7 @@ func NewBackendJWT(mediation *dpv2alpha1.Mediation) *BackendJWT {
 	if err != nil {
 		logger.Errorf("Failed to load private key for Backend JWT: %v", err)
 	}
-	
+
 	return &BackendJWT{
 		PolicyName:       "BackendJWT",
 		PolicyVersion:    mediation.PolicyVersion,
@@ -130,12 +130,12 @@ func NewBackendJWT(mediation *dpv2alpha1.Mediation) *BackendJWT {
 func (b *BackendJWT) Process(requestConfig *requestconfig.Holder) *Result {
 	// Implement the logic to process the requestConfig for Backend JWT
 	// This is a placeholder implementation
-	result := &Result{}
+	result := NewResult()
 
 	jwt := b.createJWT(requestConfig)
 	if jwt != "" {
 		if b.Header != "" {
-			result.AddHeaders[b.Header] = "Bearer "+jwt
+			result.AddHeaders[b.Header] = "Bearer " + jwt
 		} else {
 			result.AddHeaders["Authorization"] = "Bearer " + jwt
 		}

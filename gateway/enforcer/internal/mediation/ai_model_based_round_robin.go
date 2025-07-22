@@ -82,7 +82,7 @@ func NewAIModelBasedRoundRobin(mediation *dpv2alpha1.Mediation) *AIModelBasedRou
 
 // Process processes the request configuration for AI Model Based Round Robin.
 func (a *AIModelBasedRoundRobin) Process(requestConfigHolder *requestconfig.Holder) *Result {
-	result := &Result{}
+	result := NewResult()
 	if requestConfigHolder.RequestAttributes == nil {
 		a.logger.Sugar().Error("RequestAttributes are not populated in requestConfigHolder, hence cannot process AI Model Based Round Robin")
 		return result

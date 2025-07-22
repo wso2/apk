@@ -84,6 +84,15 @@ type Result struct {
 	Metadata                     map[string]*structpb.Value
 }
 
+// NewResult creates a new Result instance with default values.
+func NewResult() *Result {
+    return &Result{
+        AddHeaders:               make(map[string]string),
+        ImmediateResponseHeaders: make(map[string]string),
+        Metadata:                 make(map[string]*structpb.Value),
+    }
+}
+
 // Mediation interface defines the methods that all mediation policies must implement.
 type Mediation interface {
 	Process(*requestconfig.Holder) *Result
@@ -91,31 +100,59 @@ type Mediation interface {
 
 // CreateMediation creates a Mediation instance based on the provided Mediation object from the cluster.
 func CreateMediation(mediationFromCluster *dpv2alpha1.Mediation) Mediation {
+	if MediationMap[mediationFromCluster] != nil {
+		return MediationMap[mediationFromCluster]
+	}
 	switch mediationFromCluster.PolicyName {
 	case MediationAITokenRatelimit:
-		return NewAITokenRateLimit(mediationFromCluster)
+		// Check if the mediation already exists
+		mediation := NewAITokenRateLimit(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
 	case MediationSubscriptionRatelimit:
-		return NewSubscriptionRatelimit(mediationFromCluster)
+		mediation := NewSubscriptionRatelimit(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
 	case MediationSubscriptionValidation:
-		return NewSubscriptionValidation(mediationFromCluster)
+		mediation := NewSubscriptionValidation(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
 	case MediationAIModelBasedRoundRobin:
-		return NewAIModelBasedRoundRobin(mediationFromCluster)
+		mediation := NewAIModelBasedRoundRobin(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
 	case MediationAnalytics:
-		return NewAnalytics(mediationFromCluster)
+		mediation := NewAnalytics(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
 	case MediationBackendJWT:
-		return NewBackendJWT(mediationFromCluster)
+		mediation := NewBackendJWT(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
 	case MediationGraphQL:
-		return NewGraphQL(mediationFromCluster)
+		mediation := NewGraphQL(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
 	default:
 		return nil
 	}
 }
 
-func extractPolicyValue(params []dpv2alpha1.Parameter, key string) (string, bool) {
+func extractPolicyValue(params []*dpv2alpha1.Parameter, key string) (string, bool) {
 	for _, param := range params {
 		if param.Key == key {
 			return param.Value, true
 		}
 	}
 	return "", false
+}
+
+// MediationMap holds the mapping of Mediation objects to their corresponding Mediation instances.
+var MediationMap = make(map[*dpv2alpha1.Mediation]Mediation)
+
+// DeleteMediation removes a Mediation from the MediationMap.
+func DeleteMediation(mediation *dpv2alpha1.Mediation) {
+	if _, exists := MediationMap[mediation]; exists {
+		delete(MediationMap, mediation)
+	}
 }

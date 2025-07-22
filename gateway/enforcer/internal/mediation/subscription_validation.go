@@ -61,7 +61,7 @@ func NewSubscriptionValidation(mediation *dpv2alpha1.Mediation) *SubscriptionVal
 func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *Result {
 	// Implement the logic to process the requestConfig for Subscription Validation
 	// This is a placeholder implementation
-	result := &Result{}
+	result := NewResult()
 
 	// get the consumer key.
 	clientID := "" 
@@ -128,13 +128,11 @@ func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *R
 		}
 	}
 
-	result = &Result{
-		StopFurtherProcessing: true,
-		ImmediateResponse: true,
-		ImmediateResponseCode: 401,        
-		ImmediateResponseBody: forbiddenJSONMessage,
-		ImmediateResponseDetail: "User is NOT authorized to access the Resource. API Subscription validation failed.",
-	}
+	result.StopFurtherProcessing = true
+	result.ImmediateResponse = true
+	result.ImmediateResponseCode = 401
+	result.ImmediateResponseBody = forbiddenJSONMessage
+	result.ImmediateResponseDetail = "User is NOT authorized to access the Resource. API Subscription validation failed."
 
 	return result
 }

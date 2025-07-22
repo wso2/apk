@@ -74,7 +74,31 @@ spec:
                     description: |-
                       DefinitionFileRef contains the
                       definition of the API in a ConfigMap.
-                    type: string
+                    properties:
+                      group:
+                        description: |-
+                          Group is the group of the referent. For example, "gateway.networking.k8s.io".
+                          When unspecified or empty string, core API group is inferred.
+                        maxLength: 253
+                        pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                        type: string
+                      kind:
+                        description: Kind is kind of the referent. For example "HTTPRoute"
+                          or "Service".
+                        maxLength: 63
+                        minLength: 1
+                        pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                        type: string
+                      name:
+                        description: Name is the name of the referent.
+                        maxLength: 253
+                        minLength: 1
+                        type: string
+                    required:
+                    - group
+                    - kind
+                    - name
+                    type: object
                   definitionPath:
                     default: /api-definition
                     description: DefinitionPath contains the path to expose the API
