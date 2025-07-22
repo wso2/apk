@@ -43,8 +43,11 @@ type Holder struct {
 	JWTAuthnPayloaClaims            map[string]interface{}
 }
 
+// Attributes holds the attributes related to the request configuration.
 type Attributes struct {
+	// RouteName is the name of the route.
 	RouteName string
+	// RequestID is the ID of the request.
 	RequestID string
 }
 

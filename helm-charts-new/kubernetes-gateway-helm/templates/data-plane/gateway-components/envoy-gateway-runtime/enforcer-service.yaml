@@ -27,4 +27,9 @@ spec:
     - name: servlet-https
       protocol: TCP
       port: 9092
+    {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.debug }}
+    - name: debug
+      protocol: TCP
+      port: 2345
+    {{- end }}
 {{- end -}}
