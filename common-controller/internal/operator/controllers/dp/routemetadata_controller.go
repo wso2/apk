@@ -20,13 +20,17 @@ package dp
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	"github.com/wso2/apk/adapter/pkg/logging"
@@ -37,21 +41,33 @@ import (
 	"github.com/wso2/apk/common-go-libs/constants"
 
 	dpV2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // RouteMetadataReconciler reconciles a RouteMetadata object
 type RouteMetadataReconciler struct {
-	client.Client
+	client client.Client
 	Scheme *runtime.Scheme
 	Store  *cache.RouteMetadataDataStore
 }
 
+const (
+	// configMapIndex is the index for ConfigMap resources in the RouteMetadata controller
+	configMapIndexRouteMetadata = "ConfigMapIndexRouteMetadata"
+)
+
 // NewRouteMetadataController creates a new controller for RouteMetadata.
 func NewRouteMetadataController(mgr manager.Manager, store *cache.RouteMetadataDataStore) error {
 	reconciler := &RouteMetadataReconciler{
-		Client: mgr.GetClient(),
+		client: mgr.GetClient(),
 		Store:  store,
+	}
+
+	ctx := context.Background()
+	if err := reconciler.addRouteMetadataIndexes(ctx, mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER, "Error adding indexes: %v", err))
+		return err
 	}
 
 	c, err := controller.New(constants.RouteMetadataController, mgr, controller.Options{Reconciler: reconciler})
@@ -74,6 +90,14 @@ func NewRouteMetadataController(mgr manager.Manager, store *cache.RouteMetadataD
 		return err
 	}
 
+	predicateConfigMap := []predicate.TypedPredicate[*corev1.ConfigMap]{predicate.NewTypedPredicateFuncs(utils.FilterConfigMapByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{},
+		handler.TypedEnqueueRequestsFromMapFunc(reconciler.getRouteMetadataForConfigMap), predicateConfigMap...)); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
+			"Error watching ConfigMap resources: %v", err))
+		return err
+	}
+
 	loggers.LoggerAPKOperator.Debug("RouteMetadata Controller successfully started. Watching RouteMetadata Objects...")
 	return nil
 }
@@ -83,19 +107,19 @@ func NewRouteMetadataController(mgr manager.Manager, store *cache.RouteMetadataD
 //+kubebuilder:rbac:groups=dp.wso2.com,resources=routepolicies/finalizers,verbs=update
 
 // Reconcile reconciles the RouteMetadata CR
-func (r *RouteMetadataReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (routeMetadataReconciler *RouteMetadataReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	loggers.LoggerAPKOperator.Infof("Reconciling RouteMetadata: %s", req.NamespacedName)
-	routePolicyKey := req.NamespacedName
+	routeMetadataKey := req.NamespacedName
 
-	var routePolicy dpV2alpha1.RouteMetadata
-	if err := r.Client.Get(ctx, routePolicyKey, &routePolicy); err != nil {
-		loggers.LoggerAPKOperator.Warnf("RouteMetadata %s not found, might be deleted", routePolicyKey)
-		r.Store.DeleteRouteMetadata(routePolicyKey.Namespace, routePolicyKey.Name)
-		routePolicy.ObjectMeta = metav1.ObjectMeta{
-			Namespace: routePolicyKey.Namespace,
-			Name:      routePolicyKey.Name,
+	var routeMetadata dpV2alpha1.RouteMetadata
+	if err := routeMetadataReconciler.client.Get(ctx, routeMetadataKey, &routeMetadata); err != nil {
+		loggers.LoggerAPKOperator.Warnf("RouteMetadata %s not found, might be deleted", routeMetadataKey)
+		routeMetadataReconciler.Store.DeleteRouteMetadata(routeMetadataKey.Namespace, routeMetadataKey.Name)
+		routeMetadata.ObjectMeta = metav1.ObjectMeta{
+			Namespace: routeMetadataKey.Namespace,
+			Name:      routeMetadataKey.Name,
 		}
-		routePolicyString, err := utils.ToJSONString(routePolicy)
+		routePolicyString, err := utils.ToJSONString(routeMetadata)
 		if err != nil {
 			loggers.LoggerAPKOperator.Errorf("Error converting RouteMetadata to JSON: %v", err)
 		} else {
@@ -106,10 +130,26 @@ func (r *RouteMetadataReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// Add or update the RouteMetadata in the store
-	r.Store.AddOrUpdateRouteMetadata(routePolicy)
+	if routeMetadata.Spec.API.DefinitionFileRef == nil {
+		namespacedName := types.NamespacedName{
+			Namespace: req.Namespace,
+			Name:      string(routeMetadata.Spec.API.DefinitionFileRef.Name),
+		}
+		var cm corev1.ConfigMap
+		if err := routeMetadataReconciler.client.Get(ctx, namespacedName, &cm); err != nil {
+			loggers.LoggerAPKOperator.Errorf("failed to fetch ConfigMap %s: %v", namespacedName.String(), err)
+		}
+		val, ok := cm.Data["Definition"]
+		if !ok {
+			loggers.LoggerAPKOperator.Warnf("key %s not found in ConfigMap %s", "Definition", namespacedName.String())
+		}
+		routeMetadata.Spec.API.Definition = val
+	}
 
-	routePolicyString, err := utils.ToJSONString(routePolicy)
+	// Add or update the RouteMetadata in the store
+	routeMetadataReconciler.Store.AddOrUpdateRouteMetadata(routeMetadata)
+
+	routePolicyString, err := utils.ToJSONString(routeMetadata)
 	if err != nil {
 		loggers.LoggerAPKOperator.Errorf("Error converting RouteMetadata to JSON: %v", err)
 	} else {
@@ -120,8 +160,63 @@ func (r *RouteMetadataReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *RouteMetadataReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (routeMetadataReconciler *RouteMetadataReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&dpV2alpha1.RouteMetadata{}).
-		Complete(r)
+		Complete(routeMetadataReconciler)
+}
+
+// getRouteMetadataForConfigMap returns a list of reconcile requests for RouteMetadata objects
+func (routeMetadataReconciler *RouteMetadataReconciler) getRouteMetadataForConfigMap(ctx context.Context, obj *corev1.ConfigMap) []reconcile.Request {
+	configMap := obj
+
+	requests := []reconcile.Request{}
+
+	routeMetadataList := &dpV2alpha1.RouteMetadataList{}
+	if err := routeMetadataReconciler.client.List(ctx, routeMetadataList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(configMapIndex, NamespacedName(configMap).String()),
+	}); err != nil {
+		return []reconcile.Request{}
+	}
+
+	for item := range routeMetadataList.Items {
+		routePolicy := routeMetadataList.Items[item]
+		requests = append(requests, routeMetadataReconciler.AddRouteMetadataRequest(&routePolicy)...)
+	}
+
+	return requests
+}
+
+// AddRouteMetadataRequest adds a reconcile request for the given RouteMetadata
+func (routeMetadataReconciler *RouteMetadataReconciler) AddRouteMetadataRequest(routePolicy *dpV2alpha1.RouteMetadata) []reconcile.Request {
+	routePolicyKey := client.ObjectKey{
+		Namespace: routePolicy.Namespace,
+		Name:      routePolicy.Name,
+	}
+
+	loggers.LoggerAPKOperator.Debugf("Adding RouteMetadata request for %s", routePolicyKey.String())
+	return []reconcile.Request{{NamespacedName: routePolicyKey}}
+}
+
+func (routeMetadataReconciler *RouteMetadataReconciler) addRouteMetadataIndexes(ctx context.Context, mgr manager.Manager) error {
+	// Index by referenced ConfigMaps
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpV2alpha1.RouteMetadata{}, configMapIndex,
+		func(rawObj k8client.Object) []string {
+			routeMetadata := rawObj.(*dpV2alpha1.RouteMetadata)
+			namespacedConfigMaps := make([]string, 0)
+			if routeMetadata.Spec.API.DefinitionFileRef != nil {
+				namespacedConfigMaps = append(namespacedConfigMaps, types.NamespacedName{
+					Namespace: routeMetadata.Namespace,
+					Name:      string(routeMetadata.Spec.API.DefinitionFileRef.Name),
+				}.String())
+			}
+
+			return namespacedConfigMaps
+		}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2614, logging.BLOCKER,
+			"Error adding index for RouteMetadata: %v", err))
+		return err
+	}
+
+	return nil
 }

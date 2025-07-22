@@ -34,7 +34,7 @@ import (
 
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
-	"github.com/wso2/apk/gateway/enforcer/mediation"
+	"github.com/wso2/apk/gateway/enforcer/internal/mediation"
 
 	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
@@ -305,7 +305,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
 						if mediation.MediationAndRequestHeaderProcessing[policy.PolicyName] {
-							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
+							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
@@ -342,7 +342,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
 						if mediation.MediationAndRequestBodyProcessing[policy.PolicyName] {
-							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
+							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
@@ -379,7 +379,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
 						if mediation.MediationAndResponseHeaderProcessing[policy.PolicyName] {
-							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
+							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
@@ -416,7 +416,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
 						if mediation.MediationAndResponseBodyProcessing[policy.PolicyName] {
-							mediationResult := mediation.CreateMediation(&policy).Process(requestConfigHolder)
+							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
@@ -477,8 +477,8 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 		for key, value := range mediationResult.AddHeaders {
 			headerMutation.SetHeaders = append(headerMutation.SetHeaders, &corev3.HeaderValueOption{
 				Header: &corev3.HeaderValue{
-					Key:   key,
-					Value: value,
+					Key:      key,
+					RawValue: []byte(value),
 				},
 				AppendAction: corev3.HeaderValueOption_OVERWRITE_IF_EXISTS_OR_ADD,
 			})
@@ -703,6 +703,7 @@ func (s *ExternalProcessingServer) extractJWTAuthnNamespaceData(data *corev3.Met
 			}
 		}
 	}
+	s.cfg.Logger.Sugar().Debugf("Extracted JWT Authn Claims: %+v", claims)
 	return claims
 }
 
@@ -746,14 +747,14 @@ func (s *ExternalProcessingServer) extractExtensionRefsAndRouteAttributes(data m
 	if stringVal, ok := extProcData.Fields["xds.route_name"]; ok {
 		routeName = stringVal.GetStringValue()
 	}
-	requestId := ""
+	requestID := ""
 	if stringVal, ok := extProcData.Fields["request.id"]; ok {
-		requestId = stringVal.GetStringValue()
+		requestID = stringVal.GetStringValue()
 	}
 
 	return extensionRefs, &requestconfig.Attributes{
 		RouteName: routeName,
-		RequestID: requestId,
+		RequestID: requestID,
 	}
 }
 

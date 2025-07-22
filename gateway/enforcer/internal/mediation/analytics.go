@@ -48,9 +48,7 @@ func NewAnalytics(mediation *dpv2alpha1.Mediation) *Analytics {
 func (a *Analytics) Process(requestConfig *requestconfig.Holder) *Result {
 	// Implement the logic to process the requestConfig for analytics
 	// This is a placeholder implementation
-	result := &Result{
-		StopFurtherProcessing: false,
-	}
+	result := NewResult()
 	var err error
 	result.Metadata[analytics.APIIDKey], err = structpb.NewValue("value")
 	if err != nil {
@@ -96,29 +94,28 @@ func (a *Analytics) Process(requestConfig *requestconfig.Holder) *Result {
 	if err != nil {
 		a.logger.Sugar().Errorf("Error creating structpb value for APIEnvironmentKey: %v", err)
 	}
-
-	result.Metadata[analytics.AppIDKey], err = structpb.NewValue(requestConfig.MatchedApplication.UUID)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for AppIDKey: %v", err)
+	if requestConfig.MatchedApplication != nil {
+		result.Metadata[analytics.AppIDKey], err = structpb.NewValue(requestConfig.MatchedApplication.UUID)
+		if err != nil {
+			a.logger.Sugar().Errorf("Error creating structpb value for AppIDKey: %v", err)
+		}
+		result.Metadata[analytics.AppUUIDKey], err = structpb.NewValue(requestConfig.MatchedApplication.UUID)
+		if err != nil {
+			a.logger.Sugar().Errorf("Error creating structpb value for AppUUIDKey: %v", err)
+		}
+		result.Metadata[analytics.AppKeyTypeKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Environment)
+		if err != nil {
+			a.logger.Sugar().Errorf("Error creating structpb value for AppKeyTypeKey: %v", err)
+		}
+		result.Metadata[analytics.AppNameKey], err = structpb.NewValue(requestConfig.MatchedApplication.Name)
+		if err != nil {
+			a.logger.Sugar().Errorf("Error creating structpb value for AppNameKey: %v", err)
+		}
+		result.Metadata[analytics.AppOwnerKey], err = structpb.NewValue(requestConfig.MatchedApplication.Owner)
+		if err != nil {
+			a.logger.Sugar().Errorf("Error creating structpb value for AppOwnerKey: %v", err)
+		}
 	}
-	result.Metadata[analytics.AppUUIDKey], err = structpb.NewValue(requestConfig.MatchedApplication.UUID)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for AppUUIDKey: %v", err)
-	}
-	result.Metadata[analytics.AppKeyTypeKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Environment)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for AppKeyTypeKey: %v", err)
-	}
-	result.Metadata[analytics.AppNameKey], err = structpb.NewValue(requestConfig.MatchedApplication.Name)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for AppNameKey: %v", err)
-	}
-	result.Metadata[analytics.AppOwnerKey], err = structpb.NewValue(requestConfig.MatchedApplication.Owner)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for AppOwnerKey: %v", err)
-	}
-
-	// Add logic to handle analytics here
 
 	return result
 }
