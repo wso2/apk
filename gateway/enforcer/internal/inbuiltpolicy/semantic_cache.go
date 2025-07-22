@@ -122,8 +122,12 @@ func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *en
 		logger.Sugar().Debug("Semantic Cache RespBody logic gets hit.")
 		httpBody := req.GetResponseBody().Body
 		// Unmarshal the JSON data into the map
+		bodyStr, err := semanticcache.DecompressLLMResp(httpBody)
+		if err != nil {
+			bodyStr = string(bodyStr)
+		}
 		var responseData map[string]interface{}
-		err := json.Unmarshal(httpBody, &responseData)
+		err = json.Unmarshal([]byte(bodyStr), &responseData)
 		if err != nil {
 			logger.Error(err, "Error unmarshaling JSON Response Body")
 		}

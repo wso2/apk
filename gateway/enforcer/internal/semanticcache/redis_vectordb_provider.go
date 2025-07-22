@@ -76,7 +76,6 @@ func (r *RedisVectorDBProvider) Init(logger *logging.Logger, config VectorDBProv
 		DB:       r.database,
 		Protocol: 2,
 	})
-	logger.Sugar().Debugf("Redis URL: %s | Username: %s | Password: %s | Database: %d", r.redisURL, r.username, r.password, r.database)
 	return nil
 }
 

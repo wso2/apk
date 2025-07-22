@@ -1,15 +1,20 @@
 package semanticcache
 
 import (
+	"bytes"
+	"compress/gzip"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
 	"unicode"
 
+	"github.com/andybalholm/brotli"
 	"github.com/kljensen/snowball"
+	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
-// - This file contains the preprocessing functions. 
+// - This file contains the preprocessing functions.
 var stopwordSet map[string]struct{}
 
 func textToLowercase(text string) string {
@@ -275,4 +280,30 @@ func ValidateEmbeddingProviderConfigProps(config EmbeddingProviderConfig) error 
 		return fmt.Errorf("missing embedding model in the embedding provider configuration")
 	}
 	return nil
+}
+
+// DecompressLLMResp will properly decompress the response given from the LLM
+func DecompressLLMResp(body []byte) (string, error) {
+	asString := string(body)
+	if util.IsValidJSON(asString) {
+		return asString, nil
+	}
+
+	// Try GZIP first
+	gzipReader, err := gzip.NewReader(bytes.NewReader(body))
+	if err == nil {
+		defer gzipReader.Close()
+		unzipped, err := io.ReadAll(gzipReader)
+		if err == nil {
+			return string(unzipped), nil
+		}
+	}
+
+	// If GZIP failed, try Brotli
+	brReader := brotli.NewReader(bytes.NewReader(body))
+	unbr, err := io.ReadAll(brReader)
+	if err != nil {
+		return "", fmt.Errorf("failed to decompress response body: %w", err)
+	}
+	return string(unbr), nil
 }
