@@ -87,6 +87,7 @@ func (r *PIIMaskingRegex) validatePayload(logger *logging.Logger, req *envoy_ser
 	var payload []byte
 	var compressionType string
 	if isResponse {
+		payload = req.GetResponseBody().Body
 		var bodyStr string
 		var err error
 		bodyStr, compressionType, err = DecompressLLMResp(payload)
@@ -99,7 +100,7 @@ func (r *PIIMaskingRegex) validatePayload(logger *logging.Logger, req *envoy_ser
 
 	// Transform response if redactPII is disabled and PIIs identified in request
 	if !r.RedactPII && isResponse {
-		if maskedPII, exists := props["PIIMaskingRegexPIIEntities"]; exists {
+		if maskedPII, exists := props["piiMaskingRegexPIIEntities"]; exists {
 			if maskedPIIMap, ok := maskedPII.(map[string]string); ok {
 				// For response flow, always transform the entire payload (JSONPath is not applicable)
 				transformedContent := r.restorePIIInResponse(string(payload), maskedPIIMap, logger)
@@ -173,19 +174,26 @@ func (r *PIIMaskingRegex) maskPIIFromContent(jsonContent string, isResponse bool
 		patterns := r.PiiEntities
 		r.patternMu.RUnlock()
 
+		// First pass: find all matches without replacing to avoid nested replacements
+		allMatches := make(map[string]string) // original -> placeholder
 		for key, pattern := range patterns {
 			matches := pattern.FindAllString(maskedContent, -1)
 			for _, match := range matches {
-				// Reuse if already seen
-				if _, exists := maskedPIIEntities[match]; !exists {
-					// Generate unique placeholder like <Person_0001>
-					masked := fmt.Sprintf("<%s_%04x>", key, counter)
-					maskedPIIEntities[match] = masked
+				// Skip if this match is already processed or if it's a placeholder
+				if _, exists := allMatches[match]; !exists && !strings.Contains(match, "[") && !strings.Contains(match, "]") {
+					// Generate unique placeholder like [EMAIL_0000]
+					placeholder := fmt.Sprintf("[%s_%04x]", key, counter)
+					allMatches[match] = placeholder
+					maskedPIIEntities[match] = placeholder
 					counter++
 				}
-				maskedContent = strings.ReplaceAll(maskedContent, match, maskedPIIEntities[match])
-				foundAndMasked = true
 			}
+		}
+
+		// Second pass: replace all matches
+		for original, placeholder := range allMatches {
+			maskedContent = strings.ReplaceAll(maskedContent, original, placeholder)
+			foundAndMasked = true
 		}
 
 		// Store PII_ENTITIES for later reversal
@@ -406,20 +414,27 @@ func NewPIIMaskingRegex(logger *logging.Logger, inBuiltPolicy dto.InBuiltPolicy)
 		case "name":
 			PIIMaskingRegex.Name = value
 		case "piiEntities":
-			var piiEntities map[string]string
-			if err := json.Unmarshal([]byte(value), &piiEntities); err != nil {
+			// Define struct for the new format
+			type PiiEntityConfig struct {
+				PiiEntity string `json:"piiEntity"`
+				PiiRegex  string `json:"piiRegex"`
+			}
+
+			var piiEntitiesArray []PiiEntityConfig
+			if err := json.Unmarshal([]byte(value), &piiEntitiesArray); err != nil {
 				PIIMaskingRegex.PiiEntities = make(map[string]*regexp.Regexp)
+				logger.Sugar().Errorf("Error unmarshaling piiEntities array: %v", err)
 				// Skip adding error pattern for invalid format
 			} else {
 				// Compile regex patterns during initialization
 				PIIMaskingRegex.PiiEntities = make(map[string]*regexp.Regexp)
-				for entityKey, pattern := range piiEntities {
-					compiledPattern, err := regexp.Compile(pattern)
+				for _, entityConfig := range piiEntitiesArray {
+					compiledPattern, err := regexp.Compile(entityConfig.PiiRegex)
 					if err != nil {
-						logger.Sugar().Errorf("Error compiling regex for PII entity '%s': %v", entityKey, err)
+						logger.Sugar().Errorf("Error compiling regex for PII entity '%s': %v", entityConfig.PiiEntity, err)
 						continue
 					}
-					PIIMaskingRegex.PiiEntities[entityKey] = compiledPattern
+					PIIMaskingRegex.PiiEntities[entityConfig.PiiEntity] = compiledPattern
 				}
 			}
 		case "jsonPath":
