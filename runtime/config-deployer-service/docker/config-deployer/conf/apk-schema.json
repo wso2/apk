@@ -378,7 +378,8 @@
             "URLGuardrail",
             "AzureContentSafetyContentModeration",
             "AWSBedrockGuardrail",
-            "PIIMaskingRegex"
+            "PIIMaskingRegex",
+            "PIIMaskingGuardrailsAI"
           ]
         },
         "policyVersion": {
@@ -442,7 +443,8 @@
             "URLGuardrail",
             "AzureContentSafetyContentModeration",
             "AWSBedrockGuardrail",
-            "PIIMaskingRegex"
+            "PIIMaskingRegex",
+            "PIIMaskingGuardrailsAI"
           ]
         },
         "policyVersion": {

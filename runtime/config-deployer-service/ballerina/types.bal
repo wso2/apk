@@ -450,7 +450,8 @@ public enum PolicyName {
     URLGuardrail,
     AzureContentSafetyContentModeration,
     AWSBedrockGuardrail,
-    PIIMaskingRegex
+    PIIMaskingRegex,
+    PIIMaskingGuardrailsAI
 }
 
 # Configuration for authentication types.

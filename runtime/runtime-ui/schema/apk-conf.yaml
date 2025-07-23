@@ -298,6 +298,7 @@ schemas:
           - AzureContentSafetyContentModeration
           - AWSBedrockGuardrail
           - PIIMaskingRegex
+          - PIIMaskingGuardrailsAI
       policyVersion:
         type: string
         default: v1
@@ -339,6 +340,7 @@ schemas:
           - AzureContentSafetyContentModeration
           - AWSBedrockGuardrail
           - PIIMaskingRegex
+          - PIIMaskingGuardrailsAI
       policyVersion:
         type: string
         default: v1
