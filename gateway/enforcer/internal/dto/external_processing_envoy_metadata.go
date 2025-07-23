@@ -18,16 +18,16 @@ package dto
 
 // ExternalProcessingEnvoyMetadata represents the metadata extracted from the external processing request.
 type ExternalProcessingEnvoyMetadata struct {
-	AuthenticationData             *AuthenticationData `json:"authenticationData"`
-	MatchedAPIIdentifier           string              `json:"matchedAPIIdentifier"`
-	MatchedResourceIdentifier      string              `json:"matchedResourceIdentifier"`
-	MatchedSubscriptionIdentifier  string              `json:"matchedSubscriptionIdentifier"`
-	MatchedApplicationIdentifier   string              `json:"matchedApplicationIdentifier"`
-	SemanticEmbedding              string              `json:"semanticEmbedding,omitempty"`
-	ResponseStatus                 string              `json:"responseStatus,omitempty"`
-	AWSBedrockGuardrailPIIEntities map[string]string   `json:"awsBedrockGuardrailPIIEntities,omitempty"`
-	PIIMaskingRegexPIIEntities     map[string]string   `json:"piiMaskingRegexPIIEntities,omitempty"`
-	PIIMaskingGuardrailsAIEntities map[string]string   `json:"piiMaskingGuardrailsAIEntities,omitempty"`
+	AuthenticationData                *AuthenticationData `json:"authenticationData"`
+	MatchedAPIIdentifier              string              `json:"matchedAPIIdentifier"`
+	MatchedResourceIdentifier         string              `json:"matchedResourceIdentifier"`
+	MatchedSubscriptionIdentifier     string              `json:"matchedSubscriptionIdentifier"`
+	MatchedApplicationIdentifier      string              `json:"matchedApplicationIdentifier"`
+	SemanticEmbedding                 string              `json:"semanticEmbedding,omitempty"`
+	ResponseStatus                    string              `json:"responseStatus,omitempty"`
+	AWSBedrockGuardrailPIIEntities    map[string]string   `json:"awsBedrockGuardrailPIIEntities,omitempty"`
+	PIIMaskingRegexPIIEntities        map[string]string   `json:"piiMaskingRegexPIIEntities,omitempty"`
+	PIIMaskingGuardrailsAIPIIEntities map[string]string   `json:"piiMaskingGuardrailsAIPIIEntities,omitempty"`
 }
 
 // AuthenticationData represents the authentication data.

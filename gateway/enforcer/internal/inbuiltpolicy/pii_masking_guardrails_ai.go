@@ -61,7 +61,9 @@ type PIIMaskingGuardrailsAI struct {
 }
 
 const (
-	piiServiceURL = "http://52.230.120.80:9447/validate"
+	piiServiceURL          = "https://db720294-98fd-40f4-85a1-cc6a3b65bc9a-prod.e1-us-east-azure.choreoapis.dev/godzilla/guardrails-pii/v1"
+	piiServiceAPIKeyHeader = "api-key"
+	piiServiceAPIKey       = "chk_eyJrZXkiOiJyNG51dW9uOGFmNngwbm9nMG04dmxrb2UzOTB1NnVmeXE0ZGljZGF1amV0cWlpYjN5cm45In0=gzX8sA"
 )
 
 // HandleRequestBody is a method that implements the mediation logic for the PIIMaskingGuardrailsAI policy on request.
@@ -232,7 +234,8 @@ func (r *PIIMaskingGuardrailsAI) callPIIService(jsonContent string, redact bool,
 
 	// Prepare headers
 	headers := map[string]string{
-		"Content-Type": "application/json",
+		"Content-Type":         "application/json",
+		piiServiceAPIKeyHeader: piiServiceAPIKey,
 	}
 
 	// Make HTTP request with retry

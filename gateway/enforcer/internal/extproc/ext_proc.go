@@ -1198,7 +1198,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
 			props := map[string]interface{}{"matchedAPIUUID": matchedAPI.UUID, "embedding": metadata.SemanticEmbedding, "responseHeaders": metadata.ResponseStatus,
 				"ctx": ctx, "awsBedrockGuardrailPIIEntities": metadata.AWSBedrockGuardrailPIIEntities, "piiMaskingRegexPIIEntities": metadata.PIIMaskingRegexPIIEntities,
-				"piiMaskingGuardrailsAIPIIEntities": metadata.PIIMaskingGuardrailsAIEntities} // NEED TO REMOVE THE HARDCODED HEADER VALUE
+				"piiMaskingGuardrailsAIPIIEntities": metadata.PIIMaskingGuardrailsAIPIIEntities} // NEED TO REMOVE THE HARDCODED HEADER VALUE
 			s.cfg.Logger.Sugar().Debugf("Props content for Response flow policies: %+v", props)
 			if matchedAPI.ResponseInBuiltPolicies != nil &&
 				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
@@ -1505,11 +1505,11 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 			}
 			if piiMaskingGuardrailsAIPIIEntities, exists := extProcMetadata.Fields[piiMaskingGuardrailsAIPIIEntitiesKey]; exists {
 				if structVal := piiMaskingGuardrailsAIPIIEntities.GetStructValue(); structVal != nil {
-					piiMaskingGuardrailsAIEntities := make(map[string]string)
+					piiMaskingGuardrailsAIPIIEntities := make(map[string]string)
 					for k, v := range structVal.Fields {
-						piiMaskingGuardrailsAIEntities[k] = v.GetStringValue()
+						piiMaskingGuardrailsAIPIIEntities[k] = v.GetStringValue()
 					}
-					externalProcessingEnvoyMetadata.PIIMaskingGuardrailsAIEntities = piiMaskingGuardrailsAIEntities
+					externalProcessingEnvoyMetadata.PIIMaskingGuardrailsAIPIIEntities = piiMaskingGuardrailsAIPIIEntities
 				}
 			}
 		}
