@@ -15,14 +15,14 @@
  * under the License.
  */
 
-package artifactgenerator
+package handlers
 
 import (
-	"config-deployer-service-go/internal/model"
-	"config-deployer-service-go/internal/util"
-	// "crypto/sha256"
-	// "encoding/base64"
 	"fmt"
+	"github.com/wso2/apk/config-deployer-service-go/internal/api"
+	_ "github.com/wso2/apk/config-deployer-service-go/internal/logging"
+	"github.com/wso2/apk/config-deployer-service-go/internal/services"
+	"github.com/wso2/apk/config-deployer-service-go/internal/util"
 	"io"
 	"net/http"
 	"slices"
@@ -31,10 +31,8 @@ import (
 	"github.com/gin-gonic/gin"
 	// "github.com/lestrrat-go/jwx/v2/jwk"
 	// "github.com/wso2/apk/common-go-libs/loggers"
-	// "config-deployer-service-go/internal/config"
-	// "github.com/wso2/apk/gateway/enforcer/internal/util"
-	"config-deployer-service-go/internal/constants"
-	"config-deployer-service-go/internal/dto"
+	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
+	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 )
 
 // GetGeneratedAPKConf creates the APK configuration file from api specification.
@@ -74,25 +72,35 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 		return
 	}
 
+	validationService := &services.ValidationService{}
 	if definitionBody.URL != "" {
-		validateAndRetrieveDefinitionResult, err = validateAndRetrieveDefinition(apiType, definitionBody.URL,
+		validateAndRetrieveDefinitionResult, err = validationService.ValidateAndRetrieveDefinition(apiType, definitionBody.URL,
 			nil, "")
 	} else if definitionBody.Definition.FileName != "" && len(definitionBody.Definition.FileContent) > 0 {
 		definition := definitionBody.Definition
-		validateAndRetrieveDefinitionResult, err = validateAndRetrieveDefinition(apiType, "",
+		validateAndRetrieveDefinitionResult, err = validationService.ValidateAndRetrieveDefinition(apiType, "",
 			definition.FileContent, definition.FileName)
+	}
+
+	if err != nil {
+		cxt.JSON(http.StatusBadRequest, gin.H{
+			"code":    909022,
+			"message": "Error occurred while validating the definition: " + err.Error(),
+		})
+		return
 	}
 
 	if validateAndRetrieveDefinitionResult != nil {
 		if validateAndRetrieveDefinitionResult.IsValid {
-			var apiFromDefinition *model.API
+			var apiFromDefinition *dto.API
 			if strings.ToUpper(apiType) == constants.API_TYPE_GRPC {
 				var fileName = ""
 				if definitionBody.Definition.FileName != "" {
 					definition := definitionBody.Definition
 					fileName = definition.FileName
 				}
-				apiFromDefinition, err = util.GetGRPCAPIFromProtoDefinition(
+				grpcUtil := util.GRPCUtil{}
+				apiFromDefinition, err = grpcUtil.GetGRPCAPIFromProtoDefinition(
 					validateAndRetrieveDefinitionResult.ProtoContent, fileName)
 				if err != nil {
 					cxt.JSON(http.StatusInternalServerError, gin.H{
@@ -102,7 +110,8 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 					return
 				}
 			} else {
-				apiFromDefinition, err = util.GetAPIFromDefinition(validateAndRetrieveDefinitionResult.Content, apiType)
+				runtimeAPIUtil := api.RuntimeAPICommonUtil{}
+				apiFromDefinition, err = runtimeAPIUtil.GetAPIFromDefinition(validateAndRetrieveDefinitionResult.Content, apiType)
 				if err != nil {
 					cxt.JSON(http.StatusInternalServerError, gin.H{
 						"code":    909022,
@@ -112,6 +121,25 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 				}
 			}
 			apiFromDefinition.Type = apiType
+			apiClient := &APIClient{}
+			generatedAPKConf, err := apiClient.FromAPIModelToAPKConf(apiFromDefinition)
+			if err != nil {
+				cxt.JSON(http.StatusInternalServerError, gin.H{
+					"code":    909022,
+					"message": "Error occurred while converting API model to APK conf: " + err.Error(),
+				})
+				return
+			}
+
+			yamlBytes, err := util.MarshalToYAMLWithIndent(generatedAPKConf, 2)
+			cxt.Data(http.StatusOK, "application/yaml", yamlBytes)
+			return
+		} else {
+			cxt.JSON(http.StatusBadRequest, gin.H{
+				"code":    90091,
+				"message": "Invalid API Definition",
+			})
+			return
 		}
 	} else {
 		cxt.JSON(http.StatusInternalServerError, gin.H{
@@ -122,6 +150,7 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 	}
 }
 
+// prepareDefinitionBodyFromRequest prepares the definition body from the request context.
 func prepareDefinitionBodyFromRequest(cxt *gin.Context) (*dto.DefinitionBody, error) {
 	definitionBody := &dto.DefinitionBody{}
 
@@ -153,42 +182,4 @@ func prepareDefinitionBodyFromRequest(cxt *gin.Context) (*dto.DefinitionBody, er
 	}
 
 	return definitionBody, nil
-}
-
-func validateAndRetrieveDefinition(apiType, url string, content []byte,
-	fileName string) (*dto.APIDefinitionValidationResponse, error) {
-	if url != "" {
-		definition, err := retrieveDefinitionFromUrl(url)
-		if err != nil {
-			return nil, fmt.Errorf("failed to retrieve definition from URL: %w", err)
-		}
-		return util.ValidateOpenAPIDefinition(apiType, nil, definition, "", true)
-	}
-	if fileName != "" && len(content) > 0 {
-		return util.ValidateOpenAPIDefinition(apiType, content, "", fileName, true)
-	}
-	return nil, fmt.Errorf("either URL or file content must be provided")
-}
-
-func retrieveDefinitionFromUrl(url string) (string, error) {
-	response, err := http.Get(url)
-	if err != nil {
-		return "", fmt.Errorf("error occurred while retrieving the definition from the url: %w", err)
-	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			fmt.Printf("error occurred while closing the response body: %v\n", err)
-		}
-	}(response.Body)
-	if response.StatusCode == http.StatusOK {
-		body, err := io.ReadAll(response.Body)
-		if err != nil {
-			return "", fmt.Errorf("error occurred while reading the definition from the url: %w", err)
-		}
-		return string(body), nil
-	} else {
-		return "", fmt.Errorf("error occurred while retrieving the definition from the url: %s. Status code:"+
-			" %d", url, response.StatusCode)
-	}
 }

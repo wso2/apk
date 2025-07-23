@@ -17,15 +17,15 @@
 
 package dto
 
-// DefinitionBody is the body of the API definition.
+// DefinitionBody is the body of the api definition.
 type DefinitionBody struct {
-	Definition Definition `json:"definition"` // API definition (OAS/Graphql/WebSocket)
-	URL        string     `json:"url"`        // URL of the API definition
-	APIType    string     `json:"apiType"`    // Type of API
+	Definition Definition `json:"definition"` // api definition (OAS/Graphql/WebSocket)
+	URL        string     `json:"url"`        // url of the api definition
+	APIType    string     `json:"apiType"`    // Type of api
 }
 
-// Definition of the API definition body.
+// Definition of the api definition body.
 type Definition struct {
-	FileName    string `json:"definitionType"` // Name of the API specification file.
-	FileContent []byte `json:"definitionBody"` // Content of the API specification.
+	FileName    string `json:"definitionType"` // Name of the api specification file.
+	FileContent []byte `json:"definitionBody"` // Content of the api specification.
 }
