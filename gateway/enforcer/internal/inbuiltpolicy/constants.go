@@ -45,6 +45,7 @@ const (
 	AzureContentSafetyContentModerationName = "AzureContentSafetyContentModeration"
 	AWSBedrockGuardrailName                 = "AWSBedrockGuardrail"
 	PIIMaskingRegexName                     = "PIIMaskingRegex"
+	PIIMaskingGuardrailsAIName              = "PIIMaskingGuardrailsAI"
 
 	RegexGuardrailConstant                      = "REGEX_GUARDRAIL"
 	WordCountGuardrailConstant                  = "WORD_COUNT_GUARDRAIL"
@@ -55,15 +56,17 @@ const (
 	AzureContentSafetyContentModerationConstant = "AZURE_CONTENT_SAFETY_CONTENT_MODERATION"
 	AWSBedrockGuardrailConstant                 = "AWS_BEDROCK_GUARDRAIL"
 	PIIMaskingRegexConstant                     = "PII_MASKING_REGEX"
+	PIIMaskingGuardrailsAIConstant              = "PII_MASKING_GUARDRAILS_AI"
 
 	TextCleanRegex     = "^\"|\"$"
 	WordSplitRegex     = "\\s+"
 	SentenceSplitRegex = "[.!?]"
 	URLRegex           = "https?://[^\\s,\"'{}\\[\\]\\\\`*]+"
 
-	semanticCacheEmbeddingKey         string = "semanticcache:embedding"
-	awsBedrockGuardrailPIIEntitiesKey string = "awsbedrockguardrail:pii_entities"
-	piiMaskingRegexPIIEntitiesKey     string = "piimaskingregex:pii_entities"
+	semanticCacheEmbeddingKey            string = "semanticcache:embedding"
+	awsBedrockGuardrailPIIEntitiesKey    string = "awsbedrockguardrail:pii_entities"
+	piiMaskingRegexPIIEntitiesKey        string = "piimaskingregex:pii_entities"
+	piiMaskingGuardrailsAIPIIEntitiesKey string = "piimaskingguardrailsai:pii_entities"
 )
 
 var (

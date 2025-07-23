@@ -160,6 +160,8 @@ func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies [
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAWSBedrockGuardrail(basePolicy))
 		case inbuiltpolicy.PIIMaskingRegexName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewPIIMaskingRegex(logger, basePolicy))
+		case inbuiltpolicy.PIIMaskingGuardrailsAIName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewPIIMaskingGuardrailsAI(logger, basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
@@ -206,6 +208,8 @@ func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, responsePolicies
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewAWSBedrockGuardrail(basePolicy))
 		case inbuiltpolicy.PIIMaskingRegexName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewPIIMaskingRegex(logger, basePolicy))
+		case inbuiltpolicy.PIIMaskingGuardrailsAIName:
+			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewPIIMaskingGuardrailsAI(logger, basePolicy))
 		}
 	}
 	// Sort by PolicyOrder
