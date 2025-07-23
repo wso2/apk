@@ -76,7 +76,7 @@ wso2:
         service:
           name: "envoy-gateway-extension-server-service"
       configdeployer:
-        enabled: false
+        enabled: true
         deployment:
           resources:
             requests:
@@ -287,7 +287,7 @@ envoy:
   # end pasted defaults
 
 idp:
-  enabled: false
+  enabled: true
   listener:
     hostname: "idp.am.wso2.com"
     # secretName: "idp-tls"
