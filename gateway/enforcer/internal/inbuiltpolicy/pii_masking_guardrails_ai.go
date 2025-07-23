@@ -347,7 +347,6 @@ func (r *PIIMaskingGuardrailsAI) restorePIIInResponse(originalContent string, ma
 func (r *PIIMaskingGuardrailsAI) buildResponse(logger *logging.Logger, result AssessmentResult) *envoy_service_proc_v3.ProcessingResponse {
 	responseBody := make(map[string]interface{})
 	responseBody[ErrorCode] = APIMInternalExceptionCode
-	responseBody[ErrorType] = PIIMaskingGuardrailsAIConstant
 	responseBody[ErrorMessage] = "Error occurred during PIIMaskingGuardrailsAI mediation."
 
 	bodyBytes, err := json.Marshal(responseBody)

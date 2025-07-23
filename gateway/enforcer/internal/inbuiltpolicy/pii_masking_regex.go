@@ -274,7 +274,6 @@ func (r *PIIMaskingRegex) restorePIIInResponse(originalContent string, maskedPII
 func (r *PIIMaskingRegex) buildResponse(logger *logging.Logger, result AssessmentResult) *envoy_service_proc_v3.ProcessingResponse {
 	responseBody := make(map[string]interface{})
 	responseBody[ErrorCode] = APIMInternalExceptionCode
-	responseBody[ErrorType] = PIIMaskingRegexConstant
 	responseBody[ErrorMessage] = "Error occurred during PIIMaskingRegex mediation."
 
 	bodyBytes, err := json.Marshal(responseBody)
