@@ -39,10 +39,10 @@ var (
 	// Map of Policy UUID to its providers
 	embeddingProviders   = make(map[string]semanticcache.EmbeddingProvider)
 	vectorStoreProviders = make(map[string]semanticcache.VectorDBProvider)
-	
+
 	// Mutex to protect access to global providers
 	providerMutex sync.RWMutex
-	
+
 	// Map of Policy UUID to its configurations (to detect changes)
 	embeddingConfigs   = make(map[string]semanticcache.EmbeddingProviderConfig)
 	vectorStoreConfigs = make(map[string]semanticcache.VectorDBProviderConfig)
@@ -122,9 +122,9 @@ func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *en
 		logger.Sugar().Debug("Semantic Cache RespBody logic gets hit.")
 		httpBody := req.GetResponseBody().Body
 		// Unmarshal the JSON data into the map
-		bodyStr, err := semanticcache.DecompressLLMResp(httpBody)
+		bodyStr, _, err := DecompressLLMResp(httpBody)
 		if err != nil {
-			bodyStr = string(bodyStr)
+			bodyStr = string(httpBody)
 		}
 		var responseData map[string]interface{}
 		err = json.Unmarshal([]byte(bodyStr), &responseData)
@@ -262,11 +262,11 @@ func NewSemanticCachingPolicy(logger *logging.Logger, inBuiltPolicy dto.InBuiltP
 	semanticCachePolicy.embeddingProvider = embeddingProviders[policyID]
 	semanticCachePolicy.vectorStoreProvider = vectorStoreProviders[policyID]
 	providerMutex.RUnlock()
-	
+
 	if semanticCachePolicy.embeddingProvider == nil || semanticCachePolicy.vectorStoreProvider == nil {
 		return nil
 	}
-	
+
 	return semanticCachePolicy
 }
 
@@ -277,31 +277,31 @@ func configChanged(newConfig, oldConfig interface{}) bool {
 	if reflect.TypeOf(newConfig) != reflect.TypeOf(oldConfig) {
 		return true
 	}
-	
+
 	newVal := reflect.ValueOf(newConfig)
 	oldVal := reflect.ValueOf(oldConfig)
-	
+
 	// If either is not a struct, consider it changed
 	if newVal.Kind() != reflect.Struct || oldVal.Kind() != reflect.Struct {
 		return true
 	}
-	
+
 	// Compare each field
 	for i := 0; i < newVal.NumField(); i++ {
 		newField := newVal.Field(i)
 		oldField := oldVal.Field(i)
-		
+
 		// Skip unexported fields
 		if !newField.CanInterface() {
 			continue
 		}
-		
+
 		// Compare the field values
 		if !reflect.DeepEqual(newField.Interface(), oldField.Interface()) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 

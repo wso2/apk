@@ -100,8 +100,15 @@ func (r *AWSBedrockGuardrail) validatePayload(logger *logging.Logger, req *envoy
 	result.IsResponse = isResponse
 
 	var payload []byte
+	var compressionType string
 	if isResponse {
+		var bodyStr string
+		var err error
 		payload = req.GetResponseBody().Body
+		bodyStr, compressionType, err = DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
 	} else {
 		payload = req.GetRequestBody().Body
 	}
@@ -113,7 +120,12 @@ func (r *AWSBedrockGuardrail) validatePayload(logger *logging.Logger, req *envoy
 				// For response flow, always transform the entire payload (JSONPath is not applicable)
 				transformedContent := r.identifyPIIAndTransform(string(payload), maskedPIIMap, logger)
 				result.InspectedContent = transformedContent
-				modifiedPayload := []byte(transformedContent)
+				modifiedPayload, err := CompressLLMResp([]byte(transformedContent), compressionType)
+				if err != nil {
+					result.Error = "Error compressing modified payload: " + err.Error()
+					logger.Error(err, result.Error)
+					return result, false
+				}
 				result.ModifiedPayload = &modifiedPayload
 				return result, true // Continue processing after PII restoration
 			}

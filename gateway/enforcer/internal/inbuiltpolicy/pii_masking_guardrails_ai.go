@@ -108,8 +108,15 @@ func (r *PIIMaskingGuardrailsAI) validatePayload(logger *logging.Logger, req *en
 	result.IsResponse = isResponse
 
 	var payload []byte
+	var compressionType string
 	if isResponse {
+		var bodyStr string
+		var err error
 		payload = req.GetResponseBody().Body
+		bodyStr, compressionType, err = DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
 	} else {
 		payload = req.GetRequestBody().Body
 	}
@@ -121,7 +128,12 @@ func (r *PIIMaskingGuardrailsAI) validatePayload(logger *logging.Logger, req *en
 				// For response flow, treat the entire payload as a string and replace placeholders
 				transformedContent := r.restorePIIInResponse(string(payload), maskedPIIMap, logger)
 				result.InspectedContent = transformedContent
-				modifiedPayload := []byte(transformedContent)
+				modifiedPayload, err := CompressLLMResp([]byte(transformedContent), compressionType)
+				if err != nil {
+					result.Error = "Error compressing modified payload: " + err.Error()
+					logger.Error(err, result.Error)
+					return result, false
+				}
 				result.ModifiedPayload = &modifiedPayload
 				return result, true // Continue processing after PII restoration
 			}

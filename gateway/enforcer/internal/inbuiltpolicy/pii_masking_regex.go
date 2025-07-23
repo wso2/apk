@@ -85,8 +85,14 @@ func (r *PIIMaskingRegex) validatePayload(logger *logging.Logger, req *envoy_ser
 	result.IsResponse = isResponse
 
 	var payload []byte
+	var compressionType string
 	if isResponse {
-		payload = req.GetResponseBody().Body
+		var bodyStr string
+		var err error
+		bodyStr, compressionType, err = DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
 	} else {
 		payload = req.GetRequestBody().Body
 	}
@@ -98,7 +104,12 @@ func (r *PIIMaskingRegex) validatePayload(logger *logging.Logger, req *envoy_ser
 				// For response flow, always transform the entire payload (JSONPath is not applicable)
 				transformedContent := r.restorePIIInResponse(string(payload), maskedPIIMap, logger)
 				result.InspectedContent = transformedContent
-				modifiedPayload := []byte(transformedContent)
+				modifiedPayload, err := CompressLLMResp([]byte(transformedContent), compressionType)
+				if err != nil {
+					result.Error = "Error compressing modified payload: " + err.Error()
+					logger.Error(err, result.Error)
+					return result, false
+				}
 				result.ModifiedPayload = &modifiedPayload
 				return result, true // Continue processing after PII restoration
 			}

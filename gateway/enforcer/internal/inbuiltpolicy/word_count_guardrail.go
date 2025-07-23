@@ -43,7 +43,7 @@ type WordCountGuardrail struct {
 // HandleRequestBody is a method that implements the mediation logic for the WordCountGuardrail policy on request.
 func (r *WordCountGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for WordCountGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
+	validationResult := r.validatePayload(logger, req.GetRequestBody().Body, false)
 	if !validationResult {
 		logger.Sugar().Debugf("Request payload validation failed for WordCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, false)
@@ -55,7 +55,7 @@ func (r *WordCountGuardrail) HandleRequestBody(logger *logging.Logger, req *envo
 // HandleResponseBody is a method that implements the mediation logic for the WordCountGuardrail policy on response.
 func (r *WordCountGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for WordCountGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
+	validationResult := r.validatePayload(logger, req.GetResponseBody().Body, true)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for WordCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
@@ -65,7 +65,13 @@ func (r *WordCountGuardrail) HandleResponseBody(logger *logging.Logger, req *env
 }
 
 // validatePayload validates the payload against the WordCountGuardrail policy.
-func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []byte) bool {
+func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) bool {
+	if isResponse {
+		bodyStr, _, err := DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
+	}
 	if (r.Min > r.Max) || (r.Min < 0) || (r.Max <= 0) {
 		logger.Sugar().Errorf("Invalid word count range: min=%d, max=%d", r.Min, r.Max)
 		return false
