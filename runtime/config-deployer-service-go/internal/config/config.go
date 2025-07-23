@@ -20,9 +20,8 @@ package config
 import (
 	"sync"
 
-	egv1a1 "github.com/envoyproxy/gateway/api/v1alpha1"
 	"github.com/kelseyhightower/envconfig"
-	"config-deployer-service-go/internal/logging"
+	_ "github.com/wso2/apk/config-deployer-service-go/internal/logging"
 )
 
 // Server holds the configuration parameters for the application.
@@ -68,12 +67,11 @@ type Server struct {
 	ExternalProcessingKeepAliveTime  int    `envconfig:"EXTERNAL_PROCESSING_KEEP_ALIVE_TIME" default:"600"`
 	ExternalProcessingMaxMessageSize int    `envconfig:"EXTERNAL_PROCESSING_MAX_MESSAGE_SIZE" default:"1000000000"`
 	ExternalProcessingMaxHeaderLimit int    `envconfig:"EXTERNAL_PROCESSING_MAX_HEADER_LIMIT" default:"8192"`
-	Logger                           logging.Logger
 	Metrics                          metrics
 	JWTGeneratorPublicKeyPath        string `envconfig:"JWT_GENERATOR_PUBLIC_CERTIFICATE_PATH" default:"/home/wso2/security/keystore/mg.pem"`
 	JWTGeneratorPrivateKeyPath       string `envconfig:"JWT_GENERATOR_PRIVATE_KEY_PATH" default:"/home/wso2/security/keystore/mg.key"`
 	EventhubPublishInterval          int    `envconfig:"EVENTHUB_PUBLISH_INTERVAL" default:"5"` // seconds
-	MoesifPublishInterval			int    `envconfig:"MOESIF_PUBLISH_INTERVAL" default:"5"` // seconds
+	MoesifPublishInterval            int    `envconfig:"MOESIF_PUBLISH_INTERVAL" default:"5"`   // seconds
 }
 
 type metrics struct {
@@ -106,11 +104,5 @@ func GetConfig() *Server {
 	if err != nil {
 		panic(err)
 	}
-	// Create Logger based on the env var
-	settingInstance.Logger = logging.NewLogger(&egv1a1.EnvoyGatewayLogging{
-		Level: map[egv1a1.EnvoyGatewayLogComponent]egv1a1.LogLevel{
-			egv1a1.LogComponentGatewayDefault: egv1a1.LogLevel(settingInstance.LogLevel),
-		},
-	})
 	return settingInstance
 }
