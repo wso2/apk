@@ -15,17 +15,16 @@
  * under the License.
  */
 
-package artifactgenerator
+package routes
 
 import (
+	"github.com/wso2/apk/config-deployer-service-go/internal/api/handlers"
+	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	// "crypto/sha256"
 	// "encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	// "github.com/lestrrat-go/jwx/v2/jwk"
-	// "github.com/wso2/apk/common-go-libs/loggers"
-	"config-deployer-service-go/internal/config"
 	// "github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
@@ -39,8 +38,7 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 	{
 		// Create API configuration file from api specification.
 		api.POST("/apis/generate-configuration", func(c *gin.Context) {
-			cfg.Logger.Info("Config generation API called")
-			GetGeneratedAPKConf(c)
+			handlers.GetGeneratedAPKConf(c)
 		})
 
 		// Generate K8s Resources

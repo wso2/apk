@@ -21,8 +21,9 @@ import (
 
 	// "strings"
 
-	"config-deployer-service-go/internal/artifactgenerator"
-	"config-deployer-service-go/internal/config"
+	"github.com/wso2/apk/config-deployer-service-go/internal/api/routes"
+	"github.com/wso2/apk/config-deployer-service-go/internal/config"
+	"github.com/wso2/apk/config-deployer-service-go/internal/logging"
 	// "github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	// "github.com/wso2/apk/gateway/enforcer/internal/extproc"
 	// "github.com/wso2/apk/gateway/enforcer/internal/grpc"
@@ -36,7 +37,7 @@ import (
 
 func main() {
 	cfg := config.GetConfig()
-	cfg.Logger.Sugar().Debug("Server starting in main")
+	logging.LoggerMain.Info("Server starting in main")
 	// port := cfg.CommonControllerXdsPort
 	// host := cfg.CommonControllerHostname
 	// clientCert, err := util.LoadCertificates(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
@@ -77,11 +78,11 @@ func main() {
 	// 	cfg.Logger.Sugar().Errorf("Failed to generate JWKS: %v", err)
 	// }
 	// go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker, revokedJTIStore)
-	go artifactgenerator.StartArtifactGeneratorServer(cfg)
+	go routes.StartArtifactGeneratorServer(cfg)
 	// Wait for the config to be loaded
-	cfg.Logger.Sugar().Debug("Waiting for the config to be loaded")
+	logging.LoggerMain.Debug("Waiting for the config to be loaded")
 	// <-configStore.Notify
-	cfg.Logger.Info("Config loaded successfully")
+	logging.LoggerMain.Info("Config loaded successfully")
 	// if len(configStore.GetConfigs()) > 0 && configStore.GetConfigs()[0].Analytics != nil && configStore.GetConfigs()[0].Analytics.Enabled {
 	// 	// Start the access log service server
 	// 	go grpc.StartAccessLogServiceServer(cfg, configStore)
