@@ -18,6 +18,7 @@
 package parsers
 
 import (
+	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"strings"
 )
@@ -28,11 +29,13 @@ type APIDefinition interface {
 
 func GetParser(apiType string) APIDefinition {
 	switch strings.ToUpper(apiType) {
-	case "REST", "GRAPHQL":
+	case constants.API_TYPE_REST:
 		return &OAS3Parser{}
-	case "GRPC":
+	case constants.API_TYPE_GRAPHQL:
+		return &GraphQLParser{}
+	case constants.API_TYPE_GRPC:
 		return &ProtoParser{}
-	case "ASYNC":
+	case constants.API_TYPE_ASYNC:
 		return &AsyncApiParser{}
 	default:
 		return nil

@@ -28,24 +28,26 @@ import (
 
 type ValidationService struct{}
 
-// ValidateAndRetrieveDefinition validates and retrieves the API definition from the provided URL or file content.
-func (validationService *ValidationService) ValidateAndRetrieveDefinition(apiType, url string, content []byte,
-	fileName string) (*dto.APIDefinitionValidationResponse, error) {
-	if url != "" {
-		definition, err := util.RetrieveDefinitionFromUrl(url)
-		if err != nil {
-			return nil, fmt.Errorf("failed to retrieve definition from URL: %w", err)
-		}
-		return validateOpenAPIDefinition(apiType, nil, definition, "", true)
+// RetrieveAndValidateDefinitionFromURL validates and retrieves the API definition from the provided URL.
+func (validationService *ValidationService) RetrieveAndValidateDefinitionFromURL(apiType,
+	url string) (*dto.APIDefinitionValidationResponse, error) {
+	definition, err := util.RetrieveDefinitionFromUrl(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve definition from URL: %w", err)
+	} else if definition == "" {
+		return nil, fmt.Errorf("API definition is empty or null for the provided URL: %s", url)
 	}
-	if fileName != "" && len(content) > 0 {
-		return validateOpenAPIDefinition(apiType, content, "", fileName, true)
-	}
-	return nil, fmt.Errorf("either URL or file content must be provided")
+	return validateAPIDefinitionFromURL(apiType, definition, true)
 }
 
-// validateOpenAPIDefinition validates the OpenAPI definition based on the API type and returns the validation response.
-func validateOpenAPIDefinition(apiType string, inputByteArray []byte, apiDefinition string, fileName string,
+// RetrieveAndValidateDefinitionFromFile validates and retrieves the API definition from the provided file content.
+func (validationService *ValidationService) RetrieveAndValidateDefinitionFromFile(apiType string, fileName string,
+	content []byte) (*dto.APIDefinitionValidationResponse, error) {
+	return validateAPIDefinitionFromFile(apiType, fileName, content, true)
+}
+
+// validateAPIDefinitionFromURL validates the definition extracted from a URL based on the API type and returns the validation response.
+func validateAPIDefinitionFromURL(apiType string, apiDefinition string,
 	returnContent bool) (*dto.APIDefinitionValidationResponse, error) {
 	var validationResponse *dto.APIDefinitionValidationResponse
 	var err error
@@ -53,29 +55,38 @@ func validateOpenAPIDefinition(apiType string, inputByteArray []byte, apiDefinit
 	switch strings.ToUpper(apiType) {
 	case constants.API_TYPE_REST:
 		restAPIValidator := &validators.RESTAPIValidator{}
-		if len(inputByteArray) > 0 {
-			if fileName != "" {
-				if strings.HasSuffix(fileName, ".zip") {
-					validationResponse, err = restAPIValidator.ExtractAndValidateOpenAPIArchive(inputByteArray, returnContent)
-					if err != nil {
-						return nil, err
-					}
-				} else {
-					openAPIContent := string(inputByteArray)
-					validationResponse, err = restAPIValidator.ValidateAPIDefinition(openAPIContent, returnContent)
-					if err != nil {
-						return nil, err
-					}
-				}
-			} else {
-				openAPIContent := string(inputByteArray)
-				validationResponse, err = restAPIValidator.ValidateAPIDefinition(openAPIContent, returnContent)
-				if err != nil {
-					return nil, err
-				}
+		validationResponse, err = restAPIValidator.ValidateOpenAPIDefinition(apiDefinition, returnContent)
+		if err != nil {
+			return nil, err
+		}
+	case constants.API_TYPE_GRAPHQL:
+		// TODO - Handle GraphQL definition from url
+		return nil, fmt.Errorf("handling GraphQL definition from URL is not implemented yet")
+	case constants.API_TYPE_GRPC:
+		// TODO - Handle gRPC definition from url
+		return nil, fmt.Errorf("handling gRPC definition from URL is not implemented yet")
+	}
+
+	return validationResponse, nil
+}
+
+// validateAPIDefinitionFromFile validates the definition extracted from a file based on the API type and returns the validation response.
+func validateAPIDefinitionFromFile(apiType string, fileName string, inputByteArray []byte,
+	returnContent bool) (*dto.APIDefinitionValidationResponse, error) {
+	var validationResponse *dto.APIDefinitionValidationResponse
+	var err error
+
+	switch strings.ToUpper(apiType) {
+	case constants.API_TYPE_REST:
+		restAPIValidator := &validators.RESTAPIValidator{}
+		if strings.HasSuffix(fileName, ".zip") {
+			validationResponse, err = restAPIValidator.ExtractAndValidateOpenAPIArchive(inputByteArray, returnContent)
+			if err != nil {
+				return nil, err
 			}
-		} else if apiDefinition != "" {
-			validationResponse, err = restAPIValidator.ValidateAPIDefinition(apiDefinition, returnContent)
+		} else {
+			openAPIContent := string(inputByteArray)
+			validationResponse, err = restAPIValidator.ValidateOpenAPIDefinition(openAPIContent, returnContent)
 			if err != nil {
 				return nil, err
 			}
@@ -84,27 +95,24 @@ func validateOpenAPIDefinition(apiType string, inputByteArray []byte, apiDefinit
 		if strings.HasSuffix(fileName, ".graphql") || strings.HasSuffix(fileName, ".txt") ||
 			strings.HasSuffix(fileName, ".sdl") {
 			graphqlAPIValidator := &validators.GraphQLAPIValidator{}
-			validationResponse, err = graphqlAPIValidator.ValidateGraphQLSchema(string(inputByteArray), returnContent)
+			validationResponse, err = graphqlAPIValidator.ValidateGraphQLSchema(string(inputByteArray))
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("invalid definition file type provided: %s", fileName)
+			return nil, fmt.Errorf("invalid definition file type provided: %s, for graphql API", fileName)
 		}
 	case constants.API_TYPE_GRPC:
-		if len(inputByteArray) > 0 {
-			if strings.HasSuffix(fileName, ".zip") || strings.HasSuffix(fileName, ".proto") {
-				grpcAPIValidator := &validators.GRPCAPIValidator{}
-				validationResponse, err = grpcAPIValidator.ValidateGRPCAPIDefinition(inputByteArray)
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				return nil, fmt.Errorf("invalid definition file type provided: %s", fileName)
+		if strings.HasSuffix(fileName, ".zip") || strings.HasSuffix(fileName, ".proto") {
+			grpcAPIValidator := &validators.GRPCAPIValidator{}
+			validationResponse, err = grpcAPIValidator.ValidateGRPCAPIDefinition(inputByteArray)
+			if err != nil {
+				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("invalid definition file type provided: %s", fileName)
+			return nil, fmt.Errorf("invalid definition file type provided: %s, for gRPC API", fileName)
 		}
 	}
+
 	return validationResponse, nil
 }

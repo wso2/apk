@@ -31,7 +31,7 @@ import (
 type GraphQLAPIValidator struct{}
 
 // ValidateGraphQLSchema validates the GraphQL schema and returns the validation response
-func (graphQLAPIValidator *GraphQLAPIValidator) ValidateGraphQLSchema(apiDefinition string, returnGraphQLSchemaContent bool) (*dto.APIDefinitionValidationResponse, error) {
+func (graphQLAPIValidator *GraphQLAPIValidator) ValidateGraphQLSchema(apiDefinition string) (*dto.APIDefinitionValidationResponse, error) {
 	validationResponse := &dto.APIDefinitionValidationResponse{}
 
 	if strings.TrimSpace(apiDefinition) == "" {
@@ -80,7 +80,7 @@ func validateGraphQLSchemaDefinition(apiDefinition string) []string {
 	for _, definition := range document.Definitions {
 		switch def := definition.(type) {
 		case *ast.ObjectDefinition:
-			objType := schemaBuilder.BuildObjectType(def, typeMap)
+			objType := schemaBuilder.BuildObjectType(def)
 			typeMap[def.Name.Value] = objType
 			switch strings.ToLower(def.Name.Value) {
 			case "query":
@@ -91,7 +91,7 @@ func validateGraphQLSchemaDefinition(apiDefinition string) []string {
 				subscriptionType = objType
 			}
 		case *ast.InputObjectDefinition:
-			inputType := schemaBuilder.BuildInputObjectType(def, inputTypeMap)
+			inputType := schemaBuilder.BuildInputObjectType(def)
 			inputTypeMap[def.Name.Value] = inputType
 		case *ast.EnumDefinition:
 			enumType := schemaBuilder.BuildEnumType(def)

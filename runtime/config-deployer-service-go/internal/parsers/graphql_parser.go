@@ -28,8 +28,8 @@ import (
 
 type GraphQLParser struct{}
 
-// GetGQLAPIFromDefinition creates an API from GraphQL schema definition
-func (graphQLParser *GraphQLParser) GetGQLAPIFromDefinition(definition string) (*dto.API, error) {
+// GetAPIFromDefinition creates an API from GraphQL schema definition
+func (graphQLParser *GraphQLParser) GetAPIFromDefinition(definition string) (*dto.API, error) {
 	document, err := graphqlParser.Parse(graphqlParser.ParseParams{
 		Source: definition,
 	})
@@ -39,9 +39,9 @@ func (graphQLParser *GraphQLParser) GetGQLAPIFromDefinition(definition string) (
 	var combinedUriTemplates []dto.URITemplate
 
 	// Extract and add all URI templates for query, mutation, and subscription into a combined list
-	queryTemplates := graphQLParser.ExtractGraphQLOperationList(document, constants.GRAPHQL_QUERY)
-	mutationTemplates := graphQLParser.ExtractGraphQLOperationList(document, constants.GRAPHQL_MUTATION)
-	subscriptionTemplates := graphQLParser.ExtractGraphQLOperationList(document, constants.GRAPHQL_SUBSCRIPTION)
+	queryTemplates := graphQLParser.extractGraphQLOperationList(document, constants.GRAPHQL_QUERY)
+	mutationTemplates := graphQLParser.extractGraphQLOperationList(document, constants.GRAPHQL_MUTATION)
+	subscriptionTemplates := graphQLParser.extractGraphQLOperationList(document, constants.GRAPHQL_SUBSCRIPTION)
 	combinedUriTemplates = append(combinedUriTemplates, queryTemplates...)
 	combinedUriTemplates = append(combinedUriTemplates, mutationTemplates...)
 	combinedUriTemplates = append(combinedUriTemplates, subscriptionTemplates...)
@@ -53,9 +53,8 @@ func (graphQLParser *GraphQLParser) GetGQLAPIFromDefinition(definition string) (
 	return api, nil
 }
 
-// ExtractGraphQLOperationList extracts GraphQL operations from given schema
-func (graphQLParser *GraphQLParser) ExtractGraphQLOperationList(document *ast.Document,
-	operationType string) []dto.URITemplate {
+// extractGraphQLOperationList extracts GraphQL operations from given schema
+func (graphQLParser *GraphQLParser) extractGraphQLOperationList(document *ast.Document, operationType string) []dto.URITemplate {
 	var operationArray []dto.URITemplate
 
 	// Create a map of type definitions for easy lookup
