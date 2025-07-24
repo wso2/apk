@@ -23,55 +23,39 @@ import (
 	"github.com/wso2/apk/test/integration/integration/utils/http"
 	"github.com/wso2/apk/test/integration/integration/utils/suite"
 )
- 
- func init() {
-	 // TODO (lahirude@wso2.com): Uncomment once AKS test runner is enabled
-	 // IntegrationTests = append(IntegrationTests, CustomRateLimitPolicies)
- }
- 
- // CustomRateLimitPolicies test
- var CustomRateLimitPolicies = suite.IntegrationTest{
-	 ShortName:   "CustomRateLimitPolicies",
-	 Description: "Tests API with with custom rate limit policies",
-	 Manifests:   []string{"tests/custom-policy-ratelimiting.yaml"},
-	 Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
-		 ns := "gateway-integration-test-infra"
-		 // TODO: (lahirude@wso2.com) Change the gwAddr to the correct one
-		 gwAddr := "prod.gw.wso2.com:9095"
-		 token := http.GetTestToken(t)
- 
-		 testCases := []http.ExpectedResponse{
-			 {
-				 Request: http.Request{
-					 Host: "prod.gw.wso2.com",
-					 Path: "/http-bin-api-basic/1.0.8/get",
-					 Headers: map[string]string{
-						 "content-type": "application/json",
-					 },
-					 Method: "GET",
-				 },
-				 ExpectedRequest: &http.ExpectedRequest{
+
+func init() {
+	// TODO (lahirude@wso2.com): Uncomment once AKS test runner is enabled
+	// //IntegrationTests = append(IntegrationTests, CustomRateLimitPolicies)
+}
+
+// CustomRateLimitPolicies test
+var CustomRateLimitPolicies = suite.IntegrationTest{
+	ShortName:   "CustomRateLimitPolicies",
+	Description: "Tests API with with custom rate limit policies",
+	Manifests:   []string{"tests/custom-policy-ratelimiting.yaml"},
+	Test: func(t *testing.T, suite *suite.IntegrationTestSuite) {
+		ns := "gateway-integration-test-infra"
+		// TODO: (lahirude@wso2.com) Change the gwAddr to the correct one
+		gwAddr := "prod.gw.wso2.com:9095"
+		token := http.GetTestToken(t)
+
+		testCases := []http.ExpectedResponse{
+			{
+				Request: http.Request{
+					Host: "prod.gw.wso2.com",
+					Path: "/http-bin-api-basic/1.0.8/get",
+					Headers: map[string]string{
+						"content-type": "application/json",
+					},
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
 						Path: "/get",
 					},
 				},
 				Namespace: ns,
-			 },
-			 {
-				Request: http.Request{
-					Host: "prod.gw.wso2.com",
-					Path: "/http-bin-api-basic/1.0.8/get",
-					Headers: map[string]string{
-						"content-type": "application/json",
-					},
-					Method: "GET",
-				},
-				ExpectedRequest: &http.ExpectedRequest{
-				   Request: http.Request{
-					   Path: "/get",
-				   },
-			   },
-			   Namespace: ns,
 			},
 			{
 				Request: http.Request{
@@ -83,11 +67,11 @@ import (
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
-				   Request: http.Request{
-					   Path: "/get",
-				   },
-			   },
-			   Namespace: ns,
+					Request: http.Request{
+						Path: "/get",
+					},
+				},
+				Namespace: ns,
 			},
 			{
 				Request: http.Request{
@@ -99,11 +83,11 @@ import (
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
-				   Request: http.Request{
-					   Path: "/get",
-				   },
-			   },
-			   Namespace: ns,
+					Request: http.Request{
+						Path: "/get",
+					},
+				},
+				Namespace: ns,
 			},
 			{
 				Request: http.Request{
@@ -115,22 +99,37 @@ import (
 					Method: "GET",
 				},
 				ExpectedRequest: &http.ExpectedRequest{
-				   Request: http.Request{
-					   Path: "/get",
-				   },
-			   },
-			   Namespace: ns,
-			   Response: http.Response{StatusCode: 429},
+					Request: http.Request{
+						Path: "/get",
+					},
+				},
+				Namespace: ns,
 			},
-		 }
-		 for i := range testCases {
-			 tc := testCases[i]
-			 tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
-			 t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
-				 t.Parallel()
-				 http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
-			 })
-		 }
-	 },
- }
- 
+			{
+				Request: http.Request{
+					Host: "prod.gw.wso2.com",
+					Path: "/http-bin-api-basic/1.0.8/get",
+					Headers: map[string]string{
+						"content-type": "application/json",
+					},
+					Method: "GET",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path: "/get",
+					},
+				},
+				Namespace: ns,
+				Response:  http.Response{StatusCode: 429},
+			},
+		}
+		for i := range testCases {
+			tc := testCases[i]
+			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
+			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
+				t.Parallel()
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
+			})
+		}
+	},
+}

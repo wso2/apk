@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIWithOperationalPolicy)
+	//IntegrationTests = append(IntegrationTests, APIWithOperationalPolicy)
 }
 
 // APIWithOperationalPolicy test

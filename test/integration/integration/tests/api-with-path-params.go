@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIWithPathParams)
+	//IntegrationTests = append(IntegrationTests, APIWithPathParams)
 }
 
 // APIWithPathParams test

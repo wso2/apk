@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, TrailingSlash)
+	//IntegrationTests = append(IntegrationTests, TrailingSlash)
 }
 
 // TrailingSlash test

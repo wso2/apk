@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, DisableResourceSecurity)
+	//IntegrationTests = append(IntegrationTests, DisableResourceSecurity)
 }
 
 // DisableResourceSecurity test

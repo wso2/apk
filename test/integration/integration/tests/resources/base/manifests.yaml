@@ -396,85 +396,100 @@ spec:
 #     - host: interceptor-backend-v1.apk
 #       port: 9081
 # ---
----
-apiVersion: dp.wso2.com/v1alpha1
-kind: TokenIssuer
-metadata:
-  name: testkey-idp-1
-  namespace: apk-integration-test
-spec:
-  consumerKeyClaim: azp
-  issuer: https://idp.am.wso2.com/token
-  name: TestKey-idp
-  organization: carbon.super
-  scopesClaim: scope
-  signatureValidation:
-    certificate:
-      secretRef:
-        key: wso2carbon.pem
-        name: apk-test-setup-wso2-apk-enforcer-truststore-secret
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
----
-apiVersion: dp.wso2.com/v1alpha1
-kind: TokenIssuer
-metadata:
-  name: testkey-idp-2
-  namespace: apk-integration-test
-spec:
-  consumerKeyClaim: azp
-  issuer: https://idp.am.wso2.com/token
-  name: TestKey-idp
-  organization: wso2-org
-  scopesClaim: scope
-  signatureValidation:
-    certificate:
-      secretRef:
-        key: wso2carbon.pem
-        name: apk-test-setup-wso2-apk-enforcer-truststore-secret
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
----
-apiVersion: dp.wso2.com/v1alpha1
-kind: TokenIssuer
-metadata:
-  name: testkey-idp-3
-  namespace: apk-integration-test
-spec:
-  consumerKeyClaim: azp
-  issuer: https://idp.am.wso2.com/token
-  name: TestKey-idp
-  organization: default
-  scopesClaim: scope
-  signatureValidation:
-    certificate:
-      secretRef:
-        key: wso2carbon.pem
-        name: apk-test-setup-wso2-apk-enforcer-truststore-secret
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: Gateway
-    name: wso2-apk-default
+# ---
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: TokenIssuer
+# metadata:
+#   name: testkey-idp-1
+#   namespace: apk-integration-test
+# spec:
+#   consumerKeyClaim: azp
+#   issuer: https://idp.am.wso2.com/token
+#   name: TestKey-idp
+#   organization: carbon.super
+#   scopesClaim: scope
+#   signatureValidation:
+#     certificate:
+#       secretRef:
+#         key: wso2carbon.pem
+#         name: apk-test-setup-wso2-apk-enforcer-truststore-secret
+#   targetRef:
+#     group: gateway.networking.k8s.io
+#     kind: Gateway
+#     name: wso2-apk-default
+# ---
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: TokenIssuer
+# metadata:
+#   name: testkey-idp-2
+#   namespace: apk-integration-test
+# spec:
+#   consumerKeyClaim: azp
+#   issuer: https://idp.am.wso2.com/token
+#   name: TestKey-idp
+#   organization: wso2-org
+#   scopesClaim: scope
+#   signatureValidation:
+#     certificate:
+#       secretRef:
+#         key: wso2carbon.pem
+#         name: apk-test-setup-wso2-apk-enforcer-truststore-secret
+#   targetRef:
+#     group: gateway.networking.k8s.io
+#     kind: Gateway
+#     name: wso2-apk-default
+# ---
+# apiVersion: dp.wso2.com/v1alpha1
+# kind: TokenIssuer
+# metadata:
+#   name: testkey-idp-3
+#   namespace: apk-integration-test
+# spec:
+#   consumerKeyClaim: azp
+#   issuer: https://idp.am.wso2.com/token
+#   name: TestKey-idp
+#   organization: default
+#   scopesClaim: scope
+#   signatureValidation:
+#     certificate:
+#       secretRef:
+#         key: wso2carbon.pem
+#         name: apk-test-setup-wso2-apk-enforcer-truststore-secret
+#   targetRef:
+#     group: gateway.networking.k8s.io
+#     kind: Gateway
+#     name: wso2-apk-default
 ---
 # This is a API with wrong organization(jwt issuer not set).
 # When test cases apply the correct API it should overrite the wrong value to correct value
-apiVersion: dp.wso2.com/v1alpha3
-kind: API
+# apiVersion: dp.wso2.com/v1alpha3
+# kind: API
+# metadata:
+#   name: all-http-methods-for-wildcard
+#   namespace: gateway-integration-test-infra
+# spec:
+#   apiName: API with Backend Base Path
+#   apiType: REST
+#   apiVersion: v1.0.0
+#   basePath: /all-http-methods-for-wildcard/v1.0.0
+#   isDefaultVersion: true
+#   #definitionFileRef: definition-file
+#   production:
+#     - routeRefs:
+#         - all-http-methods-for-wildcard-httproute
+#   organization: wso2-org1111
+
+
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
 metadata:
-  name: all-http-methods-for-wildcard
-  namespace: gateway-integration-test-infra
+  name: security-policy-backend-ref
+  namespace: apk-integration-test
 spec:
-  apiName: API with Backend Base Path
-  apiType: REST
-  apiVersion: v1.0.0
-  basePath: /all-http-methods-for-wildcard/v1.0.0
-  isDefaultVersion: true
-  #definitionFileRef: definition-file
-  production:
-    - routeRefs:
-        - all-http-methods-for-wildcard-httproute
-  organization: wso2-org1111
+  from:
+  - group: gateway.envoyproxy.io
+    kind: SecurityPolicy
+    namespace: gateway-integration-test-infra
+  to:
+  - group: gateway.envoyproxy.io
+    kind: Backend
