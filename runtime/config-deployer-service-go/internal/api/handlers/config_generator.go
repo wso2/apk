@@ -38,7 +38,7 @@ import (
 // GetGeneratedAPKConf creates the APK configuration file from api specification.
 func GetGeneratedAPKConf(cxt *gin.Context) {
 	definitionBody, err := prepareDefinitionBodyFromRequest(cxt)
-	var validateAndRetrieveDefinitionResult *dto.APIDefinitionValidationResponse
+	var apiDefinitionValidationResponse *dto.APIDefinitionValidationResponse
 	var apiType string
 
 	if err != nil {
@@ -49,7 +49,8 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 		return
 	}
 
-	if definitionBody.Definition.FileName == "" && definitionBody.URL == "" {
+	if (definitionBody.URL == "" && definitionBody.Definition.FileName == "") ||
+		(definitionBody.URL != "" && definitionBody.Definition.FileName != "") {
 		cxt.JSON(http.StatusBadRequest, gin.H{
 			"code":    90091,
 			"message": "Specify either definition or url",
@@ -74,12 +75,19 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 
 	validationService := &services.ValidationService{}
 	if definitionBody.URL != "" {
-		validateAndRetrieveDefinitionResult, err = validationService.ValidateAndRetrieveDefinition(apiType, definitionBody.URL,
-			nil, "")
-	} else if definitionBody.Definition.FileName != "" && len(definitionBody.Definition.FileContent) > 0 {
+		apiDefinitionValidationResponse, err = validationService.RetrieveAndValidateDefinitionFromURL(apiType,
+			definitionBody.URL)
+	} else if definitionBody.Definition.FileName != "" && definitionBody.Definition.FileContent != nil &&
+		len(definitionBody.Definition.FileContent) > 0 {
 		definition := definitionBody.Definition
-		validateAndRetrieveDefinitionResult, err = validationService.ValidateAndRetrieveDefinition(apiType, "",
-			definition.FileContent, definition.FileName)
+		apiDefinitionValidationResponse, err = validationService.RetrieveAndValidateDefinitionFromFile(apiType,
+			definition.FileName, definition.FileContent)
+	} else {
+		cxt.JSON(http.StatusBadRequest, gin.H{
+			"code":    90091,
+			"message": "Either URL or file content must be provided",
+		})
+		return
 	}
 
 	if err != nil {
@@ -90,8 +98,8 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 		return
 	}
 
-	if validateAndRetrieveDefinitionResult != nil {
-		if validateAndRetrieveDefinitionResult.IsValid {
+	if apiDefinitionValidationResponse != nil {
+		if apiDefinitionValidationResponse.IsValid {
 			var apiFromDefinition *dto.API
 			if strings.ToUpper(apiType) == constants.API_TYPE_GRPC {
 				var fileName = ""
@@ -101,7 +109,7 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 				}
 				grpcUtil := util.GRPCUtil{}
 				apiFromDefinition, err = grpcUtil.GetGRPCAPIFromProtoDefinition(
-					validateAndRetrieveDefinitionResult.ProtoContent, fileName)
+					apiDefinitionValidationResponse.ProtoContent, fileName)
 				if err != nil {
 					cxt.JSON(http.StatusInternalServerError, gin.H{
 						"code":    909022,
@@ -111,7 +119,7 @@ func GetGeneratedAPKConf(cxt *gin.Context) {
 				}
 			} else {
 				runtimeAPIUtil := api.RuntimeAPICommonUtil{}
-				apiFromDefinition, err = runtimeAPIUtil.GetAPIFromDefinition(validateAndRetrieveDefinitionResult.Content, apiType)
+				apiFromDefinition, err = runtimeAPIUtil.GetAPIFromDefinition(apiDefinitionValidationResponse.Content, apiType)
 				if err != nil {
 					cxt.JSON(http.StatusInternalServerError, gin.H{
 						"code":    909022,

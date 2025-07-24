@@ -19,27 +19,20 @@ package api
 
 import (
 	"fmt"
-	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"github.com/wso2/apk/config-deployer-service-go/internal/parsers"
-	"strings"
 )
 
 type RuntimeAPICommonUtil struct{}
 
 func (runtimeAPIUtil *RuntimeAPICommonUtil) GetAPIFromDefinition(definition string, apiType string) (*dto.API, error) {
-	if strings.ToUpper(apiType) == constants.API_TYPE_GRAPHQL {
-		graphQLParser := parsers.GraphQLParser{}
-		return graphQLParser.GetGQLAPIFromDefinition(definition)
-	} else {
-		parser := parsers.GetParser(apiType)
-		if parser != nil {
-			api, err := parser.GetAPIFromDefinition(definition)
-			if err != nil {
-				return nil, err
-			}
-			return api, nil
+	parser := parsers.GetParser(apiType)
+	if parser != nil {
+		api, err := parser.GetAPIFromDefinition(definition)
+		if err != nil {
+			return nil, err
 		}
+		return api, nil
 	}
 	return nil, fmt.Errorf("definition parser not found: %s", apiType)
 }
