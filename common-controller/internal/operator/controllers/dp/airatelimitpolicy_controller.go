@@ -21,12 +21,15 @@ import (
 	"context"
 	"strings"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv1alpha5 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha5"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -112,6 +115,41 @@ func (r *AIRateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			ratelimitPolicy.Spec.Override = ratelimitPolicy.Spec.Default
 		}
 		if ratelimitPolicy.Spec.TargetRef.Kind == "Backend" {
+			var backend dpv1alpha5.Backend
+			var ns string
+			if ratelimitPolicy.Spec.TargetRef.Namespace != nil {
+				ns = string(*ratelimitPolicy.Spec.TargetRef.Namespace)
+			} else {
+				ns = ratelimitPolicy.Namespace
+			}
+			if err := r.Client.Get(ctx, types.NamespacedName{Namespace: ns, Name: string(ratelimitPolicy.Spec.TargetRef.Name)}, &backend); err != nil {
+				loggers.LoggerAPKOperator.Errorf("Error retrieving Backend: %v", err)
+			} else {
+				loggers.LoggerAPKOperator.Infof("Backend found: %s", backend.Name)
+				// Prepare owner references for the route
+				preparedOwnerReferences := metav1.OwnerReference{
+					APIVersion: backend.APIVersion,
+					Kind:       backend.Kind,
+					Name:       backend.Name,
+					UID:        backend.UID,
+				}
+				// Decide whether we need an update
+				updateRequired := false
+				if len(ratelimitPolicy.GetOwnerReferences()) != 1 {
+					updateRequired = true
+				} else {
+					_, found := FindElement(ratelimitPolicy.GetOwnerReferences(), func(refLocal metav1.OwnerReference) bool {
+						return refLocal.UID == preparedOwnerReferences.UID && refLocal.Name == preparedOwnerReferences.Name && refLocal.APIVersion == preparedOwnerReferences.APIVersion && refLocal.Kind == preparedOwnerReferences.Kind
+					})
+					if !found {
+						updateRequired = true
+					}
+				}
+				if updateRequired {
+					ratelimitPolicy.SetOwnerReferences([]metav1.OwnerReference{preparedOwnerReferences})
+					utils.UpdateCR(ctx, r.Client, &ratelimitPolicy)
+				}
+			}
 			r.ods.AddorUpdateAIRatelimitToStore(ratelimitKey, ratelimitPolicy.Spec)
 			xds.UpdateRateLimitXDSCacheForAIRatelimitPolicies(r.ods.GetAIRatelimitPolicySpecs())
 			xds.UpdateRateLimiterPolicies(conf.CommonController.Server.Label)
@@ -135,4 +173,16 @@ func (r *AIRateLimitPolicyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&dpv1alpha3.AIRateLimitPolicy{}).
 		Complete(r)
+}
+
+// FindElement searches for an element in a slice based on a given predicate.
+// It returns the element and true if the element was found.
+func FindElement[T any](collection []T, predicate func(item T) bool) (T, bool) {
+	for _, item := range collection {
+		if predicate(item) {
+			return item, true
+		}
+	}
+	var dummy T
+	return dummy, false
 }
