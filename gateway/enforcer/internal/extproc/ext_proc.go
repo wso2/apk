@@ -20,42 +20,36 @@ package extproc
 import (
 	"bytes"
 	"compress/gzip"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"strconv"
+	"net"
 	"strings"
+	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
-	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+
 	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
-	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
-	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
-	"github.com/wso2/apk/gateway/enforcer/internal/authentication/authenticator"
-	"github.com/wso2/apk/gateway/enforcer/internal/authorization"
+
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
-	"github.com/wso2/apk/gateway/enforcer/internal/dto"
-	"github.com/wso2/apk/gateway/enforcer/internal/graphql"
-	"github.com/wso2/apk/gateway/enforcer/internal/jwtbackend"
-	"github.com/wso2/apk/gateway/enforcer/internal/logging"
-	"github.com/wso2/apk/gateway/enforcer/internal/ratelimit"
-	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
-	"github.com/wso2/apk/gateway/enforcer/internal/requesthandler"
-	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
-	"github.com/wso2/apk/gateway/enforcer/internal/util"
+	"github.com/wso2/apk/gateway/enforcer/internal/mediation"
 
-	"net"
-	"time"
+	v31 "github.com/envoyproxy/go-control-plane/envoy/extensions/filters/http/ext_proc/v3"
+	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
+	"github.com/wso2/apk/common-go-libs/constants"
+	"github.com/wso2/apk/gateway/enforcer/internal/logging"
+	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
+	"github.com/wso2/apk/gateway/enforcer/internal/util"
+	types "k8s.io/apimachinery/pkg/types"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
-	"google.golang.org/grpc/health"
-    "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/protobuf/encoding/prototext"
 	structpb "google.golang.org/protobuf/types/known/structpb"
 )
@@ -64,14 +58,11 @@ import (
 // It contains a logger for logging purposes.
 type ExternalProcessingServer struct {
 	log                              logging.Logger
-	apiStore                         *datastore.APIStore
 	subscriptionApplicationDatastore *datastore.SubscriptionApplicationDataStore
-	ratelimitHelper                  *ratelimit.AIRatelimitHelper
-	cfg                              *config.Server
-	jwtTransformer                   *transformer.JWTTransformer
-	modelBasedRoundRobinTracker      *datastore.ModelBasedRoundRobinTracker
-	revokedJTIStore                  *datastore.RevokedJTIStore
-	authenticator                    *authenticator.Authenticator
+	routePolicyAndMetadataDatastore  *datastore.RoutePolicyAndMetadataDataStore
+	// ratelimitHelper                  *ratelimit.AIRatelimitHelper
+	cfg             *config.Server
+	revokedJTIStore *datastore.RevokedJTIStore
 }
 
 const (
@@ -104,8 +95,6 @@ const (
 	modelMetadataKey string = "aitoken:model"
 )
 
-var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
-
 // StartExternalProcessingServer initializes and starts the external processing server.
 // It creates a gRPC server using the provided configuration and registers the external
 // processor server with it.
@@ -115,7 +104,10 @@ var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
 //     public and private keys, and a logger instance.
 //
 // If there is an error during the creation of the gRPC server, the function will panic.
-func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APIStore, subAppDatastore *datastore.SubscriptionApplicationDataStore, jwtTransformer *transformer.JWTTransformer, modelBasedRoundRobinTracker *datastore.ModelBasedRoundRobinTracker, revokedJTIStore *datastore.RevokedJTIStore) {
+func StartExternalProcessingServer(cfg *config.Server,
+	subAppDatastore *datastore.SubscriptionApplicationDataStore,
+	routePolicyAndMetadataDS *datastore.RoutePolicyAndMetadataDataStore,
+	revokedJTIStore *datastore.RevokedJTIStore) {
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
@@ -131,16 +123,12 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 
 	grpc_health_v1.RegisterHealthServer(server, health.NewServer())
 	cfg.Logger.Info("Health check added.....")
-	ratelimitHelper := ratelimit.NewAIRatelimitHelper(cfg)
 	envoy_service_proc_v3.RegisterExternalProcessorServer(server,
 		&ExternalProcessingServer{cfg.Logger,
-			apiStore,
 			subAppDatastore,
-			ratelimitHelper,
+			routePolicyAndMetadataDS,
 			cfg,
-			jwtTransformer,
-			modelBasedRoundRobinTracker,
-			revokedJTIStore, authenticator.NewAuthenticator(cfg, subAppDatastore, jwtTransformer, revokedJTIStore)})
+			revokedJTIStore})
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.ExternalProcessingPort))
 	if err != nil {
 		cfg.Logger.Error(err, fmt.Sprintf("Failed to listen on port: %s", cfg.ExternalProcessingPort))
@@ -171,6 +159,7 @@ func StartExternalProcessingServer(cfg *config.Server, apiStore *datastore.APISt
 // If an unknown request type is received, it logs the unknown request type.
 func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalProcessor_ProcessServer) error {
 	ctx := srv.Context()
+	requestConfigHolder := &requestconfig.Holder{}
 	for {
 		select {
 		case <-ctx.Done():
@@ -186,862 +175,274 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		}
 
 		resp := &envoy_service_proc_v3.ProcessingResponse{}
-		requestConfigHolder := &requestconfig.Holder{}
+
 		// log req.Attributes
 		s.log.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
-		dynamicMetadataKeyValuePairs := make(map[string]string)
+		if requestConfigHolder.AttributesPopulated == false {
+			extRefs, requestAttributes := s.extractExtensionRefsAndRouteAttributes(req.Attributes)
+			requestConfigHolder.RequestAttributes = requestAttributes
+			if len(extRefs) > 0 {
+				requestConfigHolder.AttributesPopulated = true
+				for _, extRef := range extRefs {
+					s.log.Sugar().Debug(fmt.Sprintf("Extension Reference: %s", extRef))
+					parts := strings.Split(extRef, "/")
+					if len(parts) == 3 {
+						kind := parts[0]
+						namespace := parts[1]
+						name := parts[2]
+						s.log.Sugar().Debug(fmt.Sprintf("Kind: %s, Namespace: %s, Name: %s", kind, namespace, name))
+						if kind == "RoutePolicy" {
+							// Fetch the RoutePolicy from the datastore
+							namespacedName := types.NamespacedName{
+								Name:      name,
+								Namespace: namespace,
+							}.String()
+							routePolicy := s.routePolicyAndMetadataDatastore.GetRoutePolicy(namespacedName)
+							if routePolicy != nil {
+								s.log.Sugar().Debugf("Found RoutePolicy: %+v", routePolicy)
+								if requestConfigHolder.RoutePolicy == nil {
+									requestConfigHolder.RoutePolicy = routePolicy
+								} else {
+									for _, reqPolicy := range routePolicy.Spec.RequestMediation {
+										requestConfigHolder.RoutePolicy.Spec.RequestMediation = append(requestConfigHolder.RoutePolicy.Spec.RequestMediation, reqPolicy)
+									}
+									for _, resPolicy := range routePolicy.Spec.ResponseMediation {
+										requestConfigHolder.RoutePolicy.Spec.ResponseMediation = append(requestConfigHolder.RoutePolicy.Spec.ResponseMediation, resPolicy)
+									}
+								}
+							} else {
+								s.log.Sugar().Errorf("RoutePolicy %s/%s not found", namespace, name)
+							}
+						} else if kind == "RouteMetadata" {
+							// Fetch the RouteMetadata from the datastore
+							namespacedName := types.NamespacedName{
+								Name:      name,
+								Namespace: namespace,
+							}.String()
+							routeMetadata := s.routePolicyAndMetadataDatastore.GetRouteMetadata(namespacedName)
+							if routeMetadata != nil {
+								s.log.Sugar().Debugf("Found RouteMetadata: %+v", routeMetadata)
+								// We dont support multiple RouteMetadata for a request, Hence the last one will be used
+								requestConfigHolder.RouteMetadata = routeMetadata
+							} else {
+								s.log.Sugar().Errorf("RouteMetadata %s/%s not found", namespace, name)
+							}
+						} else {
+							s.log.Sugar().Debugf("Unknown kind: %s", kind)
+						}
+					}
+				}
+			}
+		}
+
+		metadata := make(map[string]*structpb.Value)
 		switch v := req.Request.(type) {
 		case *envoy_service_proc_v3.ProcessingRequest_RequestHeaders:
 			s.log.Sugar().Debug("Request Headers Flow")
-			attributes, err := extractExternalProcessingXDSRouteMetadataAttributes(req.GetAttributes())
-			requestConfigHolder.ExternalProcessingEnvoyAttributes = attributes
-			if err != nil {
-				s.log.Error(err, "failed to extract context attributes")
-				resp = &envoy_service_proc_v3.ProcessingResponse{
-					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
-						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
-							Status: &v32.HttpStatus{
-								Code: v32.StatusCode_NotFound,
-							},
-							Body:    []byte("The requested resource is not available."),
-							Details: "Resource not found",
-						},
-					},
-				}
-				break
-			}
-			// Handling cors
-			if attributes.RequestMethod == "OPTIONS" {
-				s.log.Sugar().Debug("Handling CORS preflight request")
-				resp = &envoy_service_proc_v3.ProcessingResponse{
-					Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
-						ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
-							Status: &v32.HttpStatus{
-								Code: v32.StatusCode(200),
-							},
-						},
-					},
-				}
-				break
-			}
+			s.log.Sugar().Debug(fmt.Sprintf("request header %+v, ", v.RequestHeaders))
+			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseRequestHeaders
+			requestConfigHolder.RequestHeaders = req.GetRequestHeaders()
+			requestConfigHolder.JWTAuthnPayloaClaims = s.extractJWTAuthnNamespaceData(req.GetMetadataContext())
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
-					HeaderMutation: &envoy_service_proc_v3.HeaderMutation{
-						SetHeaders: []*corev3.HeaderValueOption{
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "x-wso2-cluster-header",
-									RawValue: []byte(attributes.ClusterName),
-								},
-							},
-						},
-					},
-					// This is necessary if the remote server modified headers that are used to calculate the route.
 					ClearRouteCache: true,
 				},
 			}
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
 				RequestHeaders: rhq,
 			}
+			for key, value := range requestConfigHolder.RequestHeaders.Headers.Headers {
+				s.log.Sugar().Debugf("Request Header: %s: %s", key, value)
+			}
+			// Override the processing mode based on the attached api policies
+			requestBodyMode := v31.ProcessingMode_NONE
+			responseHeaderMode := v31.ProcessingMode_SKIP
+			responseBodyMode := v31.ProcessingMode_NONE
+			if requestConfigHolder.RoutePolicy != nil {
+				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
+				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+						if mediation.MediationAndRequestBodyProcessing[policy.PolicyName] {
+							requestBodyMode = v31.ProcessingMode_BUFFERED
+						}
+						s.log.Sugar().Debugf("Processing Mode for Policy %s: RequestBodyMode: %s, ResponseHeaderMode: %s, ResponseBodyMode: %s",
+							policy.PolicyName,
+							requestBodyMode.String(),
+							responseHeaderMode.String(),
+							responseBodyMode.String())
+					}
+				} else {
+					s.log.Sugar().Debugf("No Request Mediation Policies found in RoutePolicy")
+				}
+				if requestConfigHolder.RoutePolicy.Spec.ResponseMediation != nil {
+					s.log.Sugar().Debugf("Response Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.ResponseMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.ResponseMediation {
+						if mediation.MediationAndResponseHeaderProcessing[policy.PolicyName] {
+							responseHeaderMode = v31.ProcessingMode_SEND
+						}
+						if mediation.MediationAndResponseBodyProcessing[policy.PolicyName] {
+							responseBodyMode = v31.ProcessingMode_BUFFERED
+						}
+						s.log.Sugar().Debugf("Processing Mode for Policy %s: ResponseHeaderMode: %s, ResponseBodyMode: %s",
+							policy.PolicyName,
+							responseHeaderMode.String(),
+							responseBodyMode.String())
+					}
+				} else {
+					s.log.Sugar().Debugf("No Response Mediation Policies found in RoutePolicy")
+				}
+			}
 			resp.ModeOverride = &v31.ProcessingMode{
-				RequestBodyMode:    v31.ProcessingMode_NONE,
-				ResponseHeaderMode: v31.ProcessingMode_HeaderSendMode(v31.ProcessingMode_SKIP),
-				ResponseBodyMode:   v31.ProcessingMode_NONE,
+				RequestBodyMode:    requestBodyMode,
+				ResponseHeaderMode: responseHeaderMode,
+				ResponseBodyMode:   responseBodyMode,
 			}
-			apiKey := util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion)
 
-			if strings.TrimSpace(attributes.EndpointBasepath) == "" {
-				for _, header := range req.GetRequestHeaders().GetHeaders().Headers {
-					if header.Key == ":path" {
-						// remove query params from path header
-						pathHeaderWithoutQuery := strings.Split(string(header.RawValue), "?")
-						// removes the API basepath from the path header
-						result := strings.TrimPrefix(pathHeaderWithoutQuery[0], attributes.BasePath)
-						if strings.TrimSpace(result) == "" {
-							var newPath string
-							if len(pathHeaderWithoutQuery) > 1 {
-								newPath = pathHeaderWithoutQuery[0] + "/?" + pathHeaderWithoutQuery[1]
-							} else {
-								newPath = pathHeaderWithoutQuery[0] + "/"
+			if requestConfigHolder.RoutePolicy != nil {
+				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
+				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+						if mediation.MediationAndRequestHeaderProcessing[policy.PolicyName] {
+							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
+							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
+								mediationResult,
+								resp,
+								requestconfig.ProcessingPhaseRequestHeaders,
+								metadata)
+							if stopProcessingMediations {
+								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
+								break
 							}
-							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
-								Header: &corev3.HeaderValue{
-									Key:      ":path",
-									RawValue: []byte(newPath),
-								},
-							})
-						}
-						break
-					}
-				}
-			}
-
-			requestConfigHolder.MatchedAPI = s.apiStore.GetMatchedAPI(util.PrepareAPIKey(attributes.VHost, attributes.BasePath, attributes.APIVersion))
-			// Do not remove or modify this nil check. It is necessary to avoid nil pointer dereference.
-			if requestConfigHolder.MatchedAPI == nil {
-				break
-			}
-			if requestConfigHolder.MatchedAPI.IsGraphQLAPI() {
-				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
-			}
-			dynamicMetadataKeyValuePairs[customOrgMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
-
-			dynamicMetadataKeyValuePairs[matchedAPIMetadataKey] = apiKey
-			dynamicMetadataKeyValuePairs[analytics.APITypeKey] = requestConfigHolder.MatchedAPI.APIType
-			dynamicMetadataKeyValuePairs[analytics.APIIDKey] = requestConfigHolder.MatchedAPI.UUID
-			dynamicMetadataKeyValuePairs[analytics.APINameKey] = requestConfigHolder.MatchedAPI.Name
-			dynamicMetadataKeyValuePairs[analytics.APIVersionKey] = requestConfigHolder.MatchedAPI.Version
-			dynamicMetadataKeyValuePairs[analytics.APIContextKey] = requestConfigHolder.MatchedAPI.BasePath
-			dynamicMetadataKeyValuePairs[analytics.APIOrganizationIDKey] = requestConfigHolder.MatchedAPI.OrganizationID
-			dynamicMetadataKeyValuePairs[analytics.APICreatorTenantDomainKey] = requestConfigHolder.MatchedAPI.OrganizationID
-
-			if requestConfigHolder.MatchedAPI.APIDefinitionPath != "" {
-				definitionPath := requestConfigHolder.MatchedAPI.APIDefinitionPath
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("definition Path: %v", definitionPath))
-				fullPath := requestConfigHolder.MatchedAPI.BasePath + requestConfigHolder.MatchedAPI.APIDefinitionPath
-				if attributes.Path == fullPath {
-					definition := requestConfigHolder.MatchedAPI.APIDefinition
-					// Decompress
-					decompressedStr, err := ReadGzip(definition)
-					if err != nil {
-						s.cfg.Logger.Error(err, "Error reading api definition gzip")
-					}
-					fileName, contentType := getFileNameAndContentTypeForDef(requestConfigHolder.MatchedAPI)
-					responseBody := []byte(decompressedStr)
-					// for grpc apis, the definition might be a zip file
-					if contentType == "application/zip" {
-						reader, _ := gzip.NewReader(bytes.NewReader([]byte(requestConfigHolder.MatchedAPI.APIDefinition)))
-						defer reader.Close()
-						decompressedData, _ := io.ReadAll(reader)
-						responseBody, _ = base64.StdEncoding.DecodeString(string(decompressedData))
-					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("decompressed definition: %v", decompressedStr))
-					if definition != nil {
-						resp = &envoy_service_proc_v3.ProcessingResponse{
-							Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
-								ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
-									Status: &v32.HttpStatus{
-										Code: v32.StatusCode(200),
-									},
-									Headers: &envoy_service_proc_v3.HeaderMutation{
-										SetHeaders: []*corev3.HeaderValueOption{
-											{
-												Header: &corev3.HeaderValue{
-													Key:      "Content-Type",
-													RawValue: []byte(contentType),
-												},
-											},
-											{
-												Header: &corev3.HeaderValue{
-													Key:      "Content-Disposition",
-													RawValue: []byte(fileName),
-												},
-											},
-										},
-									},
-									Body: responseBody,
-								},
-							},
-						}
-						break
-					}
-				}
-			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Metadata context : %+v", req.GetMetadataContext()))
-
-			requestConfigHolder.MatchedResource = httpHandler.GetMatchedResource(requestConfigHolder.MatchedAPI, *requestConfigHolder.ExternalProcessingEnvoyAttributes)
-			// Do not remove or modify this nil check. It is necessary to avoid nil pointer dereference.
-			if requestConfigHolder.MatchedResource == nil {
-				break
-			}
-			if requestConfigHolder.MatchedAPI.AiProvider != nil {
-				// s.cfg.Logger.Sugar().Info("222")
-				resp.ModeOverride.RequestBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
-				resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
-				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
-			}
-			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.PromptTokens != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
-				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-				// s.cfg.Logger.Sugar().Info("333")
-				resp.ModeOverride.ResponseBodyMode = v31.ProcessingMode_BodySendMode(v31.ProcessingMode_BUFFERED)
-			}
-			if requestConfigHolder.MatchedAPI.AiProvider != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.PromptTokens != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.TotalToken != nil &&
-				requestConfigHolder.MatchedResource.RouteMetadataAttributes != nil &&
-				requestConfigHolder.MatchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
-				// s.cfg.Logger.Sugar().Info("444")
-				resp.ModeOverride.ResponseHeaderMode = v31.ProcessingMode_SEND
-			}
-			requestConfigHolder.MatchedResource.RouteMetadataAttributes = attributes
-			dynamicMetadataKeyValuePairs[matchedResourceMetadataKey] = requestConfigHolder.MatchedResource.GetResourceIdentifier()
-			dynamicMetadataKeyValuePairs[analytics.APIResourceTemplateKey] = requestConfigHolder.MatchedResource.Path
-			s.log.Sugar().Debug(fmt.Sprintf("Matched Resource Endpoints: %+v", requestConfigHolder.MatchedResource.Endpoints))
-			if requestConfigHolder.MatchedResource.Endpoints != nil && len(requestConfigHolder.MatchedResource.Endpoints.URLs) > 0 {
-				dynamicMetadataKeyValuePairs[analytics.DestinationKey] = requestConfigHolder.MatchedResource.Endpoints.URLs[0]
-			}
-
-			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
-			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
-				// return status.Errorf(codes.Unknown, "cannot extract metadata: %v", err)
-				break
-			}
-			requestConfigHolder.ExternalProcessingEnvoyMetadata = metadata
-
-			// s.log.Info(fmt.Sprintf("Matched api bjc: %v", requestConfigHolder.MatchedAPI.BackendJwtConfiguration))
-			// s.log.Info(fmt.Sprintf("Matched Resource: %v", requestConfigHolder.MatchedResource))
-			// s.log.Info(fmt.Sprintf("req holderrr: %+v\n s: %+v", &requestConfigHolder, &s))
-			s.log.Sugar().Debug(fmt.Sprintf("req holderrr: %+v\n s: %+v", requestConfigHolder, s))
-			if requestConfigHolder.MatchedResource != nil && requestConfigHolder.MatchedResource.AuthenticationConfig != nil && !requestConfigHolder.MatchedResource.AuthenticationConfig.Disabled && !requestConfigHolder.MatchedAPI.DisableAuthentication {
-				if immediateResponse := authorization.Validate(s.authenticator, requestConfigHolder, s.subscriptionApplicationDatastore, s.cfg); immediateResponse != nil {
-					// Update the Content-Type header
-					headers := &envoy_service_proc_v3.HeaderMutation{
-						SetHeaders: []*corev3.HeaderValueOption{
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "Content-Type",
-									RawValue: []byte("Application/json"),
-								},
-							},
-						},
-					}
-					resp = &envoy_service_proc_v3.ProcessingResponse{
-						Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
-							ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
-								Status: &v32.HttpStatus{
-									Code: v32.StatusCode(immediateResponse.StatusCode),
-								},
-								Body:    []byte(immediateResponse.Message),
-								Headers: headers,
-							},
-						},
-					}
-					break
-				}
-				if requestConfigHolder.MatchedSubscription != nil && requestConfigHolder.MatchedSubscription.RatelimitTier != "Unlimited" && requestConfigHolder.MatchedSubscription.RatelimitTier != "" {
-					s.log.Sugar().Debug(fmt.Sprintf("Ratelimit Tier: %s", requestConfigHolder.MatchedSubscription.RatelimitTier))
-					dynamicMetadataKeyValuePairs[subscriptionMetadataKey] = fmt.Sprintf("%s:%s%s", requestConfigHolder.MatchedSubscription.SubscribedAPI.Name, requestConfigHolder.MatchedApplication.UUID, requestConfigHolder.MatchedSubscription.UUID)
-					dynamicMetadataKeyValuePairs[usagePolicyMetadataKey] = requestConfigHolder.MatchedSubscription.RatelimitTier
-					dynamicMetadataKeyValuePairs[organizationMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
-					dynamicMetadataKeyValuePairs[orgAndRLPolicyMetadataKey] = fmt.Sprintf("%s-%s", requestConfigHolder.MatchedAPI.OrganizationID, requestConfigHolder.MatchedSubscription.RatelimitTier)
-				}
-			}
-			backendJWT := ""
-			if requestConfigHolder.MatchedAPI.BackendJwtConfiguration != nil && requestConfigHolder.MatchedAPI.BackendJwtConfiguration.Enabled {
-				backendJWT = jwtbackend.CreateBackendJWT(requestConfigHolder, s.cfg)
-				s.log.Sugar().Debug("generated backendJWT==%v", backendJWT)
-			}
-
-			if backendJWT != "" {
-				rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
-					Header: &corev3.HeaderValue{
-						Key:      requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader,
-						RawValue: []byte(backendJWT),
-					},
-				})
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Added backend JWT to the header: %s, header name: %s", backendJWT, requestConfigHolder.MatchedAPI.BackendJwtConfiguration.JWTHeader))
-			}
-			if requestConfigHolder.MatchedApplication != nil {
-				dynamicMetadataKeyValuePairs[matchedApplicationMetadataKey] = requestConfigHolder.MatchedApplication.UUID
-			}
-			if requestConfigHolder.MatchedSubscription != nil {
-				dynamicMetadataKeyValuePairs[matchedSubscriptionMetadataKey] = requestConfigHolder.MatchedSubscription.UUID
-			}
-
-			if requestConfigHolder.MatchedAPI.EndpointSecurity != nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Inside API Level Endpoint Security: %+v", requestConfigHolder.MatchedAPI.EndpointSecurity))
-				for _, es := range requestConfigHolder.MatchedAPI.EndpointSecurity {
-					if es.Enabled {
-						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Enabled API Level Endpoint Security: %+v", es))
-						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Enabled API Level Security Type: %s", es.SecurityType))
-						if es.SecurityType == "Basic" {
-							basicValue := fmt.Sprintf("Basic %s", util.Base64Encode([]byte(fmt.Sprintf("%s:%s", es.Username, es.Password))))
-							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
-								Header: &corev3.HeaderValue{
-									Key:      "Authorization",
-									RawValue: []byte(basicValue),
-								},
-							})
-						} else if es.SecurityType == "APIKey" {
-							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
-								Header: &corev3.HeaderValue{
-									Key:      es.CustomParameters["key"],
-									RawValue: []byte(es.CustomParameters["value"]),
-								},
-							})
-						}
-					}
-				}
-			}
-
-			if requestConfigHolder.MatchedResource.EndpointSecurity != nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Endpoint Security: %+v", requestConfigHolder.MatchedResource.EndpointSecurity))
-				for _, es := range requestConfigHolder.MatchedResource.EndpointSecurity {
-					if es.Enabled {
-						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Endpoint Security: %+v", es))
-						s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Resource Level Security Type: %s", es.SecurityType))
-						if es.SecurityType == "Basic" {
-							basicValue := fmt.Sprintf("Basic %s", util.Base64Encode([]byte(fmt.Sprintf("%s:%s", es.Username, es.Password))))
-							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
-								Header: &corev3.HeaderValue{
-									Key:      "Authorization",
-									RawValue: []byte(basicValue),
-								},
-							})
-						} else if es.SecurityType == "APIKey" {
-							rhq.Response.HeaderMutation.SetHeaders = append(rhq.Response.HeaderMutation.SetHeaders, &corev3.HeaderValueOption{
-								Header: &corev3.HeaderValue{
-									Key:      es.CustomParameters["key"],
-									RawValue: []byte(es.CustomParameters["value"]),
-								},
-							})
 						}
 					}
 				}
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_RequestBody:
-			// httpBody := req.GetRequestBody()
 			s.log.Sugar().Debug("Request Body Flow")
-			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
-				RequestBody: &envoy_service_proc_v3.BodyResponse{
-					Response: &envoy_service_proc_v3.CommonResponse{},
+			s.log.Sugar().Debug(fmt.Sprintf("request body %+v, ", v.RequestBody))
+			requestConfigHolder.RequestBody = req.GetRequestBody()
+			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseRequestBody
+
+			rhq := &envoy_service_proc_v3.BodyResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{
+					ClearRouteCache: true,
 				},
 			}
-			s.log.Sugar().Debug("Request Body Flow")
-			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
-			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
-				break
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
+				RequestBody: rhq,
 			}
-			if metadata == nil {
-				s.log.Error(err, "metadata is nil")
-				break
-			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
-			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
-			if matchedAPI == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
-				break
-			}
-			rch := &requestconfig.Holder{}
-			rch.MatchedAPI = matchedAPI
-			rch.ExternalProcessingEnvoyMetadata = metadata
-			if matchedAPI.IsGraphQLAPI() {
-				if immediateResponse := graphql.ValidateGraphQLOperation(s.authenticator, rch, metadata, s.subscriptionApplicationDatastore, s.cfg, string(req.GetRequestBody().Body), s.jwtTransformer, s.revokedJTIStore); immediateResponse != nil {
-					headers := &envoy_service_proc_v3.HeaderMutation{
-						SetHeaders: []*corev3.HeaderValueOption{
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "Content-Type",
-									RawValue: []byte("Application/json"),
-								},
-							},
-						},
-					}
-					resp = &envoy_service_proc_v3.ProcessingResponse{
-						Response: &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
-							ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
-								Status: &v32.HttpStatus{
-									Code: v32.StatusCode(immediateResponse.StatusCode),
-								},
-								Body:    []byte(immediateResponse.Message),
-								Headers: headers,
-							},
-						},
-					}
-					break
-				}
-			}
-			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
-			if matchedResource == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
-				break
-			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
 
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.SupportedModels != nil &&
-				matchedAPI.AIModelBasedRoundRobin != nil &&
-				matchedAPI.AIModelBasedRoundRobin.Enabled {
-				s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
-				supportedModels := matchedAPI.AiProvider.SupportedModels
-				onQuotaExceedSuspendDuration := matchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("EnvType :%+v", matchedAPI.EnvType))
-				var modelWeight []dto.ModelWeight
-				if matchedAPI.EnvType != "" && matchedAPI.EnvType == "PRODUCTION" {
-					modelWeight = matchedAPI.AIModelBasedRoundRobin.ProductionModels
-				} else if matchedAPI.EnvType != "" && matchedAPI.EnvType == "SANDBOX" {
-					modelWeight = matchedAPI.AIModelBasedRoundRobin.SandboxModels
-				}
-				// convert to datastore.ModelWeight
-				var modelWeights []datastore.ModelWeight
-				for _, model := range modelWeight {
-					modelWeights = append(modelWeights, datastore.ModelWeight{
-						Name:     model.Model,
-						Endpoint: model.Endpoint,
-						Weight:   model.Weight,
-					})
-				}
-				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
-				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
-				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
-				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(matchedAPI.UUID, matchedResource.Path, modelWeights)
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
-				if selectedModel == "" || selectedEndpoint == "" {
-					s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
-				} else {
-					// change request body to model to selected model
-					httpBody := req.GetRequestBody().Body
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body before %+v\n", httpBody))
-					// Define a map to hold the JSON data
-					var jsonData map[string]interface{}
-					// Unmarshal the JSON data into the map
-					err := json.Unmarshal(httpBody, &jsonData)
-					if err != nil {
-						s.log.Error(err, "Error unmarshaling JSON Reuqest Body")
+			if requestConfigHolder.RoutePolicy != nil {
+				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
+				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+						if mediation.MediationAndRequestBodyProcessing[policy.PolicyName] {
+							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
+							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
+								mediationResult,
+								resp,
+								requestconfig.ProcessingPhaseRequestHeaders,
+								metadata)
+							if stopProcessingMediations {
+								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
+								break
+							}
+						}
 					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
-					// Change the model to the selected model
-					jsonData["model"] = selectedModel
-					// Convert the JSON object to a []byte
-					newHTTPBody, err := json.Marshal(jsonData)
-					if err != nil {
-						s.log.Error(err, "Error marshaling JSON")
-					}
-
-					// Calculate the new body length
-					newBodyLength := len(newHTTPBody)
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("new body length: %d\n", newBodyLength))
-
-					// Update the Content-Length header
-					headers := &envoy_service_proc_v3.HeaderMutation{
-						SetHeaders: []*corev3.HeaderValueOption{
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "Content-Length",
-									RawValue: []byte(fmt.Sprintf("%d", newBodyLength)), // Set the new Content-Length
-								},
-							},
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "x-wso2-cluster-header",
-									RawValue: []byte(selectedEndpoint),
-								},
-							},
-						},
-					}
-
-					rbq := &envoy_service_proc_v3.BodyResponse{
-						Response: &envoy_service_proc_v3.CommonResponse{
-							Status:         envoy_service_proc_v3.CommonResponse_CONTINUE_AND_REPLACE,
-							HeaderMutation: headers, // Add header mutation here
-							BodyMutation: &envoy_service_proc_v3.BodyMutation{
-								Mutation: &envoy_service_proc_v3.BodyMutation_Body{
-									Body: newHTTPBody,
-								},
-							},
-						},
-					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("rbq %+v\n", rbq))
-					resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
-						RequestBody: rbq,
-					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("resp %+v\n", resp))
-					//req.GetRequestBody().Body = newHTTPBody
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body after %+v\n", newHTTPBody))
-				}
-			}
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.SupportedModels != nil &&
-				matchedAPI.AIModelBasedRoundRobin == nil &&
-				matchedResource.AIModelBasedRoundRobin != nil &&
-				matchedResource.AIModelBasedRoundRobin.Enabled {
-				s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
-				supportedModels := matchedAPI.AiProvider.SupportedModels
-				onQuotaExceedSuspendDuration := matchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("EnvType :%+v", matchedAPI.EnvType))
-				var modelWeight []dto.ModelWeight
-				if matchedAPI.EnvType != "" && matchedAPI.EnvType == "PRODUCTION" {
-					modelWeight = matchedResource.AIModelBasedRoundRobin.ProductionModels
-				} else if matchedAPI.EnvType != "" && matchedAPI.EnvType == "SANDBOX" {
-					modelWeight = matchedResource.AIModelBasedRoundRobin.SandboxModels
-				}
-				// convert to datastore.ModelWeight
-				var modelWeights []datastore.ModelWeight
-				for _, model := range modelWeight {
-					modelWeights = append(modelWeights, datastore.ModelWeight{
-						Name:     model.Model,
-						Endpoint: model.Endpoint,
-						Weight:   model.Weight,
-					})
-				}
-				s.log.Sugar().Debugf(fmt.Sprintf("Supported Models: %v", supportedModels))
-				s.log.Sugar().Debugf(fmt.Sprintf("Model Weights: %v", modelWeight))
-				s.log.Sugar().Debugf(fmt.Sprintf("On Quota Exceed Suspend Duration: %v", onQuotaExceedSuspendDuration))
-				selectedModel, selectedEndpoint := s.modelBasedRoundRobinTracker.GetNextModel(matchedAPI.UUID, matchedResource.Path, modelWeights)
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Model: %v", selectedModel))
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Selected Endpoint: %v", selectedEndpoint))
-				if selectedModel == "" || selectedEndpoint == "" {
-					s.cfg.Logger.Sugar().Debug("Unable to select a model since all models are suspended. Continue with the user provided model")
-				} else {
-					// change request body to model to selected model
-					httpBody := req.GetRequestBody().Body
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body before %+v\n", httpBody))
-					// Define a map to hold the JSON data
-					var jsonData map[string]interface{}
-					// Unmarshal the JSON data into the map
-					err := json.Unmarshal(httpBody, &jsonData)
-					if err != nil {
-						s.log.Error(err, "Error unmarshaling JSON Reuqest Body")
-					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
-					// Change the model to the selected model
-					jsonData["model"] = selectedModel
-					// Convert the JSON object to a []byte
-					newHTTPBody, err := json.Marshal(jsonData)
-					if err != nil {
-						s.log.Error(err, "Error marshaling JSON")
-					}
-
-					// Calculate the new body length
-					newBodyLength := len(newHTTPBody)
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("new body length: %d\n", newBodyLength))
-
-					// Update the Content-Length header
-					headers := &envoy_service_proc_v3.HeaderMutation{
-						SetHeaders: []*corev3.HeaderValueOption{
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "Content-Length",
-									RawValue: []byte(fmt.Sprintf("%d", newBodyLength)), // Set the new Content-Length
-								},
-							},
-							{
-								Header: &corev3.HeaderValue{
-									Key:      "x-wso2-cluster-header",
-									RawValue: []byte(selectedEndpoint),
-								},
-							},
-						},
-					}
-
-					rbq := &envoy_service_proc_v3.BodyResponse{
-						Response: &envoy_service_proc_v3.CommonResponse{
-							Status:         envoy_service_proc_v3.CommonResponse_CONTINUE_AND_REPLACE,
-							HeaderMutation: headers, // Add header mutation here
-							BodyMutation: &envoy_service_proc_v3.BodyMutation{
-								Mutation: &envoy_service_proc_v3.BodyMutation_Body{
-									Body: newHTTPBody,
-								},
-							},
-						},
-					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("rbq %+v\n", rbq))
-					resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{
-						RequestBody: rbq,
-					}
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("resp %+v\n", resp))
-					//req.GetRequestBody().Body = newHTTPBody
-					s.cfg.Logger.Sugar().Debug(fmt.Sprintf("request body after %+v\n", newHTTPBody))
 				}
 			}
 
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			s.log.Sugar().Debug("Response Headers Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
+			requestConfigHolder.ResponseHeaders = req.GetRequestHeaders()
+			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseResponseHeaders
+
 			rhq := &envoy_service_proc_v3.HeadersResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{},
-			}
-			resp = &envoy_service_proc_v3.ProcessingResponse{
-				Response: &envoy_service_proc_v3.ProcessingResponse_ResponseHeaders{
-					ResponseHeaders: rhq,
+				Response: &envoy_service_proc_v3.CommonResponse{
+					ClearRouteCache: true,
 				},
 			}
-			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
-			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
-				break
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_ResponseHeaders{
+				ResponseHeaders: rhq,
 			}
-			if metadata == nil {
-				s.log.Error(err, "metadata is nil")
-				break
-			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %+v", metadata))
-			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
-			if matchedAPI == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
-				break
-			}
-			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
-			if matchedResource == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
-				break
-			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource: %v", matchedResource.RouteMetadataAttributes))
-			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
-			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.PromptTokens != nil &&
-				matchedAPI.AiProvider.CompletionToken != nil &&
-				matchedAPI.AiProvider.TotalToken != nil &&
-				matchedResource.RouteMetadataAttributes != nil &&
-				matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true" &&
-				matchedAPI.AiProvider.CompletionToken.In == dto.InHeader {
-				s.log.Sugar().Debug("Backend based AI rate limit enabled using headers")
-				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseHeaders(req.GetResponseHeaders().GetHeaders().GetHeaders(),
-					matchedAPI.AiProvider.PromptTokens.Value,
-					matchedAPI.AiProvider.CompletionToken.Value,
-					matchedAPI.AiProvider.TotalToken.Value,
-					matchedAPI.AiProvider.ResponseModel.Value)
-				if err != nil {
-					s.log.Error(err, "failed to extract token count from response headers")
-				} else {
-					go s.ratelimitHelper.DoAIRatelimit(*tokenCount, true,
-						matchedAPI.DoSubscriptionAIRLInHeaderReponse,
-						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
-						matchedSubscription, matchedApplication)
-					aiProvider := matchedAPI.AiProvider
-					dynamicMetadataKeyValuePairs[analytics.AIProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
-					dynamicMetadataKeyValuePairs[analytics.AIProviderNameMetadataKey] = aiProvider.ProviderName
-					dynamicMetadataKeyValuePairs[analytics.ModelIDMetadataKey] = tokenCount.Model
-					dynamicMetadataKeyValuePairs[analytics.CompletionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
-					dynamicMetadataKeyValuePairs[analytics.TotalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
-					dynamicMetadataKeyValuePairs[analytics.PromptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
+
+			if requestConfigHolder.RoutePolicy != nil {
+				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
+				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+						if mediation.MediationAndResponseHeaderProcessing[policy.PolicyName] {
+							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
+							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
+								mediationResult,
+								resp,
+								requestconfig.ProcessingPhaseRequestHeaders,
+								metadata)
+							if stopProcessingMediations {
+								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
+								break
+							}
+						}
+					}
 				}
 			}
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.SupportedModels != nil &&
-				matchedAPI.AIModelBasedRoundRobin != nil &&
-				matchedAPI.AIModelBasedRoundRobin.Enabled {
-				s.log.Sugar().Debug("API Level Model Based Round Robin enabled")
-				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
-				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
-				remainingTokenCount := 100
-				remainingRequestCount := 100
-				remainingCount := 100
-				status := 200
-				for _, headerValue := range headerValues {
-					if headerValue.Key == "x-ratelimit-remaining-tokens" {
-						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining token count by header")
-						}
-						remainingTokenCount = value
-					}
-					if headerValue.Key == "x-ratelimit-remaining-requests" {
-						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining request count by header")
-						}
-						remainingRequestCount = value
-					}
-					if headerValue.Key == "status" {
-						status, err = util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve status code by header")
-						}
-					}
-					if headerValue.Key == "x-ratelimit-remaining" {
-						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining count by header")
-						}
-						remainingCount = value
-					}
-				}
-				if remainingCount <= 0 || remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
-					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
-					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
-					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
-					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
-				}
-			}
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.SupportedModels != nil &&
-				matchedAPI.AIModelBasedRoundRobin == nil &&
-				matchedResource.AIModelBasedRoundRobin != nil &&
-				matchedResource.AIModelBasedRoundRobin.Enabled {
-				s.log.Sugar().Debug("Resource Level Model Based Round Robin enabled")
-				headerValues := req.GetResponseHeaders().GetHeaders().GetHeaders()
-				s.log.Sugar().Debug(fmt.Sprintf("Header Values: %v", headerValues))
-				remainingTokenCount := 100
-				remainingRequestCount := 100
-				remainingCount := 100
-				status := 200
-				for _, headerValue := range headerValues {
-					if headerValue.Key == "x-ratelimit-remaining-tokens" {
-						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining token count by header")
-						}
-						remainingTokenCount = value
-					}
-					if headerValue.Key == "x-ratelimit-remaining-requests" {
-						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining request count by header")
-						}
-						remainingRequestCount = value
-					}
-					if headerValue.Key == "status" {
-						status, err = util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve status code by header")
-						}
-					}
-					if headerValue.Key == "x-ratelimit-remaining" {
-						value, err := util.ConvertStringToInt(string(headerValue.RawValue))
-						if err != nil {
-							s.log.Error(err, "Unable to retrieve remaining count by header")
-						}
-						remainingCount = value
-					}
-				}
-				if remainingCount <= 0 || remainingTokenCount <= 0 || remainingRequestCount <= 0 || status == 429 { // Suspend model if token/request count reaches 0 or status code is 429
-					s.log.Sugar().Debug("Token/request are exhausted. Suspending the model")
-					matchedResource.RouteMetadataAttributes.SuspendAIModel = "true"
-					matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier] = matchedResource
-					s.apiStore.UpdateMatchedAPI(metadata.MatchedAPIIdentifier, matchedAPI)
-				}
-			}
+
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseBody:
-			// httpBody := req.GetResponseBody()
-			// s.log.Info(fmt.Sprintf("req holder: %+v\n s: %+v", &s.requestConfigHolder, &s))
 			s.log.Sugar().Debug("Response Body Flow")
+			s.log.Sugar().Debug(fmt.Sprintf("response body %+v, ", v.ResponseBody))
+			requestConfigHolder.ResponseBody = req.GetResponseBody()
+			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseResponseBody
 
-			rbq := &envoy_service_proc_v3.BodyResponse{
-				Response: &envoy_service_proc_v3.CommonResponse{},
-			}
-			resp = &envoy_service_proc_v3.ProcessingResponse{
-				Response: &envoy_service_proc_v3.ProcessingResponse_ResponseBody{
-					ResponseBody: rbq,
+			rhq := &envoy_service_proc_v3.BodyResponse{
+				Response: &envoy_service_proc_v3.CommonResponse{
+					ClearRouteCache: true,
 				},
 			}
-			metadata, err := extractExternalProcessingMetadata(req.GetMetadataContext())
-			if err != nil {
-				s.log.Error(err, "failed to extract context metadata")
-				break
-			}
-			if metadata == nil {
-				s.log.Error(err, "metadata is nil")
-				break
-			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("metadata: %v", metadata))
-			matchedAPI := s.apiStore.GetMatchedAPI(metadata.MatchedAPIIdentifier)
-			if matchedAPI == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API not found: %s", metadata.MatchedAPIIdentifier))
-				break
-			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched API: %+v", matchedAPI))
-			matchedResource := matchedAPI.ResourceMap[metadata.MatchedResourceIdentifier]
-			if matchedResource == nil {
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched Resource not found: %s", metadata.MatchedResourceIdentifier))
-				break
-			}
-			s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Matched resource: %+v", matchedResource))
-			matchedSubscription := s.subscriptionApplicationDatastore.GetSubscription(matchedAPI.OrganizationID, metadata.MatchedSubscriptionIdentifier)
-			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.CompletionToken != nil &&
-				matchedAPI.AiProvider.PromptTokens != nil &&
-				matchedAPI.AiProvider.TotalToken != nil &&
-				matchedResource.RouteMetadataAttributes != nil &&
-				matchedAPI.AiProvider.CompletionToken.In == dto.InBody {
-				s.log.Sugar().Debug("AI rate limit enabled using body")
-				tokenCount, err := ratelimit.ExtractTokenCountFromExternalProcessingResponseBody(req.GetResponseBody().Body,
-					matchedAPI.AiProvider.PromptTokens.Value,
-					matchedAPI.AiProvider.CompletionToken.Value,
-					matchedAPI.AiProvider.TotalToken.Value,
-					matchedAPI.AiProvider.ResponseModel.Value)
-				if err != nil {
-					s.log.Error(err, "failed to extract token count from response body")
-				} else {
-					go s.ratelimitHelper.DoAIRatelimit(*tokenCount, matchedResource.RouteMetadataAttributes.EnableBackendBasedAIRatelimit == "true",
-						matchedAPI.DoSubscriptionAIRLInBodyReponse,
-						matchedResource.RouteMetadataAttributes.BackendBasedAIRatelimitDescriptorValue,
-						matchedSubscription, matchedApplication)
-					aiProvider := matchedAPI.AiProvider
-					dynamicMetadataKeyValuePairs[analytics.AIProviderAPIVersionMetadataKey] = aiProvider.ProviderAPIVersion
-					dynamicMetadataKeyValuePairs[analytics.AIProviderNameMetadataKey] = aiProvider.ProviderName
-					dynamicMetadataKeyValuePairs[analytics.ModelIDMetadataKey] = tokenCount.Model
-					dynamicMetadataKeyValuePairs[analytics.CompletionTokenCountMetadataKey] = strconv.Itoa(tokenCount.Completion)
-					dynamicMetadataKeyValuePairs[analytics.TotalTokenCountMetadataKey] = strconv.Itoa(tokenCount.Total)
-					dynamicMetadataKeyValuePairs[analytics.PromptTokenCountMetadataKey] = strconv.Itoa(tokenCount.Prompt)
-				}
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_ResponseBody{
+				ResponseBody: rhq,
 			}
 
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.SupportedModels != nil &&
-				matchedAPI.AIModelBasedRoundRobin != nil &&
-				matchedAPI.AIModelBasedRoundRobin.Enabled &&
-				matchedResource.RouteMetadataAttributes != nil &&
-				matchedResource.RouteMetadataAttributes.SuspendAIModel == "true" {
-				s.cfg.Logger.Sugar().Debug("API Level Model Based Round Robin enabled")
-				httpBody := req.GetResponseBody().Body
-				// Define a map to hold the JSON data
-				var jsonData map[string]interface{}
-				// Unmarshal the JSON data into the map
-				err := json.Unmarshal(httpBody, &jsonData)
-				if err != nil {
-					s.cfg.Logger.Error(err, "Error unmarshaling JSON Response Body")
+			if requestConfigHolder.RoutePolicy != nil {
+				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
+				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+						if mediation.MediationAndResponseBodyProcessing[policy.PolicyName] {
+							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
+							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
+								mediationResult,
+								resp,
+								requestconfig.ProcessingPhaseRequestHeaders,
+								metadata)
+							if stopProcessingMediations {
+								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
+								break
+							}
+						}
+					}
 				}
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
-				// Retrieve Model from the JSON data
-				model := ""
-				if modelValue, ok := jsonData["model"].(string); ok {
-					model = modelValue
-				} else {
-					s.cfg.Logger.Error(fmt.Errorf("model is not a string"), "failed to extract model from JSON data")
-				}
-				s.cfg.Logger.Sugar().Debug("Suspending model: " + model)
-				duration := matchedAPI.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
-				s.modelBasedRoundRobinTracker.SuspendModel(matchedAPI.UUID, matchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
-			}
-			if matchedAPI.AiProvider != nil &&
-				matchedAPI.AiProvider.SupportedModels != nil &&
-				matchedAPI.AIModelBasedRoundRobin == nil &&
-				matchedResource.AIModelBasedRoundRobin != nil &&
-				matchedResource.AIModelBasedRoundRobin.Enabled &&
-				matchedResource.RouteMetadataAttributes != nil &&
-				matchedResource.RouteMetadataAttributes.SuspendAIModel == "true" {
-				s.cfg.Logger.Sugar().Debug("Resource Level Model Based Round Robin enabled")
-				httpBody := req.GetResponseBody().Body
-				// Define a map to hold the JSON data
-				var jsonData map[string]interface{}
-				// Unmarshal the JSON data into the map
-				err := json.Unmarshal(httpBody, &jsonData)
-				if err != nil {
-					s.cfg.Logger.Error(err, "Error unmarshaling JSON Response Body")
-				}
-				s.cfg.Logger.Sugar().Debug(fmt.Sprintf("jsonData %+v\n", jsonData))
-				// Retrieve Model from the JSON data
-				model := ""
-				if modelValue, ok := jsonData["model"].(string); ok {
-					model = modelValue
-				} else {
-					s.cfg.Logger.Error(fmt.Errorf("model is not a string"), "failed to extract model from JSON data")
-				}
-				s.cfg.Logger.Sugar().Debug("Suspending model: " + model)
-				duration := matchedResource.AIModelBasedRoundRobin.OnQuotaExceedSuspendDuration
-				s.modelBasedRoundRobinTracker.SuspendModel(matchedAPI.UUID, matchedResource.Path, model, time.Duration(time.Duration(duration*1000*1000*1000)))
 			}
 		default:
 			s.log.Sugar().Debug(fmt.Sprintf("Unknown Request type %v\n", v))
 		}
 		// Set dynamic metadata
-		dynamicMetadata, err := buildDynamicMetadata(prepareMetadataKeyValuePairAndAddTo(dynamicMetadataKeyValuePairs, requestConfigHolder, s.cfg))
-		if err != nil {
-			s.log.Error(err, "failed to build dynamic metadata")
-		} else {
-			resp.DynamicMetadata = dynamicMetadata
+		resp.DynamicMetadata = &structpb.Struct{
+			Fields: map[string]*structpb.Value{
+				constants.MetadataNamespace: {
+					Kind: &structpb.Value_StructValue{
+						StructValue: &structpb.Struct{Fields: metadata},
+					},
+				},
+			},
 		}
 		if err := srv.Send(resp); err != nil {
 			s.log.Sugar().Debug(fmt.Sprintf("send error %v", err))
@@ -1049,25 +450,158 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 	}
 }
 
-func getFileNameAndContentTypeForDef(matchedAPI *requestconfig.API) (string, string) {
-	fileName := "attachment; filename=\"api_definition.json\""
-	contentType := "application/octet-stream"
-	if matchedAPI.IsGraphQLAPI() {
-		fileName = "attachment; filename=\"api_definition.graphql\""
+func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
+	mediationResult *mediation.Result,
+	resp *envoy_service_proc_v3.ProcessingResponse,
+	processingPhase requestconfig.ProcessingPhase,
+	metadata map[string]*structpb.Value) (stopProcessingMediations bool) {
+	if mediationResult == nil {
+		s.log.Sugar().Debug("Mediation Result is nil, skipping further processing")
+		return false
 	}
-	if matchedAPI.IsgRPCAPI() {
-		fileType, _ := DetectFileType([]byte(matchedAPI.APIDefinition))
-
-		if fileType == "proto" {
-			return "attachment; filename=\"api_definition.proto\"", contentType
+	if len(mediationResult.Metadata) > 0 {
+		s.log.Sugar().Debugf("Mediation Result Metadata: %+v", mediationResult.Metadata)
+		for key, value := range mediationResult.Metadata {
+			metadata[key] = value
 		}
-		if fileType == "zip" {
-			return "attachment; filename=\"api_definition.zip\"", "application/zip"
+	} else {
+		s.log.Sugar().Debug("No Metadata found in Mediation Result")
+	}
+	headerMutation := &envoy_service_proc_v3.HeaderMutation{}
+	if len(mediationResult.RemoveHeaders) > 0 {
+		s.log.Sugar().Debugf("Removing headers: %v", mediationResult.RemoveHeaders)
+		headerMutation.RemoveHeaders = mediationResult.RemoveHeaders
+	}
+	if len(mediationResult.AddHeaders) > 0 {
+		s.log.Sugar().Debugf("Adding headers: %v", mediationResult.AddHeaders)
+		for key, value := range mediationResult.AddHeaders {
+			headerMutation.SetHeaders = append(headerMutation.SetHeaders, &corev3.HeaderValueOption{
+				Header: &corev3.HeaderValue{
+					Key:      key,
+					RawValue: []byte(value),
+				},
+				AppendAction: corev3.HeaderValueOption_OVERWRITE_IF_EXISTS_OR_ADD,
+			})
 		}
 	}
+	bodyMutation := &envoy_service_proc_v3.BodyMutation{}
+	if mediationResult.ModifyBody {
+		bodyMutation = &envoy_service_proc_v3.BodyMutation{
+			Mutation: &envoy_service_proc_v3.BodyMutation_Body{
+				Body: []byte(mediationResult.Body),
+			},
+		}
+	}
+	if mediationResult.ImmediateResponse {
+		resp.Response = &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+			ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+				Status: &v32.HttpStatus{
+					Code: mediationResult.ImmediateResponseCode,
+				},
+				Body:    []byte(mediationResult.ImmediateResponseBody),
+				Details: mediationResult.ImmediateResponseDetail,
+				Headers: headerMutation,
+			},
+		}
+		return true
+	}
+	if processingPhase == requestconfig.ProcessingPhaseRequestHeaders {
+		if resp.Response == nil {
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{}
+		} else {
+			requestHeaderResp, ok := resp.Response.(*envoy_service_proc_v3.ProcessingResponse_RequestHeaders)
+			if !ok {
+				s.log.Sugar().Debugf("Unexpected response type: %T, expected RequestHeaders", resp.Response)
+				return false
+			}
+			if requestHeaderResp.RequestHeaders == nil {
+				requestHeaderResp.RequestHeaders = &envoy_service_proc_v3.HeadersResponse{}
+			}
+			if requestHeaderResp.RequestHeaders.Response == nil {
+				requestHeaderResp.RequestHeaders.Response = &envoy_service_proc_v3.CommonResponse{}
+			}
+			requestHeaderResp.RequestHeaders.Response.HeaderMutation = headerMutation
 
-	return fileName, contentType
+		}
+	} else if processingPhase == requestconfig.ProcessingPhaseRequestBody {
+		if resp.Response == nil {
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestBody{}
+		} else {
+			requestBodyResp, ok := resp.Response.(*envoy_service_proc_v3.ProcessingResponse_RequestBody)
+			if !ok {
+				s.log.Sugar().Debugf("Unexpected response type: %T, expected RequestBody", resp.Response)
+				return false
+			}
+			if requestBodyResp.RequestBody == nil {
+				requestBodyResp.RequestBody = &envoy_service_proc_v3.BodyResponse{}
+			}
+			if requestBodyResp.RequestBody.Response == nil {
+				requestBodyResp.RequestBody.Response = &envoy_service_proc_v3.CommonResponse{}
+			}
+			requestBodyResp.RequestBody.Response.BodyMutation = bodyMutation
+			requestBodyResp.RequestBody.Response.HeaderMutation = headerMutation
+		}
+	} else if processingPhase == requestconfig.ProcessingPhaseResponseHeaders {
+		if resp.Response == nil {
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_ResponseHeaders{}
+		} else {
+			responseHeaderResp, ok := resp.Response.(*envoy_service_proc_v3.ProcessingResponse_ResponseHeaders)
+			if !ok {
+				s.log.Sugar().Debugf("Unexpected response type: %T, expected ResponseHeaders", resp.Response)
+				return false
+			}
+			if responseHeaderResp.ResponseHeaders == nil {
+				responseHeaderResp.ResponseHeaders = &envoy_service_proc_v3.HeadersResponse{}
+			}
+			if responseHeaderResp.ResponseHeaders.Response == nil {
+				responseHeaderResp.ResponseHeaders.Response = &envoy_service_proc_v3.CommonResponse{}
+			}
+			responseHeaderResp.ResponseHeaders.Response.HeaderMutation = headerMutation
+		}
+	} else if processingPhase == requestconfig.ProcessingPhaseResponseBody {
+		if resp.Response == nil {
+			resp.Response = &envoy_service_proc_v3.ProcessingResponse_ResponseBody{}
+		} else {
+			responseBodyResp, ok := resp.Response.(*envoy_service_proc_v3.ProcessingResponse_ResponseBody)
+			if !ok {
+				s.log.Sugar().Debugf("Unexpected response type: %T, expected ResponseBody", resp.Response)
+				return false
+			}
+			if responseBodyResp.ResponseBody == nil {
+				responseBodyResp.ResponseBody = &envoy_service_proc_v3.BodyResponse{}
+			}
+			if responseBodyResp.ResponseBody.Response == nil {
+				responseBodyResp.ResponseBody.Response = &envoy_service_proc_v3.CommonResponse{}
+			}
+			responseBodyResp.ResponseBody.Response.BodyMutation = bodyMutation
+			responseBodyResp.ResponseBody.Response.HeaderMutation = headerMutation
+		}
+	} else {
+		s.log.Sugar().Debugf("Unknown processing phase: %s", processingPhase)
+		// Return false to indicate that processing should continue
+	}
+	return false
 }
+
+// func getFileNameAndContentTypeForDef(matchedAPI *requestconfig.API) (string, string) {
+// 	fileName := "attachment; filename=\"api_definition.json\""
+// 	contentType := "application/octet-stream"
+// 	if matchedAPI.IsGraphQLAPI() {
+// 		fileName = "attachment; filename=\"api_definition.graphql\""
+// 	}
+// 	if matchedAPI.IsgRPCAPI() {
+// 		fileType, _ := DetectFileType([]byte(matchedAPI.APIDefinition))
+
+// 		if fileType == "proto" {
+// 			return "attachment; filename=\"api_definition.proto\"", contentType
+// 		}
+// 		if fileType == "zip" {
+// 			return "attachment; filename=\"api_definition.zip\"", "application/zip"
+// 		}
+// 	}
+
+// 	return fileName, contentType
+// }
 
 // DetectFileType detects if the file is a .proto or .zip
 func DetectFileType(data []byte) (string, error) {
@@ -1088,104 +622,6 @@ func DetectFileType(data []byte) (string, error) {
 	}
 
 	return "zip", nil
-}
-
-// extractExternalProcessingMetadata extracts the external processing metadata from the given data.
-func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProcessingEnvoyMetadata, error) {
-	filterMatadata := data.GetFilterMetadata()
-	if filterMatadata != nil {
-		externalProcessingEnvoyMetadata := &dto.ExternalProcessingEnvoyMetadata{}
-		jwtFilterdata := filterMatadata["envoy.filters.http.jwt_authn"]
-		if jwtFilterdata != nil {
-			authenticationData := &dto.AuthenticationData{}
-
-			for key, structValue := range jwtFilterdata.Fields {
-				if strings.HasSuffix(key, "-payload") {
-					sucessData := dto.AuthenticationSuccessData{}
-					jwtPayload := structValue.GetStructValue()
-					if jwtPayload != nil {
-						claims := make(map[string]interface{})
-						for key, value := range jwtPayload.GetFields() {
-							if value != nil {
-								if key == "iss" {
-									sucessData.Issuer = value.GetStringValue()
-								}
-								switch value.Kind.(type) {
-								case *structpb.Value_StringValue:
-									claims[key] = value.GetStringValue()
-								case *structpb.Value_NumberValue:
-									claims[key] = value.GetNumberValue()
-								case *structpb.Value_BoolValue:
-									claims[key] = value.GetBoolValue()
-								case *structpb.Value_ListValue:
-									jsonData, err := value.MarshalJSON()
-									if err != nil {
-										return nil, err
-									}
-									var list []interface{}
-									err = json.Unmarshal(jsonData, &list)
-									if err != nil {
-										return nil, err
-									}
-									claims[key] = list
-								case *structpb.Value_StructValue:
-									jsonData, err := value.MarshalJSON()
-									if err != nil {
-										return nil, err
-									}
-									var mapData map[string]interface{}
-									err = json.Unmarshal(jsonData, &mapData)
-									if err != nil {
-										return nil, err
-									}
-									claims[key] = mapData
-								}
-							}
-						}
-						sucessData.Claims = claims
-					}
-					if authenticationData.SucessData == nil {
-						authenticationData.SucessData = make(map[string]*dto.AuthenticationSuccessData)
-					}
-					authenticationData.SucessData[key] = &sucessData
-				}
-				if strings.HasSuffix(key, "-failed") {
-					failureStatusStruct := structValue.GetStructValue()
-					if failureStatusStruct != nil {
-						code := failureStatusStruct.Fields["code"].GetNumberValue()
-						message := failureStatusStruct.Fields["message"].GetStringValue()
-						authenticationFailureData := &dto.AuthenticationFailureData{Code: int(code), Message: message}
-						if authenticationData.FailedData == nil {
-							authenticationData.FailedData = make(map[string]*dto.AuthenticationFailureData)
-						}
-						authenticationData.FailedData[key] = authenticationFailureData
-					}
-				}
-			}
-			externalProcessingEnvoyMetadata.AuthenticationData = authenticationData
-		}
-		if extProcMetadata, exists := filterMatadata[externalProessingMetadataContextKey]; exists {
-			if matchedAPIKey, exists := extProcMetadata.Fields[matchedAPIMetadataKey]; exists {
-				externalProcessingEnvoyMetadata.MatchedAPIIdentifier = matchedAPIKey.GetStringValue()
-			}
-			if matchedResourceKey, exists := extProcMetadata.Fields[matchedResourceMetadataKey]; exists {
-				externalProcessingEnvoyMetadata.MatchedResourceIdentifier = matchedResourceKey.GetStringValue()
-			}
-			if matchedApplicationKey, exists := extProcMetadata.Fields[matchedApplicationMetadataKey]; exists {
-				externalProcessingEnvoyMetadata.MatchedApplicationIdentifier = matchedApplicationKey.GetStringValue()
-			}
-			if matchedSubscriptionKey, exists := extProcMetadata.Fields[matchedSubscriptionMetadataKey]; exists {
-				externalProcessingEnvoyMetadata.MatchedSubscriptionIdentifier = matchedSubscriptionKey.GetStringValue()
-			}
-
-		}
-		return externalProcessingEnvoyMetadata, nil
-	}
-	return nil, nil
-}
-
-func readStructData() {
-
 }
 
 // ReadGzip decompresses a GZIP-compressed byte slice and returns the string output
@@ -1211,87 +647,126 @@ func ReadGzip(gzipData []byte) (string, error) {
 	return result.String(), nil
 }
 
-// extractExternalProcessingXDSRouteMetadataAttributes extracts the external processing attributes from the given data.
-func extractExternalProcessingXDSRouteMetadataAttributes(data map[string]*structpb.Struct) (*dto.ExternalProcessingEnvoyAttributes, error) {
-
-	// Get the fields from the map
-	extProcData, exists := data["envoy.filters.http.ext_proc"]
-	if !exists {
-		return nil, fmt.Errorf("key envoy.filters.http.ext_proc not found")
-	}
-
-	// Extract the "fields" and iterate over them
-	attributes := &dto.ExternalProcessingEnvoyAttributes{}
-	fields := extProcData.Fields
-
-	if field, ok := fields["request.method"]; ok {
-		method := field.GetStringValue()
-		attributes.RequestMethod = method
-	}
-
-	// We need to navigate through the nested fields to get the actual values
-	if field, ok := fields["xds.route_metadata"]; ok {
-
-		filterMetadata := field.GetStringValue()
-		var structData corev3.Metadata
-		err := prototext.Unmarshal([]byte(filterMetadata), &structData)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse Protobuf text: %v", err)
-		}
-
-		// Extract values for predefined keys
-		extractedValues := make(map[string]string)
-
-		keysToExtract := []string{
-			pathAttribute,
-			vHostAttribute,
-			basePathAttribute,
-			methodAttribute,
-			apiVersionAttribute,
-			apiNameAttribute,
-			clusterNameAttribute,
-			enableBackendBasedAIRatelimitAttribute,
-			backendBasedAIRatelimitDescriptorValueAttribute,
-			suspendAIModelValueAttribute,
-			endpointBasepath,
-		}
-
-		for _, key := range keysToExtract {
-			if field, exists := structData.FilterMetadata["envoy.filters.http.ext_proc"]; exists {
-				extractedValues[key] = field.Fields[key].GetStringValue()
-				// case condition to populate ExternalProcessingEnvoyAttributes
-				switch key {
-				case pathAttribute:
-					attributes.Path = extractedValues[key]
-				case vHostAttribute:
-					attributes.VHost = extractedValues[key]
-				case basePathAttribute:
-					attributes.BasePath = extractedValues[key]
-				case methodAttribute:
-					attributes.Method = extractedValues[key]
-				case apiVersionAttribute:
-					attributes.APIVersion = extractedValues[key]
-				case apiNameAttribute:
-					attributes.APIName = extractedValues[key]
-				case clusterNameAttribute:
-					attributes.ClusterName = extractedValues[key]
-				case enableBackendBasedAIRatelimitAttribute:
-					attributes.EnableBackendBasedAIRatelimit = extractedValues[key]
-				case backendBasedAIRatelimitDescriptorValueAttribute:
-					attributes.BackendBasedAIRatelimitDescriptorValue = extractedValues[key]
-				case suspendAIModelValueAttribute:
-					attributes.SuspendAIModel = extractedValues[key]
-				case endpointBasepath:
-					attributes.EndpointBasepath = extractedValues[key]
+func (s *ExternalProcessingServer) extractJWTAuthnNamespaceData(data *corev3.Metadata) map[string]interface{} {
+	claims := make(map[string]interface{})
+	filterMatadata := data.GetFilterMetadata()
+	if filterMatadata != nil {
+		jwtAuthnData, exists := filterMatadata[constants.JWTAuthnMetadataNamespace]
+		if !exists || jwtAuthnData == nil {
+			s.cfg.Logger.Sugar().Debug("JWT Authn data not found")
+		} else {
+			for key, structValue := range jwtAuthnData.Fields {
+				if key == constants.JWTAuthnPayloadInMetadata {
+					s.cfg.Logger.Sugar().Debugf("JWT Authn Payload: %s", structValue.GetStringValue())
+					jwtPayload := structValue.GetStructValue()
+					if jwtPayload != nil {
+						for key, value := range jwtPayload.GetFields() {
+							if value != nil {
+								switch value.Kind.(type) {
+								case *structpb.Value_StringValue:
+									claims[key] = value.GetStringValue()
+								case *structpb.Value_NumberValue:
+									claims[key] = value.GetNumberValue()
+								case *structpb.Value_BoolValue:
+									claims[key] = value.GetBoolValue()
+								case *structpb.Value_ListValue:
+									jsonData, err := value.MarshalJSON()
+									if err == nil {
+										var list []interface{}
+										err = json.Unmarshal(jsonData, &list)
+										if err == nil {
+											claims[key] = list
+										} else {
+											s.cfg.Logger.Sugar().Errorf("Failed to unmarshal list value for key %s: %v", key, err)
+										}
+									} else {
+										s.cfg.Logger.Sugar().Errorf("Failed to marshal JSON for list value for key %s: %v", key, err)
+									}
+								case *structpb.Value_StructValue:
+									jsonData, err := value.MarshalJSON()
+									if err == nil {
+										var mapData map[string]interface{}
+										err = json.Unmarshal(jsonData, &mapData)
+										if err == nil {
+											claims[key] = mapData
+										} else {
+											s.cfg.Logger.Sugar().Errorf("Failed to unmarshal struct value for key %s: %v", key, err)
+										}
+									} else {
+										s.cfg.Logger.Sugar().Errorf("Failed to marshal JSON for struct value for key %s: %v", key, err)
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
-		// Return the populated struct
-		return attributes, nil
+	}
+	s.cfg.Logger.Sugar().Debugf("Extracted JWT Authn Claims: %+v", claims)
+	return claims
+}
+
+func (s *ExternalProcessingServer) extractExtensionRefsAndRouteAttributes(data map[string]*structpb.Struct) ([]string, *requestconfig.Attributes) {
+	var extensionRefs []string
+
+	extProcData, exists := data[constants.ExternalProcessingNamespace]
+	if !exists || extProcData == nil {
+		s.cfg.Logger.Sugar().Debug("External processing data not found in attributes, Returning empty extensionRefs")
+		s.cfg.Logger.Sugar().Debugf("Attributes: %+v", data)
+		return extensionRefs, &requestconfig.Attributes{}
 	}
 
-	// Key not found
-	return nil, fmt.Errorf("key xds.route_metadata not found")
+	// Check if `xds.route_metadata` is a stringified proto and extract the nested `filter_metadata`
+	if rawTextStruct, ok := extProcData.Fields["xds.route_metadata"]; ok {
+		rawText := rawTextStruct.GetStringValue()
+		if rawText != "" {
+			s.cfg.Logger.Sugar().Debugf("Raw xds.route_metadata text: %s", rawText)
+			var structFromText corev3.Metadata
+			if err := prototext.Unmarshal([]byte(rawText), &structFromText); err != nil {
+				s.cfg.Logger.Sugar().Warnf("Failed to unmarshal text proto from xds.route_metadata: %v", err)
+			} else {
+				filterMetadata := structFromText.GetFilterMetadata()
+				// Try to extract ExtensionRefs from parsed struct if available
+				if extProcFilter, ok := filterMetadata[constants.ExternalProcessingNamespace]; ok {
+					if extProcFilter != nil {
+						if field, ok := extProcFilter.Fields[constants.ExtensionRefs]; ok {
+							listVal := field.GetListValue()
+							for _, val := range listVal.GetValues() {
+								if str := val.GetStringValue(); str != "" {
+									extensionRefs = append(extensionRefs, str)
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	routeName := ""
+	if stringVal, ok := extProcData.Fields["xds.route_name"]; ok {
+		routeName = stringVal.GetStringValue()
+	}
+	requestID := ""
+	if stringVal, ok := extProcData.Fields["request.id"]; ok {
+		requestID = stringVal.GetStringValue()
+	}
+
+	return extensionRefs, &requestconfig.Attributes{
+		RouteName: routeName,
+		RequestID: requestID,
+	}
+}
+
+func getNestedStruct(base *structpb.Value, key string) *structpb.Struct {
+	if base == nil || base.GetStructValue() == nil {
+		return nil
+	}
+	val, ok := base.GetStructValue().Fields[key]
+	if !ok || val == nil {
+		return nil
+	}
+	return val.GetStructValue()
 }
 
 func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, error) {
@@ -1328,32 +803,6 @@ func buildDynamicMetadata(keyValuePairs *map[string]string) (*structpb.Struct, e
 }
 
 func prepareMetadataKeyValuePairAndAddTo(metadataKeyValuePair map[string]string, requestConfigHolder *requestconfig.Holder, cfg *config.Server) *map[string]string {
-	if requestConfigHolder != nil && requestConfigHolder.MatchedAPI != nil {
-		metadataKeyValuePair[analytics.APIIDKey] = requestConfigHolder.MatchedAPI.UUID
-		metadataKeyValuePair[analytics.APIContextKey] = requestConfigHolder.MatchedAPI.BasePath
-		metadataKeyValuePair[organizationMetadataKey] = requestConfigHolder.MatchedAPI.OrganizationID
-		metadataKeyValuePair[analytics.APINameKey] = requestConfigHolder.MatchedAPI.Name
-		metadataKeyValuePair[analytics.APIVersionKey] = requestConfigHolder.MatchedAPI.Version
-		metadataKeyValuePair[analytics.APITypeKey] = requestConfigHolder.MatchedAPI.APIType
-		// metadataKeyValuePair[analytics.ApiCreatorKey] = s.requestConfigHolder.MatchedAPI.Creator
-		// metadataKeyValuePair[analytics.ApiCreatorTenantDomainKey] = s.requestConfigHolder.MatchedAPI.CreatorTenant
-		metadataKeyValuePair[analytics.APIOrganizationIDKey] = requestConfigHolder.MatchedAPI.OrganizationID
 
-		metadataKeyValuePair[analytics.CorrelationIDKey] = requestConfigHolder.ExternalProcessingEnvoyAttributes.CorrelationID
-		metadataKeyValuePair[analytics.RegionKey] = cfg.EnforcerRegionID
-		// metadataKeyValuePair[analytics.UserAgentKey] = s.requestConfigHolder.Metadata.UserAgent
-		// metadataKeyValuePair[analytics.ClientIpKey] = s.requestConfigHolder.Metadata.ClientIP
-		// metadataKeyValuePair[analytics.ApiResourceTemplateKey] = s.requestConfigHolder.ApiResourceTemplate
-		// metadataKeyValuePair[analytics.Destination] = s.requestConfigHolder.Metadata.Destination
-		metadataKeyValuePair[analytics.APIEnvironmentKey] = requestConfigHolder.MatchedAPI.Environment
-
-		if requestConfigHolder.MatchedApplication != nil {
-			metadataKeyValuePair[analytics.AppIDKey] = requestConfigHolder.MatchedApplication.UUID
-			metadataKeyValuePair[analytics.AppUUIDKey] = requestConfigHolder.MatchedApplication.UUID
-			metadataKeyValuePair[analytics.AppKeyTypeKey] = requestConfigHolder.MatchedAPI.EnvType
-			metadataKeyValuePair[analytics.AppNameKey] = requestConfigHolder.MatchedApplication.Name
-			metadataKeyValuePair[analytics.AppOwnerKey] = requestConfigHolder.MatchedApplication.Owner
-		}
-	}
 	return &metadataKeyValuePair
 }

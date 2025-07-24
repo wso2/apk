@@ -25,8 +25,8 @@ import (
 
 // RoutePolicySpec defines the desired state of RoutePolicy
 type RoutePolicySpec struct {
-	RequestMediation  []Mediation `json:"requestMediation,omitempty"`
-	ResponseMediation []Mediation `json:"responseMediation,omitempty"`
+	RequestMediation  []*Mediation `json:"requestMediation,omitempty"`
+	ResponseMediation []*Mediation `json:"responseMediation,omitempty"`
 }
 
 // Mediation represents a policy mediation configuration
@@ -35,7 +35,7 @@ type Mediation struct {
 	PolicyName    string      `json:"policyName"`
 	PolicyID      string      ` json:"policyID"`
 	PolicyVersion string      `json:"policyVersion,omitempty"`
-	Parameters    []Parameter `json:"parameters,omitempty"`
+	Parameters    []*Parameter `json:"parameters,omitempty"`
 }
 
 // Parameter represents a key-value or key-valueFrom pair for policy parameters

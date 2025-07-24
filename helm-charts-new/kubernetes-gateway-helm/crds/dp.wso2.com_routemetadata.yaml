@@ -42,6 +42,15 @@ spec:
               api:
                 description: API represents the API metadata for the RoutePolicy
                 properties:
+                  apiCreator:
+                    description: APICreator is the creator of the API.
+                    minLength: 1
+                    type: string
+                  apiCreatorTenantDomain:
+                    description: APICreatorTenantDomain is the tenant domain of the
+                      API creator.
+                    minLength: 1
+                    type: string
                   apiProperties:
                     description: APIProperties denotes the custom properties of the
                       API.
@@ -58,16 +67,51 @@ spec:
                   context:
                     description: Context is the context of the API
                     type: string
+                  definition:
+                    description: Definition is the API definition.
+                    type: string
                   definitionFileRef:
                     description: |-
                       DefinitionFileRef contains the
                       definition of the API in a ConfigMap.
-                    type: string
+                    properties:
+                      group:
+                        description: |-
+                          Group is the group of the referent. For example, "gateway.networking.k8s.io".
+                          When unspecified or empty string, core API group is inferred.
+                        maxLength: 253
+                        pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                        type: string
+                      kind:
+                        description: Kind is kind of the referent. For example "HTTPRoute"
+                          or "Service".
+                        maxLength: 63
+                        minLength: 1
+                        pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                        type: string
+                      name:
+                        description: Name is the name of the referent.
+                        maxLength: 253
+                        minLength: 1
+                        type: string
+                    required:
+                    - group
+                    - kind
+                    - name
+                    type: object
                   definitionPath:
                     default: /api-definition
                     description: DefinitionPath contains the path to expose the API
                       definition.
                     minLength: 1
+                    type: string
+                  envType:
+                    default: production
+                    description: EnvType denotes the environment type of the API.
+                    enum:
+                    - production
+                    - staging
+                    - development
                     type: string
                   environment:
                     description: Environment denotes the environment of the API.
@@ -81,6 +125,10 @@ spec:
                     type: string
                   type:
                     description: Type is the type of the API
+                    type: string
+                  uuid:
+                    description: UUID is the unique identifier for the API.
+                    minLength: 1
                     type: string
                   version:
                     description: Version is the version of the API

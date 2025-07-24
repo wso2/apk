@@ -12,9 +12,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/jwtbackend"
 	metrics "github.com/wso2/apk/gateway/enforcer/internal/metrics"
 	"github.com/wso2/apk/gateway/enforcer/internal/tokenrevocation"
-	"github.com/wso2/apk/gateway/enforcer/internal/transformer"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
-	"github.com/wso2/apk/gateway/enforcer/internal/xds"
 )
 
 func main() {
@@ -34,15 +32,12 @@ func main() {
 
 	//Create the TLS configuration
 	tlsConfig := util.CreateTLSConfig(clientCert, certPool)
-	subAppDatastore := datastore.NewSubAppDataStore(cfg)
-	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, subAppDatastore)
+	subAppDatastore := datastore.GetSubAppDataStore(cfg)
+	routePolicyAndMetadataDS := datastore.NewRoutePolicyAndMetadataDataStore(cfg)
+	client := grpc.NewEventingGRPCClient(host, port, cfg.XdsMaxRetries, time.Duration(cfg.XdsRetryPeriod)*time.Millisecond, tlsConfig, cfg, subAppDatastore, routePolicyAndMetadataDS)
 	// Start the connection
 	client.InitiateEventingGRPCConnection()
 
-	// Create the XDS clients
-	apiStore, configStore, jwtIssuerDatastore, modelBasedRoundRobinTracker := xds.CreateXDSClients(cfg)
-	// NewJWTTransformer creates a new instance of JWTTransformer.
-	jwtTransformer := transformer.NewJWTTransformer(cfg, jwtIssuerDatastore)
 	var revokedJTIStore *datastore.RevokedJTIStore
 	if cfg.TokenRevocationEnabled {
 		revokedJTIStore = datastore.NewRevokedJTIStore()
@@ -58,19 +53,12 @@ func main() {
 	if err != nil {
 		cfg.Logger.Sugar().Errorf("Failed to generate JWKS: %v", err)
 	}
-	go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker, revokedJTIStore)
+	go extproc.StartExternalProcessingServer(cfg, subAppDatastore, routePolicyAndMetadataDS, revokedJTIStore)
 	go jwtbackend.StartJWKSServer(cfg)
-	// Wait for the config to be loaded
-	cfg.Logger.Sugar().Debug("Waiting for the config to be loaded")
-	<-configStore.Notify
-	cfg.Logger.Info("Config loaded successfully")
-	if len(configStore.GetConfigs()) > 0 && configStore.GetConfigs()[0].Analytics != nil && configStore.GetConfigs()[0].Analytics.Enabled {
-		// Start the access log service server
-		go grpc.StartAccessLogServiceServer(cfg, configStore)
-	}
+
 	// Start the metrics server
 	if cfg.Metrics.Enabled && strings.EqualFold(cfg.Metrics.Type, "prometheus") {
-		metrics.RegisterDataSources(jwtTransformer, subAppDatastore)
+		metrics.RegisterDataSources(subAppDatastore)
 		go metrics.StartPrometheusMetricsServer(cfg.Metrics.Port)
 	}
 	// Wait forever

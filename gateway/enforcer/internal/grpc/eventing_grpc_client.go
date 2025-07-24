@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/wso2/apk/common-go-libs/constants"
 	subscription_service "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	subscription_proto_model "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/subscription"
 	rest_server_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
@@ -32,9 +33,9 @@ import (
 	data_store "github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
+	"github.com/wso2/apk/gateway/enforcer/internal/mediation"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
-	"github.com/wso2/apk/common-go-libs/constants"
 	types "k8s.io/apimachinery/pkg/types"
 )
 
@@ -55,7 +56,7 @@ type EventingGRPCClient struct {
 
 // NewEventingGRPCClient creates a new instance of EventingGRPCClient.
 // It initializes the client with the given host, port, retry parameters, TLS configuration, and logger.
-func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, dataStore *data_store.SubscriptionApplicationDataStore) *EventingGRPCClient {
+func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, dataStore *data_store.SubscriptionApplicationDataStore, routePolicyAndMetadataDS *data_store.RoutePolicyAndMetadataDataStore) *EventingGRPCClient {
 	// Create a new APIClient object
 	return &EventingGRPCClient{
 		Host:            host,
@@ -66,7 +67,7 @@ func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterv
 		grpcConn:        nil,
 		log:             cfg.Logger,
 		subAppDataStore: dataStore,
-		routePolicyMetatadataDatastore: data_store.NewRoutePolicyAndMetadataDataStore(cfg),
+		routePolicyMetatadataDatastore: routePolicyAndMetadataDS,
 	}
 }
 
@@ -150,6 +151,14 @@ func (c *EventingGRPCClient) HandleNotificationEvent(event *subscription_proto_m
 		if err != nil {
 			c.log.Error(err, "Failed to convert RoutePolicy from proto to rest model")
 		} else {
+			for _, requestMediation := range routePolciy.Spec.RequestMediation {
+				// Store the mediation in the MediationMap for easy access later
+				mediation.CreateMediation(requestMediation)
+			}
+			for _, responseMediation := range routePolciy.Spec.ResponseMediation {
+				// Store the mediation in the MediationMap for easy access later
+				mediation.CreateMediation(responseMediation)
+			}
 			c.routePolicyMetatadataDatastore.AddRoutePolicy(routePolciy)
 		}
 	case constants.RoutePolicyDeleted:
@@ -162,6 +171,14 @@ func (c *EventingGRPCClient) HandleNotificationEvent(event *subscription_proto_m
 				Name:      routePolciy.Name,
 				Namespace: routePolciy.Namespace,
 			}.String()
+			for _, requestMediation := range routePolciy.Spec.RequestMediation {
+				// Delete the mediation from the MediationMap
+				mediation.DeleteMediation(requestMediation)
+			}
+			for _, responseMediation := range routePolciy.Spec.ResponseMediation {
+				// Delete the mediation from the MediationMap
+				mediation.DeleteMediation(responseMediation)
+			}
 			c.routePolicyMetatadataDatastore.DeleteRoutePolicy(namespacedName)
 		}
 	case constants.RouteMetadataCreatedOrUpdated:

@@ -6,11 +6,13 @@ toolchain go1.24.4
 
 require (
 	github.com/envoyproxy/gateway v1.4.1
+	github.com/envoyproxy/go-control-plane v0.13.5-0.20250408134212-157c26b62099
 	github.com/envoyproxy/go-control-plane/envoy v1.32.5-0.20250408134212-157c26b62099
 	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/zapr v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/stretchr/testify v1.10.0
+	github.com/wso2/apk/common-go-libs v0.0.0-00010101000000-000000000000
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
@@ -59,3 +61,5 @@ require (
 )
 
 replace github.com/wso2/apk/envoy-gateway-extension-server => ../envoy-gateway-extension-server
+
+replace github.com/wso2/apk/common-go-libs => ../common-go-libs

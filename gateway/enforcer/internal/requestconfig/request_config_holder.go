@@ -18,19 +18,55 @@
 package requestconfig
 
 import (
+	envoy_service_proc_v3 "github.com/envoyproxy/go-control-plane/envoy/service/ext_proc/v3"
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	subscription_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 )
 
 // Holder is a struct that holds the request configuration.
 type Holder struct {
-	MatchedAPI                        *API
-	MatchedResource                   *Resource
-	ExternalProcessingEnvoyAttributes *dto.ExternalProcessingEnvoyAttributes
-	ExternalProcessingEnvoyMetadata   *dto.ExternalProcessingEnvoyMetadata
-	JWTValidationInfo                 *dto.JWTValidationInfo
-	APIKeyAuthenticationInfo          *dto.APIKeyAuthenticationInfo
-	MatchedSubscription               *subscription_model.Subscription
-	MatchedApplication                *subscription_model.Application
-	AuthenticatedAuthenticationType   string
+	AttributesPopulated             bool
+	RouteMetadata                   *dpv2alpha1.RouteMetadata
+	RoutePolicy                     *dpv2alpha1.RoutePolicy
+	APIKeyAuthenticationInfo        *dto.APIKeyAuthenticationInfo
+	MatchedSubscription             *subscription_model.Subscription
+	MatchedApplication              *subscription_model.Application
+	AuthenticatedAuthenticationType string
+	RequestHeaders                  *envoy_service_proc_v3.HttpHeaders
+	ResponseHeaders                 *envoy_service_proc_v3.HttpHeaders
+	ResponseBody                    *envoy_service_proc_v3.HttpBody
+	RequestBody                     *envoy_service_proc_v3.HttpBody
+	ProcessingPhase                 ProcessingPhase
+	AI                              AIConfig
+	RequestAttributes               *Attributes
+	JWTAuthnPayloaClaims            map[string]interface{}
+}
+
+// Attributes holds the attributes related to the request configuration.
+type Attributes struct {
+	// RouteName is the name of the route.
+	RouteName string
+	// RequestID is the ID of the request.
+	RequestID string
+}
+
+// ProcessingPhase represents the phase of processing in the request configuration.
+type ProcessingPhase string
+
+const (
+	// ProcessingPhaseRequestHeaders represents the request headers processing phase.
+	ProcessingPhaseRequestHeaders ProcessingPhase = "request_headers"
+	// ProcessingPhaseResponseHeaders represents the response headers processing phase.
+	ProcessingPhaseResponseHeaders ProcessingPhase = "response_headers"
+	// ProcessingPhaseRequestBody represents the request body processing phase.
+	ProcessingPhaseRequestBody ProcessingPhase = "request_body"
+	// ProcessingPhaseResponseBody represents the response body processing phase.
+	ProcessingPhaseResponseBody ProcessingPhase = "response_body"
+)
+
+// AIConfig holds the configuration for AI model suspension.
+type AIConfig struct {
+	// SuspendModel indicates whether the AI model should be suspended.
+	SuspendModel bool
 }

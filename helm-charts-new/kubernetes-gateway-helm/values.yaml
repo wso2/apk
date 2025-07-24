@@ -76,7 +76,7 @@ wso2:
         service:
           name: "envoy-gateway-extension-server-service"
       configdeployer:
-        enabled: false
+        enabled: true
         deployment:
           resources:
             requests:
@@ -237,6 +237,7 @@ envoy:
           default: info
       extensionApis:
         enableBackend: true
+        enableEnvoyPatchPolicy: true
       extensionManager:
         resources:
         - group: dp.wso2.com
@@ -249,6 +250,7 @@ envoy:
           xdsTranslator:
             post:
             - Route
+            - HTTPListener
         service:
           fqdn:
             hostname: envoy-gateway-extension-server-service.default.svc.cluster.local
@@ -285,7 +287,7 @@ envoy:
   # end pasted defaults
 
 idp:
-  enabled: false
+  enabled: true
   listener:
     hostname: "idp.am.wso2.com"
     # secretName: "idp-tls"

@@ -26,7 +26,7 @@ const (
 	ApplicationMappingController string = "ApplicationMappingController"
 	GatewayClassController       string = "GatewayClassController"
 	RoutePolicyController        string = "RoutePolicyController"
-	RouteMetadataController     string = "RouteMetadataController"
+	RouteMetadataController      string = "RouteMetadataController"
 )
 
 // API events related constants
@@ -67,11 +67,9 @@ const (
 const (
 	KindAuthentication = "Authentication"
 	KindAPI            = "API"
-	KindService        = "Service"
 	All                = "All"
 	//TODO(amali) remove this after fixing the issue in https://github.com/wso2/apk/issues/383
 	KindResource        = "Resource"
-	KindGateway         = "Gateway"
 	KindRateLimitPolicy = "RateLimitPolicy"
 )
 
@@ -95,4 +93,61 @@ const (
 // Application authentication types
 const (
 	OAuth2 = "OAuth2"
+)
+
+// XDSRoute Metadata
+const (
+	ExternalProcessingNamespace = "envoy.filters.http.ext_proc"
+	JWTAuthnMetadataNamespace = "envoy.filters.http.jwt_authn"
+	ExtensionRefs               = "ExtensionRefs"
+)
+
+// Metadata keys for AI Token Rate Limit mediation policy
+const (
+	PromptTokenCountIDMetadataKey     = "promptTokenCount"
+	CompletionTokenCountIDMetadataKey = "completionTokenCount"
+	TotalTokenCountIDMetadataKey      = "totalTokenCount"
+)
+
+// Metadata from external processing
+const (
+	MetadataNamespace = "com.wso2.kgw.ext_proc"
+	// JWTAuthnPayloadInMetadata is the key used to store JWT authentication payload in metadata
+	JWTAuthnPayloadInMetadata = "jwt_authn_payload"
+)
+
+// SecurityPolicy header claims to header
+const (
+	ClientIDHeaderKey = "X-WSO2-Clinet-ID"
+	ScopesHeaderKey = "X-WSO2-Scopes"
+)
+
+// Subscription ratelimit header names
+const (
+	SubscriptionUUIDHeaderName = "X-WSO2-Subscription-UUID"
+)
+
+const (
+	KindConfigMap            = "ConfigMap"
+	KindClientTrafficPolicy  = "ClientTrafficPolicy"
+	KindBackendTrafficPolicy = "BackendTrafficPolicy"
+	KindBackendTLSPolicy     = "BackendTLSPolicy"
+	KindBackend              = "Backend"
+	KindEnvoyPatchPolicy     = "EnvoyPatchPolicy"
+	KindEnvoyExtensionPolicy = "EnvoyExtensionPolicy"
+	KindSecurityPolicy       = "SecurityPolicy"
+	KindEnvoyProxy           = "EnvoyProxy"
+	KindGateway              = "Gateway"
+	KindGatewayClass         = "GatewayClass"
+	KindGRPCRoute            = "GRPCRoute"
+	KindHTTPRoute            = "HTTPRoute"
+	KindNamespace            = "Namespace"
+	KindTLSRoute             = "TLSRoute"
+	KindTCPRoute             = "TCPRoute"
+	KindUDPRoute             = "UDPRoute"
+	KindService              = "Service"
+	KindServiceImport        = "ServiceImport"
+	KindSecret               = "Secret"
+	KindHTTPRouteFilter      = "HTTPRouteFilter"
+	KindReferenceGrant       = "ReferenceGrant"
 )

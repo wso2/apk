@@ -32,6 +32,17 @@ spec:
           namespace: {{ .Release.Namespace }}
           port: 8081
       processingMode:
-        request: {}
+        request: 
+          attributes:
+            - "xds.route_metadata"
+            - "xds.route_name"
+            - "request.id"
         allowModeOverride: true
+      metadata:
+        accessibleNamespaces:
+          - "envoy.filters.http.ext_proc"
+          - "envoy-gateway"
+          - "envoy.filters.http.jwt_authn"
+        # writableNamespaces:
+        #   - "envoy.filters.http.ext_proc"
 {{- end -}}

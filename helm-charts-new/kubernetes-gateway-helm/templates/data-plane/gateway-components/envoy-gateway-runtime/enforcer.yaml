@@ -23,6 +23,10 @@ spec:
   logging:
     level:
       default: warn
+      {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.debug }}
+      ext_proc: debug
+      jwt: debug
+      {{- end }}
   provider:
     type: Kubernetes
     kubernetes:
@@ -43,7 +47,22 @@ spec:
                     - name: enforcer
                       image: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.image }}
                       imagePullPolicy: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy }}
+                      {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.debug }}
+                      command: ["dlv"]
+                      args:
+                        - "exec"
+                        - "./enforcer"
+                        - "--headless"
+                        - "--listen=:2345"
+                        - "--api-version=2"
+                        - "--accept-multiclient"
+                        - "--log"
+                      {{- end }}
                       ports:
+                        {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.debug }}
+                        - containerPort: 2345
+                          name: debug
+                        {{- end }}
                         - containerPort: 8081
                           protocol: "TCP"
                         - containerPort: 9001
@@ -62,6 +81,10 @@ spec:
                         {{- end }}
 {{ include "kubernetes-gateway-helm.deployment.resources" .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.resources | indent 22 }}
 {{ include "kubernetes-gateway-helm.deployment.env" .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.env | indent 22 }}
+                        {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.debug }}
+                        - name: XDG_CONFIG_HOME
+                          value: /tmp/.config
+                        {{- end }}
                         - name: COMMON_CONTROLLER_HOST_NAME
                           value: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
                         - name: COMMON_CONTROLLER_HOST
@@ -198,6 +221,7 @@ spec:
                         #   mountPath: /home/wso2/security/truststore/idp-tls.pem
                         #   subPath: {{ .Values.wso2.kgw.idp.tls.fileName }}
                         # {{ end }}
+                      {{- if not .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.debug }}
                       readinessProbe:
                         exec:
                           command: [ "sh", "check_health.sh" ]
@@ -210,6 +234,7 @@ spec:
                         initialDelaySeconds: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.livenessProbe.initialDelaySeconds }}
                         periodSeconds: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.livenessProbe.periodSeconds }}
                         failureThreshold: {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.livenessProbe.failureThreshold }}
+                      {{ end }}
                       securityContext:
                         allowPrivilegeEscalation: false
                         capabilities:
