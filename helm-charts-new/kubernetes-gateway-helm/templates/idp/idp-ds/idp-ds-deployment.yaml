@@ -78,51 +78,16 @@ spec:
             periodSeconds: {{ .Values.idp.idpds.deployment.livenessProbe.periodSeconds }}
 {{ include "kubernetes-gateway-helm.deployment.resources" .Values.idp.idpds.deployment.resources | indent 10 }}
           volumeMounts:
-            - mountPath: /home/wso2kgw/idp/conf/Config.toml
-              name: config-toml-volume
-              subPath: Config.toml
-            - mountPath: /home/wso2kgw/idp/security/wso2carbon.key
-              name: idp-signing-keystore-volume
-              subPath: wso2carbon.key
-            - mountPath: /home/wso2kgw/idp/security/wso2carbon.pem
-              name: idp-signing-keystore-volume
-              subPath: wso2carbon.pem
-            {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
-            - name: prometheus-jmx-config-volume	
-              mountPath: /tmp/metrics/prometheus-jmx-config-idpds.yml	
-              subPath: prometheus-jmx-config-idpds.yml
-            {{- end }}
-            - name: idp-ds-tls-volume
-              mountPath: /home/wso2kgw/idp/security/idp.key
-            {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
-              subPath: {{ .Values.idp.idpds.configs.tls.certKeyFilename | default "tls.key" }}
-            {{- else }}
+            - mountPath: /idp.key
+              name: idp-ds-tls-volume
               subPath: tls.key
-            {{- end }}
-            - name: idp-ds-tls-volume
-              mountPath: /home/wso2kgw/idp/security/idp.crt
-            {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
-              subPath: {{ .Values.idp.idpds.configs.tls.certFilename | default "tls.crt" }}
-            {{- else }}
+            - mountPath: /idp.crt
+              name: idp-ds-tls-volume
               subPath: tls.crt
-            {{- end }}
-            - name: db-secret-volume
-              mountPath: /home/wso2kgw/idp/security/database/
-            - name: tmp
-              mountPath: /tmp
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
-      {{ end }}      
-      securityContext:
-        seccompProfile:
-          type: "RuntimeDefault"
+      {{ end }}  
       volumes:
         - name: config-toml-volume
           configMap:

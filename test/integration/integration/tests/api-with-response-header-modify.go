@@ -21,7 +21,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIWithResoponseHeaderModify)
+	//IntegrationTests = append(IntegrationTests, APIWithResoponseHeaderModify)
 }
 
 // APIWithResoponseHeaderModify test

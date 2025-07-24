@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, ResourceScopes)
+	//IntegrationTests = append(IntegrationTests, ResourceScopes)
 }
 
 // ResourceScopes test

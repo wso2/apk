@@ -26,7 +26,7 @@ import (
 
 func init() {
 	// TODO (Amila): Uncomment once AKS test runner is enabled
-	// IntegrationTests = append(IntegrationTests, APILevelInterceptors)
+	// //IntegrationTests = append(IntegrationTests, APILevelInterceptors)
 }
 
 // APILevelInterceptors test

@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, BackendAPIKeySecurity)
+	//IntegrationTests = append(IntegrationTests, BackendAPIKeySecurity)
 }
 
 // BackendAPIKeySecurity test

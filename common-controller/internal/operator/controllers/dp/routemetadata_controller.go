@@ -174,7 +174,7 @@ func (routeMetadataReconciler *RouteMetadataReconciler) getRouteMetadataForConfi
 
 	routeMetadataList := &dpV2alpha1.RouteMetadataList{}
 	if err := routeMetadataReconciler.client.List(ctx, routeMetadataList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(configMapIndex, NamespacedName(configMap).String()),
+		FieldSelector: fields.OneTermEqualSelector(configMapIndex, utils.NamespacedName(configMap).String()),
 	}); err != nil {
 		return []reconcile.Request{}
 	}
