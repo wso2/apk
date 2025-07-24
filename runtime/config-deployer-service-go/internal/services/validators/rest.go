@@ -36,8 +36,8 @@ import (
 type RESTAPIValidator struct{}
 
 // ExtractAndValidateOpenAPIArchive extracts the OpenAPI archive, validates it, and returns the validation response.
-func (restAPIValidator *RESTAPIValidator) ExtractAndValidateOpenAPIArchive(inputByteArray []byte, returnContent bool) (*dto.APIDefinitionValidationResponse, error) {
-	// Create temporary directory
+func (restAPIValidator *RESTAPIValidator) ExtractAndValidateOpenAPIArchive(inputByteArray []byte,
+	returnContent bool) (*dto.APIDefinitionValidationResponse, error) {
 	tempDir := filepath.Join(os.Getenv(constants.JAVA_IO_TMPDIR), constants.OPENAPI_ARCHIVES_TEMP_FOLDER, uuid.New().String())
 	archivePath := filepath.Join(tempDir, constants.OPENAPI_ARCHIVE_ZIP_FILE)
 	extractedLocation, err := util.ExtractUploadedArchive(inputByteArray, constants.OPENAPI_EXTRACTED_DIRECTORY, archivePath, tempDir)
@@ -50,7 +50,12 @@ func (restAPIValidator *RESTAPIValidator) ExtractAndValidateOpenAPIArchive(input
 	}
 
 	// Clean up temporary directory after function completes
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			fmt.Printf("Error cleaning up temporary directory %s: %v\n", path, err)
+		}
+	}(tempDir)
 
 	// Find archive directory
 	var archiveDirectory string
@@ -71,8 +76,6 @@ func (restAPIValidator *RESTAPIValidator) ExtractAndValidateOpenAPIArchive(input
 	if archiveDirectory == "" {
 		return nil, fmt.Errorf("could not find an archive in the given ZIP file")
 	}
-
-	// Find and read master swagger file
 	masterSwaggerPath, err := util.CheckMasterSwagger(archiveDirectory)
 	if err != nil {
 		return nil, err
@@ -81,14 +84,11 @@ func (restAPIValidator *RESTAPIValidator) ExtractAndValidateOpenAPIArchive(input
 	if err != nil {
 		return nil, fmt.Errorf("error reading master swagger file: %w", err)
 	}
-
 	openAPIContent := string(content)
-	// Get swagger version
 	version, err := util.GetSwaggerVersion(openAPIContent)
 	if err != nil {
 		return nil, err
 	}
-
 	filePath, err := filepath.Abs(masterSwaggerPath)
 	if err != nil {
 		return nil, fmt.Errorf("error getting absolute path of master swagger: %s, %w", masterSwaggerPath, err)
@@ -120,15 +120,15 @@ func (restAPIValidator *RESTAPIValidator) ExtractAndValidateOpenAPIArchive(input
 		return nil, fmt.Errorf("unsupported Swagger version: %d", version)
 	}
 
-	return restAPIValidator.ValidateAPIDefinition(openAPIContent, returnContent)
+	return restAPIValidator.ValidateOpenAPIDefinition(openAPIContent, returnContent)
 }
 
-// ValidateAPIDefinition removes unsupported blocks, validates the API definition and returns the validation response.
-func (restAPIValidator *RESTAPIValidator) ValidateAPIDefinition(apiDefinition string, returnJsonContent bool) (*dto.APIDefinitionValidationResponse, error) {
+// ValidateOpenAPIDefinition removes unsupported blocks, validates the API definition and returns the validation response.
+func (restAPIValidator *RESTAPIValidator) ValidateOpenAPIDefinition(apiDefinition string,
+	returnJsonContent bool) (*dto.APIDefinitionValidationResponse, error) {
 	apiDefinitionProcessed := apiDefinition
 	oasParser := parsers.OAS3Parser{}
 	if !strings.HasPrefix(strings.TrimSpace(apiDefinition), "{") {
-		// Convert YAML to JSON
 		jsonData, err := util.YamlToJSON(apiDefinition)
 		if err != nil {
 			return nil, fmt.Errorf("error while reading API definition yaml: %w", err)
@@ -174,7 +174,6 @@ func validateAPIDefinitionWithHost(apiDefinition, host string, returnJsonContent
 		return validationResponse, fmt.Errorf("invalid OpenAPI V3 definition found: %w", err)
 	}
 
-	// Extract information from the valid OpenAPI document
 	info := doc.Info
 	var endpoints []string
 
@@ -196,22 +195,16 @@ func validateAPIDefinitionWithHost(apiDefinition, host string, returnJsonContent
 		}
 	}
 
-	// Extract title and context
 	var title, context string
 	if info.Title != "" {
 		title = info.Title
-		// Remove whitespace and convert to lowercase for context
 		re := regexp.MustCompile(`\s+`)
 		context = strings.ToLower(re.ReplaceAllString(info.Title, ""))
 	}
-
-	// Extract description
 	description := ""
 	if info.Description != "" {
 		description = info.Description
 	}
-
-	// Update validation response as success
 	updateValidationResponseAsSuccess(validationResponse, apiDefinition, doc.OpenAPI, title, info.Version,
 		context, description, endpoints)
 

@@ -34,7 +34,7 @@ type GraphQLSchemaBuilder struct {
 func PreprocessGraphQLSchema(schema string) string {
 	// Regular expression to match field definitions with "= null" default values
 	// Matches patterns like: "fieldName: [Type!] = null" or "fieldName: Type = null"
-	nullDefaultRegex := regexp.MustCompile(`(\w+:\s*(?:\[[A-Za-z_][A-Za-z0-9_]*!?\]!?|[A-Za-z_][A-Za-z0-9_]*!?))\s*=\s*null`)
+	nullDefaultRegex := regexp.MustCompile(`(\w+:\s*(?:\[[A-Za-z_][A-Za-z0-9_]*!?]!?|[A-Za-z_][A-Za-z0-9_]*!?))\s*=\s*null`)
 
 	// Replace "= null" with empty string (removing the default value)
 	cleanedSchema := nullDefaultRegex.ReplaceAllString(schema, "$1")
@@ -52,14 +52,11 @@ func NewGraphQLSchemaBuilder() *GraphQLSchemaBuilder {
 }
 
 // BuildObjectType builds a GraphQL object type from AST definition
-func (b *GraphQLSchemaBuilder) BuildObjectType(def *ast.ObjectDefinition, typeMap map[string]*graphql.Object) *graphql.Object {
-	// Check if type already exists in typeMap
+func (b *GraphQLSchemaBuilder) BuildObjectType(def *ast.ObjectDefinition) *graphql.Object {
 	if existingType, exists := b.typeMap[def.Name.Value]; exists {
 		return existingType
 	}
-
 	fields := make(graphql.Fields)
-
 	for _, field := range def.Fields {
 		fieldType := b.resolveFieldType(field.Type)
 		fields[field.Name.Value] = &graphql.Field{
@@ -67,38 +64,31 @@ func (b *GraphQLSchemaBuilder) BuildObjectType(def *ast.ObjectDefinition, typeMa
 			Type: fieldType,
 		}
 	}
-
 	objectType := graphql.NewObject(graphql.ObjectConfig{
 		Name:   def.Name.Value,
 		Fields: fields,
 	})
-
 	// Store in typeMap for future reference
 	b.typeMap[def.Name.Value] = objectType
 	return objectType
 }
 
 // BuildInputObjectType builds a GraphQL input object type from AST definition
-func (b *GraphQLSchemaBuilder) BuildInputObjectType(def *ast.InputObjectDefinition, inputTypeMap map[string]*graphql.InputObject) *graphql.InputObject {
-	// Check if input type already exists in inputTypeMap
+func (b *GraphQLSchemaBuilder) BuildInputObjectType(def *ast.InputObjectDefinition) *graphql.InputObject {
 	if existingType, exists := b.inputTypeMap[def.Name.Value]; exists {
 		return existingType
 	}
-
 	fields := make(graphql.InputObjectConfigFieldMap)
-
 	for _, field := range def.Fields {
 		fieldType := b.resolveInputFieldType(field.Type)
 		fields[field.Name.Value] = &graphql.InputObjectFieldConfig{
 			Type: fieldType,
 		}
 	}
-
 	inputObjectType := graphql.NewInputObject(graphql.InputObjectConfig{
 		Name:   def.Name.Value,
 		Fields: fields,
 	})
-
 	// Store in inputTypeMap for future reference
 	b.inputTypeMap[def.Name.Value] = inputObjectType
 	return inputObjectType
@@ -106,24 +96,19 @@ func (b *GraphQLSchemaBuilder) BuildInputObjectType(def *ast.InputObjectDefiniti
 
 // BuildEnumType builds a GraphQL enum type from AST definition
 func (b *GraphQLSchemaBuilder) BuildEnumType(def *ast.EnumDefinition) *graphql.Enum {
-	// Check if enum type already exists in enumTypeMap
 	if existingType, exists := b.enumTypeMap[def.Name.Value]; exists {
 		return existingType
 	}
-
 	values := make(graphql.EnumValueConfigMap)
-
 	for _, value := range def.Values {
 		values[value.Name.Value] = &graphql.EnumValueConfig{
 			Value: value.Name.Value,
 		}
 	}
-
 	enumType := graphql.NewEnum(graphql.EnumConfig{
 		Name:   def.Name.Value,
 		Values: values,
 	})
-
 	// Store in enumTypeMap for future reference
 	b.enumTypeMap[def.Name.Value] = enumType
 	return enumType
@@ -195,19 +180,4 @@ func (b *GraphQLSchemaBuilder) getScalarType(typeName string) graphql.Type {
 	default:
 		return graphql.String
 	}
-}
-
-// GetTypeMap returns the current typeMap
-func (b *GraphQLSchemaBuilder) GetTypeMap() map[string]*graphql.Object {
-	return b.typeMap
-}
-
-// GetInputTypeMap returns the current inputTypeMap
-func (b *GraphQLSchemaBuilder) GetInputTypeMap() map[string]*graphql.InputObject {
-	return b.inputTypeMap
-}
-
-// GetEnumTypeMap returns the current enumTypeMap
-func (b *GraphQLSchemaBuilder) GetEnumTypeMap() map[string]*graphql.Enum {
-	return b.enumTypeMap
 }

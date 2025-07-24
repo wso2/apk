@@ -24,15 +24,15 @@ import (
 
 type GRPCAPIValidator struct{}
 
-func (grpcAPIValidator *GRPCAPIValidator) ValidateGRPCAPIDefinition(content []byte) (*dto.APIDefinitionValidationResponse, error) {
+// ValidateGRPCAPIDefinition validates the gRPC API definition content.
+func (grpcAPIValidator *GRPCAPIValidator) ValidateGRPCAPIDefinition(inputByteArray []byte) (*dto.APIDefinitionValidationResponse, error) {
 	validationResponse := &dto.APIDefinitionValidationResponse{}
-
-	if content == nil && len(content) == 0 {
+	if inputByteArray == nil && len(inputByteArray) == 0 {
 		validationResponse.IsValid = false
 		return validationResponse, fmt.Errorf("gRPC Proto Definition cannot be empty or null")
 	} else {
 		validationResponse.IsValid = true
-		validationResponse.ProtoContent = content
+		validationResponse.ProtoContent = inputByteArray
 	}
 	return validationResponse, nil
 }
