@@ -35,16 +35,12 @@ type OAS3Parser struct{}
 
 // ParseOpenAPI3 parses OpenAPI 3.x specification from file
 func (oasParser *OAS3Parser) ParseOpenAPI3(filePath string) (*openapi3.T, error) {
-	// Read file content
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("error reading OpenAPI file: %s, %w", filePath, err)
 	}
-
-	// Load OpenAPI specification
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
-
 	doc, err := loader.LoadFromData(content)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing OpenAPI file: %s, %w", filePath, err)
@@ -61,7 +57,6 @@ func (oasParser *OAS3Parser) ParseOpenAPI3(filePath string) (*openapi3.T, error)
 
 // ParseSwagger2 parses Swagger 2.0 specification from file
 func (oasParser *OAS3Parser) ParseSwagger2(filePath string) (*spec.Swagger, error) {
-	// Load the swagger document
 	doc, err := loads.Spec(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing Swagger file: %s, %w", filePath, err)
@@ -78,15 +73,12 @@ func (oasParser *OAS3Parser) ParseSwagger2(filePath string) (*spec.Swagger, erro
 
 // RemoveUnsupportedBlocksFromResources removes unsupported blocks from the API definition
 func (oasParser *OAS3Parser) RemoveUnsupportedBlocksFromResources(jsonString string) (string, error) {
-	// Parse JSON
 	var jsonObject map[string]interface{}
 	if err := json.Unmarshal([]byte(jsonString), &jsonObject); err != nil {
 		return "", fmt.Errorf("failed to parse JSON: %w", err)
 	}
 
 	definitionUpdated := false
-
-	// Check if paths exist
 	if pathsInterface, exists := jsonObject[constants.OPENAPI_RESOURCE_KEY]; exists {
 		if paths, ok := pathsInterface.(map[string]interface{}); ok {
 			// Remove unsupported blocks recursively
@@ -98,7 +90,6 @@ func (oasParser *OAS3Parser) RemoveUnsupportedBlocksFromResources(jsonString str
 	}
 
 	if definitionUpdated {
-		// Convert back to JSON string with ordered keys
 		jsonBytes, err := json.MarshalIndent(jsonObject, "", "  ")
 		if err != nil {
 			return "", fmt.Errorf("failed to marshal JSON: %w", err)
@@ -123,7 +114,6 @@ func (oasParser *OAS3Parser) GetAPIFromDefinition(content string) (*dto.API, err
 		api.Version = info.Version
 	}
 	if servers != nil && len(servers) > 0 {
-		// set 1st server as endpoint
 		api.Endpoint = servers[0].URL
 	}
 	uriTemplates, err := oasParser.getURITemplates(openAPI)
@@ -263,7 +253,6 @@ func setScopesToTemplate(template *dto.URITemplate, resourceScopes []string, api
 	// Validate that operation scopes exist in the global scopes
 	var validScopes []string
 	scopeMap := make(map[string]bool)
-	// Create a map of all valid scopes
 	for _, scope := range apiScopes {
 		scopeMap[scope] = true
 	}
