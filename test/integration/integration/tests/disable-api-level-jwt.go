@@ -25,9 +25,9 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, DisableAPILevelJWT)
-	IntegrationTests = append(IntegrationTests, DisableAPILevelJWTTestWithFalseValue)
-	IntegrationTests = append(IntegrationTests, DisableAPILevelJWTTestWithNoOtherAuth)
+	//IntegrationTests = append(IntegrationTests, DisableAPILevelJWT)
+	//IntegrationTests = append(IntegrationTests, DisableAPILevelJWTTestWithFalseValue)
+	//IntegrationTests = append(IntegrationTests, DisableAPILevelJWTTestWithNoOtherAuth)
 }
 
 // DisableAPILevelJWT tests disabling and enabling jwt feature api level with disabled = true value

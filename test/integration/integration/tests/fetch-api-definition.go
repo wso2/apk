@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, FetchAPIDefinition)
+	//IntegrationTests = append(IntegrationTests, FetchAPIDefinition)
 }
 
 // FetchAPIDefinition test

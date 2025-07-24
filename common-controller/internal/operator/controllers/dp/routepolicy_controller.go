@@ -225,7 +225,7 @@ func (routePolicyReconciler *RoutePolicyReconciler) getRoutePolicyForConfigMap(c
 
 	routePolicyList := &dpV2alpha1.RoutePolicyList{}
 	if err := routePolicyReconciler.client.List(ctx, routePolicyList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(configMapIndex, NamespacedName(configMap).String()),
+		FieldSelector: fields.OneTermEqualSelector(configMapIndex, utils.NamespacedName(configMap).String()),
 	}); err != nil {
 		return []reconcile.Request{}
 	}
@@ -245,7 +245,7 @@ func (routePolicyReconciler *RoutePolicyReconciler) getRoutePolicyForSecret(ctx 
 
 	routePolicyList := &dpV2alpha1.RoutePolicyList{}
 	if err := routePolicyReconciler.client.List(ctx, routePolicyList, &k8client.ListOptions{
-		FieldSelector: fields.OneTermEqualSelector(secretIndex, NamespacedName(secret).String()),
+		FieldSelector: fields.OneTermEqualSelector(secretIndex, utils.NamespacedName(secret).String()),
 	}); err != nil {
 		return []reconcile.Request{}
 	}
