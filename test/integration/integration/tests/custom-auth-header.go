@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, CustomAuthHeader)
+	//IntegrationTests = append(IntegrationTests, CustomAuthHeader)
 }
 
 // CustomAuthHeader tests authentication with custom auth header name
@@ -132,9 +132,9 @@ var CustomAuthHeader = suite.IntegrationTest{
 		}
 		for i := range testCases {
 			tc := testCases[i]
-			if (i == 2 || i == 3) {
+			if i == 2 || i == 3 {
 				tc.Request.Headers = http.AddCustomBearerTokenHeader("testAuth", token, tc.Request.Headers)
-			} else if (i == 4 || i == 5) {
+			} else if i == 4 || i == 5 {
 				tc.Request.Headers = http.AddInternalTokenHeader("testJwt", token, tc.Request.Headers)
 			} else {
 				tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)

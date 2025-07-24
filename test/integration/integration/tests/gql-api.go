@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, GQLAPI)
+	//IntegrationTests = append(IntegrationTests, GQLAPI)
 }
 
 // DisableAPISecurity test

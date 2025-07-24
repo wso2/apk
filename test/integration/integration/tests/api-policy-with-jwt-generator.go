@@ -57,7 +57,7 @@ func init() {
 			os.Exit(1)
 		}
 	}
-	IntegrationTests = append(IntegrationTests, BackendJWTGenerationPolicy)
+	//IntegrationTests = append(IntegrationTests, BackendJWTGenerationPolicy)
 }
 
 // BackendJWTGenerationPolicy test

@@ -430,7 +430,7 @@ func GetTestToken(t *testing.T, scopes ...string) string {
 		},
 	}
 	client := &http.Client{Transport: transport}
-	req, err := http.NewRequest("POST", "https://idp.am.wso2.com:9095/oauth2/token",
+	req, err := http.NewRequest("POST", "https://idp.am.wso2.com:9095/oauth2/1.0.0/token",
 		strings.NewReader(fmt.Sprintf("grant_type=client_credentials&scope=%s", strings.Join(scopes, " "))))
 
 	req.Header.Set("Authorization", "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==")

@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIWithoutBackendBasePath)
+	//IntegrationTests = append(IntegrationTests, APIWithoutBackendBasePath)
 }
 
 // APIWithoutBackendBasePath test

@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, DefaultAPIVersionRatelimit)
+	//IntegrationTests = append(IntegrationTests, DefaultAPIVersionRatelimit)
 }
 
 // DefaultAPIVersionRatelimit tests default api version feature

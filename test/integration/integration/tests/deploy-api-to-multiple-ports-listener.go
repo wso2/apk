@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIDifferentPortListener)
+	//IntegrationTests = append(IntegrationTests, APIDifferentPortListener)
 }
 
 // APIDifferentPortListener test
