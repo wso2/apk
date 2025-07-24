@@ -97,15 +97,23 @@ func (r *SentenceCountGuardrail) validatePayload(logger *logging.Logger, payload
 		}
 	}
 
-	if sentenceCount < r.Min || sentenceCount > r.Max {
-		logger.Sugar().Debugf("Sentence count validation failed: %d sentences found, expected between %d and %d sentences", sentenceCount, r.Min, r.Max)
-		if r.Inverted {
-			logger.Sugar().Debugf("Inverted condition is true, returning true")
-			return true
+	isWithinRange := sentenceCount >= r.Min && sentenceCount <= r.Max
+	
+	if r.Inverted {
+		// When inverted, fail if sentence count is within the range
+		if isWithinRange {
+			logger.Sugar().Debugf("Sentence count validation failed (inverted): %d sentences found, should NOT be between %d and %d sentences", sentenceCount, r.Min, r.Max)
+			return false
 		}
-		logger.Sugar().Debugf("Inverted condition is false, returning false")
+		logger.Sugar().Debugf("Sentence count validation passed (inverted): %d sentences found, correctly outside range %d-%d", sentenceCount, r.Min, r.Max)
+		return true
+	}
+	// When not inverted, fail if sentence count is outside the range
+	if !isWithinRange {
+		logger.Sugar().Debugf("Sentence count validation failed: %d sentences found, expected between %d and %d sentences", sentenceCount, r.Min, r.Max)
 		return false
 	}
+	logger.Sugar().Debugf("Sentence count validation passed: %d sentences found, within expected range %d-%d", sentenceCount, r.Min, r.Max)
 	return true
 }
 
@@ -160,15 +168,13 @@ func (r *SentenceCountGuardrail) buildAssessmentObject(logger *logging.Logger, i
 	assessment[AssessmentReason] = "Violation of applied sentence count constraints detected."
 
 	if r.ShowAssessment {
-		var minStr, maxStr string
+		var assessmentMessage string
 		if r.Inverted {
-			minStr = "less than"
-			maxStr = "or more than"
+			assessmentMessage = "Violation of sentence count detected. Expected sentence count to be outside the range of " + strconv.Itoa(r.Min) + " to " + strconv.Itoa(r.Max) + " sentences."
 		} else {
-			minStr = "between"
-			maxStr = "and"
+			assessmentMessage = "Violation of sentence count detected. Expected sentence count to be between " + strconv.Itoa(r.Min) + " and " + strconv.Itoa(r.Max) + " sentences."
 		}
-		assessment[Assessments] = "Violation of sentence count detected. Expected " + minStr + " " + strconv.Itoa(r.Min) + " " + maxStr + " " + strconv.Itoa(r.Max) + " sentences."
+		assessment[Assessments] = assessmentMessage
 	}
 	return assessment
 }

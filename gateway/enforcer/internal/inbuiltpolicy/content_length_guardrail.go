@@ -91,15 +91,23 @@ func (r *ContentLengthGuardrail) validatePayload(logger *logging.Logger, payload
 	// Count the bytes in the extracted value
 	byteCount := len([]byte(extractedValue))
 
-	if byteCount < r.Min || byteCount > r.Max {
-		logger.Sugar().Debugf("Content length validation failed: %d bytes found, expected between %d and %d bytes", byteCount, r.Min, r.Max)
-		if r.Inverted {
-			logger.Sugar().Debugf("Inverted condition is true, returning true")
-			return true
+	isWithinRange := byteCount >= r.Min && byteCount <= r.Max
+	
+	if r.Inverted {
+		// When inverted, fail if content length is within the range
+		if isWithinRange {
+			logger.Sugar().Debugf("Content length validation failed (inverted): %d bytes found, should NOT be between %d and %d bytes", byteCount, r.Min, r.Max)
+			return false
 		}
-		logger.Sugar().Debugf("Inverted condition is false, returning false")
+		logger.Sugar().Debugf("Content length validation passed (inverted): %d bytes found, correctly outside range %d-%d", byteCount, r.Min, r.Max)
+		return true
+	}
+	// When not inverted, fail if content length is outside the range
+	if !isWithinRange {
+		logger.Sugar().Debugf("Content length validation failed: %d bytes found, expected between %d and %d bytes", byteCount, r.Min, r.Max)
 		return false
 	}
+	logger.Sugar().Debugf("Content length validation passed: %d bytes found, within expected range %d-%d", byteCount, r.Min, r.Max)
 	return true
 }
 
@@ -154,15 +162,13 @@ func (r *ContentLengthGuardrail) buildAssessmentObject(logger *logging.Logger, i
 	assessment[AssessmentReason] = "Violation of applied content length constraints detected."
 
 	if r.ShowAssessment {
-		var minStr, maxStr string
+		var assessmentMessage string
 		if r.Inverted {
-			minStr = "less than"
-			maxStr = "or more than"
+			assessmentMessage = "Violation of content length detected. Expected content length to be outside the range of " + strconv.Itoa(r.Min) + " to " + strconv.Itoa(r.Max) + " bytes."
 		} else {
-			minStr = "between"
-			maxStr = "and"
+			assessmentMessage = "Violation of content length detected. Expected content length to be between " + strconv.Itoa(r.Min) + " and " + strconv.Itoa(r.Max) + " bytes."
 		}
-		assessment[Assessments] = "Violation of content length detected. Expected " + minStr + " " + strconv.Itoa(r.Min) + " " + maxStr + " " + strconv.Itoa(r.Max) + " bytes."
+		assessment[Assessments] = assessmentMessage
 	}
 	return assessment
 }

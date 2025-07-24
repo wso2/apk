@@ -96,15 +96,23 @@ func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []b
 		}
 	}
 
-	if wordCount < r.Min || wordCount > r.Max {
-		logger.Sugar().Debugf("Word count validation failed: %d words found, expected between %d and %d words", wordCount, r.Min, r.Max)
-		if r.Inverted {
-			logger.Sugar().Debugf("Inverted condition is true, returning true")
-			return true
+	isWithinRange := wordCount >= r.Min && wordCount <= r.Max
+	
+	if r.Inverted {
+		// When inverted, fail if word count is within the range
+		if isWithinRange {
+			logger.Sugar().Debugf("Word count validation failed (inverted): %d words found, should NOT be between %d and %d words", wordCount, r.Min, r.Max)
+			return false
 		}
-		logger.Sugar().Debugf("Inverted condition is false, returning false")
+		logger.Sugar().Debugf("Word count validation passed (inverted): %d words found, correctly outside range %d-%d", wordCount, r.Min, r.Max)
+		return true
+	}
+	// When not inverted, fail if word count is outside the range
+	if !isWithinRange {
+		logger.Sugar().Debugf("Word count validation failed: %d words found, expected between %d and %d words", wordCount, r.Min, r.Max)
 		return false
 	}
+	logger.Sugar().Debugf("Word count validation passed: %d words found, within expected range %d-%d", wordCount, r.Min, r.Max)
 	return true
 }
 
@@ -159,15 +167,13 @@ func (r *WordCountGuardrail) buildAssessmentObject(logger *logging.Logger, isRes
 	assessment[AssessmentReason] = "Violation of applied word count constraints detected."
 
 	if r.ShowAssessment {
-		var minStr, maxStr string
+		var assessmentMessage string
 		if r.Inverted {
-			minStr = "less than"
-			maxStr = "or more than"
+			assessmentMessage = "Violation of word count detected. Expected word count to be outside the range of " + strconv.Itoa(r.Min) + " to " + strconv.Itoa(r.Max) + " words."
 		} else {
-			minStr = "between"
-			maxStr = "and"
+			assessmentMessage = "Violation of word count detected. Expected word count to be between " + strconv.Itoa(r.Min) + " and " + strconv.Itoa(r.Max) + " words."
 		}
-		assessment[Assessments] = "Violation of word count detected. Expected " + minStr + " " + strconv.Itoa(r.Min) + " " + maxStr + " " + strconv.Itoa(r.Max) + " words."
+		assessment[Assessments] = assessmentMessage
 	}
 	return assessment
 }
