@@ -19,16 +19,21 @@
 package utils
 
 import (
+	"context"
 	"sync"
+	time "time"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"github.com/wso2/apk/adapter/pkg/utils/envutils"
 	"github.com/wso2/apk/adapter/pkg/utils/stringutils"
 	"github.com/wso2/apk/common-controller/internal/config"
+	"github.com/wso2/apk/common-controller/internal/loggers"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
 	"github.com/wso2/apk/common-go-libs/constants"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -208,5 +213,23 @@ func NamespacedName(obj k8client.Object) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
+	}
+}
+
+// UpdateCR updates the given CR.
+// use to update owner reference of the given CR.
+func UpdateCR(ctx context.Context, client k8client.Client, child metav1.Object) error {
+	for {
+		if err := client.Update(ctx, child.(k8client.Object)); err != nil {
+			if apierrors.IsInternalError(err) {
+				loggers.LoggerAPKOperator.Warnf("Error while updating OwnerReferences of k8 object : %s in %s, %v",
+					child.GetName(), child.GetNamespace(), err)
+				time.Sleep(5 * time.Second)
+			} else {
+				return err
+			}
+		} else {
+			return nil
+		}
 	}
 }
