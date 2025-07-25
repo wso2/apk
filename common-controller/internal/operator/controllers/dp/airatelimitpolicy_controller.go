@@ -127,27 +127,25 @@ func (r *AIRateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Re
 			} else {
 				loggers.LoggerAPKOperator.Infof("Backend found: %s", backend.Name)
 				// Prepare owner references for the route
-				preparedOwnerReferences := metav1.OwnerReference{
-					APIVersion: backend.APIVersion,
-					Kind:       backend.Kind,
-					Name:       backend.Name,
-					UID:        backend.UID,
-				}
-				// Decide whether we need an update
-				updateRequired := false
-				if len(ratelimitPolicy.GetOwnerReferences()) != 1 {
-					updateRequired = true
-				} else {
-					_, found := FindElement(ratelimitPolicy.GetOwnerReferences(), func(refLocal metav1.OwnerReference) bool {
-						return refLocal.UID == preparedOwnerReferences.UID && refLocal.Name == preparedOwnerReferences.Name && refLocal.APIVersion == preparedOwnerReferences.APIVersion && refLocal.Kind == preparedOwnerReferences.Kind
-					})
-					if !found {
+				if len(backend.GetOwnerReferences()) == 1 && backend.GetOwnerReferences()[0].Kind == "API" {
+					loggers.LoggerAPKOperator.Infof("Owner references found for Backend: %s", backend.Name)
+					preparedOwnerReferences := backend.GetOwnerReferences()[0]
+					// Decide whether we need an update
+					updateRequired := false
+					if len(ratelimitPolicy.GetOwnerReferences()) != 1 {
 						updateRequired = true
+					} else {
+						_, found := FindElement(ratelimitPolicy.GetOwnerReferences(), func(refLocal metav1.OwnerReference) bool {
+							return refLocal.UID == preparedOwnerReferences.UID && refLocal.Name == preparedOwnerReferences.Name && refLocal.APIVersion == preparedOwnerReferences.APIVersion && refLocal.Kind == preparedOwnerReferences.Kind
+						})
+						if !found {
+							updateRequired = true
+						}
 					}
-				}
-				if updateRequired {
-					ratelimitPolicy.SetOwnerReferences([]metav1.OwnerReference{preparedOwnerReferences})
-					utils.UpdateCR(ctx, r.Client, &ratelimitPolicy)
+					if updateRequired {
+						ratelimitPolicy.SetOwnerReferences([]metav1.OwnerReference{preparedOwnerReferences})
+						utils.UpdateCR(ctx, r.Client, &ratelimitPolicy)
+					}
 				}
 			}
 			r.ods.AddorUpdateAIRatelimitToStore(ratelimitKey, ratelimitPolicy.Spec)
