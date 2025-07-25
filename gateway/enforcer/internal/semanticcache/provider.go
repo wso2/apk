@@ -17,6 +17,7 @@ type VectorDBProvider interface {
 	CreateIndex(logger *logging.Logger) error
 	Store(logger *logging.Logger, embeddings []float32, response CacheResponse, filter map[string]interface{}) error
 	Retrieve(logger *logging.Logger, embeddings []float32, filter map[string]interface{}) (CacheResponse, error)
+	Close() error
 }
 
 // VectorDBProviderConfig defines the properties required for initializing a vector DB provider

@@ -235,6 +235,14 @@ func (r *RedisVectorDBProvider) Retrieve(logger *logging.Logger, embeddings []fl
 	return resp, nil
 }
 
+// Close closes the Redis client connection
+func (r *RedisVectorDBProvider) Close() error {
+	if r.client != nil {
+		return r.client.Close()
+	}
+	return nil
+}
+
 // Helper functions
 
 // FloatsToBytes convert float[] to byte[] for storing in Redis(FROM DOCS)

@@ -227,3 +227,11 @@ func (m *MilvusVectorDBProvider) Retrieve(logger *logging.Logger, embeddings []f
 	}
 	return resp, nil
 }
+
+// Close closes the Milvus client connection
+func (m *MilvusVectorDBProvider) Close() error {
+	if m.client != nil {
+		return m.client.Close(context.Background())
+	}
+	return nil
+}
