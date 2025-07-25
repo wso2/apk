@@ -41,10 +41,10 @@ type RegexGuardrail struct {
 // HandleRequestBody is a method that implements the mediation logic for the RegexGuardrail policy on request.
 func (r *RegexGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for RegexGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetRequestBody().Body, false)
+	validationResult, err := r.validatePayload(logger, req.GetRequestBody().Body, false)
 	if !validationResult {
 		logger.Sugar().Debugf("Request payload validation failed for RegexGuardrail policy: %s", r.Name)
-		return r.buildResponse(logger, false)
+		return r.buildResponse(logger, false, err)
 	}
 	logger.Sugar().Debugf("Request payload validation passed for RegexGuardrail policy: %s", r.Name)
 	return nil
@@ -53,17 +53,17 @@ func (r *RegexGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_se
 // HandleResponseBody is a method that implements the mediation logic for the RegexGuardrail policy on response.
 func (r *RegexGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for RegexGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetResponseBody().Body, true)
+	validationResult, err := r.validatePayload(logger, req.GetResponseBody().Body, true)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for RegexGuardrail policy: %s", r.Name)
-		return r.buildResponse(logger, true)
+		return r.buildResponse(logger, true, err)
 	}
 	logger.Sugar().Debugf("Response body validation passed for RegexGuardrail policy: %s", r.Name)
 	return nil
 }
 
 // validatePayload is a method that returns the name of the policy for validation purposes.
-func (r *RegexGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) bool {
+func (r *RegexGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) (bool, error) {
 	if isResponse {
 		bodyStr, _, err := DecompressLLMResp(payload)
 		if err == nil {
@@ -73,31 +73,31 @@ func (r *RegexGuardrail) validatePayload(logger *logging.Logger, payload []byte,
 	extractedValue, err := ExtractStringValueFromJsonpath(logger, payload, r.JSONPath)
 	if err != nil {
 		logger.Error(err, "Error extracting value from JSON using JSONPath")
-		return false
+		return false, err
 	}
 	// Perform regex matching
 	matched, err := regexp.MatchString(r.Regex, extractedValue)
 	if err != nil {
 		logger.Error(err, "Error matching regex")
-		return false
+		return false, nil
 	}
 	if matched && r.Inverted {
 		logger.Sugar().Debugf("Regex matched and inverted condition is true, returning false")
-		return false
+		return false, nil
 	} else if !matched && !r.Inverted {
 		logger.Sugar().Debugf("Regex did not match and inverted condition is false, returning false")
-		return false
+		return false, nil
 	}
 	logger.Sugar().Debugf("Regex matched successfully, returning true")
-	return true
+	return true, nil
 }
 
 // buildResponse is a method that builds the response body for the RegexGuardrail policy.
-func (r *RegexGuardrail) buildResponse(logger *logging.Logger, isResponse bool) *envoy_service_proc_v3.ProcessingResponse {
+func (r *RegexGuardrail) buildResponse(logger *logging.Logger, isResponse bool, validationError error) *envoy_service_proc_v3.ProcessingResponse {
 	responseBody := make(map[string]interface{})
 	responseBody[ErrorCode] = GuardrailAPIMExceptionCode
 	responseBody[ErrorType] = RegexGuardrailConstant
-	responseBody[ErrorMessage] = r.buildAssessmentObject(logger, isResponse)
+	responseBody[ErrorMessage] = r.buildAssessmentObject(logger, isResponse, validationError)
 
 	bodyBytes, err := json.Marshal(responseBody)
 	if err != nil {
@@ -130,7 +130,7 @@ func (r *RegexGuardrail) buildResponse(logger *logging.Logger, isResponse bool) 
 }
 
 // buildAssessmentObject is a method that builds the assessment object for the RegexGuardrail policy.
-func (r *RegexGuardrail) buildAssessmentObject(logger *logging.Logger, isResponse bool) map[string]interface{} {
+func (r *RegexGuardrail) buildAssessmentObject(logger *logging.Logger, isResponse bool, validationError error) map[string]interface{} {
 	logger.Sugar().Debugf("Building assessment object for RegexGuardrail policy: %s", r.Name)
 	assessment := make(map[string]interface{})
 	assessment[AssessmentAction] = "GUARDRAIL_INTERVENED"
@@ -140,10 +140,19 @@ func (r *RegexGuardrail) buildAssessmentObject(logger *logging.Logger, isRespons
 	} else {
 		assessment[Direction] = "REQUEST"
 	}
-	assessment[AssessmentReason] = "Violation of regular expression detected."
-
-	if r.ShowAssessment {
-		assessment[Assessments] = "Violated regular expression: " + r.Regex
+	
+	// Check if this is a JSONPath extraction error
+	if validationError != nil {
+		assessment[AssessmentReason] = "Error extracting content from payload using JSONPath."
+		if r.ShowAssessment {
+			assessmentMessage := "JSONPath extraction failed: " + validationError.Error() + ". Please check the JSONPath configuration: " + r.JSONPath
+			assessment[Assessments] = assessmentMessage
+		}
+	} else {
+		assessment[AssessmentReason] = "Violation of regular expression detected."
+		if r.ShowAssessment {
+			assessment[Assessments] = "Violated regular expression: " + r.Regex
+		}
 	}
 	return assessment
 }

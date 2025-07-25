@@ -47,10 +47,10 @@ type URLGuardrail struct {
 // HandleRequestBody is a method that implements the mediation logic for the URLGuardrail policy on request.
 func (r *URLGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for URLGuardrail policy: %s", r.Name)
-	validationResult, invalidURLs := r.validatePayload(logger, req.GetRequestBody().Body, false)
+	validationResult, invalidURLs, err := r.validatePayload(logger, req.GetRequestBody().Body, false)
 	if !validationResult {
 		logger.Sugar().Debugf("Request payload validation failed for URLGuardrail policy: %s", r.Name)
-		return r.buildResponse(logger, false, invalidURLs)
+		return r.buildResponse(logger, false, invalidURLs, err)
 	}
 	logger.Sugar().Debugf("Request payload validation passed for URLGuardrail policy: %s", r.Name)
 	return nil
@@ -59,17 +59,17 @@ func (r *URLGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_serv
 // HandleResponseBody is a method that implements the mediation logic for the URLGuardrail policy on response.
 func (r *URLGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for URLGuardrail policy: %s", r.Name)
-	validationResult, invalidURLs := r.validatePayload(logger, req.GetResponseBody().Body, true)
+	validationResult, invalidURLs, err := r.validatePayload(logger, req.GetResponseBody().Body, true)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for URLGuardrail policy: %s", r.Name)
-		return r.buildResponse(logger, true, invalidURLs)
+		return r.buildResponse(logger, true, invalidURLs, err)
 	}
 	logger.Sugar().Debugf("Response body validation passed for URLGuardrail policy: %s", r.Name)
 	return nil
 }
 
 // validatePayload validates the payload against the URLGuardrail policy.
-func (r *URLGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) (bool, []string) {
+func (r *URLGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) (bool, []string, error) {
 	if isResponse {
 		bodyStr, _, err := DecompressLLMResp(payload)
 		if err == nil {
@@ -79,7 +79,7 @@ func (r *URLGuardrail) validatePayload(logger *logging.Logger, payload []byte, i
 	extractedValue, err := ExtractStringValueFromJsonpath(logger, payload, r.JSONPath)
 	if err != nil {
 		logger.Error(err, "Error extracting value from JSON using JSONPath")
-		return false, []string{}
+		return false, []string{}, err
 	}
 
 	// Clean and trim
@@ -109,7 +109,7 @@ func (r *URLGuardrail) validatePayload(logger *logging.Logger, payload []byte, i
 			}
 		}
 	}
-	return validationResult, invalidURLs
+	return validationResult, invalidURLs, nil
 }
 
 // checkDNS checks if the URL is resolved via DNS using DNS-over-HTTPS.
@@ -171,11 +171,11 @@ func (r *URLGuardrail) checkURL(logger *logging.Logger, target string) bool {
 }
 
 // buildResponse is a method that builds the response body for the URLGuardrail policy.
-func (r *URLGuardrail) buildResponse(logger *logging.Logger, isResponse bool, invalidURLs []string) *envoy_service_proc_v3.ProcessingResponse {
+func (r *URLGuardrail) buildResponse(logger *logging.Logger, isResponse bool, invalidURLs []string, validationError error) *envoy_service_proc_v3.ProcessingResponse {
 	responseBody := make(map[string]interface{})
 	responseBody[ErrorCode] = GuardrailAPIMExceptionCode
 	responseBody[ErrorType] = URLGuardrailConstant
-	responseBody[ErrorMessage] = r.buildAssessmentObject(logger, isResponse, invalidURLs)
+	responseBody[ErrorMessage] = r.buildAssessmentObject(logger, isResponse, invalidURLs, validationError)
 
 	bodyBytes, err := json.Marshal(responseBody)
 	if err != nil {
@@ -208,7 +208,7 @@ func (r *URLGuardrail) buildResponse(logger *logging.Logger, isResponse bool, in
 }
 
 // buildAssessmentObject is a method that builds the assessment object for the URLGuardrail policy.
-func (r *URLGuardrail) buildAssessmentObject(logger *logging.Logger, isResponse bool, invalidURLs []string) map[string]interface{} {
+func (r *URLGuardrail) buildAssessmentObject(logger *logging.Logger, isResponse bool, invalidURLs []string, validationError error) map[string]interface{} {
 	logger.Sugar().Debugf("Building assessment object for URLGuardrail policy: %s", r.Name)
 	assessment := make(map[string]interface{})
 	assessment[AssessmentAction] = "GUARDRAIL_INTERVENED"
@@ -218,13 +218,22 @@ func (r *URLGuardrail) buildAssessmentObject(logger *logging.Logger, isResponse 
 	} else {
 		assessment[Direction] = "REQUEST"
 	}
-	assessment[AssessmentReason] = "Violation of url validity detected."
-
-	if r.ShowAssessment {
-		assessmentDetails := make(map[string]interface{})
-		assessmentDetails["message"] = "One or more URLs in the payload failed validation."
-		assessmentDetails["invalidUrls"] = invalidURLs
-		assessment[Assessments] = assessmentDetails
+	
+	// Check if this is a JSONPath extraction error
+	if validationError != nil {
+		assessment[AssessmentReason] = "Error extracting content from payload using JSONPath."
+		if r.ShowAssessment {
+			assessmentMessage := "JSONPath extraction failed: " + validationError.Error() + ". Please check the JSONPath configuration: " + r.JSONPath
+			assessment[Assessments] = assessmentMessage
+		}
+	} else {
+		assessment[AssessmentReason] = "Violation of url validity detected."
+		if r.ShowAssessment {
+			assessmentDetails := make(map[string]interface{})
+			assessmentDetails["message"] = "One or more URLs in the payload failed validation."
+			assessmentDetails["invalidUrls"] = invalidURLs
+			assessment[Assessments] = assessmentDetails
+		}
 	}
 	return assessment
 }
