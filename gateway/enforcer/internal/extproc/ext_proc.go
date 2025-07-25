@@ -111,6 +111,8 @@ const (
 	semanticCacheEmbeddingKey                       string = "semanticcache:embedding"
 	modelMetadataKey                                string = "aitoken:model"
 	awsBedrockGuardrailPIIEntitiesKey               string = "awsbedrockguardrail:pii_entities"
+	piiMaskingRegexPIIEntitiesKey                   string = "piimaskingregex:pii_entities"
+	piiMaskingGuardrailsAIPIIEntitiesKey            string = "piimaskingguardrailsai:pii_entities"
 )
 
 var httpHandler requesthandler.HTTP = requesthandler.HTTP{}
@@ -1194,7 +1196,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			matchedApplication := s.subscriptionApplicationDatastore.GetApplication(matchedAPI.OrganizationID, metadata.MatchedApplicationIdentifier)
 
 			var policyValdationResponse *envoy_service_proc_v3.ProcessingResponse
-			props := map[string]interface{}{"matchedAPIUUID": matchedAPI.UUID, "embedding": metadata.SemanticEmbedding, "responseHeaders": metadata.ResponseStatus, "ctx": ctx, "awsBedrockGuardrailPIIEntities": metadata.AWSBedrockGuardrailPIIEntities} // NEED TO REMOVE THE HARDCODED HEADER VALUE
+			props := map[string]interface{}{"matchedAPIUUID": matchedAPI.UUID, "embedding": metadata.SemanticEmbedding, "responseHeaders": metadata.ResponseStatus,
+				"ctx": ctx, "awsBedrockGuardrailPIIEntities": metadata.AWSBedrockGuardrailPIIEntities, "piiMaskingRegexPIIEntities": metadata.PIIMaskingRegexPIIEntities,
+				"piiMaskingGuardrailsAIPIIEntities": metadata.PIIMaskingGuardrailsAIPIIEntities} // NEED TO REMOVE THE HARDCODED HEADER VALUE
 			s.cfg.Logger.Sugar().Debugf("Props content for Response flow policies: %+v", props)
 			if matchedAPI.ResponseInBuiltPolicies != nil &&
 				len(matchedAPI.ResponseInBuiltPolicies) > 0 {
@@ -1490,6 +1494,24 @@ func extractExternalProcessingMetadata(data *corev3.Metadata) (*dto.ExternalProc
 					externalProcessingEnvoyMetadata.AWSBedrockGuardrailPIIEntities = piiEntities
 				}
 			}
+			if piiMaskingRegexPIIEntities, exists := extProcMetadata.Fields[piiMaskingRegexPIIEntitiesKey]; exists {
+				if structVal := piiMaskingRegexPIIEntities.GetStructValue(); structVal != nil {
+					piiMaskingRegexEntities := make(map[string]string)
+					for k, v := range structVal.Fields {
+						piiMaskingRegexEntities[k] = v.GetStringValue()
+					}
+					externalProcessingEnvoyMetadata.PIIMaskingRegexPIIEntities = piiMaskingRegexEntities
+				}
+			}
+			if piiMaskingGuardrailsAIPIIEntities, exists := extProcMetadata.Fields[piiMaskingGuardrailsAIPIIEntitiesKey]; exists {
+				if structVal := piiMaskingGuardrailsAIPIIEntities.GetStructValue(); structVal != nil {
+					piiMaskingGuardrailsAIPIIEntities := make(map[string]string)
+					for k, v := range structVal.Fields {
+						piiMaskingGuardrailsAIPIIEntities[k] = v.GetStringValue()
+					}
+					externalProcessingEnvoyMetadata.PIIMaskingGuardrailsAIPIIEntities = piiMaskingGuardrailsAIPIIEntities
+				}
+			}
 		}
 		return externalProcessingEnvoyMetadata, nil
 	}
@@ -1631,7 +1653,8 @@ func buildDynamicMetadata(keyValuePairs *map[string]interface{}) (*structpb.Stru
 	addMetadata := func(builder *structpb.Struct, key string, value interface{}) error {
 
 		// Special handling for PII entities map
-		if key == awsBedrockGuardrailPIIEntitiesKey {
+		if key == awsBedrockGuardrailPIIEntitiesKey || key == piiMaskingRegexPIIEntitiesKey ||
+			key == piiMaskingGuardrailsAIPIIEntitiesKey {
 			if piiMap, ok := value.(map[string]string); ok {
 				// Convert map[string]string to *structpb.Struct
 				piiStruct := &structpb.Struct{

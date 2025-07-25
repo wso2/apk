@@ -26,11 +26,12 @@ const (
 	ErrorMessage = "message"
 
 	GuardrailErrorCode         = 446
+	APIMInternalErrorCode      = 500
 	GuardrailAPIMExceptionCode = 900514
+	APIMInternalExceptionCode  = 900967
 	GuardrailErrorType         = "ERROR_TYPE"
 	AssessmentAction           = "action"
 	InterveningGuardrail       = "interveningGuardrail"
-	APIMInternalExceptionCode  = 900967
 	AssessmentReason           = "actionReason"
 	Direction                  = "direction"
 	Assessments                = "assessments"
@@ -43,6 +44,8 @@ const (
 	SemanticCacheName                       = "SemanticCache"
 	AzureContentSafetyContentModerationName = "AzureContentSafetyContentModeration"
 	AWSBedrockGuardrailName                 = "AWSBedrockGuardrail"
+	PIIMaskingRegexName                     = "PIIMaskingRegex"
+	PIIMaskingGuardrailsAIName              = "PIIMaskingGuardrailsAI"
 
 	RegexGuardrailConstant                      = "REGEX_GUARDRAIL"
 	WordCountGuardrailConstant                  = "WORD_COUNT_GUARDRAIL"
@@ -52,14 +55,18 @@ const (
 	SemanticCacheConstant                       = "SEMANTIC_CACHE"
 	AzureContentSafetyContentModerationConstant = "AZURE_CONTENT_SAFETY_CONTENT_MODERATION"
 	AWSBedrockGuardrailConstant                 = "AWS_BEDROCK_GUARDRAIL"
+	PIIMaskingRegexConstant                     = "PII_MASKING_REGEX"
+	PIIMaskingGuardrailsAIConstant              = "PII_MASKING_GUARDRAILS_AI"
 
 	TextCleanRegex     = "^\"|\"$"
 	WordSplitRegex     = "\\s+"
 	SentenceSplitRegex = "[.!?]"
 	URLRegex           = "https?://[^\\s,\"'{}\\[\\]\\\\`*]+"
 
-	semanticCacheEmbeddingKey         string = "semanticcache:embedding"
-	awsBedrockGuardrailPIIEntitiesKey string = "awsbedrockguardrail:pii_entities"
+	semanticCacheEmbeddingKey            string = "semanticcache:embedding"
+	awsBedrockGuardrailPIIEntitiesKey    string = "awsbedrockguardrail:pii_entities"
+	piiMaskingRegexPIIEntitiesKey        string = "piimaskingregex:pii_entities"
+	piiMaskingGuardrailsAIPIIEntitiesKey string = "piimaskingguardrailsai:pii_entities"
 )
 
 var (

@@ -100,8 +100,15 @@ func (r *AWSBedrockGuardrail) validatePayload(logger *logging.Logger, req *envoy
 	result.IsResponse = isResponse
 
 	var payload []byte
+	var compressionType string
 	if isResponse {
+		var bodyStr string
+		var err error
 		payload = req.GetResponseBody().Body
+		bodyStr, compressionType, err = DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
 	} else {
 		payload = req.GetRequestBody().Body
 	}
@@ -113,7 +120,12 @@ func (r *AWSBedrockGuardrail) validatePayload(logger *logging.Logger, req *envoy
 				// For response flow, always transform the entire payload (JSONPath is not applicable)
 				transformedContent := r.identifyPIIAndTransform(string(payload), maskedPIIMap, logger)
 				result.InspectedContent = transformedContent
-				modifiedPayload := []byte(transformedContent)
+				modifiedPayload, err := CompressLLMResp([]byte(transformedContent), compressionType)
+				if err != nil {
+					result.Error = "Error compressing modified payload: " + err.Error()
+					logger.Error(err, result.Error)
+					return result, false
+				}
 				result.ModifiedPayload = &modifiedPayload
 				return result, true // Continue processing after PII restoration
 			}
@@ -183,7 +195,7 @@ func (r *AWSBedrockGuardrail) validatePayload(logger *logging.Logger, req *envoy
 				}
 				result.InspectedContent = maskedContent
 				// Update the original payload with masked content
-				modifiedPayload := r.updatePayloadWithMaskedContent(payload, extractedValue, maskedContent, logger)
+				modifiedPayload := r.updatePayloadWithMaskedContent(payload, maskedContent, logger)
 				result.ModifiedPayload = &modifiedPayload
 				return result, true // Continue processing after masking PII
 			}
@@ -191,11 +203,11 @@ func (r *AWSBedrockGuardrail) validatePayload(logger *logging.Logger, req *envoy
 			// Handle PII redaction if enabled
 			if r.RedactPII {
 				logger.Sugar().Debug("PII redaction is enabled, processing redacted content")
-				redactedContent := r.extractRedactedContent(guardrailOutput, logger)
+				redactedContent := r.extractRedactedContent(guardrailOutput, extractedValue, logger)
 				if redactedContent != "" {
 					result.InspectedContent = redactedContent
 					// Update the original payload with redacted content
-					modifiedPayload := r.updatePayloadWithMaskedContent(payload, extractedValue, redactedContent, logger)
+					modifiedPayload := r.updatePayloadWithMaskedContent(payload, redactedContent, logger)
 					result.ModifiedPayload = &modifiedPayload
 				}
 				return result, true // Continue processing after redacting PII
@@ -520,19 +532,25 @@ func (r *AWSBedrockGuardrail) identifyPIIAndTransform(originalContent string, ma
 }
 
 // extractRedactedContent extracts redacted content from guardrail outputs
-func (r *AWSBedrockGuardrail) extractRedactedContent(output *bedrockruntime.ApplyGuardrailOutput, logger *logging.Logger) string {
-	if output == nil || len(output.Outputs) == 0 {
-		return ""
+func (r *AWSBedrockGuardrail) extractRedactedContent(output *bedrockruntime.ApplyGuardrailOutput, originalContent string, logger *logging.Logger) string {
+	redactedText := originalContent
+	// Replace all PII entity matches with *****
+	if output != nil && len(output.Assessments) > 0 && output.Assessments[0].SensitiveInformationPolicy != nil {
+		for _, entity := range output.Assessments[0].SensitiveInformationPolicy.PiiEntities {
+			match := aws.ToString(entity.Match)
+			if match != "" {
+				redactedText = strings.ReplaceAll(redactedText, match, "*****")
+			}
+		}
+		for _, regex := range output.Assessments[0].SensitiveInformationPolicy.Regexes {
+			match := aws.ToString(regex.Match)
+			if match != "" {
+				redactedText = strings.ReplaceAll(redactedText, match, "*****")
+			}
+		}
 	}
-
-	// Get the first output text
-	if output.Outputs[0].Text != nil {
-		redactedText := aws.ToString(output.Outputs[0].Text)
-		logger.Sugar().Debugf("Extracted redacted content of length: %d", len(redactedText))
-		return redactedText
-	}
-
-	return ""
+	logger.Sugar().Debugf("Extracted and redacted content of length: %d", len(redactedText))
+	return redactedText
 }
 
 // buildResponse is a method that builds the response body for the AWSBedrockGuardrail policy.
@@ -711,7 +729,7 @@ func (r *AWSBedrockGuardrail) convertBedrockAssessmentToMap(assessment types.Gua
 
 // updatePayloadWithMaskedContent updates the original payload by replacing the extracted content
 // with the masked/redacted content, preserving the JSON structure if JSONPath is used (request flow only)
-func (r *AWSBedrockGuardrail) updatePayloadWithMaskedContent(originalPayload []byte, extractedValue, modifiedContent string, logger *logging.Logger) []byte {
+func (r *AWSBedrockGuardrail) updatePayloadWithMaskedContent(originalPayload []byte, modifiedContent string, logger *logging.Logger) []byte {
 	if r.JSONPath == "" {
 		// If no JSONPath, the entire payload was processed, return the modified content
 		logger.Sugar().Debug("No JSONPath specified, replacing entire payload")

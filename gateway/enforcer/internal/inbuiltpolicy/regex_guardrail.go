@@ -41,7 +41,7 @@ type RegexGuardrail struct {
 // HandleRequestBody is a method that implements the mediation logic for the RegexGuardrail policy on request.
 func (r *RegexGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for RegexGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
+	validationResult := r.validatePayload(logger, req.GetRequestBody().Body, false)
 	if !validationResult {
 		logger.Sugar().Debugf("Request payload validation failed for RegexGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, false)
@@ -53,7 +53,7 @@ func (r *RegexGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_se
 // HandleResponseBody is a method that implements the mediation logic for the RegexGuardrail policy on response.
 func (r *RegexGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for RegexGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
+	validationResult := r.validatePayload(logger, req.GetResponseBody().Body, true)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for RegexGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
@@ -63,7 +63,13 @@ func (r *RegexGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_s
 }
 
 // validatePayload is a method that returns the name of the policy for validation purposes.
-func (r *RegexGuardrail) validatePayload(logger *logging.Logger, payload []byte) bool {
+func (r *RegexGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) bool {
+	if isResponse {
+		bodyStr, _, err := DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
+	}
 	extractedValue, err := ExtractStringValueFromJsonpath(logger, payload, r.JSONPath)
 	if err != nil {
 		logger.Error(err, "Error extracting value from JSON using JSONPath")

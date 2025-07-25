@@ -43,7 +43,7 @@ type ContentLengthGuardrail struct {
 // HandleRequestBody is a method that implements the mediation logic for the ContentLengthGuardrail policy on request.
 func (r *ContentLengthGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for ContentLengthGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
+	validationResult := r.validatePayload(logger, req.GetRequestBody().Body, false)
 	if !validationResult {
 		logger.Sugar().Debugf("Request payload validation failed for ContentLengthGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, false)
@@ -55,7 +55,7 @@ func (r *ContentLengthGuardrail) HandleRequestBody(logger *logging.Logger, req *
 // HandleResponseBody is a method that implements the mediation logic for the ContentLengthGuardrail policy on response.
 func (r *ContentLengthGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for ContentLengthGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
+	validationResult := r.validatePayload(logger, req.GetResponseBody().Body, true)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for ContentLengthGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
@@ -65,7 +65,14 @@ func (r *ContentLengthGuardrail) HandleResponseBody(logger *logging.Logger, req 
 }
 
 // validatePayload validates the payload against the ContentLengthGuardrail policy.
-func (r *ContentLengthGuardrail) validatePayload(logger *logging.Logger, payload []byte) bool {
+func (r *ContentLengthGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) bool {
+	if isResponse {
+		bodyStr, _, err := DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
+	}
+
 	if (r.Min > r.Max) || (r.Min < 0) || (r.Max <= 0) {
 		logger.Sugar().Errorf("Invalid content length range: min=%d, max=%d", r.Min, r.Max)
 		return false
@@ -84,15 +91,23 @@ func (r *ContentLengthGuardrail) validatePayload(logger *logging.Logger, payload
 	// Count the bytes in the extracted value
 	byteCount := len([]byte(extractedValue))
 
-	if byteCount < r.Min || byteCount > r.Max {
-		logger.Sugar().Debugf("Content length validation failed: %d bytes found, expected between %d and %d bytes", byteCount, r.Min, r.Max)
-		if r.Inverted {
-			logger.Sugar().Debugf("Inverted condition is true, returning true")
-			return true
+	isWithinRange := byteCount >= r.Min && byteCount <= r.Max
+	
+	if r.Inverted {
+		// When inverted, fail if content length is within the range
+		if isWithinRange {
+			logger.Sugar().Debugf("Content length validation failed (inverted): %d bytes found, should NOT be between %d and %d bytes", byteCount, r.Min, r.Max)
+			return false
 		}
-		logger.Sugar().Debugf("Inverted condition is false, returning false")
+		logger.Sugar().Debugf("Content length validation passed (inverted): %d bytes found, correctly outside range %d-%d", byteCount, r.Min, r.Max)
+		return true
+	}
+	// When not inverted, fail if content length is outside the range
+	if !isWithinRange {
+		logger.Sugar().Debugf("Content length validation failed: %d bytes found, expected between %d and %d bytes", byteCount, r.Min, r.Max)
 		return false
 	}
+	logger.Sugar().Debugf("Content length validation passed: %d bytes found, within expected range %d-%d", byteCount, r.Min, r.Max)
 	return true
 }
 
@@ -147,15 +162,13 @@ func (r *ContentLengthGuardrail) buildAssessmentObject(logger *logging.Logger, i
 	assessment[AssessmentReason] = "Violation of applied content length constraints detected."
 
 	if r.ShowAssessment {
-		var minStr, maxStr string
+		var assessmentMessage string
 		if r.Inverted {
-			minStr = "less than"
-			maxStr = "or more than"
+			assessmentMessage = "Violation of content length detected. Expected content length to be outside the range of " + strconv.Itoa(r.Min) + " to " + strconv.Itoa(r.Max) + " bytes."
 		} else {
-			minStr = "between"
-			maxStr = "and"
+			assessmentMessage = "Violation of content length detected. Expected content length to be between " + strconv.Itoa(r.Min) + " and " + strconv.Itoa(r.Max) + " bytes."
 		}
-		assessment[Assessments] = "Violation of content length detected. Expected " + minStr + " " + strconv.Itoa(r.Min) + " " + maxStr + " " + strconv.Itoa(r.Max) + " bytes."
+		assessment[Assessments] = assessmentMessage
 	}
 	return assessment
 }

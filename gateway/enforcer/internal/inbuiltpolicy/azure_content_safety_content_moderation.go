@@ -76,6 +76,12 @@ func (r *AzureContentSafetyContentModeration) HandleResponseBody(logger *logging
 
 // validatePayload validates the payload against the AzureContentSafetyContentModeration policy.
 func (r *AzureContentSafetyContentModeration) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) (AssessmentResult, bool) {
+	if isResponse {
+		bodyStr, _, err := DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
+	}
 	var result AssessmentResult
 	result.IsResponse = isResponse
 	result.CategoryMap = map[string]int{

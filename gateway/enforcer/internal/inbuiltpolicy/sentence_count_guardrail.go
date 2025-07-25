@@ -43,7 +43,7 @@ type SentenceCountGuardrail struct {
 // HandleRequestBody is a method that implements the mediation logic for the SentenceCountGuardrail policy on request.
 func (r *SentenceCountGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for SentenceCountGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
+	validationResult := r.validatePayload(logger, req.GetRequestBody().Body, false)
 	if !validationResult {
 		logger.Sugar().Debugf("Request payload validation failed for SentenceCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, false)
@@ -55,7 +55,7 @@ func (r *SentenceCountGuardrail) HandleRequestBody(logger *logging.Logger, req *
 // HandleResponseBody is a method that implements the mediation logic for the SentenceCountGuardrail policy on response.
 func (r *SentenceCountGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for SentenceCountGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
+	validationResult := r.validatePayload(logger, req.GetResponseBody().Body, true)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for SentenceCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
@@ -65,7 +65,13 @@ func (r *SentenceCountGuardrail) HandleResponseBody(logger *logging.Logger, req 
 }
 
 // validatePayload validates the payload against the SentenceCountGuardrail policy.
-func (r *SentenceCountGuardrail) validatePayload(logger *logging.Logger, payload []byte) bool {
+func (r *SentenceCountGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) bool {
+	if isResponse {
+		bodyStr, _, err := DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
+	}
 	if (r.Min > r.Max) || (r.Min < 0) || (r.Max <= 0) {
 		logger.Sugar().Errorf("Invalid sentence count range: min=%d, max=%d", r.Min, r.Max)
 		return false
@@ -91,15 +97,23 @@ func (r *SentenceCountGuardrail) validatePayload(logger *logging.Logger, payload
 		}
 	}
 
-	if sentenceCount < r.Min || sentenceCount > r.Max {
-		logger.Sugar().Debugf("Sentence count validation failed: %d sentences found, expected between %d and %d sentences", sentenceCount, r.Min, r.Max)
-		if r.Inverted {
-			logger.Sugar().Debugf("Inverted condition is true, returning true")
-			return true
+	isWithinRange := sentenceCount >= r.Min && sentenceCount <= r.Max
+	
+	if r.Inverted {
+		// When inverted, fail if sentence count is within the range
+		if isWithinRange {
+			logger.Sugar().Debugf("Sentence count validation failed (inverted): %d sentences found, should NOT be between %d and %d sentences", sentenceCount, r.Min, r.Max)
+			return false
 		}
-		logger.Sugar().Debugf("Inverted condition is false, returning false")
+		logger.Sugar().Debugf("Sentence count validation passed (inverted): %d sentences found, correctly outside range %d-%d", sentenceCount, r.Min, r.Max)
+		return true
+	}
+	// When not inverted, fail if sentence count is outside the range
+	if !isWithinRange {
+		logger.Sugar().Debugf("Sentence count validation failed: %d sentences found, expected between %d and %d sentences", sentenceCount, r.Min, r.Max)
 		return false
 	}
+	logger.Sugar().Debugf("Sentence count validation passed: %d sentences found, within expected range %d-%d", sentenceCount, r.Min, r.Max)
 	return true
 }
 
@@ -154,15 +168,13 @@ func (r *SentenceCountGuardrail) buildAssessmentObject(logger *logging.Logger, i
 	assessment[AssessmentReason] = "Violation of applied sentence count constraints detected."
 
 	if r.ShowAssessment {
-		var minStr, maxStr string
+		var assessmentMessage string
 		if r.Inverted {
-			minStr = "less than"
-			maxStr = "or more than"
+			assessmentMessage = "Violation of sentence count detected. Expected sentence count to be outside the range of " + strconv.Itoa(r.Min) + " to " + strconv.Itoa(r.Max) + " sentences."
 		} else {
-			minStr = "between"
-			maxStr = "and"
+			assessmentMessage = "Violation of sentence count detected. Expected sentence count to be between " + strconv.Itoa(r.Min) + " and " + strconv.Itoa(r.Max) + " sentences."
 		}
-		assessment[Assessments] = "Violation of sentence count detected. Expected " + minStr + " " + strconv.Itoa(r.Min) + " " + maxStr + " " + strconv.Itoa(r.Max) + " sentences."
+		assessment[Assessments] = assessmentMessage
 	}
 	return assessment
 }

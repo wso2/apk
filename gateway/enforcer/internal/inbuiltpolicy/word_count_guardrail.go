@@ -43,7 +43,7 @@ type WordCountGuardrail struct {
 // HandleRequestBody is a method that implements the mediation logic for the WordCountGuardrail policy on request.
 func (r *WordCountGuardrail) HandleRequestBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning request payload validation for WordCountGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetRequestBody().Body)
+	validationResult := r.validatePayload(logger, req.GetRequestBody().Body, false)
 	if !validationResult {
 		logger.Sugar().Debugf("Request payload validation failed for WordCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, false)
@@ -55,7 +55,7 @@ func (r *WordCountGuardrail) HandleRequestBody(logger *logging.Logger, req *envo
 // HandleResponseBody is a method that implements the mediation logic for the WordCountGuardrail policy on response.
 func (r *WordCountGuardrail) HandleResponseBody(logger *logging.Logger, req *envoy_service_proc_v3.ProcessingRequest, resp *envoy_service_proc_v3.ProcessingResponse, props map[string]interface{}) *envoy_service_proc_v3.ProcessingResponse {
 	logger.Sugar().Debugf("Beginning response body validation for WordCountGuardrail policy: %s", r.Name)
-	validationResult := r.validatePayload(logger, req.GetResponseBody().Body)
+	validationResult := r.validatePayload(logger, req.GetResponseBody().Body, true)
 	if !validationResult {
 		logger.Sugar().Debugf("Response body validation failed for WordCountGuardrail policy: %s", r.Name)
 		return r.buildResponse(logger, true)
@@ -65,7 +65,13 @@ func (r *WordCountGuardrail) HandleResponseBody(logger *logging.Logger, req *env
 }
 
 // validatePayload validates the payload against the WordCountGuardrail policy.
-func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []byte) bool {
+func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []byte, isResponse bool) bool {
+	if isResponse {
+		bodyStr, _, err := DecompressLLMResp(payload)
+		if err == nil {
+			payload = []byte(bodyStr)
+		}
+	}
 	if (r.Min > r.Max) || (r.Min < 0) || (r.Max <= 0) {
 		logger.Sugar().Errorf("Invalid word count range: min=%d, max=%d", r.Min, r.Max)
 		return false
@@ -90,15 +96,23 @@ func (r *WordCountGuardrail) validatePayload(logger *logging.Logger, payload []b
 		}
 	}
 
-	if wordCount < r.Min || wordCount > r.Max {
-		logger.Sugar().Debugf("Word count validation failed: %d words found, expected between %d and %d words", wordCount, r.Min, r.Max)
-		if r.Inverted {
-			logger.Sugar().Debugf("Inverted condition is true, returning true")
-			return true
+	isWithinRange := wordCount >= r.Min && wordCount <= r.Max
+	
+	if r.Inverted {
+		// When inverted, fail if word count is within the range
+		if isWithinRange {
+			logger.Sugar().Debugf("Word count validation failed (inverted): %d words found, should NOT be between %d and %d words", wordCount, r.Min, r.Max)
+			return false
 		}
-		logger.Sugar().Debugf("Inverted condition is false, returning false")
+		logger.Sugar().Debugf("Word count validation passed (inverted): %d words found, correctly outside range %d-%d", wordCount, r.Min, r.Max)
+		return true
+	}
+	// When not inverted, fail if word count is outside the range
+	if !isWithinRange {
+		logger.Sugar().Debugf("Word count validation failed: %d words found, expected between %d and %d words", wordCount, r.Min, r.Max)
 		return false
 	}
+	logger.Sugar().Debugf("Word count validation passed: %d words found, within expected range %d-%d", wordCount, r.Min, r.Max)
 	return true
 }
 
@@ -153,15 +167,13 @@ func (r *WordCountGuardrail) buildAssessmentObject(logger *logging.Logger, isRes
 	assessment[AssessmentReason] = "Violation of applied word count constraints detected."
 
 	if r.ShowAssessment {
-		var minStr, maxStr string
+		var assessmentMessage string
 		if r.Inverted {
-			minStr = "less than"
-			maxStr = "or more than"
+			assessmentMessage = "Violation of word count detected. Expected word count to be outside the range of " + strconv.Itoa(r.Min) + " to " + strconv.Itoa(r.Max) + " words."
 		} else {
-			minStr = "between"
-			maxStr = "and"
+			assessmentMessage = "Violation of word count detected. Expected word count to be between " + strconv.Itoa(r.Min) + " and " + strconv.Itoa(r.Max) + " words."
 		}
-		assessment[Assessments] = "Violation of word count detected. Expected " + minStr + " " + strconv.Itoa(r.Min) + " " + maxStr + " " + strconv.Itoa(r.Max) + " words."
+		assessment[Assessments] = assessmentMessage
 	}
 	return assessment
 }

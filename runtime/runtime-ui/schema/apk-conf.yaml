@@ -297,6 +297,8 @@ schemas:
           - URLGuardrail
           - AzureContentSafetyContentModeration
           - AWSBedrockGuardrail
+          - PIIMaskingRegex
+          - PIIMaskingGuardrailsAI
       policyVersion:
         type: string
         default: v1
@@ -337,6 +339,8 @@ schemas:
           - URLGuardrail
           - AzureContentSafetyContentModeration
           - AWSBedrockGuardrail
+          - PIIMaskingRegex
+          - PIIMaskingGuardrailsAI
       policyVersion:
         type: string
         default: v1
