@@ -176,7 +176,8 @@ func (r *ContentLengthGuardrail) buildAssessmentObject(logger *logging.Logger, i
 			} else {
 				assessmentMessage = "Violation of content length detected. Expected content length to be between " + strconv.Itoa(r.Min) + " and " + strconv.Itoa(r.Max) + " bytes."
 			}
-		assessment[Assessments] = assessmentMessage
+			assessment[Assessments] = assessmentMessage
+		}
 	}
 	return assessment
 }
