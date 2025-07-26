@@ -33,6 +33,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/dto"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/semanticcache"
+	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
 
 var (
@@ -66,6 +67,7 @@ func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *env
 		return nil
 	}
 	logger.Sugar().Debugf("Generating embedding using %s", s.embeddingProvider.GetType())
+	logger.Sugar().Debugf("Configs for embedding generator: %+v", s.embeddingConfig)
 	embedding, err := s.embeddingProvider.GetEmbedding(logger, string(req.GetRequestBody().Body))
 	if err != nil {
 		logger.Error(err, "Error in embedding generation.")
@@ -82,6 +84,7 @@ func (s *SemanticCachePolicy) HandleRequestBody(logger *logging.Logger, req *env
 	}
 	logger.Sugar().Debug("Checking for a cached response in Vector Store")
 	logger.Sugar().Debugf("Checking cache using %s", s.vectorStoreProvider.GetType())
+	logger.Sugar().Debugf("Configs for vector store: %+v", s.vectorStoreConfig)
 	cacheResponse, err := s.vectorStoreProvider.Retrieve(logger, embedding, cacheRetrieveConfig)
 	if err != nil {
 		logger.Error(err, "Error in retrieving cached response from VectorDB.")
@@ -152,6 +155,7 @@ func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *en
 				ResponseFetchedTime: time.Now(),
 			}
 			logger.Sugar().Debugf("Storing in cache using %s", s.vectorStoreProvider.GetType())
+			logger.Sugar().Debugf("Configs for vector store: %+v", s.vectorStoreConfig)
 			err = s.vectorStoreProvider.Store(logger, embedding, cr, map[string]interface{}{
 				"api_id": props["matchedAPIUUID"].(string),
 				"ctx":    ctx,
@@ -168,7 +172,7 @@ func (s *SemanticCachePolicy) HandleResponseBody(logger *logging.Logger, req *en
 }
 
 // NewSemanticCachingPolicy initializes the NewSemanticCachingPolicy policy from the given InBuiltPolicy.
-func NewSemanticCachingPolicy(logger *logging.Logger, inBuiltPolicy dto.InBuiltPolicy) *SemanticCachePolicy {
+func NewSemanticCachingPolicy(logger *logging.Logger, inBuiltPolicy dto.InBuiltPolicy, resourcePath string) *SemanticCachePolicy {
 	logger.Sugar().Debugf("Initializing Semantic Caching policy: %s", inBuiltPolicy.GetPolicyID())
 	semanticCachePolicy := &SemanticCachePolicy{
 		BaseInBuiltPolicy: dto.BaseInBuiltPolicy{
@@ -216,51 +220,55 @@ func NewSemanticCachingPolicy(logger *logging.Logger, inBuiltPolicy dto.InBuiltP
 
 	// Get read lock to check if we need to update providers
 	providerMutex.RLock()
-	policyID := inBuiltPolicy.GetPolicyID()
-	embeddingConfigChanged := !reflect.DeepEqual(semanticCachePolicy.embeddingConfig, embeddingConfigs[policyID])
-	vectorStoreConfigChanged := !reflect.DeepEqual(semanticCachePolicy.vectorStoreConfig, vectorStoreConfigs[policyID])
+	uniquePolicyID := fmt.Sprintf("%s::%s", resourcePath, inBuiltPolicy.GetPolicyID())
+	uniquePolicyIDHash := util.HashString(uniquePolicyID)
+	logger.Sugar().Debugf("Unique Policy ID Hash: %s", uniquePolicyIDHash)
+	embeddingConfigChanged := !reflect.DeepEqual(semanticCachePolicy.embeddingConfig, embeddingConfigs[uniquePolicyIDHash])
+	vectorStoreConfigChanged := !reflect.DeepEqual(semanticCachePolicy.vectorStoreConfig, vectorStoreConfigs[uniquePolicyIDHash])
+	logger.Sugar().Debugf("Embedding Config Changed -> %t", embeddingConfigChanged)
+	logger.Sugar().Debugf("Vector Store Config Changed -> %t", vectorStoreConfigChanged)
 	providerMutex.RUnlock()
 
 	// Initialize or update embedding provider if needed
-	if embeddingConfigChanged || embeddingProviders[policyID] == nil {
+	if embeddingConfigChanged || embeddingProviders[uniquePolicyIDHash] == nil {
 		providerMutex.Lock()
 		// Check again after acquiring lock
-		if !reflect.DeepEqual(semanticCachePolicy.embeddingConfig, embeddingConfigs[policyID]) || embeddingProviders[policyID] == nil {
-			logger.Sugar().Infof("Initializing/updating embedding provider for Policy %s", policyID)
+		if !reflect.DeepEqual(semanticCachePolicy.embeddingConfig, embeddingConfigs[uniquePolicyIDHash]) || embeddingProviders[uniquePolicyIDHash] == nil {
+			logger.Sugar().Infof("Initializing/updating embedding provider for Policy %s", uniquePolicyIDHash)
 			provider, err := initializeEmbeddingProvider(logger, semanticCachePolicy.embeddingConfig)
 			if err != nil {
 				logger.Error(err, "Failed to initialize embedding provider")
 				providerMutex.Unlock()
 				return nil
 			}
-			embeddingProviders[policyID] = provider
-			embeddingConfigs[policyID] = semanticCachePolicy.embeddingConfig
+			embeddingProviders[uniquePolicyIDHash] = provider
+			embeddingConfigs[uniquePolicyIDHash] = semanticCachePolicy.embeddingConfig
 		}
 		providerMutex.Unlock()
 	}
 
 	// Initialize or update vector store provider if needed
-	if vectorStoreConfigChanged || vectorStoreProviders[policyID] == nil {
+	if vectorStoreConfigChanged || vectorStoreProviders[uniquePolicyIDHash] == nil {
 		providerMutex.Lock()
 		// Check again after acquiring lock
-		if !reflect.DeepEqual(semanticCachePolicy.vectorStoreConfig, vectorStoreConfigs[policyID]) || vectorStoreProviders[policyID] == nil {
-			logger.Sugar().Infof("Initializing/updating vector store provider for Policy %s", policyID)
+		if !reflect.DeepEqual(semanticCachePolicy.vectorStoreConfig, vectorStoreConfigs[uniquePolicyIDHash]) || vectorStoreProviders[uniquePolicyIDHash] == nil {
+			logger.Sugar().Infof("Initializing/updating vector store provider for Policy %s", uniquePolicyIDHash)
 			provider, err := initializeVectorDBProvider(logger, semanticCachePolicy.vectorStoreConfig)
 			if err != nil {
 				logger.Error(err, "Failed to initialize vector store provider")
 				providerMutex.Unlock()
 				return nil
 			}
-			vectorStoreProviders[policyID] = provider
-			vectorStoreConfigs[policyID] = semanticCachePolicy.vectorStoreConfig
+			vectorStoreProviders[uniquePolicyIDHash] = provider
+			vectorStoreConfigs[uniquePolicyIDHash] = semanticCachePolicy.vectorStoreConfig
 		}
 		providerMutex.Unlock()
 	}
 
 	// Assign the Policy-specific providers to this policy instance
 	providerMutex.RLock()
-	semanticCachePolicy.embeddingProvider = embeddingProviders[policyID]
-	semanticCachePolicy.vectorStoreProvider = vectorStoreProviders[policyID]
+	semanticCachePolicy.embeddingProvider = embeddingProviders[uniquePolicyIDHash]
+	semanticCachePolicy.vectorStoreProvider = vectorStoreProviders[uniquePolicyIDHash]
 	providerMutex.RUnlock()
 
 	if semanticCachePolicy.embeddingProvider == nil || semanticCachePolicy.vectorStoreProvider == nil {
@@ -395,4 +403,39 @@ func initializeVectorDBProvider(logger *logging.Logger, vectorStoreProviderConfi
 	}
 	logger.Sugar().Infof("Successfully created the index")
 	return vectorStoreProvider, nil
+}
+
+// CleanupUnusedSemanticCachePolicies removes providers for policies that are no longer in use
+func CleanupUnusedSemanticCachePolicies(activePolicyIDs []string, logger *logging.Logger) {
+	providerMutex.Lock()
+	defer providerMutex.Unlock()
+
+	// Create a set of active policy IDs for quick lookup
+	activePolicySet := make(map[string]bool)
+	for _, policyID := range activePolicyIDs {
+		activePolicySet[policyID] = true
+	}
+
+	// Clean up embedding providers
+	for policyID := range embeddingProviders {
+		if !activePolicySet[policyID] {
+			logger.Sugar().Debugf("Ready to clean up unused embedding provider with config: %+v", embeddingConfigs[policyID])
+			delete(embeddingProviders, policyID)
+			delete(embeddingConfigs, policyID)
+			logger.Sugar().Infof("Cleaned up unused embedding provider for policy: %s", policyID)
+		}
+	}
+
+	// Clean up vector store providers
+	for policyID, vectorStoreProvider := range vectorStoreProviders {
+		if !activePolicySet[policyID] {
+			logger.Sugar().Debugf("Ready to clean up unused vector store provider with config: %+v", vectorStoreConfigs[policyID])
+			if err := vectorStoreProvider.Close(); err != nil {
+				logger.Sugar().Errorf("Error closing vector store provider for policy %s: %v", policyID, err)
+			}
+			delete(vectorStoreProviders, policyID)
+			delete(vectorStoreConfigs, policyID)
+			logger.Sugar().Infof("Cleaned up unused vector store provider for policy %s", policyID)
+		}
+	}
 }

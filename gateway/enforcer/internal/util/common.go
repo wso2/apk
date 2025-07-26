@@ -17,6 +17,11 @@
 
 package util
 
+import (
+	"crypto/sha256"
+	"encoding/hex"
+)
+
 // Contains checks if a string is present in a slice.
 func Contains(slice []string, item string) bool {
     for _, s := range slice {
@@ -25,4 +30,10 @@ func Contains(slice []string, item string) bool {
         }
     }
     return false
+}
+
+// HashString hashes a string using SHA-256 and returns the hex encoded string.
+func HashString(s string) string {
+	h := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(h[:])
 }

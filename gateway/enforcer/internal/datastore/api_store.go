@@ -53,8 +53,15 @@ func NewAPIStore(configStore *ConfigStore, cfg *config.Server) *APIStore {
 func (s *APIStore) AddAPIs(apis []*api.Api) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
+	// Collect active semantic cache policy IDs from the new APIs
+	activeSemanticCachePolicyIDs := make([]string, 0)
+
 	s.apis = make(map[string]*requestconfig.API, len(apis))
 	for _, api := range apis {
+		apiProps := map[string]interface{}{
+			"resourcePath": fmt.Sprintf("/%s/%s", api.BasePath, api.Version), // API-level path
+		}
 		customAPI := requestconfig.API{
 			Name:                    api.Title,
 			Version:                 api.Version,
@@ -87,12 +94,20 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 			AIModelBasedRoundRobin:            convertAIModelBasedRoundRobinToDTO(api.AiModelBasedRoundRobin),
 			DoSubscriptionAIRLInHeaderReponse: api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InHeader,
 			DoSubscriptionAIRLInBodyReponse:   api.Aiprovider != nil && api.Aiprovider.PromptTokens != nil && api.Aiprovider.PromptTokens.In == dto.InBody,
-			RequestInBuiltPolicies:            covertRequestInBuiltPoliciesToDTO(&s.cfg.Logger, api.RequestInBuiltPolicies),
-			ResponseInBuiltPolicies:           covertResponseInBuiltPoliciesToDTO(&s.cfg.Logger, api.ResponseInBuiltPolicies),
+			RequestInBuiltPolicies:            covertRequestInBuiltPoliciesToDTO(&s.cfg.Logger, apiProps, api.RequestInBuiltPolicies),
+			ResponseInBuiltPolicies:           covertResponseInBuiltPoliciesToDTO(&s.cfg.Logger, apiProps, api.ResponseInBuiltPolicies),
 		}
 		for _, resource := range api.Resources {
+			// Request policies at resource level
+			s.cfg.Logger.Sugar().Debugf("API: %s  -> Resource: %s", api.Title, resource.Path)
+			resourceProps := map[string]interface{}{
+				"resourcePath": resource.Path,
+			}
+
+			activeSemanticCachePolicyIDs = collectSemanticCachePolicyIDs(activeSemanticCachePolicyIDs, resource.RequestInBuiltPolicies, resource.Path)
+
 			for _, operation := range resource.Methods {
-				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), covertRequestInBuiltPoliciesToDTO(&s.cfg.Logger, resource.RequestInBuiltPolicies), covertResponseInBuiltPoliciesToDTO(&s.cfg.Logger, resource.ResponseInBuiltPolicies), func() []*requestconfig.EndpointSecurity {
+				resource := buildResource(operation, resource.Path, resource.Endpoints, convertAIModelBasedRoundRobinToDTO(resource.AiModelBasedRoundRobin), covertRequestInBuiltPoliciesToDTO(&s.cfg.Logger, resourceProps, resource.RequestInBuiltPolicies), covertResponseInBuiltPoliciesToDTO(&s.cfg.Logger, resourceProps, resource.ResponseInBuiltPolicies), func() []*requestconfig.EndpointSecurity {
 					endpointSecurity := make([]*requestconfig.EndpointSecurity, len(resource.EndpointSecurity))
 					for i, es := range resource.EndpointSecurity {
 						endpointSecurity[i] = &requestconfig.EndpointSecurity{
@@ -113,6 +128,8 @@ func (s *APIStore) AddAPIs(apis []*api.Api) {
 		s.cfg.Logger.Sugar().Debug(fmt.Sprintf("Adding API: %+v", customAPI.BackendJwtConfiguration))
 		s.apis[util.PrepareAPIKey(api.Vhost, api.BasePath, api.Version)] = &customAPI
 	}
+	// Cleanup unused semantic cache policies after processing all APIs
+	inbuiltpolicy.CleanupUnusedSemanticCachePolicies(activeSemanticCachePolicyIDs, &s.cfg.Logger)
 }
 
 // GetAPIs retrieves the list of APIs from the store.
@@ -124,10 +141,19 @@ func (s *APIStore) GetAPIs() map[string]*requestconfig.API {
 }
 
 // convertRequestInBuiltPoliciesToDTO converts a slice of InBuiltPolicy to a slice of dto.InBuiltPolicy.
-func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
+func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, props map[string]interface{}, requestPolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
 	if requestPolicies == nil {
 		return nil
 	}
+
+	// Extract resource path from props
+	resourcePath := ""
+	if path, exists := props["resourcePath"]; exists {
+		if pathStr, ok := path.(string); ok {
+			resourcePath = pathStr
+		}
+	}
+
 	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(requestPolicies))
 	for _, policy := range requestPolicies {
 		basePolicy := &dto.BaseInBuiltPolicy{
@@ -149,7 +175,8 @@ func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies [
 		case inbuiltpolicy.URLGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
 		case inbuiltpolicy.SemanticCacheName:
-			if policy := inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy); policy != nil {
+			if policy := inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy, resourcePath); policy != nil {
+				logger.Sugar().Debugf("Adding Semantic Cache Policy(%s) in Request Policies", policy.GetPolicyID())
 				dtoPolicies = append(dtoPolicies, policy)
 			} else {
 				logger.Sugar().Debug("Skipping the Semantic Cache Policy...")
@@ -172,10 +199,19 @@ func covertRequestInBuiltPoliciesToDTO(logger *logging.Logger, requestPolicies [
 }
 
 // convertResponseInBuiltPoliciesToDTO converts a slice of InBuiltPolicy to a slice of dto.InBuiltPolicy.
-func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, responsePolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
+func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, props map[string]interface{}, responsePolicies []*api.InBuiltPolicy) []dto.InBuiltPolicy {
 	if responsePolicies == nil {
 		return nil
 	}
+
+	// Extract resource path from props
+	resourcePath := ""
+	if path, exists := props["resourcePath"]; exists {
+		if pathStr, ok := path.(string); ok {
+			resourcePath = pathStr
+		}
+	}
+
 	dtoPolicies := make([]dto.InBuiltPolicy, 0, len(responsePolicies))
 	for _, policy := range responsePolicies {
 		basePolicy := &dto.BaseInBuiltPolicy{
@@ -197,7 +233,8 @@ func covertResponseInBuiltPoliciesToDTO(logger *logging.Logger, responsePolicies
 		case inbuiltpolicy.URLGuardrailName:
 			dtoPolicies = append(dtoPolicies, inbuiltpolicy.NewURLGuardrail(basePolicy))
 		case inbuiltpolicy.SemanticCacheName:
-			if policy := inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy); policy != nil {
+			if policy := inbuiltpolicy.NewSemanticCachingPolicy(logger, basePolicy, resourcePath); policy != nil {
+				logger.Sugar().Debugf("Adding Semantic Cache Policy(%s) in Response Policies", policy.GetPolicyID())
 				dtoPolicies = append(dtoPolicies, policy)
 			} else {
 				logger.Info("Skipping the Semantic Cache Policy...")
@@ -349,4 +386,16 @@ func convertBackendJWTTokenInfoToJWTConfig(info *api.BackendJWTTokenInfo, cfg *c
 		TTL:                int64(info.TokenTTL),             // Convert int32 to int64
 		CustomClaims:       customClaims,
 	}
+}
+
+// collectSemanticCachePolicyIDs is a helper function to collect semantic cache policy IDs from a list of policies
+func collectSemanticCachePolicyIDs(existingIDs []string, policies []*api.InBuiltPolicy, resourcePath string) []string {
+	for _, policy := range policies {
+		if policy.PolicyName == inbuiltpolicy.SemanticCacheName {
+			compositeKeyStr := fmt.Sprintf("%s::%s", resourcePath, policy.PolicyID)
+			compositeKeyHash := util.HashString(compositeKeyStr)
+			existingIDs = append(existingIDs, compositeKeyHash)
+		}
+	}
+	return existingIDs
 }

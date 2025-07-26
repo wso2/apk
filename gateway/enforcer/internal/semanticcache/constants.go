@@ -15,6 +15,6 @@ const (
 	DefaultThreshold          = 80                              // DefaultThreshold is the default threshold for cache entries
 	DefaultTimeout            = 5000                            // DefaultTimeout is the default timeout for cache operations in milliseconds
 	VectorIndexPrefix         = "apk_semantic_cache_"           // VectorIndexPrefix is the prefix for vector index keys in the cache
-	DefaultTTL                = 36000                           // DefaultTTL is the default time-to-live for cache entries in seconds (10 hours, 36000 seconds
+	DefaultTTL                = 3600                           // DefaultTTL is the default time-to-live for cache entries in seconds (1 hours, 3600 seconds
 	DefaultRequestTimeout     = 30                              // DefaultRequestTimeout is the default timeout for requests in seconds (30 seconds)
 )
