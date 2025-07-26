@@ -19,58 +19,96 @@ package status
 
 import (
 	"context"
+	"sync"
+	"time"
 
 	"github.com/wso2/apk/adapter/internal/loggers"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// Update contain status update event information
+// Update contains information for a status update event.
 type Update struct {
 	NamespacedName types.NamespacedName
 	Resource       client.Object
 	UpdateStatus   func(client.Object) client.Object
 }
 
-// UpdateHandler handles status updates
+// UpdateHandler handles status updates.
 type UpdateHandler struct {
 	client        client.Client
 	updateChannel chan Update
 }
 
-// NewUpdateHandler get a new status update handler
+// DedupingUpdateHandler wraps UpdateHandler and deduplicates updates for the same resource.
+type DedupingUpdateHandler struct {
+	handler   *UpdateHandler
+	pending   map[types.NamespacedName]Update
+	mutex     sync.Mutex
+	flushTick time.Duration
+	stopChan  chan struct{}
+}
+
+// NewUpdateHandler creates a new status update handler.
 func NewUpdateHandler(client client.Client) *UpdateHandler {
 	return &UpdateHandler{
 		client:        client,
-		updateChannel: make(chan Update, 100),
+		updateChannel: make(chan Update, 50), // Smaller buffer to prevent OOM
 	}
 }
 
-// applyUpdate perform the status update on CR
+// NewDedupingUpdateHandler creates a deduping wrapper for UpdateHandler.
+func NewDedupingUpdateHandler(handler *UpdateHandler, flushTick time.Duration) *DedupingUpdateHandler {
+	if flushTick == 0 {
+		flushTick = 2 * time.Second
+	}
+	return &DedupingUpdateHandler{
+		handler:   handler,
+		pending:   make(map[types.NamespacedName]Update),
+		flushTick: flushTick,
+		stopChan:  make(chan struct{}),
+	}
+}
+
+// applyUpdate performs the status patch on a CR.
 func (updateHandler *UpdateHandler) applyUpdate(update Update) {
-	err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		if err := updateHandler.client.Get(context.Background(), update.NamespacedName, update.Resource); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := retry.OnError(retry.DefaultBackoff, func(err error) bool {
+		return errors.IsConflict(err) || errors.IsServerTimeout(err)
+	}, func() error {
+		latest := update.Resource.DeepCopyObject().(client.Object)
+		if err := updateHandler.client.Get(ctx, update.NamespacedName, latest); err != nil {
+			if errors.IsNotFound(err) {
+				loggers.LoggerAPKOperator.Warnf("API CR %s not found, skipping status update",
+					update.NamespacedName.String())
+				return nil
+			}
 			return err
 		}
 
-		resourceCopy := update.UpdateStatus(update.Resource)
-		if isStatusEqual(update.Resource, resourceCopy) {
-			loggers.LoggerAPKOperator.Debugf("Status unchanged, hence not updating. %s", update.NamespacedName.String())
+		updatedObj := update.UpdateStatus(latest)
+		if isStatusEqual(latest, updatedObj) {
+			loggers.LoggerAPKOperator.Debugf("Status unchanged for %s, skipping update",
+				update.NamespacedName.String())
 			return nil
 		}
-		loggers.LoggerAPKOperator.Debugf("Status is updating for %s ...", update.NamespacedName.String())
-		return updateHandler.client.Status().Update(context.Background(), resourceCopy)
+
+		loggers.LoggerAPKOperator.Debugf("Patching status for %s ...", update.NamespacedName.String())
+		return updateHandler.client.Status().Patch(ctx, updatedObj, client.MergeFrom(latest))
 	})
 
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("Unable to update status for %s, Resource Kind : %+v, Error : %v ",
+		loggers.LoggerAPKOperator.Errorf("Unable to patch status for %s, Kind: %+v, Error: %v",
 			update.NamespacedName.String(), update.Resource.GetObjectKind(), err)
 	}
 }
 
-// Start starts the status update handler go routine.
+// Start starts the status update handler goroutine.
 func (updateHandler *UpdateHandler) Start(ctx context.Context) error {
 	loggers.LoggerAPKOperator.Info("Started status update handler")
 	defer loggers.LoggerAPKOperator.Info("Stopped status update handler")
@@ -78,7 +116,8 @@ func (updateHandler *UpdateHandler) Start(ctx context.Context) error {
 	for {
 		select {
 		case update := <-updateHandler.updateChannel:
-			loggers.LoggerAPKOperator.Debugf("Received a status update in %s", update.NamespacedName.String())
+			loggers.LoggerAPKOperator.Debugf("Received a status update event for %s",
+				update.NamespacedName.String())
 			updateHandler.applyUpdate(update)
 		case <-ctx.Done():
 			return nil
@@ -86,25 +125,69 @@ func (updateHandler *UpdateHandler) Start(ctx context.Context) error {
 	}
 }
 
-// Send public method to add status update events to the update channel.
+// Send adds a status update event to the update channel.
 func (updateHandler *UpdateHandler) Send(update Update) {
-	updateHandler.updateChannel <- update
+	select {
+	case updateHandler.updateChannel <- update:
+	default:
+		loggers.LoggerAPKOperator.Warnf("Dropping status update for %s - queue is full",
+			update.NamespacedName.String())
+	}
+}
+
+// Send deduplicates updates for the same resource and flushes later.
+func (d *DedupingUpdateHandler) Send(update Update) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	d.pending[update.NamespacedName] = update
+}
+
+// StartDeduper runs the deduper and forwards unique updates to UpdateHandler.
+func (d *DedupingUpdateHandler) StartDeduper(ctx context.Context) {
+	ticker := time.NewTicker(d.flushTick)
+	defer ticker.Stop()
+
+	loggers.LoggerAPKOperator.Infof("Started deduping status update handler with flush interval %v", d.flushTick)
+
+	for {
+		select {
+		case <-ticker.C:
+			d.flushPending()
+		case <-ctx.Done():
+			loggers.LoggerAPKOperator.Info("Stopped deduping status update handler")
+			return
+		}
+	}
+}
+
+// flushPending pushes all pending unique updates to the underlying UpdateHandler.
+func (d *DedupingUpdateHandler) flushPending() {
+	d.mutex.Lock()
+	updates := make([]Update, 0, len(d.pending))
+	for _, u := range d.pending {
+		updates = append(updates, u)
+	}
+	d.pending = make(map[types.NamespacedName]Update)
+	d.mutex.Unlock()
+
+	for _, u := range updates {
+		loggers.LoggerAPKOperator.Debugf("Flushing deduped status update for %s", u.NamespacedName)
+		d.handler.Send(u)
+	}
 }
 
 // isStatusEqual checks if two objects have equivalent status.
-// Supported:
-//   - API
 func isStatusEqual(objA, objB interface{}) bool {
 	switch a := objA.(type) {
-	case *dpv1alpha1.API:
-		if b, ok := objB.(*dpv1alpha1.API); ok {
+	case *dpv1alpha3.API:
+		if b, ok := objB.(*dpv1alpha3.API); ok {
 			return compareAPIs(a, b)
 		}
 	}
 	return false
 }
 
-// compareAPIs compares status in API CRs.
-func compareAPIs(api1 *dpv1alpha1.API, api2 *dpv1alpha1.API) bool {
+// compareAPIs compares the status of API CRs.
+func compareAPIs(api1 *dpv1alpha3.API, api2 *dpv1alpha3.API) bool {
 	return api1.Status.DeploymentStatus.Message == api2.Status.DeploymentStatus.Message
 }
