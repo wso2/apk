@@ -48,15 +48,17 @@ import (
 // AIRateLimitPolicyReconciler reconciles a AIRateLimitPolicy object
 type AIRateLimitPolicyReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
-	ods    *cache.RatelimitDataStore
+	APIReader client.Reader
+	Scheme    *runtime.Scheme
+	ods       *cache.RatelimitDataStore
 }
 
 // NewAIRatelimitController creates a new ratelimitcontroller instance.
 func NewAIRatelimitController(mgr manager.Manager, ratelimitStore *cache.RatelimitDataStore) error {
 	aiRateLimitPolicyReconciler := &AIRateLimitPolicyReconciler{
-		Client: mgr.GetClient(),
-		ods:    ratelimitStore,
+		Client:    mgr.GetClient(),
+		APIReader: mgr.GetAPIReader(),
+		ods:       ratelimitStore,
 	}
 
 	c, err := controller.New(constants.AIRatelimitController, mgr, controller.Options{Reconciler: aiRateLimitPolicyReconciler})
@@ -123,8 +125,13 @@ func (r *AIRateLimitPolicyReconciler) Reconcile(ctx context.Context, req ctrl.Re
 				ns = ratelimitPolicy.Namespace
 			}
 			if err := r.Client.Get(ctx, types.NamespacedName{Namespace: ns, Name: string(ratelimitPolicy.Spec.TargetRef.Name)}, &backend); err != nil {
+				// If not found in cache, fallback to direct API call
 				loggers.LoggerAPKOperator.Errorf("Error retrieving Backend: %v", err)
-			} else {
+				if err := r.APIReader.Get(ctx, types.NamespacedName{Namespace: ns, Name: string(ratelimitPolicy.Spec.TargetRef.Name)}, &backend); err != nil {
+					loggers.LoggerAPKOperator.Errorf("Error retrieving Backend directly: %v", err)
+				}
+			}
+			if backend.Name != "" {
 				loggers.LoggerAPKOperator.Infof("Backend found: %s", backend.Name)
 				// Prepare owner references for the route
 				if len(backend.GetOwnerReferences()) == 1 && backend.GetOwnerReferences()[0].Kind == "API" {
