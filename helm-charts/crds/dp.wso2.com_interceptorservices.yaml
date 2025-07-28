@@ -15,56 +15,56 @@ spec:
     singular: interceptorservice
   scope: Namespaced
   versions:
-  - name: v1alpha1
-    schema:
-      openAPIV3Schema:
-        description: InterceptorService is the Schema for the interceptorservices
-          API
-        properties:
-          apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: InterceptorService is the Schema for the interceptorservices
+            API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation
               of an object. Servers should convert recognized schemas to the latest
               internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
-            type: string
-          kind:
-            description: 'Kind is a string value representing the REST resource this
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this
               object represents. Servers may infer this from the endpoint the client
               submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
-            type: string
-          metadata:
-            type: object
-          spec:
-            description: InterceptorServiceSpec defines the desired state of InterceptorService
-            properties:
-              backendRef:
-                description: BackendReference refers to a Backend resource as the
-                  interceptor service.
-                properties:
-                  name:
-                    description: Name is the name of the Backend resource.
-                    minLength: 1
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: InterceptorServiceSpec defines the desired state of InterceptorService
+              properties:
+                backendRef:
+                  description: BackendReference refers to a Backend resource as the
+                    interceptor service.
+                  properties:
+                    name:
+                      description: Name is the name of the Backend resource.
+                      minLength: 1
+                      type: string
+                  required:
+                    - name
+                  type: object
+                includes:
+                  description: Includes defines the types of data which should be included
+                    when calling the interceptor service
+                  items:
+                    description: InterceptorInclusion defines the type of data which
+                      can be included in the interceptor request/response path
                     type: string
-                required:
-                - name
-                type: object
-              includes:
-                description: Includes defines the types of data which should be included
-                  when calling the interceptor service
-                items:
-                  description: InterceptorInclusion defines the type of data which
-                    can be included in the interceptor request/response path
-                  type: string
-                maxItems: 4
-                nullable: true
-                type: array
-            required:
-            - backendRef
-            type: object
-          status:
-            description: InterceptorServiceStatus defines the observed state of InterceptorService
-            type: object
-        type: object
-    served: true
-    storage: true
-    subresources:
-      status: {}
+                  maxItems: 4
+                  nullable: true
+                  type: array
+              required:
+                - backendRef
+              type: object
+            status:
+              description: InterceptorServiceStatus defines the observed state of InterceptorService
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status:
