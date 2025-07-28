@@ -307,6 +307,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						if mediation.MediationAndRequestHeaderProcessing[policy.PolicyName] {
 							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							s.updateRequestConfigBasedOnMediationResults(mediationResult, requestConfigHolder, requestconfig.ProcessingPhaseRequestHeaders)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
 								resp,
@@ -344,6 +345,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						if mediation.MediationAndRequestBodyProcessing[policy.PolicyName] {
 							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							s.updateRequestConfigBasedOnMediationResults(mediationResult, requestConfigHolder, requestconfig.ProcessingPhaseRequestBody)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
 								resp,
@@ -381,6 +383,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						if mediation.MediationAndResponseHeaderProcessing[policy.PolicyName] {
 							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							s.updateRequestConfigBasedOnMediationResults(mediationResult, requestConfigHolder, requestconfig.ProcessingPhaseResponseHeaders)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
 								resp,
@@ -418,6 +421,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						if mediation.MediationAndResponseBodyProcessing[policy.PolicyName] {
 							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
+							s.updateRequestConfigBasedOnMediationResults(mediationResult, requestConfigHolder, requestconfig.ProcessingPhaseResponseBody)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
 								resp,
@@ -446,6 +450,65 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		}
 		if err := srv.Send(resp); err != nil {
 			s.log.Sugar().Debug(fmt.Sprintf("send error %v", err))
+		}
+	}
+}
+
+func (s *ExternalProcessingServer) updateRequestConfigBasedOnMediationResults(mediationResult *mediation.Result, requestConfigHolder *requestconfig.Holder, processingPhase requestconfig.ProcessingPhase) {
+	if len(mediationResult.RemoveHeaders) > 0 {
+		s.log.Sugar().Debugf("Removing headers: %v", mediationResult.RemoveHeaders)
+		var headerValues []*corev3.HeaderValue 
+		if processingPhase == requestconfig.ProcessingPhaseRequestHeaders {
+			for _, header := range requestConfigHolder.RequestHeaders.Headers.Headers {
+				if !util.Contains(mediationResult.RemoveHeaders, header.Key) {
+					headerValues = append(headerValues, &corev3.HeaderValue{
+						Key:      header.Key,
+						RawValue: []byte(header.RawValue),
+					})
+				} else {
+					s.log.Sugar().Debugf("Removing header: %s", header.Key)
+				}
+			}
+		} else if processingPhase == requestconfig.ProcessingPhaseResponseHeaders {
+			for _, header := range requestConfigHolder.ResponseHeaders.Headers.Headers {
+				if !util.Contains(mediationResult.RemoveHeaders, header.Key) {
+					headerValues = append(headerValues, &corev3.HeaderValue{
+						Key:      header.Key,
+						RawValue: []byte(header.RawValue),
+					})
+				} else {
+					s.log.Sugar().Debugf("Removing header: %s", header.Key)
+				}
+			}
+		}
+		requestConfigHolder.RequestHeaders.Headers.Headers = headerValues
+	}
+	if len(mediationResult.AddHeaders) > 0 {
+		s.log.Sugar().Debugf("Adding headers: %v", mediationResult.AddHeaders)
+		if processingPhase == requestconfig.ProcessingPhaseRequestHeaders {
+			for key, value := range mediationResult.AddHeaders {
+				s.log.Sugar().Debugf("Adding header: %s: %s", key, value)
+				requestConfigHolder.RequestHeaders.Headers.Headers = append(requestConfigHolder.RequestHeaders.Headers.Headers, &corev3.HeaderValue{
+					Key:      key,
+					RawValue: []byte(value),
+				})
+			}
+		} else if processingPhase == requestconfig.ProcessingPhaseResponseHeaders {
+			for key, value := range mediationResult.AddHeaders {
+				s.log.Sugar().Debugf("Adding header: %s: %s", key, value)
+				requestConfigHolder.ResponseHeaders.Headers.Headers = append(requestConfigHolder.ResponseHeaders.Headers.Headers, &corev3.HeaderValue{
+					Key:      key,
+					RawValue: []byte(value),
+				})
+			}
+		}
+	}
+	if mediationResult.ModifyBody {
+		s.log.Sugar().Debugf("Modifying body: %s", mediationResult.Body)
+		if processingPhase == requestconfig.ProcessingPhaseRequestBody {
+			requestConfigHolder.RequestBody.Body = []byte(mediationResult.Body)
+		} else if processingPhase == requestconfig.ProcessingPhaseResponseBody {
+			requestConfigHolder.ResponseBody.Body = []byte(mediationResult.Body)
 		}
 	}
 }
