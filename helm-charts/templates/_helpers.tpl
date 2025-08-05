@@ -1,30 +1,75 @@
 {{/*
- Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
-
- WSO2 LLC. licenses this file to you under the Apache License,
- Version 2.0 (the "License"); you may not use this file except
- in compliance with the License.
- You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing,
- software distributed under the License is distributed on an
- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- KIND, either express or implied. See the License for the
- specific language governing permissions and limitations
- under the License.
+Expand the name of the chart.
 */}}
+{{- define "kubernetes-gateway-helm.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "kubernetes-gateway-helm.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "kubernetes-gateway-helm.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Common labels
+*/}}
+{{- define "kubernetes-gateway-helm.labels" -}}
+helm.sh/chart: {{ include "kubernetes-gateway-helm.chart" . }}
+{{ include "kubernetes-gateway-helm.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
 
 {{/*
 Selector labels
 */}}
-{{- define "apk-helm.pod.selectorLabels" -}}
+{{- define "kubernetes-gateway-helm.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "kubernetes-gateway-helm.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "kubernetes-gateway-helm.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create }}
+{{- default (include "kubernetes-gateway-helm.fullname" .) .Values.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "kubernetes-gateway-helm.pod.selectorLabels" -}}
 app.kubernetes.io/app: {{ .app }}
 app.kubernetes.io/release: {{ .root.Release.Name }}
 {{- end }}
 
-{{- define "apk-helm.deployment.affinity" -}}
+{{- define "kubernetes-gateway-helm.deployment.affinity" -}}
 {{- $value := typeIs "string" .value | ternary .value (.value | toYaml) }}
 {{- if  (not .value) -}}
 podAntiAffinity:
@@ -45,7 +90,7 @@ podAntiAffinity:
 {{- end }}
 {{- end -}}
 
-{{- define "apk-helm.deployment.nodeSelector" -}}
+{{- define "kubernetes-gateway-helm.deployment.nodeSelector" -}}
 {{- $value := typeIs "string" .value | ternary .value (.value | toYaml) }}
 {{- if contains "{{" (toJson .value) }}
     {{- tpl $value .context }}
@@ -54,7 +99,7 @@ podAntiAffinity:
 {{- end }}
 {{- end -}}
 
-{{- define "apk-helm.deployment.readinessProbe.http" -}}
+{{- define "kubernetes-gateway-helm.deployment.readinessProbe.http" -}}
 readinessProbe:
   httpGet:
     path: {{ .readinessProbe.path }}
@@ -64,7 +109,7 @@ readinessProbe:
   failureThreshold: {{ .readinessProbe.failureThreshold }}
 {{- end }}
 
-{{- define "apk-helm.deployment.livenessProbe.http" -}}
+{{- define "kubernetes-gateway-helm.deployment.livenessProbe.http" -}}
 livenessProbe:
   httpGet:
     path: {{ .livenessProbe.path }}
@@ -74,7 +119,7 @@ livenessProbe:
   failureThreshold: {{ .livenessProbe.failureThreshold }}
 {{- end }}
 
-{{- define "apk-helm.deployment.resources" -}}
+{{- define "kubernetes-gateway-helm.deployment.resources" -}}
 resources:
   requests:
     memory: {{ .requests.memory }}
@@ -88,14 +133,14 @@ resources:
 {{/*
 Common prefix prepended to Kubernetes resources of this chart
 */}}
-{{- define "apk-helm.resource.prefix" -}}
-{{- printf "%s-wso2-apk" .Release.Name -}}
+{{- define "kubernetes-gateway-helm.resource.prefix" -}}
+{{- printf "%s-wso2-kgw" .Release.Name -}}
 {{- end -}}
 
 
 
 
-{{- define "apk-helm.deployment.env" -}}
+{{- define "kubernetes-gateway-helm.deployment.env" -}}
 env:
 {{- if . -}}
 {{- range $key, $val := . }}
@@ -143,16 +188,16 @@ env:
 {{- end -}}
 {{- end -}}
 
-{{- define "apk.javaOptions" -}}
-  {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
-    {{- .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
-    {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled -}}
-      {{- " " }}-Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18006:/tmp/metrics/prometheus-jmx-config-enforcer.yml
+{{- define "kgw.javaOptions" -}}
+  {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
+    {{- .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
+    {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled -}}
+      {{- " " }}-Dkgw.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18006:/tmp/metrics/prometheus-jmx-config-enforcer.yml
     {{- end }}
   {{- else -}}
     -Dhttpclient.hostnameVerifier=AllowAll -Xms512m -Xmx512m -XX:MaxRAMFraction=2
-    {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-      {{- " " }}-Dapk.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18006:/tmp/metrics/prometheus-jmx-config-enforcer.yml
+    {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
+      {{- " " }}-Dkgw.jmx.metrics.enabled=true -javaagent:/home/wso2/lib/jmx_prometheus_javaagent-0.20.0.jar=18006:/tmp/metrics/prometheus-jmx-config-enforcer.yml
     {{- end }}
   {{- end }}
 {{- end }}
