@@ -1,4 +1,4 @@
-name: Release Envoy Gateway Extension Server.
+name: Release Extension Server.
 on:
   workflow_call:
     inputs:
