@@ -13,14 +13,14 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.configdeployer.enabled }}
+{{- if and .Values.wso2.kgw.dp.enabled .Values.wso2.kgw.dp.configdeployer.enabled }}
 kind: "ConfigMap"
 apiVersion: "v1"
 metadata:
-  name: "{{ template "apk-helm.resource.prefix" . }}-wso2-apk-config-generator-api-definition"
+  name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-wso2-kgw-config-generator-api-definition"
   namespace: {{ .Release.Namespace }}
   labels:
-    managed-by: "apk"
+    managed-by: "kgw"
 binaryData:
   definition: "H4sIAAAAAAAAAK2RvW7DMAyEX6XgXP/EXQq/QocORaYig6DQMRFHFES6QWr43UvJaYcOnaqFgu7uO4BagCMGFwl6eKrbegePD0BhYOgXUNIJTbgKd5WL58pzGOhUnTBgcsqpykELfGAS4mDWnTFaWO1N0M+J9Ab9+wJHHNw8qd0P68HE6HSUXNEYQZo7EO8Fs90LboHIonkmlMhBsIS6ts3jiOITxc0Kry+w/t1b5F+F52epjM1z8hv7fwuz7vliJAxaUN/uNz/iZaP/ZGzjt5gXzm7WscubHSa+FhNd4kSeiiurnOizbGmfJkuMqlH6plEUra0xZ8Xb3+bwup0vY0KevuwBAAA="
 {{- end -}}

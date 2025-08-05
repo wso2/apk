@@ -17,11 +17,11 @@
 # The following manifests contain a self-signed issuer CR and a certificate CR.
 # More document can be found at https://docs.cert-manager.io
 
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if .Values.wso2.kgw.dp.enabled }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-gateway-server-cert
   namespace: {{ .Release.Namespace }}
 spec:
   commonName: gateway-service
@@ -30,14 +30,14 @@ spec:
     encoding: PKCS8
     size: 2048
   dnsNames:
-  - {{ template "apk-helm.resource.prefix" . }}-gateway-service.{{ .Release.Namespace }}.svc
-  - {{ template "apk-helm.resource.prefix" . }}-gateway-service.{{ .Release.Namespace }}.svc.cluster.local
+  - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-gateway-service.{{ .Release.Namespace }}.svc
+  - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-gateway-service.{{ .Release.Namespace }}.svc.cluster.local
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
     {{ if .Values.certmanager.servers -}}
     name: {{  .Values.certmanager.servers.issuerName | default "selfsigned-issuer" }}
     {{- else -}}
-    name: {{ template "apk-helm.resource.prefix" . }}-selfsigned-issuer
+    name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-selfsigned-issuer
     {{- end }}
-  secretName: {{ template "apk-helm.resource.prefix" . }}-gateway-server-cert
+  secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-gateway-server-cert
 {{- end -}}
