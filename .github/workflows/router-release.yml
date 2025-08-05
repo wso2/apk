@@ -35,7 +35,7 @@ on:
     paths:
       - '**/gateway/router**'
     branches:
-      - 'main'
+      - '2.x'
 concurrency:
   group: router-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
@@ -64,16 +64,16 @@ jobs:
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
-          git merge origin/main
+          git merge origin/2.x
 
       - name: Run Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != '' 
         run: |
           cd apk-repo
-          git checkout -b router-1.x
-          git push origin router-1.x
+          git checkout -b router-2.x
+          git push origin router-2.x
           cd gateway/router
-          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=router-1.x
+          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=router-2.x
       - name: Run Gradle Build
         run: |
           cd apk-repo/gateway/router
