@@ -35,7 +35,7 @@ on:
     paths:
       - '**/ratelimiter/**'
     branches:
-      - 'main'
+      - '2.x'
 env:
   GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
 concurrency:
@@ -71,15 +71,15 @@ jobs:
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
-          git merge origin/main
+          git merge origin/2.x
       - name: Run Release Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         run: |
           cd apk-repo
-          git checkout -b ratelimiter-1.x
-          git push origin ratelimiter-1.x
+          git checkout -b ratelimiter-2.x
+          git push origin ratelimiter-2.x
           cd ratelimiter
-          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=ratelimiter-1.x
+          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=ratelimiter-2.x
       - name: Run Gradle Build
         run: |
           cd apk-repo/ratelimiter
