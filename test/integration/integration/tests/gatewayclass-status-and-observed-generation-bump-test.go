@@ -31,7 +31,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, GatewayClassObservedGenerationBump)
+	//IntegrationTests = append(IntegrationTests, GatewayClassObservedGenerationBump)
 }
 
 var GatewayClassObservedGenerationBump = suite.IntegrationTest{

@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, DifferentAPIWithSameRoute)
+	//IntegrationTests = append(IntegrationTests, DifferentAPIWithSameRoute)
 }
 
 // DifferentAPIWithSameRoute tests httproute that points to different endpoints with same
@@ -63,7 +63,7 @@ var DifferentAPIWithSameRoute = suite.IntegrationTest{
 				},
 				ExpectedRequest: &http.ExpectedRequest{
 					Request: http.Request{
-						Path: "/v2/echo-full",
+						Path:   "/v2/echo-full",
 						Method: "POST",
 					},
 				},

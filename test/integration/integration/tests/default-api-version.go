@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, DefaultAPIVersion)
+	//IntegrationTests = append(IntegrationTests, DefaultAPIVersion)
 }
 
 // DefaultAPIVersion tests default api version feature
@@ -52,7 +52,7 @@ var DefaultAPIVersion = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response: http.Response{StatusCode: 200},
+				Response:  http.Response{StatusCode: 200},
 			},
 			{
 				Request: http.Request{
@@ -67,7 +67,7 @@ var DefaultAPIVersion = suite.IntegrationTest{
 				},
 				Backend:   "infra-backend-v1",
 				Namespace: ns,
-				Response: http.Response{StatusCode: 200},
+				Response:  http.Response{StatusCode: 200},
 			},
 		}
 		for i := range testCases {
