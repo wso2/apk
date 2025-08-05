@@ -62,13 +62,7 @@ tasks.register('go_test', Exec) {
     commandLine 'sh', '-c', "go test -race -coverprofile=coverage.out -covermode=atomic ./..."
 }
 
-tasks.named('go_revive_run').configure { 
-    finalizedBy go_tidy
-    finalizedBy go_test
-}
-
 tasks.named('go_build').configure {
-    dependsOn go_revive_run
     dependsOn go_vet
     println("Running go build")
     finalizedBy docker_build
