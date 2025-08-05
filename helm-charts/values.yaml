@@ -164,7 +164,7 @@ envoy:
   global:
     images:
       envoyGateway:
-        image: docker.io/envoyproxy/gateway:v1.3.2
+        image: docker.io/envoyproxy/gateway:v1.4.2
         pullPolicy: IfNotPresent
         pullSecrets: []
       ratelimit:
