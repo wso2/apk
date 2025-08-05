@@ -12,13 +12,13 @@ RUN go mod download
 COPY . .
 
 # Build the statically linked binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o mock-idp .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o idp ./cmd
 
 # Use a small base image
 FROM gcr.io/distroless/static
 
-COPY --from=builder /app/mock-idp /mock-idp
+COPY --from=builder /app/idp /idp
 
 EXPOSE 8080
 
-ENTRYPOINT ["/mock-idp"]
+ENTRYPOINT ["/idp"]
