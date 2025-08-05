@@ -119,134 +119,136 @@ jobs:
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
-  # runs_go_integration_tests_on_pull_request:
-  #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #   needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: azure/login@v1
-  #     with:
-  #       creds: ${{ secrets.AZURE_CREDENTIALS }}
-  #   - name: Create AKS Cluster and set context
-  #     uses: azure/CLI@v1
-  #     with:
-  #       azcliversion: 2.72.0
-  #       inlineScript: |
-  #         az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys 
-  #   - uses: azure/aks-set-context@v3
-  #     with:
-  #        resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
-  #        cluster-name: 'go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
-  #   - name: Create Namespace apk-integration-test
-  #     shell: sh
-  #     run: |
-  #       kubectl create namespace apk-integration-test
-  #       kubectl get ns 
-  #   - name: Create Image pull secret.
-  #     shell: sh
-  #     run: |
-  #       kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.APK_BOT_EMAIL }} -n apk-integration-test
-  #   - name: Checkout apk-repo.
-  #     uses: actions/checkout@v3
-  #     with:
-  #       fetch-depth: "0"
-  #       path: apk-repo
-  #       token: ${{ secrets.APK_BOT_TOKEN }}
-  #   - name: Set release username and email
-  #     shell: sh
-  #     run: |
-  #       git config --global user.name ${{ secrets.APK_BOT_USER }}
-  #       git config --global user.email ${{ secrets.APK_BOT_EMAIL }}
+  runs_go_integration_tests_on_pull_request:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    needs: [build_common_controller, build_enforcer, build_config, build_idpds, build_idpui]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Create AKS Cluster and set context
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.72.0
+        inlineScript: |
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys 
+    - uses: azure/aks-set-context@v3
+      with:
+         resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
+         cluster-name: 'go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
+    - name: Create Namespace apk-integration-test
+      shell: sh
+      run: |
+        kubectl create namespace apk-integration-test
+        kubectl get ns 
+    - name: Create Image pull secret.
+      shell: sh
+      run: |
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.APK_BOT_EMAIL }} -n apk-integration-test
+    - name: Checkout apk-repo.
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: "0"
+        path: apk-repo
+        token: ${{ secrets.APK_BOT_TOKEN }}
+    - name: Set release username and email
+      shell: sh
+      run: |
+        git config --global user.name ${{ secrets.APK_BOT_USER }}
+        git config --global user.email ${{ secrets.APK_BOT_EMAIL }}
 
-  #   - name: checkout pull request and merge.
-  #     shell: sh
-  #     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #     run: |
-  #       cd apk-repo
-  #       gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
-  #       git checkout pr-${{ github.event.number }}
-  #       git merge origin/2.x
+    - name: checkout pull request and merge.
+      shell: sh
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+      run: |
+        cd apk-repo
+        gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
+        git checkout pr-${{ github.event.number }}
+        git merge origin/2.x
 
-  #   - name: Helm release deploy
-  #     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #     shell: sh
-  #     run: |
-  #       cd apk-repo/helm-charts
-  #       helm repo add bitnami https://charts.bitnami.com/bitnami
-  #       helm repo add jetstack https://charts.jetstack.io
-  #       helm dependency build
-  #       helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
-  #       --set wso2.subscription.imagePullSecrets=azure-registry \
-  #       --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-config-deployer-service:${{ github.sha }} \
-  #       --set wso2.apk.dp.configdeployer.deployment.readinessProbe.failureThreshold=10 \
-  #       --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-adapter:${{ github.sha }} \
-  #       --set wso2.apk.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-common-controller:${{ github.sha }} \
-  #       --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-enforcer:${{ github.sha }} \
-  #       --set wso2.apk.dp.gatewayRuntime.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-router:${{ github.sha }} \
-  #       --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold=10 \
-  #       --set wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold=10 \
-  #       --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-idp-domain-service:${{ github.sha }} \
-  #       --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-idp-ui:${{ github.sha }} \
-  #       --set wso2.apk.dp.ratelimiter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-ratelimiter:${{ github.sha }} \
-  #       --set wso2.apk.dp.ratelimiter.requestTimeoutInMillis=2000 \
-  #       --set wso2.apk.dp.gateway.httpListener.enabled=true \
-  #       --set wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting=true 
-  #       kubectl get pods -n apk-integration-test
-  #       kubectl get svc -n apk-integration-test
-  #   - name: Archieve Logs
-  #     shell: sh
-  #     run: |
-  #       mkdir -p podlogs
-  #       kubectl logs -n apk-integration-test -l app.kubernetes.io/app=adapter -f > podlogs/adapter.log &
-  #       kubectl logs -n apk-integration-test -l app.kubernetes.io/app=commoncontroller -f > podlogs/common-controller.log &
-  #       kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c enforcer -f > podlogs/enforcer.log &
-  #       kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c router -f > podlogs/router.log &
-  #       kubectl logs -n apk-integration-test -l app.kubernetes.io/app=configdeployer-ds -f> podlogs/config-deployer.log &
-  #       kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ds -c idpds -f > podlogs/idpds.log &
-  #       kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ui -f> podlogs/idpui.log &
-  #       kubectl logs -n apk-integration-test -l app.kubernetes.io/app=ratelimiter -f> podlogs/ratelimiter.log &
-  #       ls -l podlogs
-  #   - name: Run test cases
-  #     shell: sh
-  #     run: |
-  #         cd apk-repo/test/integration
-  #         sh ./scripts/setup-hosts.sh
-  #         go test -v integration_test.go
-  #   - name: Helm release undeploy
-  #     if: always()
-  #     shell: sh
-  #     run: |
-  #       cd apk-repo/helm-charts
-  #       kubectl describe pods -n apk-integration-test
-  #       kubectl get pods -n apk-integration-test
-  #       kubectl get svc -n apk-integration-test
-  #       helm uninstall apk-test-setup -n apk-integration-test
-  #   - name: Delete AKS cluster
-  #     if: always()
-  #     uses: azure/CLI@v1
-  #     with:
-  #       azcliversion: 2.72.0
-  #       inlineScript: |
-  #         az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
-  #   - name: Logout from azure
-  #     if: always()
-  #     uses: azure/CLI@v1
-  #     with:
-  #       azcliversion: 2.72.0
-  #       inlineScript: |
-  #         az logout
-  #   - name: Publish Test Report
-  #     if: always()
-  #     uses: malinthaprasan/action-surefire-report@v1
-  #     with:
-  #      report_paths: 'apk-repo/test/postman-tests/build/*.xml'
-  #      fail_on_test_failures: true
-  #   - name: Archieve Logs
-  #     if: always()
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: apk-integration-test-go-logs
-  #       path: 'podlogs/*.log'
+    - name: Helm release deploy
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+      shell: sh
+      run: |
+        cd apk-repo/helm-charts
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm repo add jetstack https://charts.jetstack.io
+        helm dependency build
+        helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
+        --set wso2.subscription.imagePullSecrets=azure-registry \
+        --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
+        --set wso2.apk.dp.configdeployer.deployment.readinessProbe.failureThreshold=10 \
+        --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-adapter:${{ github.sha }} \
+        --set wso2.apk.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-common-controller:${{ github.sha }} \
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-enforcer:${{ github.sha }} \
+        --set wso2.apk.dp.gatewayRuntime.deployment.router.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-router:${{ github.sha }} \
+        --set wso2.apk.dp.gatewayRuntime.deployment.enforcer.readinessProbe.failureThreshold=10 \
+        --set wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold=10 \
+        --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-idp-domain-service:${{ github.sha }} \
+        --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-idp-ui:${{ github.sha }} \
+        --set wso2.apk.dp.ratelimiter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-ratelimiter:${{ github.sha }} \
+        --set wso2.apk.dp.ratelimiter.requestTimeoutInMillis=2000 \
+        --set wso2.apk.dp.gateway.httpListener.enabled=true \
+        --set wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting=true \
+        --set wso2.kgw.dp.envoyGateway.namespace=apk-integration-test \
+        --set envoy.config.envoyGateway.extensionManager.service.fqdn=envoy-gateway-extension-server-service.apk-integration-test.svc.cluster.local
+        kubectl get pods -n apk-integration-test
+        kubectl get svc -n apk-integration-test
+    - name: Archieve Logs
+      shell: sh
+      run: |
+        mkdir -p podlogs
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=adapter -f > podlogs/adapter.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=commoncontroller -f > podlogs/common-controller.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c enforcer -f > podlogs/enforcer.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c router -f > podlogs/router.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=configdeployer-ds -f> podlogs/config-deployer.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ds -c idpds -f > podlogs/idpds.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ui -f> podlogs/idpui.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=ratelimiter -f> podlogs/ratelimiter.log &
+        ls -l podlogs
+    - name: Run test cases
+      shell: sh
+      run: |
+          cd apk-repo/test/integration
+          sh ./scripts/setup-hosts.sh
+          go test -v integration_test.go
+    - name: Helm release undeploy
+      if: always()
+      shell: sh
+      run: |
+        cd apk-repo/helm-charts
+        kubectl describe pods -n apk-integration-test
+        kubectl get pods -n apk-integration-test
+        kubectl get svc -n apk-integration-test
+        helm uninstall apk-test-setup -n apk-integration-test
+    - name: Delete AKS cluster
+      if: always()
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.72.0
+        inlineScript: |
+          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }} --yes
+    - name: Logout from azure
+      if: always()
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.72.0
+        inlineScript: |
+          az logout
+    - name: Publish Test Report
+      if: always()
+      uses: malinthaprasan/action-surefire-report@v1
+      with:
+       report_paths: 'apk-repo/test/postman-tests/build/*.xml'
+       fail_on_test_failures: true
+    - name: Archieve Logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: apk-integration-test-go-logs
+        path: 'podlogs/*.log'
   # runs_cucumber_integration_tests_on_pull_request:
   #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
   #   needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
