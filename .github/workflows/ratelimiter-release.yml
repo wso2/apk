@@ -77,8 +77,7 @@ jobs:
         run: |
           cd apk-repo
           git checkout -b ratelimiter-2.x
-          git pull origin ratelimiter-2.x --rebase
-          git push origin ratelimiter-2.x
+          git push origin ratelimiter-2.x -f
           cd ratelimiter
           ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=ratelimiter-2.x
       - name: Run Gradle Build

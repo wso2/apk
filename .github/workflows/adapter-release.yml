@@ -78,7 +78,7 @@ jobs:
         run: |
           cd apk-repo
           git checkout -b adapter-2.x
-          git push origin adapter-2.x
+          git push origin adapter-2.x -f
           cd adapter
           ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=adapter-2.x
       - name: Run Gradle Build
