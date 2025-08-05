@@ -363,7 +363,7 @@ data:
         UNIQUE(NAME,ORGANIZATION)
         );
         
-        -- End of APK Tables --
+        -- End of kgw Tables --
         
         -- Performance indexes start--
         
@@ -382,16 +382,16 @@ data:
         GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO wso2carbon;
         GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO wso2carbon;
 
-        -- Insert Initial APK data ---
+        -- Insert Initial kgw data ---
         INSERT INTO RESOURCE_CATEGORIES (RESOURCE_CATEGORY) VALUES ('Thumbnail');
         INSERT INTO RESOURCE_CATEGORIES (RESOURCE_CATEGORY) VALUES ('Document');
-        -- End Insert Initial APK data  
+        -- End Insert Initial kgw data  
 
-        -- Insert Demo APK data ---
-        INSERT INTO INTERNAL_USER(uuid, IDP_USER_NAME) VALUES ( 'apkuser', 'apkuser');
+        -- Insert Demo kgw data ---
+        INSERT INTO INTERNAL_USER(uuid, IDP_USER_NAME) VALUES ( 'kgwuser', 'kgwuser');
         INSERT INTO organization(uuid, name, display_name, status, workflows) VALUES ( 'a3b58ccf-6ecc-4557-b5bb-0a35cce38256', 'default', 'default', true, '');
         INSERT INTO organization_claim_mapping(uuid, claim_key, claim_value) VALUES ( 'a3b58ccf-6ecc-4557-b5bb-0a35cce38256', 'organizationClaimValue', 'default');
-        -- End Insert Demo APK data    
+        -- End Insert Demo kgw data    
         -- Insert Non Prod IDP table --
         CREATE TABLE CONSUMER_APPS (
           CONSUMER_KEY VARCHAR(255),
@@ -405,11 +405,11 @@ data:
         -- End of Non Prod IDP table --
         commit;
     
-      {{- if .Values.wso2.apk.dp.commonController.deployment.database }}
-        CREATE DATABASE "{{ .Values.wso2.apk.dp.commonController.deployment.database.name | default "DATAPLANE" }}";
-        GRANT ALL PRIVILEGES ON DATABASE "{{ .Values.wso2.apk.dp.commonController.deployment.database.name | default "DATAPLANE" }}" TO wso2carbon;
+      {{- if .Values.wso2.kgw.dp.commonController.deployment.database }}
+        CREATE DATABASE "{{ .Values.wso2.kgw.dp.commonController.deployment.database.name | default "DATAPLANE" }}";
+        GRANT ALL PRIVILEGES ON DATABASE "{{ .Values.wso2.kgw.dp.commonController.deployment.database.name | default "DATAPLANE" }}" TO wso2carbon;
 
-      \c "{{ .Values.wso2.apk.dp.commonController.deployment.database.name | default "DATAPLANE" }}"
+      \c "{{ .Values.wso2.kgw.dp.commonController.deployment.database.name | default "DATAPLANE" }}"
           BEGIN TRANSACTION;
           CREATE TABLE IF NOT EXISTS SUBSCRIPTION (
             UUID VARCHAR(256),

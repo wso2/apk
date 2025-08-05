@@ -1,36 +1,13 @@
-# Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
-#
-# WSO2 LLC. licenses this file to you under the Apache License,
-# Version 2.0 (the "License"); you may not use this file except
-# in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
-
 wso2:
   subscription:
     imagePullSecrets: ""
-
-  apk:
-    helmHooks:
-      webhooksCleanupEnabled: true
-    webhooks:
-      validatingwebhookconfigurations: true
-      mutatingwebhookconfigurations: true
-      conversionwebhookconfigurations: true
+  kgw:
     auth:
       enabled: true
       enableServiceAccountCreation: true
       enableClusterRoleCreation: true
-      serviceAccountName: wso2apk-platform
-      roleName: wso2apk-role
+      serviceAccountName: wso2kgw-platform
+      roleName: wso2kgw-role
     listener:
       hostname: "api.am.wso2.com"
       port: 9095
@@ -45,10 +22,10 @@ wso2:
       # tls:
       #   secretName: "wso2apk-idp-certificates"
       #   fileName: "idp.crt"
-      # signing:
-      #   jwksEndpoint: "https://idp.am.wso2.com:9095/oauth2/jwks"
-      #   secretName: "wso2apk-idp-signing"
-      #   fileName: "idp.crt"
+      signing:
+        jwksEndpoint: "https://idp.am.wso2.com:9095/oauth2/jwks"
+        # secretName: "wso2apk-idp-signing"
+        # fileName: "idp.crt"
     # cp:
     # enabledSubscription: true
     # host: "apim-apk-agent-service.apk.svc.cluster.local"
@@ -58,85 +35,19 @@ wso2:
     #     type: "K8s"
     dp:
       enabled: true
+      gatewayClass:
+        name: "wso2-kgw-default"
       gateway:
+        name: "wso2-kgw-default"
         listener:
-          hostname: "gw.wso2.com"
+          hostname: "*.gw.wso2.com"
         service: {}
-          # secretName: "idp-tls"
-      # partitionServer:
-      #   enabled: false
-      #   host: "https://control-plane-wso2-apk-partition-server.control-plane.svc.cluster.local"
-      #   serviceBasePath: "/api/publisher/v1"
-      #   partitionName: "default"
-      #   hostnameVerificationEnable: true
-      #   tls:
-      #     secretName: "partition-server-cert"
-      #     fileName: "certificate.crt"
-      #   headers:
-      #     - name: "apiKey"
-      #       value: "123-456-789"
-      configdeployer:
-        enabled: true
-        deployment:
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "200m"
-            limits:
-              memory: "1024Mi"
-              cpu: "500m"
-          readinessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: RollingUpdate
-          replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-config-deployer-service:1.3.0
-        # debug: true
-          # configs:
-          #   tls:
-          #     secretName: "my-secret"
-          #     certKeyFilename: "tls.key"
-          #     certFilename: "certchain.crt"
-      adapter:
-        deployment:
-          resources:
-            requests:
-              memory: "64Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "200m"
-          readinessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: RollingUpdate
-          replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-adapter:1.3.0
-          security:
-            sslHostname: "adapter"
-          logging:
-            level: "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
-        # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
-          configs: 
-            enableGatewayClassController: false
-            # apiNamespaces:
-            #   - "apk-v12"
-        #   tls:
-        #     secretName: "adapter-cert"
-        #     certKeyFilename: ""
-        #     certFilename: ""
+      envoyProxy:
+        name: "wso2-kgw-envoy-proxy-default"
+      envoyGateway:
+        namespace: "default"
+        clusterRoleName: "envoy-gateway-cluster-role"
+        clusterRoleBindingName: "envoy-gateway-cluster-role-binding"
       envoyGatewayExtensionServer:
         deployment:
           env:
@@ -158,10 +69,39 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: apk-envoy-gateway-extension-server:1.3.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: wso2/kgw-envoy-gateway-extension-server:2.0.0-m1
           security:
             sslHostname: "adapter"
+        service:
+          name: "envoy-gateway-extension-server-service"
+      configdeployer:
+        enabled: true
+        deployment:
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: RollingUpdate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/kgw-config-deployer-service:2.0.0-m1
+          # debug: true
+          # configs:
+          #   tls:
+          #     secretName: "my-secret"
+          #     certKeyFilename: "tls.key"
       commonController:
         deployment:
           resources:
@@ -182,76 +122,15 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-common-controller:1.3.0
+          image: wso2/apk-common-controller:2.0.0-m1
           security:
             sslHostname: "commoncontroller"
           # configs:
           #   apiNamespaces:
-          #     - "apk-v12"
-      ratelimiter:
-        enabled: true
-        deployment:
-          resources:
-            requests:
-              memory: "64Mi"
-              cpu: "50m"
-            limits:
-              memory: "128Mi"
-              cpu: "100m"
-          readinessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          livenessProbe:
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            failureThreshold: 5
-          strategy: RollingUpdate
-          replicas: 1
-          imagePullPolicy: Always
-          image: wso2/apk-ratelimiter:1.3.0
-          security:
-            sslHostname: "ratelimiter"
-          # configs:
-          #   tls:
-          #     secretName: "ratelimiter-cert"
-          #     certKeyFilename: ""
-          #     certFilename: ""
-          #     certCAFilename: ""
+          #     - "kgw-v12"
       gatewayRuntime:
         deployment:
           replicas: 1
-          router:
-            resources:
-              requests:
-                memory: "128Mi"
-                cpu: "200m"
-              limits:
-                memory: "1028Mi"
-                cpu: "1000m"
-            readinessProbe:
-              initialDelaySeconds: 20
-              periodSeconds: 20
-              failureThreshold: 5
-            livenessProbe:
-              initialDelaySeconds: 20
-              periodSeconds: 20
-              failureThreshold: 5
-            strategy: RollingUpdate
-            imagePullPolicy: Always
-            image: wso2/apk-router:1.3.0
-            # configs:
-            #   tls:
-            #     secretName: "router-cert"
-            #     certKeyFilename: ""
-            #     certFilename: ""
-            #     logging:
-            #       wireLogs:
-            #         enable: true
-            #       accessLogs:
-            #         enable: true
-            #     env:
-            #       TRAILING_ARGS: "--log-level trace"
           enforcer:
             resources:
               requests:
@@ -270,40 +149,143 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/apk-enforcer:1.3.0
+            image: wso2/kgw-enforcer:2.0.0-m1
             security:
               sslHostname: "enforcer"
 #            logging:
 #              level: DEBUG
             env:
-              TOKEN_REVOCATION_ENABLED: "true" 
-#            configs:
-#              apiKey:
-#                enabled: true
-#                issuer: "https://localhost:9444/oauth2/token"
-#              tls:
-#                secretName: "router-cert"
-#                certKeyFilename: ""
-#                certFilename: ""
-#              JWKSClient:
-#                skipSSLVerification: false
-#                hostnameVerifier: "AllowAll"
+              TOKEN_REVOCATION_ENABLED: "true"
+              LOG_LEVEL: "DEBUG"
+envoy:
+  enabled: true
+  # ───────────────────────────────────────────────────────────────
+  # begin pasted defaults from gateway-defaults.yaml (v1.3.2)
+  global:
+    images:
+      envoyGateway:
+        image: docker.io/envoyproxy/gateway:v1.3.2
+        pullPolicy: IfNotPresent
+        pullSecrets: []
+      ratelimit:
+        image: "docker.io/envoyproxy/ratelimit:0141a24f"
+        pullPolicy: IfNotPresent
+        pullSecrets: []
+  podDisruptionBudget:
+    minAvailable: 0
 
-    metrics:
-      enabled: false
-      # configDSBalHost: 0.0.0.0
-      # idpDSBalHost: 0.0.0.0
-      # statsd:
-      #   image:
-      #     repository: prom/statsd-exporter
-      #     tag: v0.26.0
-      #   imagePullPolicy: Always
-      #   resources:
-      #     limits:
-      #       memory: 128Mi
-      #     requests:
-      #       cpu: 0.1
-      #       memory: 64Mi
+  deployment:
+    envoyGateway:
+      image:
+        repository: ""
+        tag: ""
+      imagePullPolicy: ""
+      imagePullSecrets: []
+      resources:
+        limits:
+          memory: 1024Mi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        privileged: false
+        runAsNonRoot: true
+        runAsGroup: 65532
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
+    ports:
+      - name: grpc
+        port: 18000
+        targetPort: 18000
+      - name: ratelimit
+        port: 18001
+        targetPort: 18001
+      - name: wasm
+        port: 18002
+        targetPort: 18002
+      - name: metrics
+        port: 19001
+        targetPort: 19001
+    priorityClassName: null
+    replicas: 1
+    pod:
+      affinity: {}
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '19001'
+      labels: {}
+      topologySpreadConstraints: []
+      tolerations: []
+      nodeSelector: {}
+
+  service:
+    annotations: {}
+
+  config:
+    envoyGateway:
+      gateway:
+        controllerName: gateway.envoyproxy.io/gatewayclass-controller
+      provider:
+        type: Kubernetes
+      logging:
+        level:
+          default: info
+      extensionApis:
+        enableBackend: true
+        enableEnvoyPatchPolicy: true
+      extensionManager:
+        resources:
+        - group: dp.wso2.com
+          version: v2alpha1
+          kind: RouteMetadata
+        - group: dp.wso2.com
+          version: v2alpha1
+          kind: RoutePolicy
+        hooks:
+          xdsTranslator:
+            post:
+            - Route
+            - HTTPListener
+        service:
+          fqdn:
+            hostname: envoy-gateway-extension-server-service.default.svc.cluster.local
+            port: 5005
+
+  createNamespace: false
+
+  kubernetesClusterDomain: cluster.local
+
+  certgen:
+    job:
+      annotations: {}
+      args: []
+      resources: {}
+      affinity: {}
+      tolerations: []
+      nodeSelector: {}
+      ttlSecondsAfterFinished: 30
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        privileged: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsGroup: 65534
+        runAsUser: 65534
+        seccompProfile:
+          type: RuntimeDefault
+    rbac:
+      annotations: {}
+      labels: {}
+  # end pasted defaults
+
 idp:
   enabled: true
   listener:
@@ -311,12 +293,12 @@ idp:
     # secretName: "idp-tls"
   database:
     driver: "org.postgresql.Driver"
-    url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
-    host: "wso2apk-db-service"
+    url: "jdbc:postgresql://wso2kgw-db-service:5432/WSO2AM_DB"
+    host: "wso2kgw-db-service"
     port: 5432
     databaseName: "WSO2AM_DB"
     username: "wso2carbon"
-    secretName: "apk-db-secret"
+    secretName: "kgw-db-secret"
     secretKey: "DB_PASSWORD"
     validationQuery: "SELECT 1"
     validationTimeout: 250
@@ -347,7 +329,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/apk-idp-domain-service:1.3.0
+      image: wso2/kgw-idp-domain-service:2.0.0-m1
   idpui:
     deployment:
       resources:
@@ -368,30 +350,20 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/apk-idp-ui:1.3.0
+      image: wso2/kgw-idp-ui:2.0.0-m1
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
-
-gatewaySystem:
-  enabled: true
-  enableServiceAccountCreation: true
-  enableClusterRoleCreation: true
-  serviceAccountName: gateway-api-admission
-  applyGatewayWehbhookJobs: true
-  deployment:
-    image: registry.k8s.io/gateway-api/admission-server:v1.0.0
-    imagePullPolicy: Always
 
 certmanager:
   enabled: true
   enableClusterIssuer: true
   enableRootCa: true
-  rootCaSecretName: "apk-root-certificate"
+  rootCaSecretName: "kgw-root-certificate"
 
 postgresql:
   enabled: true
-  fullnameOverride: "wso2apk-db-service"
+  fullnameOverride: "wso2kgw-db-service"
   auth:
     database: WSO2AM_DB
     postgresPassword: wso2carbon
@@ -418,7 +390,6 @@ postgresql:
       capabilities:
         drop: ["ALL"]
       runAsUser: null
-
   image:
     debug: true
 

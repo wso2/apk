@@ -14,17 +14,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if .Values.wso2.kgw.dp.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-envoy-gateway-extension-server-service
+  name: {{ default "envoy-gateway-extension-server-service"  .Values.wso2.kgw.dp.envoyGatewayExtensionServer.service.name  }}
+  # namespace: {{ default "envoy-gateway-system"  .Values.wso2.kgw.dp.envoyGateway.namespace }}
   namespace: {{ .Release.Namespace }}
   labels:
     app: envoy-gateway-extension-server
 spec:
   selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "envoy-gateway-extension-server" ) | indent 4}}
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "envoy-gateway-extension-server" ) | indent 4}}
   ports:
     - protocol: TCP
       port: 5005        

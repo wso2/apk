@@ -1,25 +1,38 @@
-{{- if .Values.wso2.apk.dp.enabled }}
+# Copyright (c) 2025 WSO2 LLC. (http://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+{{- if .Values.wso2.kgw.dp.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-log-conf
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-log-conf
   namespace: {{ .Release.Namespace }}
 data:
   config.toml: | 
     [deployment.gateway]
       namespace = "{{ .Release.Namespace }}"
-      adapterHostName = "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
-      adapterHost = "{{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc"
-      commonControllerHostName = "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
-      commonControllerHost = "{{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
-      enforcerServerName = "{{ template "apk-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc"
-      {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs }}
-      enforcerImage = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image | default "apk-enforcer:1.3.0-SNAPSHOT" }}"
-      enforcerImagePullPolicy = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy | default "Always" }}"
-      {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
-        javaOpts = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}"
+      commonControllerHostName = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
+      commonControllerHost = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc"
+      enforcerServerName = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-service.{{ .Release.Namespace }}.svc"
+      {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs }}
+      enforcerImage = "{{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.image | default "kgw-enforcer:1.3.0-SNAPSHOT" }}"
+      enforcerImagePullPolicy = "{{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy | default "Always" }}"
+      {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}
+        javaOpts = "{{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.javaOpts }}"
       {{- end }}
-      {{- range .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.ports}}
+      {{- range .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.ports}}
       {{- if and .name .value }}
       [[deployment.gateway.enforcerPorts]]
         name = "{{ .name }}"
@@ -30,151 +43,59 @@ data:
       {{- end }} 
 
     [deployment.gateway.volumes]
-      ratelimiterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert"
-      enforcerKeystoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert"
-      routerKeystoreSecretVolume = "envoy-cert"
-      adapterTruststoreSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-adapter-server-cert"
-      enforcerJwtSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-keystore-secret"
-      enforcerTrustedCerts = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
-      enforcerApikeyCert = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
-      iDPCertificateSecretVolume = "{{ template "apk-helm.resource.prefix" . }}-enforcer-truststore-secret"
-      LogConfVolume = "{{ template "apk-helm.resource.prefix" . }}-log-conf"
-
-    [adapter]
-      {{- if and .Values.wso2.apk.dp.environment .Values.wso2.apk.dp.environment.name }}
-      environment = "{{ .Values.wso2.apk.dp.environment.name }}"
-      {{- end }}
-
-      {{- $auth := .Values.wso2.apk.auth }}
-      {{- if $auth.resourceLevelPermissions }}
-      {{- $scope := $auth.resourceLevelPermissions.scope | default "Cluster" }}
-      DeployResourcesWithClusterRoleBindings = {{ eq $scope "Cluster" }}
-      {{- end }}
-      
-    {{ if .Values.wso2.apk.dp.adapter.deployment.configs }}
-      enableGatewayClassController = {{ .Values.wso2.apk.dp.adapter.deployment.configs.enableGatewayClassController | default false }}
-    {{ if .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces }}
-    [adapter.operator]
-      namespaces = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.adapter.deployment.configs.apiNamespaces}}]
-    {{ end}} 
-    {{ end}} 
-    {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
-    [adapter.metrics]
-      enabled = {{.Values.wso2.apk.metrics.enabled}}
-      type = "{{.Values.wso2.apk.metrics.type| default "prometheus" }}"
-      port = 18006
-    {{ end}}  
-
-    {{- if .Values.wso2.apk.cp }}
-    [adapter.controlplane]
-      enableAPIPropagation = {{ .Values.wso2.apk.cp.enableApiPropagation | default false }}
-      host = "{{ .Values.wso2.apk.cp.host | default "apim-apk-agent-service.apk.svc.cluster.local" }}"
-      eventPort = 18000
-      restPort = 18001
-      skipSSLVerification = {{ .Values.wso2.apk.cp.skipSSLVerification | default false }}
-    {{- end }}  
-
-    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.router .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs }}
-    [router]
-      namespace = "{{ .Release.Namespace }}"
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost }}
-      systemHost = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.systemHost }}"
-      {{ end }}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.useRemoteAddress }}
-      useRemoteAddress = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.useRemoteAddress }}
-      {{ end }}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds }}
-      enforcerResponseTimeoutInSeconds = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enforcerResponseTimeoutInSeconds }}
-      {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting }}
-      enableIntelligentRouting = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting }}
-      {{ end }}
-
-    {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream }}
-    {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls }}
-    [router.upstream.tls]
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.verifyHostName }}
-      verifyHostName = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.verifyHostName }}
-      {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.disableSslVerification }}
-      disableSslVerification = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.tls.disableSslVerification }}
-      {{end}}
-    {{end}}
-
-    {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns }}
-    [router.upstream.dns]
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.refreshRate }}
-      dnsRefreshRate = {{.Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.refreshRate}}
-      {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.respectDNSTtl }}
-			respectDNSTtl = {{.Values.wso2.apk.dp.gatewayRuntime.deployment.router.configs.upstream.dns.respectDNSTtl}}
-      {{end}}
-    {{end}}
-    {{end}}
-    {{end}}
-
-    {{ if .Values.wso2.apk.dp.ratelimiter }}
-    [router.ratelimit]
-      {{ if .Values.wso2.apk.dp.ratelimiter.host }}
-      host = "{{ .Values.wso2.apk.dp.ratelimiter.host }}"
-      {{ else }}
-      host = "{{ template "apk-helm.resource.prefix" . }}-ratelimiter-service.{{ .Release.Namespace }}.svc"
-      {{ end }}
-      enabled = {{ and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled}}
-      keyFilePath = "/home/wso2/security/keystore/router.key"
-      certFilePath = "/home/wso2/security/keystore/router.crt"
-      caCertFilePath = "/home/wso2/security/truststore/ratelimiter.crt"
-      sslCertSANHostname = "ratelimiter"
-      requestTimeoutInMillis = {{ .Values.wso2.apk.dp.ratelimiter.requestTimeoutInMillis | default 80 }}
-      failureModeDeny = {{ .Values.wso2.apk.dp.ratelimiter.failureModeDeny | default false }}
-    {{end}}
+      enforcerKeystoreSecretVolume = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-server-cert"
+      enforcerJwtSecretVolume = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-keystore-secret"
+      enforcerTrustedCerts = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      enforcerApikeyCert = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      iDPCertificateSecretVolume = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-truststore-secret"
+      LogConfVolume = "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-log-conf"
 
     [enforcer]
-    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer }}
-    enforcerDisabled = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.disabled | default false }}
+    {{ if and .Values.wso2.kgw.dp.gatewayRuntime.deployment .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer }}
+    enforcerDisabled = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.disabled | default false }}
     {{ end }}
-    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs }}
-    mandateSubscriptionValidation = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateSubscriptionValidation | default false }}
-    mandateInternalKeyValidation = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.mandateInternalKeyValidation | default false }}
+    {{ if and .Values.wso2.kgw.dp.gatewayRuntime.deployment .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs }}
+    mandateSubscriptionValidation = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.mandateSubscriptionValidation | default false }}
+    mandateInternalKeyValidation = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.mandateInternalKeyValidation | default false }}
     {{ end }}
 
-    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService }}
+    {{ if and .Values.wso2.kgw.dp.gatewayRuntime.deployment .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService }}
     [enforcer.authService]
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize }}
-      maxMessageSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize | int64 }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize }}
+      maxMessageSize = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxMessageSize | int64 }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxHeaderLimit }}
-      maxHeaderLimit = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxHeaderLimit }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxHeaderLimit }}
+      maxHeaderLimit = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.maxHeaderLimit }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.keepAliveTime }}
-      keepAliveTime = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.keepAliveTime }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.keepAliveTime }}
+      keepAliveTime = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.keepAliveTime }}
       {{end}}
     
-    {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool }}
+    {{ if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool }}
     [enforcer.authService.threadPool]
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.coreSize }}
-      coreSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.coreSize }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.coreSize }}
+      coreSize = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.coreSize }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.maxSize }}
-      maxSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.maxSize }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.maxSize }}
+      maxSize = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.maxSize }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.keepAliveTime }}
-      keepAliveTime = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.keepAliveTime }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.keepAliveTime }}
+      keepAliveTime = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.keepAliveTime }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.queueSize }}
-      queueSize = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.queueSize }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.queueSize }}
+      queueSize = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.authService.threadPool.queueSize }}
       {{end}}
     {{end}}
     {{end}}
 
-    {{ if and .Values.wso2.apk.dp.gatewayRuntime.deployment .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors }}
+    {{ if and .Values.wso2.kgw.dp.gatewayRuntime.deployment .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.cors }}
     [enforcer.cors]
-      enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.enabled | default false }}
-      accessControlAllowOrigins = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowOrigins }}]
-      accessControlAllowMethods = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowMethods }}]
-      accessControlAllowHeaders = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowHeaders }}]
-      accessControlAllowCredentials = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowCredentials | default false }}
-      accessControlExposeHeaders = [{{ include "commaJoinedQuotedList" .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlExposeHeaders }}]
+      enabled = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.cors.enabled | default false }}
+      accessControlAllowOrigins = [{{ include "commaJoinedQuotedList" .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowOrigins }}]
+      accessControlAllowMethods = [{{ include "commaJoinedQuotedList" .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowMethods }}]
+      accessControlAllowHeaders = [{{ include "commaJoinedQuotedList" .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowHeaders }}]
+      accessControlAllowCredentials = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlAllowCredentials | default false }}
+      accessControlExposeHeaders = [{{ include "commaJoinedQuotedList" .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.cors.accessControlExposeHeaders }}]
     {{- else }}
     [enforcer.cors]
       enabled = true
@@ -184,10 +105,10 @@ data:
       accessControlAllowCredentials = false
       accessControlExposeHeaders = ["*"]
     {{end}}
-    {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.apiKey }}
+    {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.apiKey }}
     [enforcer.security.apiKey]
-    enabled = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.apiKey.enabled | default true }}
-    issuer = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.apiKey.issuer }}"
+    enabled = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.apiKey.enabled | default true }}
+    issuer = "{{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.apiKey.issuer }}"
     {{- end }}
     [enforcer.jwtGenerator]
       publicCertificatePath = "/home/wso2/security/truststore/mg.pem"
@@ -196,61 +117,61 @@ data:
     [enforcer.metrics]
       enabled = false
     
-    {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient }}
+    {{- if and .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient }}
     [enforcer.client]
-       skipSSL = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.skipSSLVerification | default false }}
-       hostnameVerifier = "{{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.hostnameVerifier | default "AllowAll" }}"
+       skipSSL = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.skipSSLVerification | default false }}
+       hostnameVerifier = "{{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.configs.JWKSClient.hostnameVerifier | default "AllowAll" }}"
     {{- end }}
     
-    {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled }}
+    {{ if and .Values.wso2.kgw.dp.gatewayRuntime.tracing .Values.wso2.kgw.dp.gatewayRuntime.tracing.enabled }}
     [tracing]
       enabled = true
-      type = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.type }}"
+      type = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.type }}"
       [tracing.configProperties]
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host }}
-        host = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.host }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.host }}
+        host = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.host }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port }}
-        port = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.port }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.port }}
+        port = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.port }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint }}
-        endpoint = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.endpoint }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.endpoint }}
+        endpoint = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.endpoint }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maxPathLength }}
-        maxPathLength = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maxPathLength }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.maxPathLength }}
+        maxPathLength = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.maxPathLength }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionString }}
-        connectionString = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionString }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.connectionString }}
+        connectionString = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.connectionString }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName }}
-        authHeaderName = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderName }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.authHeaderName }}
+        authHeaderName = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.authHeaderName }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderValue }}
-        authHeaderValue = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.authHeaderValue }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.authHeaderValue }}
+        authHeaderValue = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.authHeaderValue }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.instrumentationName }}
-        instrumentationName = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.instrumentationName }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.instrumentationName }}
+        instrumentationName = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.instrumentationName }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond }}
-        maximumTracesPerSecond = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond }}
+        maximumTracesPerSecond = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.maximumTracesPerSecond }}"
         {{end}}
-        {{ if .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout }}
-        connectionTimeout = "{{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.connectionTimeout }}"
+        {{ if .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.connectionTimeout }}
+        connectionTimeout = "{{ .Values.wso2.kgw.dp.gatewayRuntime.tracing.configProperties.connectionTimeout }}"
         {{end}}
     {{end}}
 
-    {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics .Values.wso2.apk.dp.gatewayRuntime.analytics.enabled}}
+    {{- if and .Values.wso2.kgw.dp.gatewayRuntime.analytics .Values.wso2.kgw.dp.gatewayRuntime.analytics.enabled}}
     [analytics]
      enabled = true
-    {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics.properties}}
+    {{- if and .Values.wso2.kgw.dp.gatewayRuntime.analytics.properties}}
     [analytics.properties]
-    {{- range $key, $value := .Values.wso2.apk.dp.gatewayRuntime.analytics.properties}}
+    {{- range $key, $value := .Values.wso2.kgw.dp.gatewayRuntime.analytics.properties}}
     "{{$key}}" = "{{$value}}"
     {{- end}}
     {{- end }}
-    {{- if and .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers}}
+    {{- if and .Values.wso2.kgw.dp.gatewayRuntime.analytics.publishers}}
     [analytics.enforcer]
-    {{- range .Values.wso2.apk.dp.gatewayRuntime.analytics.publishers}}
+    {{- range .Values.wso2.kgw.dp.gatewayRuntime.analytics.publishers}}
     [[analytics.enforcer.publisher]]
     enabled = {{ .enabled }}
     type = "{{ .type }}"
@@ -262,101 +183,45 @@ data:
     {{- end}}
     {{- end }}
     {{- end }}
-    [analytics.adapter]
-      enabled = true
-      bufferFlushInterval = "1s"
-      bufferSizeBytes = 16384
-      gRPCRequestTimeout = "20s"
 
     
-    {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver }}
+    {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver }}
     [analytics.enforcer.LogReceiver]
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.maxMessageSize }}
-      maxMessageSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.maxMessageSize }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.maxMessageSize }}
+      maxMessageSize = {{ .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.maxMessageSize }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.maxHeaderLimit }}
-      maxHeaderLimit = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.maxHeaderLimit }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.maxHeaderLimit }}
+      maxHeaderLimit = {{ .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.maxHeaderLimit }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.keepAliveTime }}
-      keepAliveTime = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.keepAliveTime }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.keepAliveTime }}
+      keepAliveTime = {{ .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.keepAliveTime }}
       {{end}}
-    {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool }}
+    {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool }}
     [analytics.enforcer.LogReceiver.threadPool]
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.coreSize }}
-      coreSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.coreSize }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool.coreSize }}
+      coreSize = {{ .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool.coreSize }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.maxSize }}
-      maxSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.maxSize }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool.maxSize }}
+      maxSize = {{ .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool.maxSize }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.keepAliveTime }}
-      keepAliveTime = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.keepAliveTime }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool.keepAliveTime }}
+      keepAliveTime = {{ .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool.keepAliveTime }}
       {{end}}
-      {{ if .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.queueSize }}
-      queueSize = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.receiver.threadPool.queueSize }}
+      {{ if .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool.queueSize }}
+      queueSize = {{ .Values.wso2.kgw.dp.gatewayRuntime.analytics.receiver.threadPool.queueSize }}
       {{end}}
     {{end}}
     {{end}}
     {{- end }}
 
-    {{ if .Values.wso2.apk.dp.partitionServer}}
+    {{ if .Values.wso2.kgw.dp.partitionServer}}
     [partitionServer]
-      enabled = {{.Values.wso2.apk.dp.partitionServer.enabled}}
-      host = "{{ .Values.wso2.apk.dp.partitionServer.host}}"
-      serviceBasePath = "{{ .Values.wso2.apk.dp.partitionServer.serviceBasePath}}"
-      partitionName = "{{ .Values.wso2.apk.dp.partitionServer.partitionName}}"
-      disableSslVerification = {{eq .Values.wso2.apk.dp.partitionServer.hostnameVerificationEnable false }}
+      enabled = {{.Values.wso2.kgw.dp.partitionServer.enabled}}
+      host = "{{ .Values.wso2.kgw.dp.partitionServer.host}}"
+      serviceBasePath = "{{ .Values.wso2.kgw.dp.partitionServer.serviceBasePath}}"
+      partitionName = "{{ .Values.wso2.kgw.dp.partitionServer.partitionName}}"
+      disableSslVerification = {{eq .Values.wso2.kgw.dp.partitionServer.hostnameVerificationEnable false }}
     {{end}}
-
-  log_config.toml: |
-    # The logging configuration for Adapter
-
-    ## Adapter root Level configurations
-
-    {{- if .Values.wso2.apk.dp.adapter.logging }}
-    logLevel = "{{ .Values.wso2.apk.dp.adapter.logging.level | default "INFO" }}" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
-    LogFormat = "{{ .Values.wso2.apk.dp.adapter.logging.logFormat | default "TEXT" }}" # Values can be "JSON", "TEXT"
-    {{- else }}
-    logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
-    LogFormat = "TEXT" # Values can be "JSON", "TEXT"
-    {{- end }}
-
-    [rotation]
-    MaxSize = 10    # In MegaBytes (MB)
-    MaxBackups = 3
-    MaxAge =  2   # In days
-    Compress = true
-
-    ## Adapter package Level configurations
-
-    [[pkg]]
-    name = "github.com/wso2/apk/adapter/internal/adapter"
-    logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
-
-    [[pkg]]
-    name = "github.com/wso2/apk/adapter/internal/oasparser"
-    logLevel = "INFO"
-
-
-    # The logging configuration for Router
-    {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs }}
-    [wireLogs]
-    enable = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.wireLogs.enable | default false }}
-    include = ["Headers", "Body", "Trailers"]
-    {{- else }}
-    [wireLogs]
-    enable = false
-    include = ["Headers", "Body", "Trailers"]
-    {{- end }}
-      
-    {{- if and .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs }}
-    [accessLogs]
-    enable = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.logging.accessLogs.enable | default false }}
-    format = "[%START_TIME%] '%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%' %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% '%REQ(X-FORWARDED-FOR)%' '%REQ(USER-AGENT)%' '%REQ(X-REQUEST-ID)%' '%REQ(:AUTHORITY)%' '%UPSTREAM_HOST%'\n"
-    {{- else }}
-    [accessLogs]
-    enable = false
-    format = "[%START_TIME%] '%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%' %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% '%REQ(X-FORWARDED-FOR)%' '%REQ(USER-AGENT)%' '%REQ(X-REQUEST-ID)%' '%REQ(:AUTHORITY)%' '%UPSTREAM_HOST%'\n"
-    {{- end }}
 
   log4j2.properties: |
     monitorInterval=20
@@ -373,8 +238,8 @@ data:
     loggers = reporter, enforcer, io-swagger-v3, enforcer-interceptors
 
     logger.reporter.name = org.wso2.am.analytics.publisher.reporter.elk
-    {{- if .Values.wso2.apk.dp.gatewayRuntime.analytics }}
-    logger.reporter.level = {{ .Values.wso2.apk.dp.gatewayRuntime.analytics.logLevel | default "INFO" }}
+    {{- if .Values.wso2.kgw.dp.gatewayRuntime.analytics }}
+    logger.reporter.level = {{ .Values.wso2.kgw.dp.gatewayRuntime.analytics.logLevel | default "INFO" }}
     {{- else }}
     logger.reporter.level = INFO
     {{- end }}
@@ -382,10 +247,10 @@ data:
     logger.reporter.appenderRef.console.ref = ENFORCER_CONSOLE
 
     # Log access log to console
-    logger.enforcer-interceptors.name = org.wso2.apk.enforcer.grpc.interceptors
+    logger.enforcer-interceptors.name = org.wso2.kgw.enforcer.grpc.interceptors
     # Change the log level into DEBUG to view the access logs.
-    {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging }}
-    logger.enforcer-interceptors.level = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.level | default "INFO" }}
+    {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.logging }}
+    logger.enforcer-interceptors.level = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.logging.level | default "INFO" }}
     {{- else }}
     logger.enforcer-interceptors.level = INFO
     {{- end }} 
@@ -393,9 +258,9 @@ data:
     logger.enforcer-interceptors.appenderRef.console.ref = ENFORCER_CONSOLE
 
     # Log to console 
-    logger.enforcer.name = org.wso2.apk.enforcer
-    {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging }}
-    logger.enforcer.level = {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.logging.level | default "INFO" }}
+    logger.enforcer.name = org.wso2.kgw.enforcer
+    {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.logging }}
+    logger.enforcer.level = {{ .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.logging.level | default "INFO" }}
     {{- else }}
     logger.enforcer.level = INFO
     {{- end }} 
