@@ -13,13 +13,13 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if .Values.wso2.kgw.dp.enabled }}
 apiVersion: v1
 data:
   auth_key.txt: MmpybXlwYWszOTF6c3F6OTc0dWdkZGRlYmY4MTJvZngxYjl0MW9xMjc1MzBpcjAydGM4MTVlZW1yeDQzNXF2Y3A0MXVjZ3k3djV1dWF3emk0cWNtanJ4MGsxemdveDJzMjhjcg==
 kind: Secret
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-sts-shared-auth-key
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-sts-shared-auth-key
   namespace: {{ .Release.Namespace }}
 type: Opaque
 {{- end -}}

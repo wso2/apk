@@ -18,7 +18,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-idpui-deployment
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idpui-deployment
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.idp.idpui.deployment.replicas }}
@@ -26,11 +26,11 @@ spec:
     type: {{ .Values.idp.idpui.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ui" ) | indent 6}}
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "idp-ui" ) | indent 6}}
   template:
     metadata:
       labels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ui" ) | indent 8}}
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "idp-ui" ) | indent 8}}
     spec:
       automountServiceAccountToken: false
       containers:
@@ -46,9 +46,9 @@ spec:
           - name: IDP_AUTH_CALLBACK_URL
             value: {{ .Values.idp.idpui.configs.idpAuthCallBackUrl }}
           - name: SSL_CERT_PATH
-            value: /home/wso2apk/security/idp.crt
+            value: /home/wso2kgw/security/idp.crt
           - name: SSL_KEY_PATH
-            value: /home/wso2apk/security/idp.key
+            value: /home/wso2kgw/security/idp.key
           readinessProbe:
             httpGet:
               path: /authenticationEndpoint/health
@@ -68,17 +68,17 @@ spec:
             capabilities:
               drop: ["ALL"]
             readOnlyRootFilesystem: true
-{{ include "apk-helm.deployment.resources" .Values.idp.idpui.deployment.resources | indent 10 }}
+{{ include "kubernetes-gateway-helm.deployment.resources" .Values.idp.idpui.deployment.resources | indent 10 }}
           volumeMounts:
             - name: idp-ui-tls-volume
-              mountPath: /home/wso2apk/security/idp.key
+              mountPath: /home/wso2kgw/security/idp.key
             {{- if and .Values.idp.idpui.configs .Values.idp.idpui.configs.tls }}
               subPath: {{ .Values.idp.idpui.configs.tls.certKeyFilename | default "tls.key" }}
             {{- else }}
               subPath: tls.key
             {{- end }}
             - name: idp-ui-tls-volume
-              mountPath: /home/wso2apk/security/idp.crt
+              mountPath: /home/wso2kgw/security/idp.crt
             {{- if and .Values.idp.idpui.configs .Values.idp.idpui.configs.tls }}
               subPath: {{ .Values.idp.idpui.configs.tls.certFilename | default "tls.crt" }}
             {{- else }}
@@ -97,8 +97,8 @@ spec:
         - name: idp-ui-tls-volume
           secret:
        {{ if and .Values.idp.idpui.configs .Values.idp.idpui.configs.tls }}
-            secretName: {{ .Values.idp.idpui.configs.tls.secretName | default (printf "%s-idp-ui-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.idp.idpui.configs.tls.secretName | default (printf "%s-idp-ui-server-cert" (include "kubernetes-gateway-helm.resource.prefix" .)) }}
        {{ else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-idp-ui-server-cert
+            secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ui-server-cert
        {{ end }}            
 {{- end -}}
