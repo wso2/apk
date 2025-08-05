@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+ * Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,65 @@
 plugins {
     id 'net.researchgate.release' version '2.8.0'
 }
+
+apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
+apply from: "$rootDir/../../common-gradle-scripts/go.gradle"
+
+release {
+    tagTemplate = 'go-idp-$version'
+
+    git {
+        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : '2.x'
+        pushToRemote= "origin"
+    }
+}
+
 allprojects {
     group = project.group
     version = project.version
 }
 
-release {
-    tagTemplate = 'idp-service-$version'
+tasks.register('go_test', Exec) {
+    group 'go'
+    description 'Automates testing the packages named by the import paths.'
+    environment "APK_HOME", "$rootDir/../adapter/resources"
+    environment "APK_ADAPTER_SERVER_PORT", "9401"
+    environment "APK_Enforcer_JwtGenerator_Enabled", "true"
+    environment "APK_Analytics_Adapter_bufferSizeBytes", "32768"
+    environment "APK_Enforcer_JwtIssuer_ValidityPeriod", "1800"
+    environment "APK_Adapter_Consul_PollInterval", "2"
+    environment "APK_analytics_enforcer_configProperties_authToken", "test-token"
+    environment "APK_enforcer_security_tokenService_1_name", "APK-Test"
 
-    git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : '2.x'
-
-        pushToRemote= "origin"
-    }
+    environment "APK_test_test_stringarray", "foo2, bar2"
+    environment "APK_test_test_intarray", "1,3"
+    environment "APK_test_test_floatarray", "1.2,2.4"
+    environment "APK_test_test_int32array", "4"
+    environment "APK_test_test_int64array", "21474836479"
+    environment "APK_test_test_float32val", "1.5"
+    environment "APK_test_test_float64val", "6.5"
+    environment "APK_test_test_uintarray", "50"
+    environment "APK_test_test_uint32array", "100"
+    environment "APK_test_test_uint64array", "42949672959"
+    environment "APK_test_test_uintarray2", "-50"
+    commandLine 'sh', '-c', "go test -race -coverprofile=coverage.out -covermode=atomic ./..."
 }
 
-unSnapshotVersion.finalizedBy ":ballerina:commit_toml_files"
-afterReleaseBuild.dependsOn ":docker:docker_push"
+tasks.named('go_revive_run').configure { 
+    finalizedBy go_tidy
+    finalizedBy go_test
+}
+
+tasks.named('go_build').configure {
+    dependsOn go_revive_run
+    dependsOn go_vet
+    println("Running go build")
+    finalizedBy docker_build
+}
+
 task build{
- dependsOn("docker:buildDockerImage")
+    dependsOn go_build
+    dependsOn docker_build
 }
-build.configure {
-    dependsOn(":docker:build")
-}
+
+afterReleaseBuild.dependsOn "docker_push"
