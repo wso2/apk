@@ -107,6 +107,7 @@ jobs:
         run: |
           cd apk-repo
           git checkout -b config-deployer-service-2.x
+          git pull origin config-deployer-service-2.x --rebase
           git push origin config-deployer-service-2.x
           cd runtime/config-deployer-service
           chmod +x gradlew
