@@ -69,8 +69,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: apk-envoy-gateway-extension-server:1.3.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: kgw-envoy-gateway-extension-server:2.0.0-m1
           security:
             sslHostname: "adapter"
         service:
@@ -96,7 +96,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-config-deployer-service:1.3.0
+          image: wso2/kgw-config-deployer-service:2.0.0-m1
           # debug: true
           # configs:
           #   tls:
@@ -121,8 +121,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: IfNotPresent
-          image: apk-common-controller:1.3.1-SNAPSHOT
+          imagePullPolicy: Always
+          image: kgw-common-controller:2.0.0-m1
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -148,8 +148,8 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: IfNotPresent
-            image: apk-enforcer:1.3.1-SNAPSHOT
+            imagePullPolicy: Always
+            image: kgw-enforcer:2.0.0-m1
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -329,7 +329,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/apk-idp-domain-service:1.3.0
+      image: wso2/kgw-idp-domain-service:2.0.0-m1
   idpui:
     deployment:
       resources:
@@ -350,7 +350,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/apk-idp-ui:1.3.0
+      image: wso2/kgw-idp-ui:2.0.0-m1
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
