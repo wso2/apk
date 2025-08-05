@@ -21,42 +21,42 @@ jobs:
   #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
   #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
   #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-  # build_envoy_gateway_extension_server:
-  #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #   uses: ./.github/workflows/envoy-gateway-extension-server-release.yml
-  #   with:
-  #     aks_deployment: true
-  #   secrets:
-  #     APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
-  #     APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
-  #     APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
-  #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-  #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-  # build_common_controller:
-  #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #   uses: ./.github/workflows/common-controller-release.yml
-  #   with:
-  #     aks_deployment: true
-  #   secrets:
-  #     APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
-  #     APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
-  #     APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
-  #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-  #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-  # build_enforcer:
-  #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #   uses: ./.github/workflows/enforcer-release.yml
-  #   with:
-  #     aks_deployment: true
-  #   secrets:
-  #     APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
-  #     APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
-  #     APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
-  #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-  #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_envoy_gateway_extension_server:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/envoy-gateway-extension-server-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_common_controller:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/common-controller-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_enforcer:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/enforcer-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   # We no longer use our own built envoy proxy
   # build_router:
   #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
@@ -70,30 +70,30 @@ jobs:
   #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
   #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
   #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-  # build_ratelimiter:
-  #     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #     uses: ./.github/workflows/ratelimiter-release.yml
-  #     with:
-  #       aks_deployment: true
-  #     secrets:
-  #       APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
-  #       APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
-  #       APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
-  #       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-  #       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-  #       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-  # build_config:
-  #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #   uses: ./.github/workflows/config-deployer-release.yml
-  #   with:
-  #     aks_deployment: true
-  #   secrets:
-  #     APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
-  #     APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
-  #     APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
-  #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-  #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}      
+  build_ratelimiter:
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+      uses: ./.github/workflows/ratelimiter-release.yml
+      with:
+        aks_deployment: true
+      secrets:
+        APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+        APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+        APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+        DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+        AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_config:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/config-deployer-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}      
   build_idpds:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
     uses: ./.github/workflows/idp-domain-service-release.yml
@@ -106,18 +106,18 @@ jobs:
       DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
       AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-  # build_idpui:
-  #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-  #   uses: ./.github/workflows/idp-ui-release.yml
-  #   with:
-  #     aks_deployment: true
-  #   secrets:
-  #     APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
-  #     APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
-  #     APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
-  #     DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
-  #     AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
-  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_idpui:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/idp-ui-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
   # runs_go_integration_tests_on_pull_request:
   #   if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
