@@ -79,7 +79,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.13.3"
+version = "2.13.6"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -470,8 +470,9 @@ modules = [
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util.function"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util.stream"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.model"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.kgw.config"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.kgw.config.api"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.kgw.config.model"},
+	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config"},
+	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.api"},
+	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.model"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.partitionClient"}
 ]
+
