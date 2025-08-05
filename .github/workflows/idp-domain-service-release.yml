@@ -129,7 +129,7 @@ jobs:
           az acr login -n ${{ secrets.AZURE_ACR_NAME }}
           cd apk-repo/idp/idp-domain-service
           chmod +x gradlew
-          ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true  
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true  
       - name: run codecov
         uses: codecov/codecov-action@v3
         with:
