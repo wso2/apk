@@ -127,6 +127,7 @@ const (
 	SubscriptionUUIDHeaderName = "X-WSO2-Subscription-UUID"
 )
 
+// Kind constants for various Kubernetes resources
 const (
 	KindConfigMap            = "ConfigMap"
 	KindClientTrafficPolicy  = "ClientTrafficPolicy"
