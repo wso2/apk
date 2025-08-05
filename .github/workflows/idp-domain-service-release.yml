@@ -35,7 +35,7 @@ on:
     paths:
       - '**/idp/idp-domain-service/**'
     branches:
-      - 'main'
+      - '2.x'
 env:
   GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
 concurrency:
@@ -93,19 +93,19 @@ jobs:
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
-          git merge origin/main
+          git merge origin/2.x
       - name: Run Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         shell: sh
         run: |
           cd apk-repo
-          git checkout -b idp-domain-service-1.x
-          git push origin idp-domain-service-1.x
+          git checkout -b idp-domain-service-2.x
+          git push origin idp-domain-service-2.x
           cd idp/idp-domain-service
           chmod +x gradlew
-          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=idp-domain-service-1.x
+          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=idp-domain-service-2.x
           ./gradlew :ballerina:commit_toml_files
-          git push origin idp-domain-service-1.x
+          git push origin idp-domain-service-2.x
       - name: Run Gradle Build
         run: |
           cd apk-repo/idp/idp-domain-service
