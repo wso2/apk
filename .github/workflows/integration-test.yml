@@ -177,6 +177,7 @@ jobs:
         helm dependency build
         helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
+        --set wso2.apk.dp.configdeployer.enabled=false \
         --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
         --set wso2.apk.dp.configdeployer.deployment.readinessProbe.failureThreshold=10 \
         --set wso2.apk.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-adapter:${{ github.sha }} \
@@ -192,7 +193,7 @@ jobs:
         --set wso2.apk.dp.gateway.httpListener.enabled=true \
         --set wso2.apk.dp.gatewayRuntime.deployment.router.configs.enableIntelligentRouting=true \
         --set wso2.kgw.dp.envoyGateway.namespace=apk-integration-test \
-        --set envoy.config.envoyGateway.extensionManager.service.fqdn=envoy-gateway-extension-server-service.apk-integration-test.svc.cluster.local
+        --set envoy.config.envoyGateway.extensionManager.service.fqdn.hostname=envoy-gateway-extension-server-service.apk-integration-test.svc.cluster.local
         kubectl get pods -n apk-integration-test
         kubectl get svc -n apk-integration-test
     - name: Archieve Logs
