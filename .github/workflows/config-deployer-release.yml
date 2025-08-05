@@ -107,13 +107,12 @@ jobs:
         run: |
           cd apk-repo
           git checkout -b config-deployer-service-2.x
-          git pull origin config-deployer-service-2.x --rebase
-          git push origin config-deployer-service-2.x
+          git push origin config-deployer-service-2.x -f
           cd runtime/config-deployer-service
           chmod +x gradlew
           ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=config-deployer-service-2.x
           ./gradlew :ballerina:commit_toml_files
-          git push origin config-deployer-service-2.x
+          git push origin config-deployer-service-2.x -f
       - name: Run Gradle Build
         run: |
           cd apk-repo/runtime/config-deployer-service
