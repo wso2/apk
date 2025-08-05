@@ -13,29 +13,17 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.configdeployer.enabled }}
+{{- if and .Values.wso2.kgw.dp.enabled .Values.wso2.kgw.dp.configdeployer.enabled }}
 kind: "Backend"
-apiVersion: "dp.wso2.com/v1alpha1"
+apiVersion: "gateway.envoyproxy.io/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-config-deployer-ds-backend
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deployer-ds-backend
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
 spec:
- basePath: "/api/deployer"
- services:
-  - host:  {{ template "apk-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}
-    port: 9443
- protocol: "https"
- tls:
-  allowedSANs:
-   - {{ template "apk-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}.svc
-  secretRef:
-  {{- if and .Values.wso2.apk.dp.configdeployer.deployment.configs .Values.wso2.apk.dp.configdeployer.deployment.configs.tls }}
-    name: {{.Values.wso2.apk.dp.configdeployer.deployment.configs.tls.secretName}}
-    key: {{.Values.wso2.apk.dp.configdeployer.deployment.configs.tls.certFilename}}
-  {{- else }}
-    name: {{ template "apk-helm.resource.prefix" . }}-config-ds-server-cert
-    key: tls.crt
-  {{- end }}
+  endpoints:
+    - fqdn:
+        hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-ds-service.{{ .Release.Namespace }}.svc
+        port: 9443
 {{- end -}}

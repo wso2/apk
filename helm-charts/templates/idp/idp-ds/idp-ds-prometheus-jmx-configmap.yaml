@@ -1,4 +1,4 @@
-{{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+{{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
 # Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
 #
 # WSO2 LLC. licenses this file to you under the Apache License,

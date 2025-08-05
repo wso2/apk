@@ -14,16 +14,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.configdeployer.enabled }}
+{{- if and .Values.wso2.kgw.dp.enabled .Values.wso2.kgw.dp.configdeployer.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-config-ds-service
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-ds-service
   namespace : {{ .Release.Namespace }}
 spec:
   # label keys and values that must match in order to receive traffic for this service
   selector:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "configdeployer-ds" ) | indent 4}}
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "configdeployer-ds" ) | indent 4}}
   ports:
     - name: servlet-https
       protocol: TCP

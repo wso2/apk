@@ -14,28 +14,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.configdeployer.enabled }}
+{{- if and .Values.wso2.kgw.dp.enabled .Values.wso2.kgw.dp.configdeployer.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-config-ds-configmap
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-ds-configmap
   namespace: {{ .Release.Namespace }}
 data:
   Config.toml: |
-  {{- if .Values.wso2.apk.dp.configdeployer.debug}}
+  {{- if .Values.wso2.kgw.dp.configdeployer.debug}}
     [ballerina.log]
     level = "DEBUG"
     [ballerina.http]
     traceLogConsole = true
   {{end}}
-  {{if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled}}
+  {{if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled}}
     [ballerina.observe]
     metricsEnabled = true
     metricsReporter = "prometheus"
     [ballerinax.prometheus]
     port=18006
-  {{if .Values.wso2.apk.metrics.configDSBalHost}}
-    host = "{{ .Values.wso2.apk.metrics.configDSBalHost}}"
+  {{if .Values.wso2.kgw.metrics.configDSBalHost}}
+    host = "{{ .Values.wso2.kgw.metrics.configDSBalHost}}"
   {{else}} 
     host = "0.0.0.0"
   {{end}} 
@@ -44,22 +44,22 @@ data:
     metricsEnabled = false
   {{end}} 
     [wso2.config_deployer_service.keyStores.tls]
-    keyFilePath = "/home/wso2apk/config-deployer/security/config.key"
-    certFilePath = "/home/wso2apk/config-deployer/security/config.pem"
+    keyFilePath = "/home/wso2kgw/config-deployer/security/config.key"
+    certFilePath = "/home/wso2kgw/config-deployer/security/config.pem"
     [wso2.config_deployer_service.gatewayConfiguration]
-    name = "{{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}"
+    name = "{{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}"
     listenerName = "httpslistener"
-{{ include "generateVhosts" .Values.wso2.apk.dp.configdeployer.vhosts | indent 4 }}
-{{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.enabled}}
+{{ include "generateVhosts" .Values.wso2.kgw.dp.configdeployer.vhosts | indent 4 }}
+{{if and .Values.wso2.kgw.dp.partitionServer .Values.wso2.kgw.dp.partitionServer.enabled}}
     [wso2.config_deployer_service.partitionServiceConfiguration]
     enabled = true
-    url = "{{.Values.wso2.apk.dp.partitionServer.host}}{{.Values.wso2.apk.dp.partitionServer.serviceBasePath}}"
-{{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
-    tlsCertificatePath = "/home/wso2apk/config-deployer/security/partition-server.pem"
+    url = "{{.Values.wso2.kgw.dp.partitionServer.host}}{{.Values.wso2.kgw.dp.partitionServer.serviceBasePath}}"
+{{if and .Values.wso2.kgw.dp.partitionServer .Values.wso2.kgw.dp.partitionServer.tls}}
+    tlsCertificatePath = "/home/wso2kgw/config-deployer/security/partition-server.pem"
 {{end}} 
-    hostnameVerificationEnable = {{.Values.wso2.apk.dp.partitionServer.hostnameVerificationEnable}}
-  {{ if .Values.wso2.apk.dp.partitionServer.headers}}
-      {{ range $key, $value := .Values.wso2.apk.dp.partitionServer.headers}}
+    hostnameVerificationEnable = {{.Values.wso2.kgw.dp.partitionServer.hostnameVerificationEnable}}
+  {{ if .Values.wso2.kgw.dp.partitionServer.headers}}
+      {{ range $key, $value := .Values.wso2.kgw.dp.partitionServer.headers}}
     [[wso2.config_deployer_service.partitionServiceConfiguration.headers]]
       name = "{{ $key }}"
       value = "{{ $value }}"
