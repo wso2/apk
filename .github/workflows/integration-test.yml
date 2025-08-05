@@ -121,7 +121,7 @@ jobs:
 
   runs_go_integration_tests_on_pull_request:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-    needs: [build_common_controller, build_enforcer, build_config, build_idpds, build_idpui]
+    needs: [build_common_controller, build_enforcer, build_config, build_idpds, build_idpui, build_envoy_gateway_extension_server]
     runs-on: ubuntu-latest
     steps:
     - uses: azure/login@v1
