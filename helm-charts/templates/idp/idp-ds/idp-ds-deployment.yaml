@@ -78,10 +78,10 @@ spec:
             periodSeconds: {{ .Values.idp.idpds.deployment.livenessProbe.periodSeconds }}
 {{ include "kubernetes-gateway-helm.deployment.resources" .Values.idp.idpds.deployment.resources | indent 10 }}
           volumeMounts:
-            - mountPath: /idp.key
+            - mountPath: /home/wso2/idp.key
               name: idp-ds-tls-volume
               subPath: tls.key
-            - mountPath: /idp.crt
+            - mountPath: /home/wso2/idp.crt
               name: idp-ds-tls-volume
               subPath: tls.crt
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
