@@ -79,7 +79,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "http"
-version = "2.13.6"
+version = "2.13.3"
 dependencies = [
 	{org = "ballerina", name = "auth"},
 	{org = "ballerina", name = "cache"},
@@ -442,7 +442,7 @@ modules = [
 [[package]]
 org = "wso2"
 name = "config_deployer_service"
-version = "2.0.0-m1"
+version = "2.0.1-SNAPSHOT"
 dependencies = [
 	{org = "ballerina", name = "constraint"},
 	{org = "ballerina", name = "crypto"},
@@ -470,9 +470,8 @@ modules = [
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util.function"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.java.util.stream"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.model"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.api"},
-	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.apk.config.model"},
+	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.kgw.config"},
+	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.kgw.config.api"},
+	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.org.wso2.kgw.config.model"},
 	{org = "wso2", packageName = "config_deployer_service", moduleName = "config_deployer_service.partitionClient"}
 ]
-
