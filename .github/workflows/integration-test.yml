@@ -200,14 +200,12 @@ jobs:
       shell: sh
       run: |
         mkdir -p podlogs
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=adapter -f > podlogs/adapter.log &
         kubectl logs -n apk-integration-test -l app.kubernetes.io/app=commoncontroller -f > podlogs/common-controller.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c enforcer -f > podlogs/enforcer.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=gateway -c router -f > podlogs/router.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=enforcer,app.kubernetes.io/component=proxy,app.kubernetes.io/managed-by=envoy-gateway,app.kubernetes.io/name=envoy,app.kubernetes.io/release=apk,gateway.envoyproxy.io/owning-gateway-name=wso2-kgw-default,gateway.envoyproxy.io/owning-gateway-namespace=apk-integration-test -c enforcer -f > podlogs/enforcer.log &
+        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=enforcer,app.kubernetes.io/component=proxy,app.kubernetes.io/managed-by=envoy-gateway,app.kubernetes.io/name=envoy,app.kubernetes.io/release=apk,gateway.envoyproxy.io/owning-gateway-name=wso2-kgw-default,gateway.envoyproxy.io/owning-gateway-namespace=apk-integration-test -c envoy -f > podlogs/router.log &
         kubectl logs -n apk-integration-test -l app.kubernetes.io/app=configdeployer-ds -f> podlogs/config-deployer.log &
         kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ds -c idpds -f > podlogs/idpds.log &
         kubectl logs -n apk-integration-test -l app.kubernetes.io/app=idp-ui -f> podlogs/idpui.log &
-        kubectl logs -n apk-integration-test -l app.kubernetes.io/app=ratelimiter -f> podlogs/ratelimiter.log &
         ls -l podlogs
     - name: Run test cases
       shell: sh
