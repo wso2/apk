@@ -103,11 +103,11 @@ spec:
     providers:
     - name: example
       remoteJWKS:
-        uri: https://apk-wso2-kgw-idp-ds-service.apk-integration-test.svc:9443/oauth2/jwks
+        uri: https://apk-test-setup-wso2-kgw-idp-ds-service.apk-integration-test.svc:9443/oauth2/jwks
         backendRefs:
           - group: gateway.envoyproxy.io
             kind: Backend
-            name: apk-wso2-kgw-oauth-ds-backend
+            name: apk-test-setup-wso2-kgw-oauth-ds-backend
             namespace: apk-integration-test
             port: 9443
       claimToHeaders:
