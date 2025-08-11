@@ -23,7 +23,6 @@ import (
 
 	"github.com/wso2/apk/config-deployer-service-go/internal/api/routes"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
-	"github.com/wso2/apk/config-deployer-service-go/internal/logging"
 	"github.com/wso2/apk/config-deployer-service-go/internal/services/validators"
 	"os"
 	// "github.com/wso2/apk/gateway/enforcer/internal/datastore"
@@ -39,12 +38,12 @@ import (
 
 func main() {
 	cfg := config.GetConfig()
-	logging.LoggerMain.Info("Server starting in main")
+	// logging.LoggerMain.Info("Server starting in main")
 
 	apkSchemaLocation := "resources/conf/apk-schema.json"
 	apkConfSchemaContent, err := os.ReadFile(apkSchemaLocation)
 	if err != nil {
-		logging.LoggerMain.Error("Failed to read APK schema file", err)
+		// logging.LoggerMain.Error("Failed to read APK schema file", err)
 		panic(err)
 	}
 	validators.GlobalAPKConfValidator = validators.NewAPKConfValidator(string(apkConfSchemaContent))
@@ -90,9 +89,9 @@ func main() {
 	// go extproc.StartExternalProcessingServer(cfg, apiStore, subAppDatastore, jwtTransformer, modelBasedRoundRobinTracker, revokedJTIStore)
 	go routes.StartArtifactGeneratorServer(cfg)
 	// Wait for the config to be loaded
-	logging.LoggerMain.Debug("Waiting for the config to be loaded")
+	// logging.LoggerMain.Debug("Waiting for the config to be loaded")
 	// <-configStore.Notify
-	logging.LoggerMain.Info("Config loaded successfully")
+	// logging.LoggerMain.Info("Config loaded successfully")
 	// if len(configStore.GetConfigs()) > 0 && configStore.GetConfigs()[0].Analytics != nil && configStore.GetConfigs()[0].Analytics.Enabled {
 	// 	// Start the access log service server
 	// 	go grpc.StartAccessLogServiceServer(cfg, configStore)

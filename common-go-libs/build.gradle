@@ -41,8 +41,8 @@ tasks.register('go_test', Exec) {
 }
 
 tasks.named('go_revive_run').configure { 
-    finalizedBy go_tidy
-    finalizedBy go_test
+    // finalizedBy go_tidy
+    // finalizedBy go_test
 }
 
 tasks.named('go_build').configure {
