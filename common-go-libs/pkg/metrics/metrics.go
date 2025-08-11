@@ -20,7 +20,6 @@
 package metrics
 
 import (
-	"fmt"
 	"runtime"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -29,8 +28,6 @@ import (
 	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/load"
 	"github.com/shirou/gopsutil/v3/mem"
-	"github.com/wso2/apk/adapter/pkg/logging"
-	logger "github.com/wso2/apk/common-go-libs/loggers"
 )
 
 var (
@@ -161,11 +158,6 @@ func init() {
 
 func handleError(err error, message string) bool {
 	if err != nil {
-		logger.LoggerAPK.ErrorC(logging.ErrorDetails{
-			Message:   fmt.Sprintf(message, err.Error()),
-			Severity:  logging.MINOR,
-			ErrorCode: 1109,
-		})
 		return true
 	}
 	return false
