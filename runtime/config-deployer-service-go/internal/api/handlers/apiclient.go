@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
+	"github.com/wso2/apk/config-deployer-service-go/internal/crbuilder"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 	"github.com/wso2/apk/config-deployer-service-go/internal/services"
@@ -98,7 +99,7 @@ func (client *APIClient) FromAPIModelToAPKConf(api *dto.API) (*model.APKConf, er
 
 // PrepareArtifact creates the API artifact based on the provided configuration.
 func (client *APIClient) PrepareArtifact(apkConfiguration dto.FileData, definitionFile dto.FileData,
-	organization *dto.Organization, cpInitiated bool) (*model.APIArtifact, error) {
+	organization *dto.Organization, cpInitiated bool, namespace string) (*dto.APIArtifact, error) {
 
 	var apkConf *model.APKConf = nil
 	apkContent := string(apkConfiguration.FileContent)
@@ -141,26 +142,18 @@ func (client *APIClient) PrepareArtifact(apkConfiguration dto.FileData, definiti
 		}
 	}
 
-	return GenerateK8sArtifacts(apkConf, apiDefinition, organization, cpInitiated)
+	return GenerateK8sArtifacts(apkConf, apiDefinition, organization, cpInitiated, namespace)
 }
 
 // GenerateK8sArtifacts generates Kubernetes artifacts based on the APK configuration and API definition.
 func GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organization *dto.Organization,
-	cpInitiated bool) (*model.APIArtifact, error) {
+	cpInitiated bool, namespace string) (*dto.APIArtifact, error) {
 	apkConfValidator := &validators.APKConfValidator{}
 	apkConfUtil := util.APKConfUtil{}
-	uniqueId := apkConfUtil.GetUniqueIdForAPI(apkConf.Name, apkConf.Version, organization)
-	if apkConf.ID != "" {
-		uniqueId = apkConf.ID
-	}
-	apiArtifact := &model.APIArtifact{
-		UniqueID:     uniqueId,
-		Name:         apkConf.Name,
-		Version:      apkConf.Version,
-		Organization: organization.Name,
-	}
-	routeMetadata := apkConfUtil.GenerateRouteMetadata(apiArtifact, apkConf, organization, cpInitiated)
-	apiArtifact.RouteMetadata = routeMetadata
+	//uniqueId := apkConfUtil.GetUniqueIdForAPI(apkConf.Name, apkConf.Version, organization)
+	//if apkConf.ID != "" {
+	//	uniqueId = apkConf.ID
+	//}
 	var resourceLevelEndpointConfigList []model.EndpointConfigurations
 	operations := apkConf.Operations
 	if operations != nil {
@@ -179,22 +172,33 @@ func GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organizatio
 	var createdEndpoints map[string][]*dto.Endpoint
 	var err error
 	endpointConfigurations := apkConf.EndpointConfigurations
-	if endpointConfigurations != nil {
-		createdEndpoints, err = apkConfUtil.CreateAndAddBackendServices(apiArtifact, apkConf, endpointConfigurations,
-			nil, nil, organization)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create and add backend services: %w", err)
-		}
-	}
+	//if endpointConfigurations != nil {
+	//	createdEndpoints, err = apkConfUtil.CreateAndAddBackendServices(apiArtifact, apkConf, endpointConfigurations,
+	//		nil, nil, organization)
+	//	if err != nil {
+	//		return nil, fmt.Errorf("failed to create and add backend services: %w", err)
+	//	}
+	//}
 	_ = createdEndpoints
+	_ = endpointConfigurations
 	// TODO - aiRateLimit - create AIRateLimitPolicies in RoutePolicy CR and BackendTrafficPolicy CR and attach to httproutes
 	// TODO - EndpointSecurity - Create BackendJWT Policy in RoutePolicy CR and attach to httproutes
 	// TODO - Handle Resiliency - apply to all httproutes that use this backend service using BackendTrafficPolicy CR
+	apiResourceBundle := apkConfUtil.CreateAPIResourceBundle(apkConf, organization, cpInitiated, namespace)
+	k8sArtifacts, err := crbuilder.CreateResources(&apiResourceBundle)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kubernetes resources: %w", err)
+	}
+	apiArtifact := &dto.APIArtifact{
+		Name:         apkConf.Name,
+		Version:      apkConf.Version,
+		K8sArtifacts: k8sArtifacts,
+	}
 	return apiArtifact, nil
 }
 
 // ZipAPIArtifact creates a zip file containing all API artifact resources
-func (client *APIClient) ZipAPIArtifact(apiID string, apiArtifact *model.APIArtifact) ([2]string, error) {
+func (client *APIClient) ZipAPIArtifact(apiArtifact *dto.APIArtifact) ([2]string, error) {
 	// Create temporary directory
 	zipDir, err := util.CreateTempDir()
 	if err != nil {
@@ -202,146 +206,157 @@ func (client *APIClient) ZipAPIArtifact(apiID string, apiArtifact *model.APIArti
 	}
 	defer os.RemoveAll(zipDir) // Clean up temp directory
 
-	definition := apiArtifact.Definition
-	if definition != nil {
-		yamlString, err := util.MarshalToYAMLWithIndent(definition, 2)
+	//definition := apiArtifact.Definition
+	//if definition != nil {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(definition, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert definition to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), definition.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store definition file: %w", err)
+	//	}
+	//}
+	//for _, authenticationCr := range apiArtifact.AuthenticationMap {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(authenticationCr, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert authentication CR to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), authenticationCr.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store authentication CR file: %w", err)
+	//	}
+	//}
+	//for _, httpRoute := range apiArtifact.ProductionHttpRoutes {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(httpRoute, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert HTTP route to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), httpRoute.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store HTTP route file: %w", err)
+	//	}
+	//}
+	//for _, httpRoute := range apiArtifact.SandboxHttpRoutes {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(httpRoute, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert HTTP route to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), httpRoute.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store HTTP route file: %w", err)
+	//	}
+	//}
+	//for _, gqlRoute := range apiArtifact.ProductionGqlRoutes {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(gqlRoute, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert GraphQL route to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), gqlRoute.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store GraphQL route file: %w", err)
+	//	}
+	//}
+	//for _, gqlRoute := range apiArtifact.SandboxGqlRoutes {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(gqlRoute, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert GraphQL route to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), gqlRoute.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store GraphQL route file: %w", err)
+	//	}
+	//}
+	//for _, grpcRoute := range apiArtifact.ProductionGrpcRoutes {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(grpcRoute, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert gRPC route to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), grpcRoute.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store gRPC route file: %w", err)
+	//	}
+	//}
+	//for _, grpcRoute := range apiArtifact.SandboxGrpcRoutes {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(grpcRoute, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert gRPC route to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), grpcRoute.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store gRPC route file: %w", err)
+	//	}
+	//}
+	//for _, backend := range apiArtifact.BackendServices {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(backend, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert backend service to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), backend.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store backend service file: %w", err)
+	//	}
+	//}
+	//for _, scope := range apiArtifact.Scopes {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(scope, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert scope to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), scope.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store scope file: %w", err)
+	//	}
+	//}
+	//for _, rateLimitPolicy := range apiArtifact.RateLimitPolicies {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(rateLimitPolicy, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert rate limit policy to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), rateLimitPolicy.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store rate limit policy file: %w", err)
+	//	}
+	//}
+	//for _, apiPolicy := range apiArtifact.ApiPolicies {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(apiPolicy, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert API policy to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), apiPolicy.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store API policy file: %w", err)
+	//	}
+	//}
+	//for _, interceptorService := range apiArtifact.InterceptorServices {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(interceptorService, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert interceptor service to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), interceptorService.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store interceptor service file: %w", err)
+	//	}
+	//}
+	//backendJWT := apiArtifact.BackendJwt
+	//if backendJWT != nil {
+	//	yamlString, err := util.MarshalToYAMLWithIndent(backendJWT, 2)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to convert backend JWT to YAML: %w", err)
+	//	}
+	//	err = util.StoreFile(string(yamlString), backendJWT.ObjectMeta.Name, zipDir)
+	//	if err != nil {
+	//		return [2]string{}, fmt.Errorf("failed to store backend JWT file: %w", err)
+	//	}
+	//}
+
+	for _, artifact := range apiArtifact.K8sArtifacts {
+		yamlString, err := util.MarshalToYAMLWithIndent(artifact, 2)
 		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert definition to YAML: %w", err)
+			return [2]string{}, fmt.Errorf("failed to convert artifact to YAML: %w", err)
 		}
-		err = util.StoreFile(string(yamlString), definition.ObjectMeta.Name, zipDir)
+		err = util.StoreFile(string(yamlString), artifact.GetName(), zipDir)
 		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store definition file: %w", err)
-		}
-	}
-	for _, authenticationCr := range apiArtifact.AuthenticationMap {
-		yamlString, err := util.MarshalToYAMLWithIndent(authenticationCr, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert authentication CR to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), authenticationCr.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store authentication CR file: %w", err)
-		}
-	}
-	for _, httpRoute := range apiArtifact.ProductionHttpRoutes {
-		yamlString, err := util.MarshalToYAMLWithIndent(httpRoute, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert HTTP route to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), httpRoute.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store HTTP route file: %w", err)
-		}
-	}
-	for _, httpRoute := range apiArtifact.SandboxHttpRoutes {
-		yamlString, err := util.MarshalToYAMLWithIndent(httpRoute, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert HTTP route to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), httpRoute.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store HTTP route file: %w", err)
-		}
-	}
-	for _, gqlRoute := range apiArtifact.ProductionGqlRoutes {
-		yamlString, err := util.MarshalToYAMLWithIndent(gqlRoute, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert GraphQL route to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), gqlRoute.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store GraphQL route file: %w", err)
-		}
-	}
-	for _, gqlRoute := range apiArtifact.SandboxGqlRoutes {
-		yamlString, err := util.MarshalToYAMLWithIndent(gqlRoute, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert GraphQL route to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), gqlRoute.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store GraphQL route file: %w", err)
-		}
-	}
-	for _, grpcRoute := range apiArtifact.ProductionGrpcRoutes {
-		yamlString, err := util.MarshalToYAMLWithIndent(grpcRoute, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert gRPC route to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), grpcRoute.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store gRPC route file: %w", err)
-		}
-	}
-	for _, grpcRoute := range apiArtifact.SandboxGrpcRoutes {
-		yamlString, err := util.MarshalToYAMLWithIndent(grpcRoute, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert gRPC route to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), grpcRoute.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store gRPC route file: %w", err)
-		}
-	}
-	for _, backend := range apiArtifact.BackendServices {
-		yamlString, err := util.MarshalToYAMLWithIndent(backend, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert backend service to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), backend.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store backend service file: %w", err)
-		}
-	}
-	for _, scope := range apiArtifact.Scopes {
-		yamlString, err := util.MarshalToYAMLWithIndent(scope, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert scope to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), scope.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store scope file: %w", err)
-		}
-	}
-	for _, rateLimitPolicy := range apiArtifact.RateLimitPolicies {
-		yamlString, err := util.MarshalToYAMLWithIndent(rateLimitPolicy, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert rate limit policy to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), rateLimitPolicy.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store rate limit policy file: %w", err)
-		}
-	}
-	for _, apiPolicy := range apiArtifact.ApiPolicies {
-		yamlString, err := util.MarshalToYAMLWithIndent(apiPolicy, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert API policy to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), apiPolicy.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store API policy file: %w", err)
-		}
-	}
-	for _, interceptorService := range apiArtifact.InterceptorServices {
-		yamlString, err := util.MarshalToYAMLWithIndent(interceptorService, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert interceptor service to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), interceptorService.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store interceptor service file: %w", err)
-		}
-	}
-	backendJWT := apiArtifact.BackendJwt
-	if backendJWT != nil {
-		yamlString, err := util.MarshalToYAMLWithIndent(backendJWT, 2)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to convert backend JWT to YAML: %w", err)
-		}
-		err = util.StoreFile(string(yamlString), backendJWT.ObjectMeta.Name, zipDir)
-		if err != nil {
-			return [2]string{}, fmt.Errorf("failed to store backend JWT file: %w", err)
+			return [2]string{}, fmt.Errorf("failed to store artifact file: %w", err)
 		}
 	}
 
