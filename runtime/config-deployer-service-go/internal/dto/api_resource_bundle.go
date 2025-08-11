@@ -4,6 +4,8 @@ import "github.com/wso2/apk/config-deployer-service-go/internal/model"
 
 // APIResourceBundle is a DTO that represents a bundle of API resources.
 type APIResourceBundle struct {
+	Organization	 string             `json:"organization,omitempty" yaml:"organization,omitempty"`
+	Namespace		   string             `json:"namespace,omitempty" yaml:"namespace,omitempty"`
 	APKConf           *model.APKConf     `json:"apkConf,omitempty" yaml:"apkConf,omitempty"`
 	CombinedResources []CombinedResource `json:"combinedResources,omitempty" yaml:"combinedResources,omitempty"`
 }
