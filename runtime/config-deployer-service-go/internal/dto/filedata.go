@@ -17,9 +17,8 @@
 
 package dto
 
-// DefinitionBody is the body of the api definition.
-type DefinitionBody struct {
-	Definition FileData `json:"definition,omitempty"` // api definition (OAS/Graphql/gRPC)
-	URL        string   `json:"url,omitempty"`        // url of the api definition
-	APIType    string   `json:"apiType,omitempty"`    // Type of api
+// FileData represents a file with its name and content.
+type FileData struct {
+	FileName    string `json:"fileName"`    // Name of the file.
+	FileContent []byte `json:"fileContent"` // Content of the file.
 }

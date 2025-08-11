@@ -1,0 +1,33 @@
+# The logging configuration for Config Deployer
+
+## Config Deployer root Level configurations
+
+logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+LogFormat = "TEXT" # Values can be "JSON", "TEXT"
+
+[rotation]
+MaxSize = 10    # In MegaBytes (MB)
+MaxBackups = 3
+MaxAge =  2   # In days
+Compress = true
+
+## Config Deployer package Level configurations
+
+[[pkg]]
+name = "github.com/wso2/apk/config-deployer-service-go/internal/artifactgenerator"
+logLevel = "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+
+[[pkg]]
+name = "github.com/wso2/apk/config-deployer-service-go/internal/util"
+logLevel = "INFO"
+
+
+# The logging configuration for Router
+
+[accessLogs]
+enable = false
+format = "[%START_TIME%] '%REQ(:METHOD)% %DYNAMIC_METADATA(envoy.filters.http.ext_authz:originalPath)% %REQ(:PATH)% %PROTOCOL%' %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% '%REQ(X-FORWARDED-FOR)%' '%REQ(USER-AGENT)%' '%REQ(X-REQUEST-ID)%' '%REQ(:AUTHORITY)%' '%UPSTREAM_HOST%'\n"
+
+[wireLogs]
+enable = false
+include = ["Headers", "Body", "Trailers"]
