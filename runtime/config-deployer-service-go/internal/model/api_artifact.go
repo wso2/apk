@@ -19,7 +19,6 @@ package model
 
 import (
 	egv1a1 "github.com/envoyproxy/gateway/api/v1alpha1"
-	"github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	corev1 "k8s.io/api/core/v1"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -44,7 +43,7 @@ type APIArtifact struct {
 	CertificateMap              map[string]string                          `json:"certificateMap" yaml:"certificateMap"`
 	BackendServices             map[string]*egv1a1.Backend                 `json:"backendServices" yaml:"backendServices"`
 	BackendTLSPolicies          map[string]*gwapiv1alpha3.BackendTLSPolicy `json:"backendTLSPolicies" yaml:"backendTLSPolicies"`
-	BackendSecurity             map[string]*v1alpha1.BackendJWT            `json:"backendSecurity" yaml:"backendSecurity"`
+	// BackendSecurity             map[string]*v1alpha1.BackendJWT            `json:"backendSecurity" yaml:"backendSecurity"`
 	AuthenticationMap           map[string]*egv1a1.SecurityPolicy          `json:"authenticationMap" yaml:"authenticationMap"`
 	Scopes                      map[string]*egv1a1.SecurityPolicy          `json:"scopes" yaml:"scopes"`
 	RateLimitPolicies           map[string]*egv1a1.BackendTrafficPolicy    `json:"rateLimitPolicies" yaml:"rateLimitPolicies"`
