@@ -31,6 +31,7 @@ import (
 	v1 "sigs.k8s.io/gateway-api/apis/v1"
 	"sigs.k8s.io/gateway-api/apis/v1alpha2"
 	"sigs.k8s.io/gateway-api/apis/v1alpha3"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -156,12 +157,32 @@ func (apkConfUtil *APKConfUtil) GenerateRouteMetadata(apiArtifact *model.APIArti
 			Version:        apiArtifact.Version,
 			Organization:   organization.Name,
 			Type:           apkConf.Type,
-			Environment:    *apkConf.Environment,
+			Environment:    GetStringValue(apkConf.Environment),
 			Context:        apkConf.BasePath,
-			DefinitionPath: *apkConf.DefinitionPath,
+			DefinitionPath: GetStringValue(apkConf.DefinitionPath),
 		},
 	}
 	return routeMetadata
+}
+
+// CreateAPIResourceBundle creates a resource bundle for the API artifact based on the APK configuration and definition.
+func (apkConfUtil *APKConfUtil) CreateAPIResourceBundle(apkConf *model.APKConf, organization *dto.Organization,
+	cpInitiated bool, namespace string) dto.APIResourceBundle {
+	apiResourceBundle := dto.APIResourceBundle{
+		Organization: organization.Name,
+		Namespace:    namespace,
+		CPInitiated:  cpInitiated,
+		APKConf:      apkConf,
+	}
+	// bundle apk operations into bins based on secured, rate limit and scopes and create combined resources
+	combinedResources := generateCombinedResources(apkConf)
+	apiResourceBundle.CombinedResources = combinedResources
+	return apiResourceBundle
+}
+
+func (apkConfUtil *APKConfUtil) GenerateCRsForAPIResourceBundle(apiResourceBundle dto.APIResourceBundle) {
+	// Iterate through each combined resource and generate the necessary CRs
+	println("GenerateCRsForAPIResourceBundle")
 }
 
 // createBackendService creates a backend service for the API artifact based on the provided configurations.
@@ -445,4 +466,76 @@ func getInterceptorBackendUid(apkConf *model.APKConf, endpointType string, organ
 	concatenatedString = hex.EncodeToString(hashedValue)
 
 	return "backend-" + concatenatedString + "-interceptor"
+}
+
+// generateCombinedResources groups APKOperations into CombinedResource buckets based on
+// unique combinations of Secured, RateLimit, and Scopes attributes
+func generateCombinedResources(apkConf *model.APKConf) []dto.CombinedResource {
+	groupMap := make(map[string][]model.APKOperations)
+	operations := apkConf.Operations
+	for _, operation := range operations {
+		populatedOperation := populateEndpointConfigurations(operation, apkConf)
+		key := generateGroupingKey(populatedOperation)
+		groupMap[key] = append(groupMap[key], populatedOperation)
+	}
+
+	var combinedResources []dto.CombinedResource
+	for _, groupedOperations := range groupMap {
+		combinedResource := dto.CombinedResource{
+			APKOperations: groupedOperations,
+		}
+		combinedResources = append(combinedResources, combinedResource)
+	}
+	return combinedResources
+}
+
+// populateEndpointConfigurations populates missing endpoint configurations from APKConf level
+func populateEndpointConfigurations(operation model.APKOperations, apkConf *model.APKConf) model.APKOperations {
+	populatedOperation := operation
+	// If operation doesn't have endpoint configurations but APKConf does
+	if populatedOperation.EndpointConfigurations == nil {
+		populatedOperation.EndpointConfigurations = apkConf.EndpointConfigurations
+	} else if apkConf.EndpointConfigurations != nil {
+		// If operation has endpoint configurations but some are missing, populate from APKConf
+		if len(populatedOperation.EndpointConfigurations.Production) == 0 && len(apkConf.EndpointConfigurations.Production) > 0 {
+			populatedOperation.EndpointConfigurations.Production = apkConf.EndpointConfigurations.Production
+		}
+		if len(populatedOperation.EndpointConfigurations.Sandbox) == 0 && len(apkConf.EndpointConfigurations.Sandbox) > 0 {
+			populatedOperation.EndpointConfigurations.Sandbox = apkConf.EndpointConfigurations.Sandbox
+		}
+	}
+
+	return populatedOperation
+}
+
+// generateGroupingKey creates a unique key for grouping operations based on
+// Secured, RateLimit, and Scopes attributes
+func generateGroupingKey(operation model.APKOperations) string {
+	var keyParts []string
+
+	// Handle Secured field
+	if operation.Secured != nil {
+		keyParts = append(keyParts, fmt.Sprintf("secured:%t", *operation.Secured))
+	} else {
+		keyParts = append(keyParts, "secured:false")
+	}
+
+	// Handle RateLimit field
+	if operation.RateLimit != nil {
+		keyParts = append(keyParts, fmt.Sprintf("rateLimit:%d-%s", operation.RateLimit.RequestsPerUnit, operation.RateLimit.Unit))
+	} else {
+		keyParts = append(keyParts, "rateLimit:nil")
+	}
+
+	// Handle Scopes field
+	if len(operation.Scopes) > 0 {
+		sortedScopes := make([]string, len(operation.Scopes))
+		copy(sortedScopes, operation.Scopes)
+		sort.Strings(sortedScopes)
+		keyParts = append(keyParts, fmt.Sprintf("scopes:%s", strings.Join(sortedScopes, ",")))
+	} else {
+		keyParts = append(keyParts, "scopes:empty")
+	}
+
+	return strings.Join(keyParts, "|")
 }
