@@ -94,3 +94,22 @@ var UnsupportedResourceBlocks = []string{"servers"}
 const (
 	OPENAPI_ALLOWED_EXTRA_SIBLING_FIELDS = "type"
 )
+
+const (
+	ZIP_FILE_EXTENSION = ".zip"
+)
+
+const (
+	PRODUCTION_TYPE  = "production"
+	SANDBOX_TYPE     = "sandbox"
+	INTERCEPTOR_TYPE = "interceptor"
+)
+
+const (
+	API_NAME_HASH_LABEL         = "api-name"
+	API_VERSION_HASH_LABEL      = "api-version"
+	ORGANIZATION_HASH_LABEL     = "organization"
+	MANAGED_BY_HASH_LABEL       = "managed-by"
+	MANAGED_BY_HASH_LABEL_VALUE = "kgw"
+	CP_INITIATED_HASH_LABEL     = "cp-initiated"
+)

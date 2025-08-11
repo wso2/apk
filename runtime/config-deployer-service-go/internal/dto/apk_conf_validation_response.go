@@ -17,9 +17,19 @@
 
 package dto
 
-// DefinitionBody is the body of the api definition.
-type DefinitionBody struct {
-	Definition FileData `json:"definition,omitempty"` // api definition (OAS/Graphql/gRPC)
-	URL        string   `json:"url,omitempty"`        // url of the api definition
-	APIType    string   `json:"apiType,omitempty"`    // Type of api
+type APKConfValidationResponse struct {
+	Validated  bool           `json:"validated"`
+	ErrorItems []ErrorHandler `json:"errorItems,omitempty"`
+}
+
+func NewAPKConfValidationResponse(validated bool) *APKConfValidationResponse {
+	return &APKConfValidationResponse{
+		Validated: false,
+	}
+}
+
+type ErrorHandler struct {
+	ErrorCode        int    `json:"errorCode"`
+	ErrorMessage     string `json:"errorMessage"`
+	ErrorDescription string `json:"errorDescription,omitempty"`
 }

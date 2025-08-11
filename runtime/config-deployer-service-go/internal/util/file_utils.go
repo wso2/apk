@@ -19,9 +19,9 @@ package util
 
 import (
 	"archive/zip"
-	"bytes"
 	"fmt"
-	"gopkg.in/yaml.v3"
+	"github.com/google/uuid"
+	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"io"
 	"net/http"
 	"os"
@@ -216,15 +216,103 @@ func FileExists(filePath string) bool {
 	return !info.IsDir()
 }
 
-// MarshalToYAMLWithIndent marshals a struct to YAML with custom indentation
-func MarshalToYAMLWithIndent(data interface{}, indent int) ([]byte, error) {
-	var buf bytes.Buffer
-	encoder := yaml.NewEncoder(&buf)
-	encoder.SetIndent(indent)
-	err := encoder.Encode(data)
-	if err != nil {
-		return nil, fmt.Errorf("error occurred while encoding to YAML: %w", err)
+// StoreFile writes content to a file in the specified directory
+func StoreFile(content, fileName string, directory ...string) error {
+	var fullPath string
+
+	if len(directory) > 0 && directory[0] != "" {
+		fullPath = filepath.Join(directory[0], fileName+".yaml")
+	} else {
+		fullPath = fileName + ".yaml"
 	}
-	encoder.Close()
-	return buf.Bytes(), nil
+
+	// Create directory if it doesn't exist
+	dir := filepath.Dir(fullPath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", dir, err)
+	}
+
+	// Write content to file
+	err := os.WriteFile(fullPath, []byte(content), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write file %s: %w", fullPath, err)
+	}
+
+	return nil
+}
+
+// ZipDirectory creates a zip file from a directory
+func ZipDirectory(zipFileName, directoryPath string) ([2]string, error) {
+	zipName := zipFileName + constants.ZIP_FILE_EXTENSION
+	zipPath := directoryPath + constants.ZIP_FILE_EXTENSION
+
+	// Create zip file
+	zipFile, err := os.Create(zipPath)
+	if err != nil {
+		return [2]string{}, fmt.Errorf("failed to create zip file: %w", err)
+	}
+	defer zipFile.Close()
+
+	// Create zip writer
+	zipWriter := zip.NewWriter(zipFile)
+	defer zipWriter.Close()
+
+	// Walk through directory and add files to zip
+	err = filepath.Walk(directoryPath, func(filePath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip the directory itself and the zip file
+		if info.IsDir() || strings.HasSuffix(filePath, constants.ZIP_FILE_EXTENSION) {
+			return nil
+		}
+
+		// Get relative path for zip entry
+		relPath, err := filepath.Rel(directoryPath, filePath)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path: %w", err)
+		}
+
+		// Create zip entry
+		zipEntry, err := zipWriter.Create(relPath)
+		if err != nil {
+			return fmt.Errorf("failed to create zip entry: %w", err)
+		}
+
+		// Open source file
+		sourceFile, err := os.Open(filePath)
+		if err != nil {
+			return fmt.Errorf("failed to open source file: %w", err)
+		}
+		defer sourceFile.Close()
+
+		// Copy file content to zip entry
+		_, err = io.Copy(zipEntry, sourceFile)
+		if err != nil {
+			return fmt.Errorf("failed to copy file to zip: %w", err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return [2]string{}, fmt.Errorf("failed to walk directory: %w", err)
+	}
+
+	return [2]string{zipName, zipPath}, nil
+}
+
+// CreateTempDir creates a temporary directory with a unique name
+func CreateTempDir() (string, error) {
+	tempDir := os.TempDir()
+	uniqueID := uuid.New().String()
+	tempPath := filepath.Join(tempDir, uniqueID)
+
+	err := os.MkdirAll(tempPath, 0755)
+	if err != nil {
+		return "", fmt.Errorf("failed to create temp directory: %w", err)
+	}
+
+	return tempPath, nil
 }

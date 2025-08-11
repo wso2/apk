@@ -20,8 +20,9 @@ package routes
 import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/api/handlers"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
-	// "crypto/sha256"
-	// "encoding/base64"
+	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
+	"os"
+
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,10 +30,16 @@ import (
 )
 
 // StartArtifactGeneratorServer sets up and starts the HTTP server for artifact generation APIs.
-// It defines API routes under the /api/configurator base path.
 func StartArtifactGeneratorServer(cfg *config.Server) {
 	r := gin.Default()
 	gin.SetMode(gin.ReleaseMode)
+
+	r.GET("/health", func(c *gin.Context) {
+		status := gin.H{
+			"health": "Ok",
+		}
+		c.JSON(http.StatusOK, status)
+	})
 
 	api := r.Group("/api/configurator")
 	{
@@ -43,18 +50,38 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 
 		// Generate K8s Resources
 		api.POST("/apis/generate-k8s-resources", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"message": "Generate K8s Resources API called"})
+			organization := c.Query("organization")
+			if organization == "" {
+				organization = "default"
+			}
+			cpInitiated := c.Query("cpInitiated")
+			if cpInitiated == "" {
+				cpInitiated = "false"
+			}
+			organizationObj := dto.NewOrganization("", organization, "default",
+				"default", true)
+			handlers.GetGeneratedK8sResources(c, organizationObj, cpInitiated)
 		})
 	}
 
-	// r.RunTLS(":9443", cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
+	// Get certificate paths from environment or config
+	certPath := os.Getenv("TLS_CERT_PATH")
+	keyPath := os.Getenv("TLS_KEY_PATH")
 
-	// Start HTTP server
-	if err := r.Run(":9444"); err != nil {
-		panic("Failed to start API server: " + err.Error())
+	if certPath == "" {
+		certPath = "/home/wso2kgw/security/config.pem"
 	}
-}
+	if keyPath == "" {
+		keyPath = "/home/wso2kgw/security/config.key"
+	}
 
-func createJWKSSet() string {
-	return "Response with JWKS set" // Placeholder response, replace with actual JWKS set
+	// Start HTTPS server
+	if err := r.RunTLS(":9443", certPath, keyPath); err != nil {
+		panic("Failed to start HTTPS server: " + err.Error())
+	}
+
+	//Start HTTP server
+	//if err := r.Run(":9444"); err != nil {
+	//	panic("Failed to start API server: " + err.Error())
+	//}
 }
