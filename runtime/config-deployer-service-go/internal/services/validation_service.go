@@ -18,9 +18,11 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
+	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 	"github.com/wso2/apk/config-deployer-service-go/internal/services/validators"
 	"github.com/wso2/apk/config-deployer-service-go/internal/util"
 	"strings"
@@ -115,4 +117,34 @@ func validateAPIDefinitionFromFile(apiType string, fileName string, inputByteArr
 	}
 
 	return validationResponse, nil
+}
+
+// ValidateAndRetrieveAPKConfiguration validates the APK configuration and returns the APKConf model.
+func ValidateAndRetrieveAPKConfiguration(apkConfJson string) (*model.APKConf, error) {
+	apkConfValidator := &validators.APKConfValidator{}
+	validationResponse, err := apkConfValidator.ValidateAPKConf(apkConfJson)
+	if err != nil {
+		return nil, fmt.Errorf("APK configuration is not valid: %w", err)
+	}
+	if validationResponse.Validated {
+		var apkConf model.APKConf
+		err := json.Unmarshal([]byte(apkConfJson), &apkConf)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse APK configuration: %w", err)
+		}
+		errors := apkConfValidator.ValidateEndpointConfigurations(&apkConf)
+		if len(errors) > 0 {
+			return nil, fmt.Errorf("APK configuration endpoint validation failed: %v", errors)
+		}
+		return &apkConf, nil
+	} else {
+		if validationResponse.ErrorItems != nil && len(validationResponse.ErrorItems) > 0 {
+			var errorMessages []string
+			for _, errorItem := range validationResponse.ErrorItems {
+				errorMessages = append(errorMessages, fmt.Sprintf("%s: %s", errorItem.ErrorMessage, errorItem.ErrorDescription))
+			}
+			return nil, fmt.Errorf("APK configuration is not valid: %s", strings.Join(errorMessages, ", "))
+		}
+		return nil, fmt.Errorf("APK configuration is not valid")
+	}
 }

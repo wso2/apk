@@ -17,9 +17,11 @@
 
 package dto
 
-// DefinitionBody is the body of the api definition.
-type DefinitionBody struct {
-	Definition FileData `json:"definition,omitempty"` // api definition (OAS/Graphql/gRPC)
-	URL        string   `json:"url,omitempty"`        // url of the api definition
-	APIType    string   `json:"apiType,omitempty"`    // Type of api
+// Endpoint represents a service endpoint in the API configuration.
+type Endpoint struct {
+	URL          *string `json:"url,omitempty" yaml:"url,omitempty"`
+	Namespace    *string `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Name         *string `json:"name,omitempty" yaml:"name,omitempty"`
+	ServiceEntry bool    `json:"serviceEntry" yaml:"serviceEntry"`
+	Weight       *int    `json:"weight,omitempty" yaml:"weight,omitempty"`
 }

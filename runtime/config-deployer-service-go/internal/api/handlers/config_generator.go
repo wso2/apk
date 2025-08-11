@@ -177,13 +177,118 @@ func prepareDefinitionBodyFromRequest(cxt *gin.Context) (*dto.DefinitionBody, er
 		if readErr != nil {
 			return nil, fmt.Errorf("failed to read uploaded file: %w", readErr)
 		}
-		definitionBody.Definition = dto.Definition{
+		definitionBody.Definition = dto.FileData{
 			FileName:    defHeader.Filename,
 			FileContent: fileContent,
 		}
 	}
 	if url := cxt.PostForm("url"); url != "" {
 		definitionBody.URL = url
+	}
+	if apiType := cxt.PostForm("apiType"); apiType != "" {
+		definitionBody.APIType = apiType
+	}
+
+	return definitionBody, nil
+}
+
+// GetGeneratedK8sResources generates Kubernetes resources based on the provided APK configuration and API definition.
+func GetGeneratedK8sResources(cxt *gin.Context, organization *dto.Organization, cpInitiatedParam string) {
+	var cpInitiated bool
+	if cpInitiatedParam != "" && !slices.Contains([]string{"true", "false"}, strings.ToLower(cpInitiatedParam)) {
+		cxt.JSON(http.StatusBadRequest, gin.H{
+			"code":    909018,
+			"message": "Invalid cpInitiated value. It should be either 'true' or 'false'.",
+		})
+		return
+	} else {
+		cpInitiated = strings.ToLower(cpInitiatedParam) == "true"
+	}
+
+	definitionBody, err := prepareGenerateK8sResourcesBodyFromRequest(cxt)
+
+	if err != nil {
+		cxt.JSON(http.StatusBadRequest, gin.H{
+			"code":    90091,
+			"message": "Failed to parse request: " + err.Error(),
+		})
+		return
+	}
+	if definitionBody.APKConfiguration.FileName == "" || definitionBody.DefinitionFile.FileName == "" {
+		cxt.JSON(http.StatusNotAcceptable, gin.H{
+			"code":    909018,
+			"message": "required apkConfiguration and definitionFile are not provided",
+		})
+		return
+	}
+
+	apiClient := &APIClient{}
+	apiArtifact, err := apiClient.PrepareArtifact(definitionBody.APKConfiguration,
+		definitionBody.DefinitionFile, organization, cpInitiated)
+
+	if err != nil {
+		cxt.JSON(http.StatusInternalServerError, gin.H{
+			"code":    909052,
+			"message": "Error while generating k8s artifact: " + err.Error(),
+		})
+		return
+	}
+
+	zipName, err := apiClient.ZipAPIArtifact(apiArtifact.UniqueID, apiArtifact)
+	if err != nil {
+		cxt.JSON(http.StatusInternalServerError, gin.H{
+			"code":    909052,
+			"message": "Error while generating k8s artifact zip: " + err.Error(),
+		})
+		return
+	}
+
+	cxt.Header("Content-Disposition", "attachment; filename="+zipName[0])
+	cxt.Header("Content-Type", "application/zip")
+	cxt.File(zipName[1])
+	cxt.JSON(http.StatusOK, gin.H{"message": "Generate K8s Resources API called"})
+}
+
+// prepareGenerateK8sResourcesBodyFromRequest prepares the definition body from the request context.
+func prepareGenerateK8sResourcesBodyFromRequest(cxt *gin.Context) (*dto.GenerateK8sResourcesBody, error) {
+	definitionBody := &dto.GenerateK8sResourcesBody{}
+
+	// Parse the multipart form with a max memory of 10MB
+	if err := cxt.Request.ParseMultipartForm(10 << 20); err != nil {
+		return nil, fmt.Errorf("failed to parse multipart form: %w", err)
+	}
+
+	// Parse apkConfiguration file
+	apkConfFile, apkConfHeader, err := cxt.Request.FormFile("apkConfiguration")
+	if err == nil {
+		err := apkConfFile.Close()
+		if err != nil {
+			return nil, fmt.Errorf("failed to close APK Configuration file: %w", err)
+		}
+		fileContent, readErr := io.ReadAll(apkConfFile)
+		if readErr != nil {
+			return nil, fmt.Errorf("failed to read APK Configuration file: %w", readErr)
+		}
+		definitionBody.APKConfiguration = dto.FileData{
+			FileName:    apkConfHeader.Filename,
+			FileContent: fileContent,
+		}
+	}
+	// Parse definitionFile
+	defFile, defHeader, err := cxt.Request.FormFile("definitionFile")
+	if err == nil {
+		err := defFile.Close()
+		if err != nil {
+			return nil, fmt.Errorf("failed to close API definition file: %w", err)
+		}
+		fileContent, readErr := io.ReadAll(defFile)
+		if readErr != nil {
+			return nil, fmt.Errorf("failed to read definitionFile: %w", readErr)
+		}
+		definitionBody.DefinitionFile = dto.FileData{
+			FileName:    defHeader.Filename,
+			FileContent: fileContent,
+		}
 	}
 	if apiType := cxt.PostForm("apiType"); apiType != "" {
 		definitionBody.APIType = apiType

@@ -24,6 +24,8 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/api/routes"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/logging"
+	"github.com/wso2/apk/config-deployer-service-go/internal/services/validators"
+	"os"
 	// "github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	// "github.com/wso2/apk/gateway/enforcer/internal/extproc"
 	// "github.com/wso2/apk/gateway/enforcer/internal/grpc"
@@ -38,6 +40,14 @@ import (
 func main() {
 	cfg := config.GetConfig()
 	logging.LoggerMain.Info("Server starting in main")
+
+	apkSchemaLocation := "resources/conf/apk-schema.json"
+	apkConfSchemaContent, err := os.ReadFile(apkSchemaLocation)
+	if err != nil {
+		logging.LoggerMain.Error("Failed to read APK schema file", err)
+		panic(err)
+	}
+	validators.GlobalAPKConfValidator = validators.NewAPKConfValidator(string(apkConfSchemaContent))
 	// port := cfg.CommonControllerXdsPort
 	// host := cfg.CommonControllerHostname
 	// clientCert, err := util.LoadCertificates(cfg.EnforcerPublicKeyPath, cfg.EnforcerPrivateKeyPath)
