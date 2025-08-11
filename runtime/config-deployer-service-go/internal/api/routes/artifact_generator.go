@@ -58,9 +58,10 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			if cpInitiated == "" {
 				cpInitiated = "false"
 			}
+			namespace := c.Query("namespace")
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
-			handlers.GetGeneratedK8sResources(c, organizationObj, cpInitiated)
+			handlers.GetGeneratedK8sResources(c, organizationObj, cpInitiated, namespace)
 		})
 	}
 
@@ -76,12 +77,12 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 	}
 
 	// Start HTTPS server
-	if err := r.RunTLS(":9443", certPath, keyPath); err != nil {
-		panic("Failed to start HTTPS server: " + err.Error())
-	}
+	//if err := r.RunTLS(":9443", certPath, keyPath); err != nil {
+	//	panic("Failed to start HTTPS server: " + err.Error())
+	//}
 
 	//Start HTTP server
-	//if err := r.Run(":9444"); err != nil {
-	//	panic("Failed to start API server: " + err.Error())
-	//}
+	if err := r.Run(":9444"); err != nil {
+		panic("Failed to start API server: " + err.Error())
+	}
 }

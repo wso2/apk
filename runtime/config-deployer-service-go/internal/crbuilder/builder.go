@@ -7,12 +7,12 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	util "github.com/wso2/apk/config-deployer-service-go/internal/util"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object, error) {
-	var error error
+	var err error
 	if apiResourceBundle == nil || apiResourceBundle.APKConf == nil || apiResourceBundle.APKConf.EndpointConfigurations == nil {
 		return nil, fmt.Errorf("invalid APIResourceBundle")
 	}
@@ -41,6 +41,5 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 		objects = append(objects, routeMetadata)
 	}
 
-	return objects, error
-
+	return objects, err
 }
