@@ -175,6 +175,7 @@ func GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organizatio
 	} else {
 		return nil, fmt.Errorf("atleast one operation need to specified")
 	}
+	_ = resourceLevelEndpointConfigList
 	var createdEndpoints map[string][]*dto.Endpoint
 	var err error
 	endpointConfigurations := apkConf.EndpointConfigurations
@@ -185,6 +186,7 @@ func GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organizatio
 			return nil, fmt.Errorf("failed to create and add backend services: %w", err)
 		}
 	}
+	_ = createdEndpoints
 	// TODO - aiRateLimit - create AIRateLimitPolicies in RoutePolicy CR and BackendTrafficPolicy CR and attach to httproutes
 	// TODO - EndpointSecurity - Create BackendJWT Policy in RoutePolicy CR and attach to httproutes
 	// TODO - Handle Resiliency - apply to all httproutes that use this backend service using BackendTrafficPolicy CR

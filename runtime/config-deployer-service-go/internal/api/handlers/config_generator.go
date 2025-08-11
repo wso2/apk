@@ -20,7 +20,6 @@ package handlers
 import (
 	"fmt"
 	"github.com/wso2/apk/config-deployer-service-go/internal/api"
-	_ "github.com/wso2/apk/config-deployer-service-go/internal/logging"
 	"github.com/wso2/apk/config-deployer-service-go/internal/services"
 	"github.com/wso2/apk/config-deployer-service-go/internal/util"
 	"io"
