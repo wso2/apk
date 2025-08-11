@@ -316,3 +316,11 @@ func CreateTempDir() (string, error) {
 
 	return tempPath, nil
 }
+
+// GetStringValue safely dereferences a string pointer, returning empty string if nil
+func GetStringValue(ptr *string) string {
+	if ptr == nil {
+		return ""
+	}
+	return *ptr
+}
