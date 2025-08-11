@@ -192,7 +192,7 @@ func prepareDefinitionBodyFromRequest(cxt *gin.Context) (*dto.DefinitionBody, er
 }
 
 // GetGeneratedK8sResources generates Kubernetes resources based on the provided APK configuration and API definition.
-func GetGeneratedK8sResources(cxt *gin.Context, organization *dto.Organization, cpInitiatedParam string) {
+func GetGeneratedK8sResources(cxt *gin.Context, organization *dto.Organization, cpInitiatedParam string, namespace string) {
 	var cpInitiated bool
 	if cpInitiatedParam != "" && !slices.Contains([]string{"true", "false"}, strings.ToLower(cpInitiatedParam)) {
 		cxt.JSON(http.StatusBadRequest, gin.H{
@@ -223,7 +223,7 @@ func GetGeneratedK8sResources(cxt *gin.Context, organization *dto.Organization, 
 
 	apiClient := &APIClient{}
 	apiArtifact, err := apiClient.PrepareArtifact(definitionBody.APKConfiguration,
-		definitionBody.DefinitionFile, organization, cpInitiated)
+		definitionBody.DefinitionFile, organization, cpInitiated, namespace)
 
 	if err != nil {
 		cxt.JSON(http.StatusInternalServerError, gin.H{
@@ -233,7 +233,7 @@ func GetGeneratedK8sResources(cxt *gin.Context, organization *dto.Organization, 
 		return
 	}
 
-	zipName, err := apiClient.ZipAPIArtifact(apiArtifact.UniqueID, apiArtifact)
+	zipName, err := apiClient.ZipAPIArtifact(apiArtifact)
 	if err != nil {
 		cxt.JSON(http.StatusInternalServerError, gin.H{
 			"code":    909052,
