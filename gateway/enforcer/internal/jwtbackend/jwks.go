@@ -23,7 +23,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/lestrrat-go/jwx/v2/jwk"
-	"github.com/wso2/apk/common-go-libs/loggers"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 )
@@ -53,8 +52,10 @@ func ReadAndConvertToJwks(cfg *config.Server) (jwk.Key, error) {
 
 	// Convert the public key to a JWK
 	jwkKey, err := jwk.FromRaw(pubKey)
+	cfg = config.GetConfig()
 	if err != nil {
-		loggers.LoggerAPKOperator.Errorf("failed to create JWK: %s", err)
+		cfg.Logger.Sugar().Errorf("Failed to convert public key to JWK: %v", err)
+		return nil, err
 	}
 	hash := sha256.Sum256(publicCert.RawSubjectPublicKeyInfo)
 	kid := base64.RawURLEncoding.EncodeToString(hash[:])
