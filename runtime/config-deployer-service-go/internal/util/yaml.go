@@ -18,6 +18,7 @@
 package util
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"gopkg.in/yaml.v3"
@@ -45,6 +46,23 @@ func YamlToJSON(yamlContent string) (string, error) {
 	return string(jsonBytes), nil
 }
 
+// JsonToYaml converts a JSON string to YAML format
+func JsonToYaml(jsonString string) (string, error) {
+	// Parse JSON string into a map
+	var jsonData interface{}
+	err := json.Unmarshal([]byte(jsonString), &jsonData)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	yamlData, err := MarshalToYAMLWithIndent(jsonData, 2)
+	if err != nil {
+		return "", fmt.Errorf("failed to convert to YAML: %w", err)
+	}
+
+	return string(yamlData), nil
+}
+
 // convertInterfaceKeysToString recursively converts map[interface{}]interface{} to map[string]interface{}
 func convertInterfaceKeysToString(data interface{}) interface{} {
 	switch v := data.(type) {
@@ -70,4 +88,17 @@ func convertInterfaceKeysToString(data interface{}) interface{} {
 	default:
 		return v
 	}
+}
+
+// MarshalToYAMLWithIndent marshals a struct to YAML with custom indentation
+func MarshalToYAMLWithIndent(data interface{}, indent int) ([]byte, error) {
+	var buf bytes.Buffer
+	encoder := yaml.NewEncoder(&buf)
+	encoder.SetIndent(indent)
+	err := encoder.Encode(data)
+	if err != nil {
+		return nil, fmt.Errorf("error occurred while encoding to YAML: %w", err)
+	}
+	encoder.Close()
+	return buf.Bytes(), nil
 }
