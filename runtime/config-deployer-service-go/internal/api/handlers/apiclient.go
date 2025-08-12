@@ -19,7 +19,9 @@ package handlers
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/crbuilder"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
@@ -28,6 +30,7 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/services/validators"
 	"github.com/wso2/apk/config-deployer-service-go/internal/util"
 	"os"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 )
 
@@ -35,7 +38,7 @@ import (
 type APIClient struct{}
 
 // FromAPIModelToAPKConf converts APKInternalAPI model to APKConf
-func (client *APIClient) FromAPIModelToAPKConf(api *dto.API) (*model.APKConf, error) {
+func (apiClient *APIClient) FromAPIModelToAPKConf(api *dto.API) (*model.APKConf, error) {
 	apkConfUtil := util.APKConfUtil{}
 	generatedBasePath := api.Name + api.Version
 	data := []byte(generatedBasePath)
@@ -98,7 +101,7 @@ func (client *APIClient) FromAPIModelToAPKConf(api *dto.API) (*model.APKConf, er
 }
 
 // PrepareArtifact creates the API artifact based on the provided configuration.
-func (client *APIClient) PrepareArtifact(apkConfiguration dto.FileData, definitionFile dto.FileData,
+func (apiClient *APIClient) PrepareArtifact(apkConfiguration dto.FileData, definitionFile dto.FileData,
 	organization *dto.Organization, cpInitiated bool, namespace string) (*dto.APIArtifact, error) {
 
 	var apkConf *model.APKConf = nil
@@ -150,10 +153,10 @@ func GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organizatio
 	cpInitiated bool, namespace string) (*dto.APIArtifact, error) {
 	apkConfValidator := &validators.APKConfValidator{}
 	apkConfUtil := util.APKConfUtil{}
-	//uniqueId := apkConfUtil.GetUniqueIdForAPI(apkConf.Name, apkConf.Version, organization)
-	//if apkConf.ID != "" {
-	//	uniqueId = apkConf.ID
-	//}
+	uniqueId := apkConfUtil.GetUniqueIdForAPI(apkConf.Name, apkConf.Version, organization)
+	if apkConf.ID != "" {
+		uniqueId = apkConf.ID
+	}
 	var resourceLevelEndpointConfigList []model.EndpointConfigurations
 	operations := apkConf.Operations
 	if operations != nil {
@@ -191,14 +194,16 @@ func GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organizatio
 	}
 	apiArtifact := &dto.APIArtifact{
 		Name:         apkConf.Name,
+		UniqueID:     uniqueId,
 		Version:      apkConf.Version,
 		K8sArtifacts: k8sArtifacts,
+		Organization: organization.Name,
 	}
 	return apiArtifact, nil
 }
 
 // ZipAPIArtifact creates a zip file containing all API artifact resources
-func (client *APIClient) ZipAPIArtifact(apiArtifact *dto.APIArtifact) ([2]string, error) {
+func (apiClient *APIClient) ZipAPIArtifact(apiArtifact *dto.APIArtifact) ([2]string, error) {
 	// Create temporary directory
 	zipDir, err := util.CreateTempDir()
 	if err != nil {
@@ -350,7 +355,11 @@ func (client *APIClient) ZipAPIArtifact(apiArtifact *dto.APIArtifact) ([2]string
 	//}
 
 	for _, artifact := range apiArtifact.K8sArtifacts {
-		yamlString, err := util.MarshalToYAMLWithIndent(artifact, 2)
+		jsonData, err := json.Marshal(artifact)
+		if err != nil {
+			return [2]string{}, fmt.Errorf("failed to convert artifact to JSON: %w", err)
+		}
+		yamlString, err := util.JsonToYaml(string(jsonData))
 		if err != nil {
 			return [2]string{}, fmt.Errorf("failed to convert artifact to YAML: %w", err)
 		}
@@ -368,4 +377,59 @@ func (client *APIClient) ZipAPIArtifact(apiArtifact *dto.APIArtifact) ([2]string
 	}
 
 	return zipName, nil
+}
+
+// DeployAPIToK8s deploys the API artifact to Kubernetes and returns the RouteMetadata.
+func (apiClient *APIClient) DeployAPIToK8s(apiArtifact *dto.APIArtifact, namespace string,
+	k8sClient client.Client) (*v2alpha1.RouteMetadata, error) {
+	routeMetadataList, err := util.GetRouteMetadataList(apiArtifact.UniqueID, namespace, k8sClient)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get RouteMetadata list: %w", err)
+	}
+	if routeMetadataList != nil && len(routeMetadataList.Items) > 0 {
+		for _, routeMetadata := range routeMetadataList.Items {
+			unsuedObjectList, err := util.GetCRsUsedByRouteMetadataNotInAPIArtifact(routeMetadata, apiArtifact,
+				namespace, k8sClient)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get unused objects for RouteMetadata %s: %w", routeMetadata.Name, err)
+			}
+			for _, unusedObject := range unsuedObjectList.Items {
+				if err = util.UndeployCR(k8sClient, unusedObject); err != nil {
+					return nil, fmt.Errorf("failed to undeploy CR %s: %w", unusedObject.GetName(), err)
+				}
+			}
+		}
+	}
+
+	for _, k8sArtifact := range apiArtifact.K8sArtifacts {
+		if err = util.ApplyK8sResource(k8sClient, namespace, k8sArtifact); err != nil {
+			return nil, fmt.Errorf("failed to apply k8s resource %s: %w", k8sArtifact.GetName(), err)
+		}
+	}
+	return nil, nil
+}
+
+// UndeployAPI removes all RouteMetadata Custom Resource from the Kubernetes cluster based on API ID label.
+func (apiClient *APIClient) UndeployAPI(routeMetadataList *v2alpha1.RouteMetadataList, namespace string,
+	k8sClient client.Client) error {
+	//conf, errReadConfig := config.ReadConfigs()
+	//if errReadConfig != nil {
+	//	return errReadConfig
+	//}
+	for _, routeMetadata := range routeMetadataList.Items {
+		if err := util.UndeployK8sRouteMetadataCR(k8sClient, routeMetadata); err != nil {
+			return fmt.Errorf("unable to delete RouteMetadata CRs: %w", err)
+		}
+		filteredLabels := util.GetFilteredLabels(routeMetadata.GetLabels())
+		objectList, err := util.GetCRsFromLabels(filteredLabels, namespace, k8sClient)
+		if err != nil {
+			return fmt.Errorf("unable to get objects with labels %v: %w", filteredLabels, err)
+		}
+		for _, object := range objectList.Items {
+			if err = util.UndeployCR(k8sClient, object); err != nil {
+				return fmt.Errorf("unable to delete CRs: %w", err)
+			}
+		}
+	}
+	return nil
 }
