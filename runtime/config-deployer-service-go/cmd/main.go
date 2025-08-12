@@ -21,6 +21,7 @@ import (
 
 	// "strings"
 
+	"fmt"
 	"github.com/wso2/apk/config-deployer-service-go/internal/api/routes"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/services/validators"
@@ -39,7 +40,10 @@ import (
 func main() {
 	cfg := config.GetConfig()
 	// logging.LoggerMain.Info("Server starting in main")
-
+	// Initialize the Kubernetes controller manager
+	if err := config.InitializeManager(); err != nil {
+		panic(fmt.Sprintf("Failed to initialize manager: %v", err))
+	}
 	apkSchemaLocation := cfg.APKSchemaLocation
 	apkConfSchemaContent, err := os.ReadFile(apkSchemaLocation)
 	if err != nil {

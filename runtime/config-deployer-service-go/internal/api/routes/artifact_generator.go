@@ -41,15 +41,15 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 		c.JSON(http.StatusOK, status)
 	})
 
-	api := r.Group("/api/configurator")
+	artifactGeneratorApi := r.Group("/api/configurator")
 	{
 		// Create API configuration file from api specification.
-		api.POST("/apis/generate-configuration", func(c *gin.Context) {
+		artifactGeneratorApi.POST("/apis/generate-configuration", func(c *gin.Context) {
 			handlers.GetGeneratedAPKConf(c)
 		})
 
 		// Generate K8s Resources
-		api.POST("/apis/generate-k8s-resources", func(c *gin.Context) {
+		artifactGeneratorApi.POST("/apis/generate-k8s-resources", func(c *gin.Context) {
 			organization := c.Query("organization")
 			if organization == "" {
 				organization = "default"
@@ -65,6 +65,49 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 		})
 	}
 
+	artifactDeployerApi := r.Group("/api/deployer")
+	{
+		// Create and deploy API from api specification and apk configuration.
+		artifactDeployerApi.POST("/apis/deploy", func(c *gin.Context) {
+			//authenticatedUserContext, err := util.GetAuthenticatedUserContext(c)
+			//if err != nil {
+			//	c.JSON(http.StatusUnauthorized, gin.H{
+			//		"code":    900905,
+			//		"message": "Invalid Credentials",
+			//	})
+			//}
+			//organizationObj := authenticatedUserContext.Organization
+			organization := c.Query("organization")
+			if organization == "" {
+				organization = "default"
+			}
+			organizationObj := dto.NewOrganization("", organization, "default",
+				"default", true)
+			namespace := c.Query("namespace")
+			handlers.HandleAPIDeployment(c, organizationObj, "false", namespace)
+		})
+
+		// Undeploy API and remove K8s resources.
+		artifactDeployerApi.POST("/apis/undeploy", func(c *gin.Context) {
+			//authenticatedUserContext, err := util.GetAuthenticatedUserContext(c)
+			//if err != nil {
+			//	c.JSON(http.StatusUnauthorized, gin.H{
+			//		"code":    900905,
+			//		"message": "Invalid Credentials",
+			//	})
+			//}
+			//organizationObj := authenticatedUserContext.Organization
+			apiId := c.Query("apiId")
+			organization := c.Query("organization")
+			if organization == "" {
+				organization = "default"
+			}
+			organizationObj := dto.NewOrganization("", organization, "default",
+				"default", true)
+			handlers.HandleAPIUndeployment(c, apiId, organizationObj)
+		})
+	}
+
 	// Get certificate paths from environment or config
 	certPath := os.Getenv("TLS_CERT_PATH")
 	keyPath := os.Getenv("TLS_KEY_PATH")
@@ -77,12 +120,12 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 	}
 
 	// Start HTTPS server
-	//if err := r.RunTLS(":9443", certPath, keyPath); err != nil {
-	//	panic("Failed to start HTTPS server: " + err.Error())
-	//}
+	if err := r.RunTLS(":9443", certPath, keyPath); err != nil {
+		panic("Failed to start HTTPS server: " + err.Error())
+	}
 
 	//Start HTTP server
-	if err := r.Run(":9444"); err != nil {
-		panic("Failed to start API server: " + err.Error())
-	}
+	//if err := r.Run(":9444"); err != nil {
+	//	panic("Failed to start API server: " + err.Error())
+	//}
 }
