@@ -446,9 +446,15 @@ func NewCORSConfiguration() *CORSConfiguration {
 
 // KeyManager represents configuration for a Key Manager
 type KeyManager struct {
-	Name         string `json:"name" yaml:"name"`
-	Issuer       string `json:"issuer" yaml:"issuer"`
-	JWKSEndpoint string `json:"JWKSEndpoint" yaml:"JWKSEndpoint"`
+	Name         string  `json:"name" yaml:"name"`
+	Issuer       string  `json:"issuer" yaml:"issuer"`
+	JWKSEndpoint string  `json:"JWKSEndpoint" yaml:"JWKSEndpoint"`
+	ClaimMapping []Claim `json:"claimMappings" yaml:"claimMappings"`
+}
+
+type Claim struct {
+	LocalClaim  string `json:"localClaim" yaml:"localClaim"`
+	RemoteClaim string `json:"remoteClaim" yaml:"remoteClaim"`
 }
 
 // NewKeyManager creates a new KeyManager with default values
