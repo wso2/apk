@@ -114,6 +114,9 @@ const (
 	CP_INITIATED_HASH_LABEL     = "cp-initiated"
 )
 
+const (
+	ValidatedUserContext = "VALIDATED_USER_CONTEXT"
+)
 
 const (
 	EnvoyGatewayBackendTrafficPolicy           = "BackendTrafficPolicy"
@@ -145,6 +148,4 @@ const (
 	AIRatelimitTotalTokenCount                 = "totaltokenid"
 	AIRatelimitCompletionTokenCount            = "completiontokenid"
 	AIRatelimitPromptTokenCount                 = "prompttokenid"
-
-
 )
