@@ -1062,6 +1062,29 @@
         "JWKSEndpoint": {
           "type": "string",
           "description": "The JWKs endpoint URL of the key manager."
+        },
+        "claimMappings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/schemas/ClaimMapping"
+          },
+          "description": "List of claim mappings for the key manager."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ClaimMapping": {
+      "type": "object",
+      "required": [
+        "localClaim",
+        "remoteClaim"
+      ],
+      "properties": {
+        "localClaim": {
+          "type": "string"
+        },
+        "remoteClaim": {
+          "type": "string"
         }
       },
       "additionalProperties": false
