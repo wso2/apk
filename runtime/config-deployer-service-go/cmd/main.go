@@ -39,7 +39,6 @@ import (
 func main() {
 	cfg := config.GetConfig()
 	// logging.LoggerMain.Info("Server starting in main")
-
 	apkSchemaLocation := cfg.APKSchemaLocation
 	apkConfSchemaContent, err := os.ReadFile(apkSchemaLocation)
 	if err != nil {
