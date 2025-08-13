@@ -188,12 +188,13 @@ func (apkConfUtil *APKConfUtil) GenerateRouteMetadata(apiArtifact *model.APIArti
 
 // CreateAPIResourceBundle creates a resource bundle for the API artifact based on the APK configuration and definition.
 func (apkConfUtil *APKConfUtil) CreateAPIResourceBundle(apkConf *model.APKConf, organization *dto.Organization,
-	cpInitiated bool, namespace string) dto.APIResourceBundle {
+	cpInitiated bool, namespace, definition string) dto.APIResourceBundle {
 	apiResourceBundle := dto.APIResourceBundle{
 		Organization: organization.Name,
 		Namespace:    namespace,
 		CPInitiated:  cpInitiated,
 		APKConf:      apkConf,
+		Definition:   definition,
 	}
 	// bundle apk operations into bins based on secured, rate limit and scopes and create combined resources
 	combinedResources := generateCombinedResources(apkConf)
