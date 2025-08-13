@@ -5,23 +5,24 @@ import (
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"google.golang.org/protobuf/types/known/structpb"
+	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 )
 
 const (
 	// MediationAITokenRatelimit holds the name of the AI Token Rate Limit mediation policy.
-	MediationAITokenRatelimit = "AITokenRatelimit"
+	MediationAITokenRatelimit = constantscommon.MediationAITokenRatelimit
 	// MediationSubscriptionRatelimit holds the name of the Subscription Rate Limit mediation policy.
-	MediationSubscriptionRatelimit = "SubscriptionRatelimit"
+	MediationSubscriptionRatelimit = constantscommon.MediationSubscriptionRatelimit
 	// MediationSubscriptionValidation holds the name of the Subscription Validation mediation policy.
-	MediationSubscriptionValidation = "SubscriptionValidation"
+	MediationSubscriptionValidation = constantscommon.MediationSubscriptionValidation
 	// MediationAIModelBasedRoundRobin holds the name of the AI Model Based Round Robin mediation policy.
-	MediationAIModelBasedRoundRobin = "AIModelBasedRoundRobin"
+	MediationAIModelBasedRoundRobin = constantscommon.MediationAIModelBasedRoundRobin
 	// MediationAnalytics holds the name of the Analytics mediation policy.
-	MediationAnalytics = "Analytics"
+	MediationAnalytics = constantscommon.MediationAnalytics
 	// MediationBackendJWT holds the name of the Backend JWT mediation policy.
-	MediationBackendJWT = "BackendJWT"
+	MediationBackendJWT = constantscommon.MediationBackendJWT
 	// MediationGraphQL holds the name of the GraphQL mediation policy.
-	MediationGraphQL = "GraphQL"
+	MediationGraphQL = constantscommon.MediationGraphQL
 )
 
 // MediationAndRequestHeaderProcessing defines the mediation and request header processing
