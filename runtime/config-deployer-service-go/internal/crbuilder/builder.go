@@ -61,16 +61,22 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 	objects := make([]client.Object, 0)
 	// Production
 	if len(apiResourceBundle.APKConf.EndpointConfigurations.Production) > 0 {
-		objects, err = createResourcesForEnvironment(apiResourceBundle, constants.PRODUCTION_TYPE)
+		objectsP, err := createResourcesForEnvironment(apiResourceBundle, constants.PRODUCTION_TYPE)
 		if err != nil {
 			return nil, err
+		}
+		for _, object := range objectsP {
+			objects = append(objects, object)
 		}
 	}
 	// Sandbox
 	if len(apiResourceBundle.APKConf.EndpointConfigurations.Sandbox) > 0 {
-		objects, err = createResourcesForEnvironment(apiResourceBundle, constants.SANDBOX_TYPE)
+		objectsS, err := createResourcesForEnvironment(apiResourceBundle, constants.SANDBOX_TYPE)
 		if err != nil {
 			return nil, err
+		}
+		for _, object := range objectsS {
+			objects = append(objects, object)
 		}
 	}
 	if apiResourceBundle.Namespace != "" {
@@ -87,15 +93,21 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	// Create the RouteMetadata object
 	routeMetadata := &dpv2alpha1.RouteMetadata{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: util.GenerateRouteMetadataName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization),
+			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization),
 		},
 	}
 	objects = append(objects, routeMetadata)
 
 	// Create the HTTPRoute objects
-	routes := GenerateHTTPRoutes(apiResourceBundle, true, objects, environment)
+	routes, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment)
+	for _, obj := range objectsForWithVersion {
+		objects = append(objects, obj)
+	}
 	if apiResourceBundle.APKConf.DefaultVersion {
-		routesL := GenerateHTTPRoutes(apiResourceBundle, false, objects, environment)
+		routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment)
+		for _, obj := range objectsForWithoutVersion {
+			objects = append(objects, obj)
+		}
 		for key, value := range routesL {
 			routes[key] = append(value, routes[key]...)
 		}
@@ -228,20 +240,23 @@ func chunkOperations(ops []model.APKOperations, size int) [][]model.APKOperation
 	return chunks
 }
 
-func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, objects []client.Object, environment string) map[int][]gatewayv1.HTTPRoute {
+func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
+	objects := make([]client.Object, 0)
 	routesMap := make(map[int][]gatewayv1.HTTPRoute)
 	backendMap := make(map[string]map[string]*eg.Backend)
+	crName := util.GenerateCRName(bundle.APKConf.Name, environment, bundle.APKConf.Version, bundle.Organization)
 	for i, combined := range bundle.CombinedResources {
 		batches := chunkOperations(combined.APKOperations, 16)
 
 		for j, batch := range batches {
+			routeName := fmt.Sprintf("%s-%d-%d", crName, i+1, j+1)
 			route := gatewayv1.HTTPRoute{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "gateway.networking.k8s.io/v1",
 					Kind:       "HTTPRoute",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name: fmt.Sprintf("httproute-%d-%d", i+1, j+1),
+					Name: routeName,
 				},
 				Spec: gatewayv1.HTTPRouteSpec{
 					CommonRouteSpec: gatewayv1.CommonRouteSpec{
@@ -292,7 +307,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, objects
 
 					sum := sha256.Sum256([]byte(fmt.Sprintf("%s-%s", path, method)))
 					pathIdentifier := fmt.Sprintf("%x", sum[:8])
-					hrfName = fmt.Sprintf("httproutefilter-%s-%s-%s", bundle.APKConf.Name, *bundle.APKConf.Environment, pathIdentifier)
+					hrfName = fmt.Sprintf("%s-%s", routeName, pathIdentifier)
 					// Create HTTPRouteFilter
 					hrf := eg.HTTPRouteFilter{
 						TypeMeta: metav1.TypeMeta{
@@ -324,7 +339,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, objects
 					continue
 				}
 				// Create backend reference
-				httpBackendRefs := createBackendRefs(ecs, backendMap)
+				httpBackendRefs := createBackendRefs(ecs, backendMap, routeName)
 				rule := gatewayv1.HTTPRouteRule{
 					Matches: []gatewayv1.HTTPRouteMatch{
 						{
@@ -365,6 +380,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, objects
 			}
 
 			routesMap[i] = append(routesMap[i], route)
+			objects = append(objects, &route)
 		}
 	}
 	for scheme, backendMap := range backendMap {
@@ -375,7 +391,9 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, objects
 				backendTLSPolicy := generateBackendTLSPolicyWithWellKnownCerts(backend.Name, backend.Spec.Endpoints[0].FQDN.Hostname, []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 					gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 						LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
-							Name:      gwapiv1a2.ObjectName(backend.Name),
+							Name:  gwapiv1a2.ObjectName(backend.Name),
+							Kind:  gwapiv1a2.Kind(constants.K8sKindBackend),
+							Group: constants.K8sGroupEnvoyGateway,
 						},
 					},
 				})
@@ -383,7 +401,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, objects
 			}
 		}
 	}
-	return routesMap
+	return routesMap, objects
 }
 
 func ptrTo[T any](v T) *T {
@@ -909,7 +927,7 @@ func endpointCRName(endpoint interface{}) (string, error) {
 	return base, nil
 }
 
-func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]map[string]*eg.Backend) []gatewayv1.HTTPBackendRef {
+func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]map[string]*eg.Backend, routeName string) []gatewayv1.HTTPBackendRef {
 	backendRefs := make([]gatewayv1.HTTPBackendRef, 0, len(ecs))
 	for _, ec := range ecs {
 		if ec.Endpoint == nil {
@@ -960,7 +978,8 @@ func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]
 			}
 			if backendMap[scheme][backendID] == nil {
 				// Create a new backend object
-				backend, err := generateBackend(backendID, ec)
+				backendName := fmt.Sprintf("%s-%s", routeName, hex.EncodeToString(sha1.New().Sum([]byte(backendID)))[:8])
+				backend, err := generateBackend(backendName, ec)
 				if err != nil {
 					logger.Sugar().Errorf("Failed to generate backend for endpoint %v: %v", ec.Endpoint, err)
 					continue
