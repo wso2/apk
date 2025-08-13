@@ -18,10 +18,12 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 	util "github.com/wso2/apk/config-deployer-service-go/internal/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1a3 "sigs.k8s.io/gateway-api/apis/v1alpha3"
+	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 )
 
 var allowedMethods = map[string]gatewayv1.HTTPMethod{
@@ -84,27 +86,125 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 			object.SetNamespace(apiResourceBundle.Namespace)
 		}
 	}
+	labels := make(map[string]string)
+	labels[constantscommon.LabelAPKName] = apiResourceBundle.APKConf.Name
+	labels[constantscommon.LabelAPKVersion] = apiResourceBundle.APKConf.Version
+	labels[constantscommon.LabelAPKOrganization] = apiResourceBundle.Organization
+	
+	for _, object := range objects {
+		object.SetLabels(labels)
+	}
 	return objects, err
 
 }
 
 func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, environment string) ([]client.Object, error) {
 	objects := make([]client.Object, 0)
+	definitionCMName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization)
 	// Create the RouteMetadata object
 	routeMetadata := &dpv2alpha1.RouteMetadata{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization),
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:      constants.WSO2KubernetesGatewayRouteMetadataKind,
+			APIVersion: constants.WSO2KubernetesGatewayRouteMetadataAPIVersion,
+		},
+		Spec: dpv2alpha1.RouteMetadataSpec{
+			API: dpv2alpha1.API{
+				Name:         apiResourceBundle.APKConf.Name,
+				Version:      apiResourceBundle.APKConf.Version,
+				Organization: apiResourceBundle.Organization,
+				Environment:  environment,
+				EnvType: func() string {
+					if apiResourceBundle.APKConf.Environment != nil {
+						return *apiResourceBundle.APKConf.Environment
+					}
+					return ""
+				}(),
+				Context: apiResourceBundle.APKConf.BasePath,
+				DefinitionPath: func() string {
+					if apiResourceBundle.APKConf.DefinitionPath != nil {
+						return *apiResourceBundle.APKConf.DefinitionPath
+					}
+					return "definition"
+				}(),
+				UUID: apiResourceBundle.APKConf.ID,
+				DefinitionFileRef: &gwapiv1a2.LocalObjectReference{
+					Name: gatewayv1.ObjectName(definitionCMName),
+					Kind: gatewayv1.Kind(constants.K8sKindConfigMap),
+				},
+			},
+		},
 	}
+
+	if apiResourceBundle.Definition != "" {
+		cm := createConfigMapForDefinition(
+			definitionCMName,
+			apiResourceBundle.Definition,
+		)
+		objects = append(objects, cm)
+	}
+
 	objects = append(objects, routeMetadata)
 
+	// RoutePolicy
+	routePolicy := &dpv2alpha1.RoutePolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization),
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
+			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+		},
+		Spec: dpv2alpha1.RoutePolicySpec{
+			RequestMediation:  make([]*dpv2alpha1.Mediation, 0),
+			ResponseMediation: make([]*dpv2alpha1.Mediation, 0),
+		},
+	}
+
+	if apiResourceBundle.APKConf.SubscriptionValidation {
+		routePolicy.Spec.RequestMediation = append(routePolicy.Spec.RequestMediation, &dpv2alpha1.Mediation{
+			PolicyName:    constantscommon.MediationSubscriptionValidation,
+			PolicyID:      "",
+			PolicyVersion: "",
+			Parameters:    []*dpv2alpha1.Parameter{
+				{
+					Key:   "Enabled",
+					Value: "true",
+				},
+			}, 
+		})
+	}
+
+	// GraphQL
+	if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRAPHQL {
+		gqlSchemaConfigMapName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization) + "-graphql-schema"
+		routePolicy.Spec.RequestMediation = append(routePolicy.Spec.RequestMediation, &dpv2alpha1.Mediation{
+			PolicyName:    constantscommon.MediationGraphQL,
+			PolicyID:      "",
+			PolicyVersion: "",
+			Parameters:    []*dpv2alpha1.Parameter{
+				{
+					Key:   constantscommon.GraphQLPolicyKeySchema,
+					ValueRef: &gwapiv1a2.LocalObjectReference{
+						Name: gwapiv1a2.ObjectName(gqlSchemaConfigMapName),
+						Kind: gwapiv1a2.Kind(constants.K8sKindConfigMap),
+					},
+				},
+			},
+		})
+		
+	}
+	objects = append(objects, routePolicy)
+
 	// Create the HTTPRoute objects
-	routes, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment)
+	routes, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment, []*dpv2alpha1.RoutePolicy{routePolicy}, []*dpv2alpha1.RouteMetadata{routeMetadata})
 	for _, obj := range objectsForWithVersion {
 		objects = append(objects, obj)
 	}
 	if apiResourceBundle.APKConf.DefaultVersion {
-		routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment)
+		routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment, []*dpv2alpha1.RoutePolicy{routePolicy}, []*dpv2alpha1.RouteMetadata{routeMetadata})
 		for _, obj := range objectsForWithoutVersion {
 			objects = append(objects, obj)
 		}
@@ -240,7 +340,7 @@ func chunkOperations(ops []model.APKOperations, size int) [][]model.APKOperation
 	return chunks
 }
 
-func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
+func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string, routePolicies []*dpv2alpha1.RoutePolicy, routeMetadata []*dpv2alpha1.RouteMetadata) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
 	objects := make([]client.Object, 0)
 	routesMap := make(map[int][]gatewayv1.HTTPRoute)
 	backendMap := make(map[string]map[string]*eg.Backend)
@@ -356,6 +456,26 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				} else {
 					logger.Sugar().Warnf("No backend references found for operation %s in API %s", *op.Target, bundle.APKConf.Name)
 				}
+				for _, policy := range routePolicies {
+					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+						Type: gatewayv1.HTTPRouteFilterExtensionRef,
+						ExtensionRef: &gatewayv1.LocalObjectReference{
+							Group: constants.WSO2KubernetesGatewayRoutePolicyGroup,
+							Kind:  constants.WSO2KubernetesGatewayRoutePolicyKind,
+							Name:  gatewayv1.ObjectName(policy.Name),
+						},
+					})
+				}
+				for _, metadata := range routeMetadata {
+					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+						Type: gatewayv1.HTTPRouteFilterExtensionRef,
+						ExtensionRef: &gatewayv1.LocalObjectReference{
+							Group: constants.WSO2KubernetesGatewayRouteMetadataGroup,
+							Kind:  constants.WSO2KubernetesGatewayRouteMetadataKind,
+							Name:  gatewayv1.ObjectName(metadata.Name),
+						},
+					})
+				}
 				if hrfName != "" {
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,
@@ -383,8 +503,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 			objects = append(objects, &route)
 		}
 	}
-	for scheme, backendMap := range backendMap {
-		for _, backend := range backendMap {
+	for scheme, backendMapL := range backendMap {
+		for _, backend := range backendMapL {
 			objects = append(objects, backend)
 			// Create BackendTLSPolicy if TLS is enabled
 			if scheme == "https" {
@@ -991,7 +1111,7 @@ func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]
 					BackendObjectReference: gatewayv1.BackendObjectReference{
 						Group: ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
 						Kind:  ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
-						Name:  gatewayv1.ObjectName(backendID),
+						Name:  gatewayv1.ObjectName(backendMap[scheme][backendID].Name),
 					},
 				},
 			}
@@ -1016,4 +1136,19 @@ func endpointType(endpoint interface{}) (string, error) {
 	default:
 		return "", fmt.Errorf("unsupported endpoint type: %T", endpoint)
 	}
+}
+
+func createConfigMapForDefinition(name, definition string) *corev1.ConfigMap {
+    return &corev1.ConfigMap{
+        TypeMeta: metav1.TypeMeta{
+            APIVersion: "v1",
+            Kind:       constants.K8sKindConfigMap,
+        },
+        ObjectMeta: metav1.ObjectMeta{
+            Name:      name,
+        },
+        Data: map[string]string{
+            "Definition": definition,
+        },
+    }
 }
