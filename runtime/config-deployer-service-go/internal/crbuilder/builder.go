@@ -86,6 +86,14 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 			object.SetNamespace(apiResourceBundle.Namespace)
 		}
 	}
+	labels := make(map[string]string)
+	labels[constantscommon.LabelAPKName] = apiResourceBundle.APKConf.Name
+	labels[constantscommon.LabelAPKVersion] = apiResourceBundle.APKConf.Version
+	labels[constantscommon.LabelAPKOrganization] = apiResourceBundle.Organization
+	
+	for _, object := range objects {
+		object.SetLabels(labels)
+	}
 	return objects, err
 
 }
