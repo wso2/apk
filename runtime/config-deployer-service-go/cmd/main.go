@@ -40,7 +40,7 @@ func main() {
 	cfg := config.GetConfig()
 	// logging.LoggerMain.Info("Server starting in main")
 
-	apkSchemaLocation := "resources/conf/apk-schema.json"
+	apkSchemaLocation := "conf/apk-schema.json"
 	apkConfSchemaContent, err := os.ReadFile(apkSchemaLocation)
 	if err != nil {
 		// logging.LoggerMain.Error("Failed to read APK schema file", err)
