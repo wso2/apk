@@ -27,10 +27,11 @@ import (
 
 // Server holds the configuration parameters for the application.
 type Server struct {
-	LogLevel                         string `envconfig:"LOG_LEVEL" default:"DEBUG"`
-	Logger                           logging.Logger
-	ExtensionServerHost            string `envconfig:"EXTENSION_SERVER_HOST" default:"0.0.0.0"`
-	ExtensionServerPort            string `envconfig:"EXTENSION_SERVER_PORT" default:"5005"`
+	LogLevel            string `envconfig:"LOG_LEVEL" default:"DEBUG"`
+	Logger              logging.Logger
+	ExtensionServerHost string `envconfig:"EXTENSION_SERVER_HOST" default:"0.0.0.0"`
+	ExtensionServerPort string `envconfig:"EXTENSION_SERVER_PORT" default:"5005"`
+	APKSchemaLocation   string `envconfig:"APK_SCHEMA_LOCATION" default:"resources/conf/apk-schema.json"`
 }
 
 type metrics struct {
