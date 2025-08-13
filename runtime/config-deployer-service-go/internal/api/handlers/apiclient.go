@@ -354,7 +354,8 @@ func (client *APIClient) ZipAPIArtifact(apiArtifact *dto.APIArtifact) ([2]string
 		if err != nil {
 			return [2]string{}, fmt.Errorf("failed to convert artifact to YAML: %w", err)
 		}
-		err = util.StoreFile(string(yamlString), artifact.GetName(), zipDir)
+		fileName := artifact.GetObjectKind().GroupVersionKind().Kind + "-" + artifact.GetName()
+		err = util.StoreFile(string(yamlString), fileName, zipDir)
 		if err != nil {
 			return [2]string{}, fmt.Errorf("failed to store artifact file: %w", err)
 		}

@@ -246,6 +246,7 @@ func GetGeneratedK8sResources(cxt *gin.Context, organization *dto.Organization, 
 	cxt.Header("Content-Type", "application/zip")
 	cxt.File(zipName[1])
 	cxt.Status(http.StatusOK)
+	// cxt.JSON(http.StatusOK, gin.H{"message": "Generate K8s Resources API called"})
 }
 
 // prepareGenerateK8sResourcesBodyFromRequest prepares the definition body from the request context.
