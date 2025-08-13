@@ -114,7 +114,6 @@ const (
 	CP_INITIATED_HASH_LABEL     = "cp-initiated"
 )
 
-
 const (
 	EnvoyGatewayBackendTrafficPolicy           = "BackendTrafficPolicy"
 	EnvoyGatewayBackendTrafficPolicyAPIVersion = "gateway.envoyproxy.io/v1alpha1"
@@ -122,6 +121,14 @@ const (
 	EnvoyGatewayExtensionPolicyAPIVersion      = "gateway.envoyproxy.io/v1alpha1"
 	EnvoyGatewayHTTPRouteFilter                = "HTTPRouteFilter"
 	EnvoyGatewayHTTPRouteFilterAPIVersion      = "gateway.envoyproxy.io/v1alpha1"
+
+	WSO2KubernetesGatewayRouteMetadataAPIVersion = "dp.wso2.com/v2alpha1"
+	WSO2KubernetesGatewayRouteMetadataKind       = "RouteMetadata"
+	WSO2KubernetesGatewayRouteMetadataGroup		= "dp.wso2.com"
+	WSO2KubernetesGatewayRoutePolicyAPIVersion   = "dp.wso2.com/v2alpha1"
+	WSO2KubernetesGatewayRoutePolicyKind         = "RoutePolicy"
+	WSO2KubernetesGatewayRoutePolicyGroup		= "dp.wso2.com"
+
 
 	K8sKindHTTPRoute              = "HTTPRoute"
 	K8sKindService                = "Service"
@@ -141,10 +148,10 @@ const (
 	K8sKindReferenceGrant         = "ReferenceGrant"
 	K8sAPIVersionReferenceGrant   = "gateway.networking.k8s.io/v1beta1"
 
-	ExternalProcessingMetadataNamespace        = "com.wso2.bijira.ai_gateway"
-	AIRatelimitTotalTokenCount                 = "totaltokenid"
-	AIRatelimitCompletionTokenCount            = "completiontokenid"
-	AIRatelimitPromptTokenCount                 = "prompttokenid"
+	ExternalProcessingMetadataNamespace = "com.wso2.bijira.ai_gateway"
+	AIRatelimitTotalTokenCount          = "totaltokenid"
+	AIRatelimitCompletionTokenCount     = "completiontokenid"
+	AIRatelimitPromptTokenCount         = "prompttokenid"
 
-
+	K8sKindConfigMap = "ConfigMap"
 )
