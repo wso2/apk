@@ -19,6 +19,8 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"gopkg.in/yaml.v2"
+	constantscommon "github.com/wso2/apk/common-go-libs/constants"
+	graphql "github.com/wso2/apk/common-go-libs/graphql"
 )
 
 // GraphQL represents the configuration for GraphQL policy in the API Gateway.
@@ -31,19 +33,9 @@ type GraphQL struct {
 	cfg           *config.Server
 }
 
-// Operation represents a GraphQL operation with its target, verb, and required scopes.
-type Operation struct {
-	// Target is the target of the operation, e.g., "query", "mutation", etc.
-	Target string   `yaml:"target" json:"target"`
-	// Verb is the HTTP verb associated with the operation, e.g., "GET", "POST", etc.
-	Verb   string   `yaml:"verb" json:"verb"`
-	// Scopes are the required scopes for the operation.
-	Scopes []string `yaml:"scopes" json:"scopes"`
-}
-
 const (
 	// GraphQLPolicyKeySchema is the key for specifying the GraphQL schema.
-	GraphQLPolicyKeySchema = "Schema"
+	GraphQLPolicyKeySchema = constantscommon.GraphQLPolicyKeySchema
 )
 
 // NewGraphQL creates a new GraphQL instance with default values.
@@ -221,7 +213,7 @@ type GQLRequest struct {
 	Variables     map[string]interface{} `json:"variables"`
 }
 
-func findMatchedOperation(operations []*Operation, operation *ast.OperationDefinition, selection ast.Selection) *Operation {
+func findMatchedOperation(operations []*graphql.Operation, operation *ast.OperationDefinition, selection ast.Selection) *graphql.Operation {
 	if field, ok := selection.(*ast.Field); ok {
 		operation.Name = field.Name
 	}
@@ -234,8 +226,8 @@ func findMatchedOperation(operations []*Operation, operation *ast.OperationDefin
 	return nil
 }
 
-func parseOperations(data []byte) ([]*Operation, error) {
-	var ops []*Operation
+func parseOperations(data []byte) ([]*graphql.Operation, error) {
+	var ops []*graphql.Operation
 
 	trimmed := strings.TrimSpace(string(data))
 

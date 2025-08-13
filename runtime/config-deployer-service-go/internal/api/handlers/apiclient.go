@@ -187,7 +187,7 @@ func GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organizatio
 	// TODO - aiRateLimit - create AIRateLimitPolicies in RoutePolicy CR and BackendTrafficPolicy CR and attach to httproutes
 	// TODO - EndpointSecurity - Create BackendJWT Policy in RoutePolicy CR and attach to httproutes
 	// TODO - Handle Resiliency - apply to all httproutes that use this backend service using BackendTrafficPolicy CR
-	apiResourceBundle := apkConfUtil.CreateAPIResourceBundle(apkConf, organization, cpInitiated, namespace)
+	apiResourceBundle := apkConfUtil.CreateAPIResourceBundle(apkConf, organization, cpInitiated, namespace, definition)
 	k8sArtifacts, err := crbuilder.CreateResources(&apiResourceBundle)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Kubernetes resources: %w", err)
