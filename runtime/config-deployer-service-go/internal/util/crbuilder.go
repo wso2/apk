@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"regexp"
 	"strings"
+
+	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 )
 
 // SanitizeOrHashName ensures the name is Kubernetes valid.
@@ -28,4 +30,18 @@ func GenerateRouteMetadataName(apiName, env, version, organization string) strin
 	name := apiName + "-" + env + "-" + version + "-" + organization
 	name = strings.ReplaceAll(name, ".", "-")
 	return SanitizeOrHashName(name)
+}
+
+// GenerateCRName generates a Kubernetes CR name based on the API name, environment, version, and organization.
+// It sanitizes the name to ensure it is Kubernetes valid.
+// The name is constructed as "apiName-env-version-organization" and sanitized.
+// This is used for generating names for various Kubernetes resources.
+func GenerateCRName(apiName, env, version, organization string) string {
+	name := apiName + "-" + env + "-" + version + "-" + organization
+	name = strings.ReplaceAll(name, ".", "-")
+	return SanitizeOrHashName(name)
+}
+
+func IsSameRatelimit(r1 model.RateLimit, r2 model.RateLimit) bool {
+	return r1.RequestsPerUnit == r2.RequestsPerUnit && r1.Unit == r2.Unit 
 }
