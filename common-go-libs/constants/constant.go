@@ -152,3 +152,25 @@ const (
 	KindHTTPRouteFilter      = "HTTPRouteFilter"
 	KindReferenceGrant       = "ReferenceGrant"
 )
+
+const (
+	// MediationAITokenRatelimit holds the name of the AI Token Rate Limit mediation policy.
+	MediationAITokenRatelimit = "AITokenRatelimit"
+	// MediationSubscriptionRatelimit holds the name of the Subscription Rate Limit mediation policy.
+	MediationSubscriptionRatelimit = "SubscriptionRatelimit"
+	// MediationSubscriptionValidation holds the name of the Subscription Validation mediation policy.
+	MediationSubscriptionValidation = "SubscriptionValidation"
+	// MediationAIModelBasedRoundRobin holds the name of the AI Model Based Round Robin mediation policy.
+	MediationAIModelBasedRoundRobin = "AIModelBasedRoundRobin"
+	// MediationAnalytics holds the name of the Analytics mediation policy.
+	MediationAnalytics = "Analytics"
+	// MediationBackendJWT holds the name of the Backend JWT mediation policy.
+	MediationBackendJWT = "BackendJWT"
+	// MediationGraphQL holds the name of the GraphQL mediation policy.
+	MediationGraphQL = "GraphQL"
+)
+
+const (
+	// GraphQLPolicyKeySchema is the key for specifying the GraphQL schema.
+	GraphQLPolicyKeySchema = "Schema"
+)
