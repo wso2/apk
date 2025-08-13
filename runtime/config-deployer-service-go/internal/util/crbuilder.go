@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 	"regexp"
 	"strings"
+
+	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 )
 
 // SanitizeOrHashName ensures the name is Kubernetes valid.
@@ -21,11 +23,32 @@ func SanitizeOrHashName(name string) string {
 // Kubernetes CR name regex: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
 var k8sNameRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
-// GenerateRouteMetadataName generates a Kubernetes RouteMetadata name based on the API name, environment, version, and organization.
+// GenerateCRName generates a Kubernetes CR name based on the API name, environment, version, and organization.
 // It sanitizes the name to ensure it is Kubernetes valid.
 // The name is constructed as "apiName-env-version-organization" and sanitized.
-func GenerateRouteMetadataName(apiName, env, version, organization string) string {
-	name := apiName + "-" + env + "-" + version + "-" + organization
-	name = strings.ReplaceAll(name, ".", "-")
-	return SanitizeOrHashName(name)
+// This is used for generating names for various Kubernetes resources.
+func GenerateCRName(apiName, env, version, organization string) string {
+	// concatenate the parts to be hashed
+	toHash := "-" + env + "-" + version + "-" + organization
+
+	// compute SHA-1 hash
+	h := sha1.New()
+	h.Write([]byte(toHash))
+	hashBytes := h.Sum(nil)
+
+	// convert to hex string
+	hashHex := hex.EncodeToString(hashBytes)
+
+	// take last 10 characters of hash
+	last10 := hashHex[len(hashHex)-10:]
+
+	// replace any spaces or dots in apiName
+	cleanAPIName := strings.ReplaceAll(apiName, ".", "-")
+	cleanAPIName = strings.ReplaceAll(cleanAPIName, " ", "-")
+
+	return cleanAPIName + last10
+}
+
+func IsSameRatelimit(r1 model.RateLimit, r2 model.RateLimit) bool {
+	return r1.RequestsPerUnit == r2.RequestsPerUnit && r1.Unit == r2.Unit 
 }
