@@ -97,13 +97,13 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			//	})
 			//}
 			//organizationObj := authenticatedUserContext.Organization
-			apiId := c.Query("apiId")
 			organization := c.Query("organization")
 			if organization == "" {
 				organization = "default"
 			}
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
+			apiId := c.Query("apiId")
 			handlers.HandleAPIUndeployment(c, apiId, organizationObj)
 		})
 	}
