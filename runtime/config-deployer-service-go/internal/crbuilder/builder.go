@@ -305,7 +305,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					pathMatchType = gatewayv1.PathMatchRegularExpression
 					path = pattern
 
-					sum := sha256.Sum256([]byte(fmt.Sprintf("%s-%s", path, method)))
+					sum := sha256.Sum256([]byte(fmt.Sprintf("%s-%s", path, string(*method))))
 					pathIdentifier := fmt.Sprintf("%x", sum[:8])
 					hrfName = fmt.Sprintf("%s-%s", routeName, pathIdentifier)
 					// Create HTTPRouteFilter
