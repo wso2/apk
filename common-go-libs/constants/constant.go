@@ -174,3 +174,9 @@ const (
 	// GraphQLPolicyKeySchema is the key for specifying the GraphQL schema.
 	GraphQLPolicyKeySchema = "Schema"
 )
+
+const (
+	LabelAPKName = "apk.wso2.com/name"
+	LabelAPKVersion = "apk.wso2.com/version"
+	LabelAPKOrganization = "apk.wso2.com/organization"
+)
