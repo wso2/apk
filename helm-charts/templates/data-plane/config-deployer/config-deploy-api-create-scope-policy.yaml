@@ -31,16 +31,25 @@ spec:
   jwt:
     providers:
     - name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-jwt-issuer
-      issuer: {{ .Values.wso2.kgw.idp.issuer }}
+      # issuer: {{ .Values.wso2.kgw.idp.issuer }}
       remoteJWKS:
-        uri: {{ .Values.wso2.kgw.idp.signing.jwksEndpoint }}
-  authorization:
-    rules:
-    - name: "api-create-rule"
-      action: Allow
-      principal:
-        jwt:
-          provider: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-jwt-issuer
-          scopes:
-          - apk:api_create
+        uri: https://{{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc:9443/oauth2/jwks
+        backendRefs:
+          - group: gateway.envoyproxy.io
+            kind: Backend
+            name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-oauth-ds-backend
+            namespace: {{ .Release.Namespace }}
+            port: 9443
+      claimToHeaders:
+        - claim: scope
+          header: wso2-scope
+  # authorization:
+  #   rules:
+  #   - name: "api-create-rule"
+  #     action: Allow
+  #     principal:
+  #       jwt:
+  #         provider: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-jwt-issuer
+  #         scopes:
+  #         - apk:api_create
 {{- end -}}

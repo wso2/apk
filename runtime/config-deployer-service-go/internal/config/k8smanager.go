@@ -20,6 +20,7 @@ package config
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -56,6 +57,14 @@ func InitializeManager() error {
 	if err != nil {
 		return fmt.Errorf("unable to start kubernetes controller manager: %w", err)
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+		}
+	}()
 
 	GlobalManager = mgr
 	return nil
