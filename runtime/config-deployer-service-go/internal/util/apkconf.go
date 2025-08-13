@@ -20,6 +20,7 @@ package util
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	egv1a1 "github.com/envoyproxy/gateway/api/v1alpha1"
 	"github.com/google/uuid"
@@ -37,6 +38,26 @@ import (
 )
 
 type APKConfUtil struct{}
+
+// GetAPKConf parses the APK configuration from the provided APK content string.
+func GetAPKConf(apkContent dto.FileData) (*model.APKConf, error) {
+	var apkConf *model.APKConf = nil
+	apkConfContent := string(apkContent.FileContent)
+	apkConfJson, err := YamlToJSON(apkConfContent)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert YAML to JSON: %w", err)
+	}
+	if apkConfJson != "" {
+		err := json.Unmarshal([]byte(apkConfJson), &apkConf)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse APK configuration: %w", err)
+		}
+	}
+	if apkConf == nil {
+		return nil, fmt.Errorf("apkConfiguration is not provided")
+	}
+	return apkConf, nil
+}
 
 // GetAPIName generates a unique name for the API based on its type.
 func (apkConfUtil *APKConfUtil) GetAPIName(apiName string, apiType string) string {

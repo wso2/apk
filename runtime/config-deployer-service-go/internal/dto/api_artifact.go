@@ -21,6 +21,8 @@ import "sigs.k8s.io/controller-runtime/pkg/client"
 
 type APIArtifact struct {
 	Name         string          `json:"name" yaml:"name"`
+	UniqueID     string          `json:"uniqueId" yaml:"uniqueId"`
 	Version      string          `json:"version" yaml:"version"`
+	Organization string          `json:"organization" yaml:"organization"`
 	K8sArtifacts []client.Object `json:"k8sArtifacts" yaml:"k8sArtifacts"`
 }

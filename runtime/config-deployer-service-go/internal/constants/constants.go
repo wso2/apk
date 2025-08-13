@@ -115,6 +115,10 @@ const (
 )
 
 const (
+	ValidatedUserContext = "VALIDATED_USER_CONTEXT"
+)
+
+const (
 	EnvoyGatewayBackendTrafficPolicy           = "BackendTrafficPolicy"
 	EnvoyGatewayBackendTrafficPolicyAPIVersion = "gateway.envoyproxy.io/v1alpha1"
 	EnvoyGatewayExtensionPolicy                = "EnvoyExtensionPolicy"
