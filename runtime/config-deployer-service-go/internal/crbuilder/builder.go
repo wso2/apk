@@ -89,11 +89,11 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 		}
 	}
 	labels := make(map[string]string)
-	labels[constantscommon.LabelAPKName] = apiResourceBundle.APKConf.Name
-	labels[constantscommon.LabelAPKVersion] = apiResourceBundle.APKConf.Version
-	labels[constantscommon.LabelAPKOrganization] = apiResourceBundle.Organization
-	labels[constantscommon.LabelAPKUUID] = apiResourceBundle.APKConf.ID
-	
+	labels[constantscommon.LabelKGWName] = apiResourceBundle.APKConf.Name
+	labels[constantscommon.LabelKGWVersion] = apiResourceBundle.APKConf.Version
+	labels[constantscommon.LabelKGWOrganization] = apiResourceBundle.Organization
+	labels[constantscommon.LabelKGWUUID] = apiResourceBundle.APKConf.ID
+
 	for _, object := range objects {
 		object.SetLabels(labels)
 	}
@@ -110,7 +110,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization),
 		},
 		TypeMeta: metav1.TypeMeta{
-			Kind:      constants.WSO2KubernetesGatewayRouteMetadataKind,
+			Kind:       constants.WSO2KubernetesGatewayRouteMetadataKind,
 			APIVersion: constants.WSO2KubernetesGatewayRouteMetadataAPIVersion,
 		},
 		Spec: dpv2alpha1.RouteMetadataSpec{
@@ -171,12 +171,12 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			PolicyName:    constantscommon.MediationSubscriptionValidation,
 			PolicyID:      "",
 			PolicyVersion: "",
-			Parameters:    []*dpv2alpha1.Parameter{
+			Parameters: []*dpv2alpha1.Parameter{
 				{
 					Key:   "Enabled",
 					Value: "true",
 				},
-			}, 
+			},
 		})
 	}
 
@@ -187,9 +187,9 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			PolicyName:    constantscommon.MediationGraphQL,
 			PolicyID:      "",
 			PolicyVersion: "",
-			Parameters:    []*dpv2alpha1.Parameter{
+			Parameters: []*dpv2alpha1.Parameter{
 				{
-					Key:   constantscommon.GraphQLPolicyKeySchema,
+					Key: constantscommon.GraphQLPolicyKeySchema,
 					ValueRef: &gwapiv1a2.LocalObjectReference{
 						Name: gwapiv1a2.ObjectName(gqlSchemaConfigMapName),
 						Kind: gwapiv1a2.Kind(constants.K8sKindConfigMap),
@@ -201,7 +201,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		for _, operation := range apiResourceBundle.APKConf.Operations {
 			gqlOperations = append(gqlOperations, &gqlCommon.Operation{
 				Target: *operation.Target,
-				Verb: *operation.Verb,
+				Verb:   *operation.Verb,
 				Scopes: operation.Scopes,
 			})
 		}
@@ -1156,31 +1156,31 @@ func endpointType(endpoint interface{}) (string, error) {
 }
 
 func createConfigMapForDefinition(name, definition string) *corev1.ConfigMap {
-    return &corev1.ConfigMap{
-        TypeMeta: metav1.TypeMeta{
-            APIVersion: "v1",
-            Kind:       constants.K8sKindConfigMap,
-        },
-        ObjectMeta: metav1.ObjectMeta{
-            Name:      name,
-        },
-        Data: map[string]string{
-            "Definition": definition,
-        },
-    }
+	return &corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       constants.K8sKindConfigMap,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Data: map[string]string{
+			"Definition": definition,
+		},
+	}
 }
 
 func createConfigMapForGQlSchema(name, schema string) *corev1.ConfigMap {
-    return &corev1.ConfigMap{
-        TypeMeta: metav1.TypeMeta{
-            APIVersion: "v1",
-            Kind:       constants.K8sKindConfigMap,
-        },
-        ObjectMeta: metav1.ObjectMeta{
-            Name:      name,
-        },
-        Data: map[string]string{
-            "Schema": schema,
-        },
-    }
+	return &corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       constants.K8sKindConfigMap,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Data: map[string]string{
+			"Schema": schema,
+		},
+	}
 }
