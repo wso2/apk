@@ -98,7 +98,7 @@ const (
 // XDSRoute Metadata
 const (
 	ExternalProcessingNamespace = "envoy.filters.http.ext_proc"
-	JWTAuthnMetadataNamespace = "envoy.filters.http.jwt_authn"
+	JWTAuthnMetadataNamespace   = "envoy.filters.http.jwt_authn"
 	ExtensionRefs               = "ExtensionRefs"
 )
 
@@ -119,7 +119,7 @@ const (
 // SecurityPolicy header claims to header
 const (
 	ClientIDHeaderKey = "X-WSO2-Clinet-ID"
-	ScopesHeaderKey = "X-WSO2-Scopes"
+	ScopesHeaderKey   = "X-WSO2-Scopes"
 )
 
 // Subscription ratelimit header names
@@ -176,8 +176,8 @@ const (
 )
 
 const (
-	LabelAPKName = "apk.wso2.com/name"
-	LabelAPKVersion = "apk.wso2.com/version"
-	LabelAPKOrganization = "apk.wso2.com/organization"
-	LabelAPKUUID = "apk.wso2.com/uuid"
+	LabelKGWName         = "kgw.wso2.com/name"
+	LabelKGWVersion      = "kgw.wso2.com/version"
+	LabelKGWOrganization = "kgw.wso2.com/organization"
+	LabelKGWUUID         = "kgw.wso2.com/uuid"
 )
