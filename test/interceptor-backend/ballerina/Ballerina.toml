@@ -2,7 +2,7 @@
 org = "tharindud"
 name = "interceptor_service"
 version = "0.1.0"
-distribution = "2201.5.0"
+distribution = "2201.12.7"
 
 [build-options]
 observabilityIncluded = true

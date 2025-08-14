@@ -12,6 +12,7 @@ wso2:
           imagePullPolicy: IfNotPresent
       ratelimiter:
         enabled: true
+        requestTimeoutInMillis: 800
         deployment:
           imagePullPolicy: IfNotPresent
       gatewayRuntime:
