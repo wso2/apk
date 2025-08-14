@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"github.com/wso2/apk/config-deployer-service-go/internal/util"
@@ -73,7 +74,7 @@ func HandleAPIDeployment(cxt *gin.Context, organization *dto.Organization, cpIni
 		})
 		return
 	}
-	apkConf.ID = routeMetadata.Name
+	apkConf.ID = routeMetadata.Labels[constantscommon.LabelKGWUUID]
 	apkYaml, err := util.MarshalToYAMLWithIndent(apkConf, 2)
 	if err != nil {
 		cxt.JSON(http.StatusInternalServerError, gin.H{
@@ -86,8 +87,7 @@ func HandleAPIDeployment(cxt *gin.Context, organization *dto.Organization, cpIni
 }
 
 // HandleAPIUndeployment handles the undeployment of an API by removing its associated Kubernetes resources.
-func HandleAPIUndeployment(cxt *gin.Context, apiId string, organization *dto.Organization) {
-	namespace := cxt.Param("namespace")
+func HandleAPIUndeployment(cxt *gin.Context, apiId string, organization *dto.Organization, namespace string) {
 	apiClient := &APIClient{}
 	k8sClient := config.GetManager().GetClient()
 	routeMetadataList, err := util.GetRouteMetadataList(apiId, namespace, k8sClient)
