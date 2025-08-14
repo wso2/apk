@@ -128,13 +128,13 @@ const (
 
 	WSO2KubernetesGatewayRouteMetadataAPIVersion = "dp.wso2.com/v2alpha1"
 	WSO2KubernetesGatewayRouteMetadataKind       = "RouteMetadata"
-	WSO2KubernetesGatewayRouteMetadataGroup		= "dp.wso2.com"
+	WSO2KubernetesGatewayRouteMetadataGroup      = "dp.wso2.com"
 	WSO2KubernetesGatewayRoutePolicyAPIVersion   = "dp.wso2.com/v2alpha1"
 	WSO2KubernetesGatewayRoutePolicyKind         = "RoutePolicy"
-	WSO2KubernetesGatewayRoutePolicyGroup		= "dp.wso2.com"
-
+	WSO2KubernetesGatewayRoutePolicyGroup        = "dp.wso2.com"
 
 	K8sKindHTTPRoute              = "HTTPRoute"
+	K8sKindGRPCRoute              = "GRPCRoute"
 	K8sKindService                = "Service"
 	K8sKindGateway                = "Gateway"
 	K8sKindBackend                = "Backend"

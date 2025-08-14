@@ -84,6 +84,9 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
 			namespace := c.Query("namespace")
+			if namespace == "" {
+				namespace = "default"
+			}
 			handlers.HandleAPIDeployment(c, organizationObj, "false", namespace)
 		})
 
@@ -103,8 +106,12 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			}
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
+			namespace := c.Query("namespace")
+			if namespace == "" {
+				namespace = "default"
+			}
 			apiId := c.Query("apiId")
-			handlers.HandleAPIUndeployment(c, apiId, organizationObj)
+			handlers.HandleAPIUndeployment(c, apiId, organizationObj, namespace)
 		})
 	}
 

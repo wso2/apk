@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 
 	eg "github.com/envoyproxy/gateway/api/v1alpha1"
@@ -89,10 +90,11 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 		}
 	}
 	labels := make(map[string]string)
-	labels[constantscommon.LabelKGWName] = apiResourceBundle.APKConf.Name
-	labels[constantscommon.LabelKGWVersion] = apiResourceBundle.APKConf.Version
-	labels[constantscommon.LabelKGWOrganization] = apiResourceBundle.Organization
-	labels[constantscommon.LabelKGWUUID] = apiResourceBundle.APKConf.ID
+	labels[constantscommon.LabelKGWName] = util.SanitizeOrHashLabel(apiResourceBundle.APKConf.Name)
+	labels[constantscommon.LabelKGWVersion] = util.SanitizeOrHashLabel(apiResourceBundle.APKConf.Version)
+	labels[constantscommon.LabelKGWOrganization] = util.SanitizeOrHashLabel(apiResourceBundle.Organization)
+	labels[constantscommon.LabelKGWUUID] = util.SanitizeOrHashLabel(apiResourceBundle.APKConf.ID)
+	labels[constantscommon.LabelKGWCPInitiated] = util.SanitizeOrHashLabel(strconv.FormatBool(apiResourceBundle.CPInitiated))
 
 	for _, object := range objects {
 		object.SetLabels(labels)
@@ -103,13 +105,15 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 
 func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, environment string) ([]client.Object, error) {
 	objects := make([]client.Object, 0)
-	definitionCMName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization)
+	definitionCMName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+		apiResourceBundle.Organization)
 	routeMetadataList := make([]*dpv2alpha1.RouteMetadata, 0)
 	routePolicies := make([]*dpv2alpha1.RoutePolicy, 0)
 	// Create the RouteMetadata object
 	routeMetadata := &dpv2alpha1.RouteMetadata{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization),
+			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+				apiResourceBundle.Organization),
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind:       constants.WSO2KubernetesGatewayRouteMetadataKind,
@@ -157,7 +161,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	// RoutePolicy
 	routePolicy := &dpv2alpha1.RoutePolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization),
+			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+				apiResourceBundle.Organization),
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
@@ -200,7 +205,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 
 	// GraphQL
 	if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRAPHQL {
-		gqlSchemaConfigMapName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization) + "-graphql-schema"
+		gqlSchemaConfigMapName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment,
+			apiResourceBundle.APKConf.Version, apiResourceBundle.Organization) + "-graphql-schema"
 		routePolicy.Spec.RequestMediation = append(routePolicy.Spec.RequestMediation, &dpv2alpha1.Mediation{
 			PolicyName:    constantscommon.MediationGraphQL,
 			PolicyID:      "",
@@ -269,7 +275,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			}
 		}
 		// Generate BackendTrafficPolicy for AI Ratelimit
-		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization)
+		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+			apiResourceBundle.Organization)
 		backendTrafficPolicy := generateBackendTrafficPolicyForAIRatelimit(btpName, targetRefs, aiRatelimit)
 		objects = append(objects, backendTrafficPolicy)
 	}
@@ -289,7 +296,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			}
 		}
 		// Generate BackendTrafficPolicy for Ratelimit
-		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization)
+		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+			apiResourceBundle.Organization)
 		backendTrafficPolicy := generateBackendTrafficPolicyForRatelimit(btpName, targetRefs, apiResourceBundle.APKConf.RateLimit)
 		objects = append(objects, backendTrafficPolicy)
 	}
@@ -304,7 +312,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		if _, exists := ratelimitToCombinedResourceIndexMap[ratelimit.Unit]; !exists {
 			ratelimitToCombinedResourceIndexMap[ratelimit.Unit] = make(map[int][]int)
 		}
-		ratelimitToCombinedResourceIndexMap[ratelimit.Unit][ratelimit.RequestsPerUnit] = append(ratelimitToCombinedResourceIndexMap[ratelimit.Unit][ratelimit.RequestsPerUnit], i)
+		ratelimitToCombinedResourceIndexMap[ratelimit.Unit][ratelimit.RequestsPerUnit] =
+			append(ratelimitToCombinedResourceIndexMap[ratelimit.Unit][ratelimit.RequestsPerUnit], i)
 	}
 	counter := 0
 	for unit, combinedResourceIndices := range ratelimitToCombinedResourceIndexMap {
@@ -325,7 +334,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				}
 			}
 			counter++
-			btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization)
+			btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+				apiResourceBundle.Organization)
 			btpName = fmt.Sprintf("%s-%d", btpName, counter)
 			backendTrafficPolicy := generateBackendTrafficPolicyForRatelimit(btpName, targetRefs, &model.RateLimit{
 				Unit:            unit,
@@ -357,9 +367,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				},
 			})
 		}
-		spName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization)
+		spName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+			apiResourceBundle.Organization)
 		spName = fmt.Sprintf("%s-%d", spName, i+1)
-		sp := generateSecurityPolicy(spName, isSecured, scopes, targetRefs, cors, apiResourceBundle.APKConf.KeyManagers, apiResourceBundle.APKConf.Authentication)
+		sp := generateSecurityPolicy(spName, isSecured, scopes, targetRefs, cors, apiResourceBundle.APKConf.KeyManagers,
+			apiResourceBundle.APKConf.Authentication)
 		objects = append(objects, sp)
 
 	}
@@ -376,7 +388,8 @@ func chunkOperations(ops []model.APKOperations, size int) [][]model.APKOperation
 	return chunks
 }
 
-func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string, routePolicies []*dpv2alpha1.RoutePolicy, routeMetadata []*dpv2alpha1.RouteMetadata) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
+func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string, routePolicies []*dpv2alpha1.RoutePolicy,
+	routeMetadata []*dpv2alpha1.RouteMetadata) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
 	objects := make([]client.Object, 0)
 	routesMap := make(map[int][]gatewayv1.HTTPRoute)
 	backendMap := make(map[string]map[string]*eg.Backend)
@@ -398,12 +411,17 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					Name: routeName,
 				},
 				Spec: gatewayv1.HTTPRouteSpec{
+					Hostnames: []gatewayv1.Hostname{
+						"*.gw.wso2.com",
+					},
 					CommonRouteSpec: gatewayv1.CommonRouteSpec{
 						ParentRefs: []gatewayv1.ParentReference{
 							{
-								Name: gatewayv1.ObjectName(parentName), 
-								SectionName: ptrTo(gatewayv1.SectionName(parentSectionName)),
+								Name: gatewayv1.ObjectName(parentName),
+								Group:       ptrTo(gatewayv1.Group(constants.K8sGroupNetworking)),
+								Kind:        ptrTo(gatewayv1.Kind(constants.K8sKindGateway)),
 								Namespace:   ptrTo(gatewayv1.Namespace(parentNamespace)),
+								SectionName: ptrTo(gatewayv1.SectionName(parentSectionName)),
 							},
 						},
 					},
@@ -549,15 +567,16 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 			objects = append(objects, backend)
 			// Create BackendTLSPolicy if TLS is enabled
 			if scheme == "https" {
-				backendTLSPolicy := generateBackendTLSPolicyWithWellKnownCerts(backend.Name, backend.Spec.Endpoints[0].FQDN.Hostname, []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
-					gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
-						LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
-							Name:  gwapiv1a2.ObjectName(backend.Name),
-							Kind:  gwapiv1a2.Kind(constants.K8sKindBackend),
-							Group: constants.K8sGroupEnvoyGateway,
+				backendTLSPolicy := generateBackendTLSPolicyWithWellKnownCerts(backend.Name, backend.Spec.Endpoints[0].FQDN.Hostname,
+					[]gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
+						gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
+							LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
+								Name:  gwapiv1a2.ObjectName(backend.Name),
+								Kind:  gwapiv1a2.Kind(constants.K8sKindBackend),
+								Group: constants.K8sGroupEnvoyGateway,
+							},
 						},
-					},
-				})
+					})
 				objects = append(objects, backendTLSPolicy)
 			}
 		}
@@ -618,7 +637,8 @@ func pickFirstAIRatelimit(ecs []model.EndpointConfiguration) *model.AIRatelimit 
 }
 
 // Generate BackendTrafficPolicy for AI Ratelimit
-func generateBackendTrafficPolicyForAIRatelimit(name string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName, rlConf *model.AIRatelimit) *eg.BackendTrafficPolicy {
+func generateBackendTrafficPolicyForAIRatelimit(name string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName,
+	rlConf *model.AIRatelimit) *eg.BackendTrafficPolicy {
 	return &eg.BackendTrafficPolicy{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       constants.EnvoyGatewayBackendTrafficPolicy,
@@ -642,7 +662,8 @@ func generateBackendTrafficPolicyForAIRatelimit(name string, targetRefs []gwapiv
 }
 
 // Generate BackendTrafficPolicy for Ratelimit
-func generateBackendTrafficPolicyForRatelimit(name string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName, rlConf *model.RateLimit) *eg.BackendTrafficPolicy {
+func generateBackendTrafficPolicyForRatelimit(name string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName,
+	rlConf *model.RateLimit) *eg.BackendTrafficPolicy {
 	return &eg.BackendTrafficPolicy{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       constants.EnvoyGatewayBackendTrafficPolicy,
@@ -766,7 +787,8 @@ func pickIsSecuredAndScopes(apkOperations []model.APKOperations) (bool, []string
 	return isSecured, scopes
 }
 
-func generateSecurityPolicy(name string, isSecured bool, scopes []string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName, cors *model.CORSConfiguration, kms []model.KeyManager, auths []model.AuthenticationRequest) *eg.SecurityPolicy {
+func generateSecurityPolicy(name string, isSecured bool, scopes []string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName,
+	cors *model.CORSConfiguration, kms []model.KeyManager, auths []model.AuthenticationRequest) *eg.SecurityPolicy {
 	sp := &eg.SecurityPolicy{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       constants.K8sKindSecurityPolicy,
@@ -978,7 +1000,8 @@ func extractSchemeHostPort(endpoint interface{}) (scheme, host string, port int,
 	return scheme, host, port, nil
 }
 
-func generateBackendTLSPolicyWithWellKnownCerts(name, host string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName) *gwapiv1a3.BackendTLSPolicy {
+func generateBackendTLSPolicyWithWellKnownCerts(name, host string,
+	targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName) *gwapiv1a3.BackendTLSPolicy {
 	wellKnownCerts := gwapiv1a3.WellKnownCACertificatesSystem
 	return &gwapiv1a3.BackendTLSPolicy{
 		TypeMeta: metav1.TypeMeta{
@@ -1088,7 +1111,8 @@ func endpointCRName(endpoint interface{}) (string, error) {
 	return base, nil
 }
 
-func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]map[string]*eg.Backend, routeName string) []gatewayv1.HTTPBackendRef {
+func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]map[string]*eg.Backend,
+	routeName string) []gatewayv1.HTTPBackendRef {
 	backendRefs := make([]gatewayv1.HTTPBackendRef, 0, len(ecs))
 	for _, ec := range ecs {
 		if ec.Endpoint == nil {

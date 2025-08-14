@@ -18,6 +18,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"sync"
@@ -65,6 +66,12 @@ func InitializeManager() error {
 		if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		}
 	}()
+
+	// Wait for the cache to sync before starting the server
+	ctx := context.Background()
+	if !mgr.GetCache().WaitForCacheSync(ctx) {
+		panic("Failed to sync cache")
+	}
 
 	GlobalManager = mgr
 	return nil
