@@ -179,4 +179,5 @@ const (
 	LabelAPKName = "apk.wso2.com/name"
 	LabelAPKVersion = "apk.wso2.com/version"
 	LabelAPKOrganization = "apk.wso2.com/organization"
+	LabelAPKUUID = "apk.wso2.com/uuid"
 )
