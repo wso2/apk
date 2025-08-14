@@ -9,6 +9,10 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 )
 
+// Kubernetes CR name regex: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+var k8sNameRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
+var k8sLabelRegex = regexp.MustCompile(`^(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?$`)
+
 // SanitizeOrHashName ensures the name is Kubernetes valid.
 // If invalid, returns a hashed version (sha1, hex-encoded, first 10 chars for brevity).
 func SanitizeOrHashName(name string) string {
@@ -20,8 +24,16 @@ func SanitizeOrHashName(name string) string {
 	return hex.EncodeToString(h[:])[:10] // short hash
 }
 
-// Kubernetes CR name regex: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
-var k8sNameRegex = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
+// SanitizeOrHashLabel ensures the label is Kubernetes valid.
+func SanitizeOrHashLabel(label string) string {
+	label = strings.ReplaceAll(label, " ", "-")
+	label = strings.ToLower(label) // ensure lowercase
+	if k8sLabelRegex.MatchString(label) && len(label) <= 63 {
+		return label
+	}
+	h := sha1.Sum([]byte(label))
+	return hex.EncodeToString(h[:])[:10] // short hash
+}
 
 // GenerateCRName generates a Kubernetes CR name based on the API name, environment, version, and organization.
 // It sanitizes the name to ensure it is Kubernetes valid.
@@ -47,11 +59,11 @@ func GenerateCRName(apiName, env, version, organization string) string {
 	cleanAPIName = strings.ReplaceAll(cleanAPIName, " ", "-")
 	cleanAPIName = strings.ToLower(cleanAPIName)
 
-	return cleanAPIName + last10
+	return strings.ToLower(cleanAPIName + last10)
 }
 
 func IsSameRatelimit(r1 model.RateLimit, r2 model.RateLimit) bool {
-	return r1.RequestsPerUnit == r2.RequestsPerUnit && r1.Unit == r2.Unit 
+	return r1.RequestsPerUnit == r2.RequestsPerUnit && r1.Unit == r2.Unit
 }
 
 // HashLast50SHA1 returns the last 50 characters of the SHA-1 hash of the input string.

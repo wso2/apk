@@ -21,17 +21,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
+	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 // GetRouteMetadataList retrieves all RouteMetadata Custom Resources from the Kubernetes cluster based on API ID and namespace.
@@ -39,7 +35,7 @@ func GetRouteMetadataList(apiID string, namespace string, k8sClient client.Clien
 	routeMetadataList := &v2alpha1.RouteMetadataList{}
 	err := k8sClient.List(context.Background(), routeMetadataList, &client.ListOptions{
 		Namespace:     namespace,
-		LabelSelector: labels.SelectorFromSet(map[string]string{"apiUUID": apiID}),
+		LabelSelector: labels.SelectorFromSet(map[string]string{constantscommon.LabelKGWUUID: apiID}),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to list RouteMetadata CRs: %w", err)
@@ -86,30 +82,58 @@ func UndeployK8sRouteMetadataCR(k8sClient client.Client, k8sRouteMetadata v2alph
 func GetFilteredLabels(routeMetadataLabels map[string]string) map[string]string {
 	filteredLabels := make(map[string]string)
 
-	if apiName, exists := routeMetadataLabels[constants.API_NAME_HASH_LABEL]; exists {
-		filteredLabels[constants.API_NAME_HASH_LABEL] = apiName
+	if apiName, exists := routeMetadataLabels[constantscommon.LabelKGWName]; exists {
+		filteredLabels[constantscommon.LabelKGWName] = apiName
 	}
-	if apiVersion, exists := routeMetadataLabels[constants.API_VERSION_HASH_LABEL]; exists {
-		filteredLabels[constants.API_VERSION_HASH_LABEL] = apiVersion
+	if apiVersion, exists := routeMetadataLabels[constantscommon.LabelKGWVersion]; exists {
+		filteredLabels[constantscommon.LabelKGWVersion] = apiVersion
 	}
-	if organization, exists := routeMetadataLabels[constants.ORGANIZATION_HASH_LABEL]; exists {
-		filteredLabels[constants.ORGANIZATION_HASH_LABEL] = organization
+	if organization, exists := routeMetadataLabels[constantscommon.LabelKGWOrganization]; exists {
+		filteredLabels[constantscommon.LabelKGWOrganization] = organization
 	}
 	return filteredLabels
 }
 
-// GetCRsFromLabels retrieves all custom resources in the specified namespace that match the provided labels.
+// GetCRsFromLabels retrieves specific custom resources that match the provided labels.
 func GetCRsFromLabels(filteredLabels map[string]string, namespace string,
 	k8sClient client.Client) (*unstructured.UnstructuredList, error) {
-	objectList := &unstructured.UnstructuredList{}
-	err := k8sClient.List(context.Background(), objectList, &client.ListOptions{
-		Namespace:     namespace,
-		LabelSelector: labels.SelectorFromSet(filteredLabels),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("unable to list objects with labels %v: %w", filteredLabels, err)
+
+	var allObjects unstructured.UnstructuredList
+
+	// Define the custom resource types you want to search
+	resourceTypes := []schema.GroupVersionKind{
+		{Group: constants.WSO2KubernetesGatewayRouteMetadataGroup, Version: "v2alpha1", Kind: constants.WSO2KubernetesGatewayRouteMetadataKind},
+		{Group: constants.WSO2KubernetesGatewayRoutePolicyGroup, Version: "v2alpha1", Kind: constants.WSO2KubernetesGatewayRoutePolicyKind},
+		{Group: constants.K8sGroupNetworking, Version: "v1", Kind: constants.K8sKindHTTPRoute},
+		{Group: constants.K8sGroupNetworking, Version: "v1", Kind: constants.K8sKindGRPCRoute},
+		{Group: constants.K8sGroupNetworking, Version: "v1alpha3", Kind: constants.K8sKindBackendTLSPolicy},
+		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.K8sKindBackend},
+		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.EnvoyGatewayHTTPRouteFilter},
+		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.K8sKindSecurityPolicy},
+		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.EnvoyGatewayBackendTrafficPolicy},
+		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.EnvoyGatewayExtensionPolicy},
+		{Group: "", Version: "v1", Kind: constants.K8sKindService},
+		{Group: "", Version: "v1", Kind: constants.K8sKindConfigMap},
 	}
-	return objectList, nil
+
+	for _, gvk := range resourceTypes {
+		objectList := &unstructured.UnstructuredList{}
+		objectList.SetGroupVersionKind(gvk)
+
+		err := k8sClient.List(context.Background(), objectList, &client.ListOptions{
+			Namespace:     namespace,
+			LabelSelector: labels.SelectorFromSet(filteredLabels),
+		})
+		if err != nil {
+			// Continue with other resource types if this one fails
+			continue
+		}
+
+		// Add matching resources to the result
+		allObjects.Items = append(allObjects.Items, objectList.Items...)
+	}
+
+	return &allObjects, nil
 }
 
 // UndeployCR removes a specific custom resource from the Kubernetes cluster.
@@ -121,157 +145,31 @@ func UndeployCR(k8sClient client.Client, object unstructured.Unstructured) error
 	return nil
 }
 
-// DeleteCRsByLabels deletes all custom resources in the specified namespace that match all provided labels
-func DeleteCRsByLabels(namespace string, labels map[string]string) error {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		return fmt.Errorf("failed to get in-cluster config: %w", err)
-	}
-
-	dynamicClient, err := dynamic.NewForConfig(config)
-	if err != nil {
-		return fmt.Errorf("failed to create dynamic client: %w", err)
-	}
-
-	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
-	if err != nil {
-		return fmt.Errorf("failed to create discovery client: %w", err)
-	}
-
-	// Get all API resources
-	apiResourceLists, err := discoveryClient.ServerPreferredResources()
-	if err != nil {
-		return fmt.Errorf("failed to discover API resources: %w", err)
-	}
-
-	// Create label selector from provided labels
-	var labelSelectors []string
-	for key, value := range labels {
-		labelSelectors = append(labelSelectors, fmt.Sprintf("%s=%s", key, value))
-	}
-	labelSelector := strings.Join(labelSelectors, ",")
-
-	var deletionErrors []error
-
-	// Iterate through all API resources
-	for _, apiResourceList := range apiResourceLists {
-		if apiResourceList == nil {
-			continue
-		}
-
-		gv, err := schema.ParseGroupVersion(apiResourceList.GroupVersion)
-		if err != nil {
-			continue
-		}
-
-		for _, apiResource := range apiResourceList.APIResources {
-			// Skip subresources and resources that don't support list/delete operations
-			if strings.Contains(apiResource.Name, "/") {
-				continue
-			}
-
-			if !contains(apiResource.Verbs, "list") || !contains(apiResource.Verbs, "delete") {
-				continue
-			}
-
-			// Skip built-in Kubernetes resources, focus on CRs
-			if gv.Group == "" || isBuiltInResource(gv.Group) {
-				continue
-			}
-
-			gvr := schema.GroupVersionResource{
-				Group:    gv.Group,
-				Version:  gv.Version,
-				Resource: apiResource.Name,
-			}
-
-			// List resources with label selector
-			list, err := dynamicClient.Resource(gvr).Namespace(namespace).List(context.TODO(), metav1.ListOptions{
-				LabelSelector: labelSelector,
-			})
-			if err != nil {
-				// Log error but continue with other resources
-				deletionErrors = append(deletionErrors, fmt.Errorf("failed to list %s: %w", gvr.String(), err))
-				continue
-			}
-
-			// Delete each matching resource
-			for _, item := range list.Items {
-				err := dynamicClient.Resource(gvr).Namespace(namespace).Delete(context.TODO(), item.GetName(), metav1.DeleteOptions{})
-				if err != nil {
-					deletionErrors = append(deletionErrors, fmt.Errorf("failed to delete %s/%s: %w", gvr.String(), item.GetName(), err))
-				}
-			}
-		}
-	}
-
-	if len(deletionErrors) > 0 {
-		var errorMessages []string
-		for _, err := range deletionErrors {
-			errorMessages = append(errorMessages, err.Error())
-		}
-		return fmt.Errorf("deletion errors occurred: %s", strings.Join(errorMessages, "; "))
-	}
-
-	return nil
-}
-
-// contains checks if a slice contains a specific string
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
-// isBuiltInResource checks if a group is a built-in Kubernetes resource group
-func isBuiltInResource(group string) bool {
-	builtInGroups := []string{
-		"apps",
-		"extensions",
-		"networking.k8s.io",
-		"rbac.authorization.k8s.io",
-		"authorization.k8s.io",
-		"autoscaling",
-		"batch",
-		"certificates.k8s.io",
-		"coordination.k8s.io",
-		"discovery.k8s.io",
-		"events.k8s.io",
-		"node.k8s.io",
-		"policy",
-		"scheduling.k8s.io",
-		"storage.k8s.io",
-		"metrics.k8s.io",
-		"apiregistration.k8s.io",
-		"admissionregistration.k8s.io",
-	}
-
-	for _, builtIn := range builtInGroups {
-		if group == builtIn {
-			return true
-		}
-	}
-	return false
-}
-
 // ApplyK8sResource applies a Kubernetes resource to the cluster using the provided client.
 func ApplyK8sResource(k8sClient client.Client, namespace string, object client.Object) error {
-	//// Check if the resource already exists
-	//existingResource := &unstructured.Unstructured{}
-	//existingResource.SetGroupVersionKind(object.GetObjectKind().GroupVersionKind())
-	//err := k8sClient.Get(context.Background(), client.ObjectKey{
-	//	Name:      object.GetName(),
-	//	Namespace: object.GetNamespace(),
-	//}, existingResource)
-	//
-	//if err != nil {
-	//	if client.IgnoreNotFound(err) != nil {
-	//		return fmt.Errorf("failed to get existing resource: %w", err)
-	//	}
-	//	return k8sClient.Create(context.Background(), object)
-	//}
+	// Set the namespace if it's provided and the object doesn't already have one
+	if namespace != "" && object.GetNamespace() == "" {
+		object.SetNamespace(namespace)
+	}
+
+	// Check if the resource already exists
+	existingResource := &unstructured.Unstructured{}
+	existingResource.SetGroupVersionKind(object.GetObjectKind().GroupVersionKind())
+	err := k8sClient.Get(context.Background(), client.ObjectKey{
+		Name:      object.GetName(),
+		Namespace: object.GetNamespace(),
+	}, existingResource)
+
+	if err != nil {
+		if client.IgnoreNotFound(err) != nil {
+			return fmt.Errorf("failed to get existing resource: %w", err)
+		}
+		// Resource doesn't exist, create it
+		return k8sClient.Create(context.Background(), object)
+	}
+
+	// Resource exists, update it
+	// Copy resource version for proper updates
+	object.SetResourceVersion(existingResource.GetResourceVersion())
 	return k8sClient.Update(context.Background(), object)
 }
