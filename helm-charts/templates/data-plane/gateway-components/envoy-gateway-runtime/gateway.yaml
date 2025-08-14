@@ -21,6 +21,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     cert-manager.io/issuer: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-selfsigned-issuer
+  labels:
+    managed-by: wso2kgw
 spec:
   {{- if .Values.wso2.kgw.dp.gatewayClass }}
   gatewayClassName: {{ .Values.wso2.kgw.dp.gatewayClass.name | default "wso2-kgw-default" }}

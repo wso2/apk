@@ -183,4 +183,5 @@ const (
 	LabelKGWVersion      = "kgw.wso2.com/version"
 	LabelKGWOrganization = "kgw.wso2.com/organization"
 	LabelKGWUUID         = "kgw.wso2.com/uuid"
+	LabelKGWCPInitiated  = "kgw.wso2.com/cpInitiated"
 )
