@@ -17,6 +17,7 @@
 # The following manifests contain a self-signed issuer CR and a certificate CR.
 # More document can be found at https://docs.cert-manager.io
 
+{{- if .Values.certmanager.enabled }}
 {{- if .Values.wso2.apk.dp.enabled }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -40,4 +41,5 @@ spec:
     name: {{ template "apk-helm.resource.prefix" . }}-selfsigned-issuer
     {{- end }}
   secretName: {{ template "apk-helm.resource.prefix" . }}-config-ds-server-cert
+{{- end -}}
 {{- end -}}

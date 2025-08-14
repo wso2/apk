@@ -5,8 +5,5 @@ dependencies:
 - name: redis
   repository: https://charts.bitnami.com/bitnami
   version: 20.10.0
-- name: cert-manager
-  repository: https://charts.jetstack.io
-  version: v1.17.1
-digest: sha256:b6da791e4d4423e16c71a462e45b75696794bc95f84f0d47976596a230d216a9
-generated: "2025-03-02T08:20:52.760533+05:30"
+digest: sha256:9a11cf0ed1e4d02e6342137d18de7a421a066823093c5144f918da09a6aeefa7
+generated: "2025-08-14T13:57:08.702109+05:30"

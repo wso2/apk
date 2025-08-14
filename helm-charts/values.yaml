@@ -18,6 +18,10 @@ wso2:
   subscription:
     imagePullSecrets: ""
 
+  choreo:
+    egressDeployment:
+      enabled: false
+
   apk:
     helmHooks:
       webhooksCleanupEnabled: true

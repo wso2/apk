@@ -19,7 +19,12 @@ wso2:
   
     # -- Optionally specify image pull secrets.
     imagePullSecrets: ""
-    
+
+  choreo:
+    egressDeployment:
+      # This skips the following
+      # 1. Common Controller Notification API
+
   apk:
     helmHooks:
       # -- Helm hooks for cleaning up webhooks before installing, upgrading and uninstalling
