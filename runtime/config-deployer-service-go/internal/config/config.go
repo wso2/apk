@@ -31,7 +31,10 @@ type Server struct {
 	Logger              logging.Logger
 	ExtensionServerHost string `envconfig:"EXTENSION_SERVER_HOST" default:"0.0.0.0"`
 	ExtensionServerPort string `envconfig:"EXTENSION_SERVER_PORT" default:"5005"`
-	APKSchemaLocation   string `envconfig:"APK_SCHEMA_LOCATION" default:"resources/conf/apk-schema.json"`
+	APKSchemaLocation   string `envconfig:"APK_SCHEMA_LOCATION" default:"conf/apk-schema.json"`
+	ParentGatewayName   string `envconfig:"PARENT_GATEWAY_NAME" default:"wso2-kgw-default"`
+	ParentGatewayNamespace string `envconfig:"PARENT_GATEWAY_NAMESPACE" default:"default"`
+	ParentGatewaySectionName string `envconfig:"PARENT_GATEWAY_SECTION_NAME" default:"httpslistener"`
 }
 
 type metrics struct {
