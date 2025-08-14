@@ -152,10 +152,5 @@ const (
 	K8sKindReferenceGrant         = "ReferenceGrant"
 	K8sAPIVersionReferenceGrant   = "gateway.networking.k8s.io/v1beta1"
 
-	ExternalProcessingMetadataNamespace = "com.wso2.bijira.ai_gateway"
-	AIRatelimitTotalTokenCount          = "totaltokenid"
-	AIRatelimitCompletionTokenCount     = "completiontokenid"
-	AIRatelimitPromptTokenCount         = "prompttokenid"
-
 	K8sKindConfigMap = "ConfigMap"
 )

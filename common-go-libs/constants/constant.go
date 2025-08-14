@@ -156,6 +156,9 @@ const (
 const (
 	// MediationAITokenRatelimit holds the name of the AI Token Rate Limit mediation policy.
 	MediationAITokenRatelimit = "AITokenRatelimit"
+	// MediationAIProvider holds the name of the AI Provider mediation policy.
+	MediationAIProvider = "AIProvider"
+
 	// MediationSubscriptionRatelimit holds the name of the Subscription Rate Limit mediation policy.
 	MediationSubscriptionRatelimit = "SubscriptionRatelimit"
 	// MediationSubscriptionValidation holds the name of the Subscription Validation mediation policy.
