@@ -104,6 +104,8 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, environment string) ([]client.Object, error) {
 	objects := make([]client.Object, 0)
 	definitionCMName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization)
+	routeMetadataList := make([]*dpv2alpha1.RouteMetadata, 0)
+	routePolicies := make([]*dpv2alpha1.RoutePolicy, 0)
 	// Create the RouteMetadata object
 	routeMetadata := &dpv2alpha1.RouteMetadata{
 		ObjectMeta: metav1.ObjectMeta{
@@ -140,6 +142,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			},
 		},
 	}
+	routeMetadataList = append(routeMetadataList, routeMetadata)
 
 	if apiResourceBundle.Definition != "" {
 		cm := createConfigMapForDefinition(
@@ -180,6 +183,21 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		})
 	}
 
+	// AIProvider
+	if apiResourceBundle.APKConf.AIProvider != nil {
+		aiProviderRoutePolicy := &dpv2alpha1.RoutePolicy{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: util.HashLast50SHA1(apiResourceBundle.APKConf.AIProvider.Name + apiResourceBundle.APKConf.AIProvider.APIVersion),
+			},
+			TypeMeta: metav1.TypeMeta{
+				Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
+				APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+			},
+		}
+		routePolicies = append(routePolicies, aiProviderRoutePolicy)
+		// Do not add to objects as it will be added globally by either agent or manually
+	}
+
 	// GraphQL
 	if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRAPHQL {
 		gqlSchemaConfigMapName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version, apiResourceBundle.Organization) + "-graphql-schema"
@@ -213,15 +231,16 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		cm := createConfigMapForGQlSchema(gqlSchemaConfigMapName, yamlString)
 		objects = append(objects, cm)
 	}
+	routePolicies = append(routePolicies, routePolicy)
 	objects = append(objects, routePolicy)
 
 	// Create the HTTPRoute objects
-	routes, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment, []*dpv2alpha1.RoutePolicy{routePolicy}, []*dpv2alpha1.RouteMetadata{routeMetadata})
+	routes, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment, routePolicies, routeMetadataList)
 	for _, obj := range objectsForWithVersion {
 		objects = append(objects, obj)
 	}
 	if apiResourceBundle.APKConf.DefaultVersion {
-		routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment, []*dpv2alpha1.RoutePolicy{routePolicy}, []*dpv2alpha1.RouteMetadata{routeMetadata})
+		routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment, routePolicies, routeMetadataList)
 		for _, obj := range objectsForWithoutVersion {
 			objects = append(objects, obj)
 		}
@@ -366,6 +385,9 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 		batches := chunkOperations(combined.APKOperations, 16)
 
 		for j, batch := range batches {
+			parentName := config.GetConfig().ParentGatewayName
+			parentNamespace := config.GetConfig().ParentGatewayNamespace
+			parentSectionName := config.GetConfig().ParentGatewaySectionName
 			routeName := fmt.Sprintf("%s-%d-%d", crName, i+1, j+1)
 			route := gatewayv1.HTTPRoute{
 				TypeMeta: metav1.TypeMeta{
@@ -379,7 +401,9 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					CommonRouteSpec: gatewayv1.CommonRouteSpec{
 						ParentRefs: []gatewayv1.ParentReference{
 							{
-								Name: "my-gateway", // could be dynamic if needed
+								Name: gatewayv1.ObjectName(parentName), 
+								SectionName: ptrTo(gatewayv1.SectionName(parentSectionName)),
+								Namespace:   ptrTo(gatewayv1.Namespace(parentNamespace)),
 							},
 						},
 					},
@@ -673,8 +697,8 @@ func generateAIRatelimitRules(rlConf *model.AIRatelimit) []eg.RateLimitRule {
 			Response: &eg.RateLimitCostSpecifier{
 				From: eg.RateLimitCostFromMetadata,
 				Metadata: &eg.RateLimitCostMetadata{
-					Namespace: constants.ExternalProcessingMetadataNamespace,
-					Key:       constants.AIRatelimitPromptTokenCount,
+					Namespace:  constantscommon.MetadataNamespace,
+					Key:       constantscommon.PromptTokenCountIDMetadataKey,
 				},
 			},
 		},
@@ -694,8 +718,8 @@ func generateAIRatelimitRules(rlConf *model.AIRatelimit) []eg.RateLimitRule {
 			Response: &eg.RateLimitCostSpecifier{
 				From: eg.RateLimitCostFromMetadata,
 				Metadata: &eg.RateLimitCostMetadata{
-					Namespace: constants.ExternalProcessingMetadataNamespace,
-					Key:       constants.AIRatelimitCompletionTokenCount,
+					Namespace:  constantscommon.MetadataNamespace,
+					Key:       constantscommon.CompletionTokenCountIDMetadataKey,
 				},
 			},
 		},
@@ -715,8 +739,8 @@ func generateAIRatelimitRules(rlConf *model.AIRatelimit) []eg.RateLimitRule {
 			Response: &eg.RateLimitCostSpecifier{
 				From: eg.RateLimitCostFromMetadata,
 				Metadata: &eg.RateLimitCostMetadata{
-					Namespace: constants.ExternalProcessingMetadataNamespace,
-					Key:       constants.AIRatelimitTotalTokenCount,
+					Namespace: constantscommon.MetadataNamespace,
+					Key:       constantscommon.TotalTokenCountIDMetadataKey,
 				},
 			},
 		},
