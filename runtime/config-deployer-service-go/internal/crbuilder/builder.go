@@ -11,19 +11,21 @@ import (
 
 	eg "github.com/envoyproxy/gateway/api/v1alpha1"
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
+	constantscommon "github.com/wso2/apk/common-go-libs/constants"
+	gqlCommon "github.com/wso2/apk/common-go-libs/graphql"
 	"github.com/wso2/apk/common-go-libs/pkg/logging"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 	util "github.com/wso2/apk/config-deployer-service-go/internal/util"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1a3 "sigs.k8s.io/gateway-api/apis/v1alpha3"
-	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 )
 
 var allowedMethods = map[string]gatewayv1.HTTPMethod{
@@ -90,6 +92,7 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 	labels[constantscommon.LabelAPKName] = apiResourceBundle.APKConf.Name
 	labels[constantscommon.LabelAPKVersion] = apiResourceBundle.APKConf.Version
 	labels[constantscommon.LabelAPKOrganization] = apiResourceBundle.Organization
+	labels[constantscommon.LabelAPKUUID] = apiResourceBundle.APKConf.ID
 	
 	for _, object := range objects {
 		object.SetLabels(labels)
@@ -194,7 +197,21 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				},
 			},
 		})
-		
+		gqlOperations := make([]*gqlCommon.Operation, 0)
+		for _, operation := range apiResourceBundle.APKConf.Operations {
+			gqlOperations = append(gqlOperations, &gqlCommon.Operation{
+				Target: *operation.Target,
+				Verb: *operation.Verb,
+				Scopes: operation.Scopes,
+			})
+		}
+		yamlBytes, err := yaml.Marshal(gqlOperations)
+		if err != nil {
+			logger.Sugar().Errorf("Error occurred while marshalling GraphQL operations to YAML: %v", err)
+		}
+		yamlString := string(yamlBytes)
+		cm := createConfigMapForGQlSchema(gqlSchemaConfigMapName, yamlString)
+		objects = append(objects, cm)
 	}
 	objects = append(objects, routePolicy)
 
@@ -1149,6 +1166,21 @@ func createConfigMapForDefinition(name, definition string) *corev1.ConfigMap {
         },
         Data: map[string]string{
             "Definition": definition,
+        },
+    }
+}
+
+func createConfigMapForGQlSchema(name, schema string) *corev1.ConfigMap {
+    return &corev1.ConfigMap{
+        TypeMeta: metav1.TypeMeta{
+            APIVersion: "v1",
+            Kind:       constants.K8sKindConfigMap,
+        },
+        ObjectMeta: metav1.ObjectMeta{
+            Name:      name,
+        },
+        Data: map[string]string{
+            "Schema": schema,
         },
     }
 }
