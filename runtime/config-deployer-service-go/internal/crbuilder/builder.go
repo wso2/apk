@@ -71,8 +71,22 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 		if err != nil {
 			return nil, err
 		}
+		var routeMetadata *dpv2alpha1.RouteMetadata
+		httpRouteNames := make([]string, 0)
 		for _, object := range objectsP {
-			objects = append(objects, object)
+			if routeMeta, ok := object.(*dpv2alpha1.RouteMetadata); ok {
+				routeMetadata = routeMeta
+			} else {
+				if httpRoute, ok := object.(*gatewayv1.HTTPRoute); ok {
+					httpRouteNames = append(httpRouteNames, httpRoute.Name)
+				}
+				objects = append(objects, object)
+			}
+		}
+		httpRouteAnnotations := generateHTTPRouteAnnotations(httpRouteNames)
+		if routeMetadata != nil {
+			routeMetadata.SetAnnotations(httpRouteAnnotations)
+			objects = append(objects, routeMetadata)
 		}
 	}
 	// Sandbox
@@ -81,8 +95,22 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 		if err != nil {
 			return nil, err
 		}
+		var routeMetadata *dpv2alpha1.RouteMetadata
+		httpRouteNames := make([]string, 0)
 		for _, object := range objectsS {
-			objects = append(objects, object)
+			if routeMeta, ok := object.(*dpv2alpha1.RouteMetadata); ok {
+				routeMetadata = routeMeta
+			} else {
+				if httpRoute, ok := object.(*gatewayv1.HTTPRoute); ok {
+					httpRouteNames = append(httpRouteNames, httpRoute.Name)
+				}
+				objects = append(objects, object)
+			}
+		}
+		httpRouteAnnotations := generateHTTPRouteAnnotations(httpRouteNames)
+		if routeMetadata != nil {
+			routeMetadata.SetAnnotations(httpRouteAnnotations)
+			objects = append(objects, routeMetadata)
 		}
 	}
 	if apiResourceBundle.Namespace != "" {
@@ -390,7 +418,7 @@ func chunkOperations(ops []model.APKOperations, size int) [][]model.APKOperation
 }
 
 func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string, routePolicies []*dpv2alpha1.RoutePolicy,
-	routeMetadata []*dpv2alpha1.RouteMetadata) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
+	routeMetadataList []*dpv2alpha1.RouteMetadata) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
 	objects := make([]client.Object, 0)
 	routesMap := make(map[int][]gatewayv1.HTTPRoute)
 	backendMap := make(map[string]map[string]*eg.Backend)
@@ -418,7 +446,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					CommonRouteSpec: gatewayv1.CommonRouteSpec{
 						ParentRefs: []gatewayv1.ParentReference{
 							{
-								Name: gatewayv1.ObjectName(parentName),
+								Name:        gatewayv1.ObjectName(parentName),
 								Group:       ptrTo(gatewayv1.Group(constants.K8sGroupNetworking)),
 								Kind:        ptrTo(gatewayv1.Kind(constants.K8sKindGateway)),
 								Namespace:   ptrTo(gatewayv1.Namespace(parentNamespace)),
@@ -526,7 +554,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						},
 					})
 				}
-				for _, metadata := range routeMetadata {
+				for _, metadata := range routeMetadataList {
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,
 						ExtensionRef: &gatewayv1.LocalObjectReference{
@@ -719,7 +747,7 @@ func generateAIRatelimitRules(rlConf *model.AIRatelimit) []eg.RateLimitRule {
 			Response: &eg.RateLimitCostSpecifier{
 				From: eg.RateLimitCostFromMetadata,
 				Metadata: &eg.RateLimitCostMetadata{
-					Namespace:  constantscommon.MetadataNamespace,
+					Namespace: constantscommon.MetadataNamespace,
 					Key:       constantscommon.PromptTokenCountIDMetadataKey,
 				},
 			},
@@ -740,7 +768,7 @@ func generateAIRatelimitRules(rlConf *model.AIRatelimit) []eg.RateLimitRule {
 			Response: &eg.RateLimitCostSpecifier{
 				From: eg.RateLimitCostFromMetadata,
 				Metadata: &eg.RateLimitCostMetadata{
-					Namespace:  constantscommon.MetadataNamespace,
+					Namespace: constantscommon.MetadataNamespace,
 					Key:       constantscommon.CompletionTokenCountIDMetadataKey,
 				},
 			},
@@ -1232,4 +1260,33 @@ func createConfigMapForGQlSchema(name, schema string) *corev1.ConfigMap {
 			"Schema": schema,
 		},
 	}
+}
+
+// generateHTTPRouteAnnotations generates annotations for HTTP routes based on the provided route names.
+func generateHTTPRouteAnnotations(httpRouteNames []string) map[string]string {
+	annotations := make(map[string]string)
+	if len(httpRouteNames) > 0 {
+		currentAnnotationValue := ""
+		annotationIndex := 1
+		for _, routeName := range httpRouteNames {
+			separator := ""
+			if currentAnnotationValue != "" {
+				separator = ","
+			}
+			potentialValue := currentAnnotationValue + separator + routeName
+			// Check if adding this route name would exceed the limit
+			if len(potentialValue) > constants.K8sMaxAnnotationLength {
+				annotations[fmt.Sprintf("dp.wso2.com/httproutes_%d", annotationIndex)] = currentAnnotationValue
+				annotationIndex++
+				currentAnnotationValue = routeName
+			} else {
+				currentAnnotationValue = potentialValue
+			}
+		}
+		// Add the final annotation
+		if currentAnnotationValue != "" {
+			annotations[fmt.Sprintf("dp.wso2.com/httproutes_%d", annotationIndex)] = currentAnnotationValue
+		}
+	}
+	return annotations
 }
