@@ -11,7 +11,7 @@ spec:
   ttlSecondsAfterFinished: 60
   template:
     spec:
-      serviceAccountName: "{{ template "apk-helm.resource.prefix" . }}-apk-wso2-cleanup-serviceaccount"
+      serviceAccountName: "{{ template "apk-helm.resource.prefix" . }}-webhook-cleanup"
       containers:
       - name: cleanup
         image: "bitnami/kubectl:1.31.1"
@@ -38,7 +38,7 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: "{{ template "apk-helm.resource.prefix" . }}-apk-wso2-webhook-cleanup-role"
+  name: "{{ template "apk-helm.resource.prefix" . }}-webhook-cleanup"
   annotations:
     "helm.sh/hook": pre-install,pre-delete,pre-upgrade
 rules:
@@ -49,23 +49,23 @@ rules:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: "{{ template "apk-helm.resource.prefix" . }}-apk-wso2-cleanup-serviceaccount"
+  name: "{{ template "apk-helm.resource.prefix" . }}-webhook-cleanup"
   annotations:
     "helm.sh/hook": pre-install,pre-delete,pre-upgrade
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: "{{ template "apk-helm.resource.prefix" . }}-apk-wso2-webhook-cleanup-binding"
+  name: "{{ template "apk-helm.resource.prefix" . }}-webhook-cleanup"
   annotations:
     "helm.sh/hook": pre-install,pre-delete,pre-upgrade
 subjects:
 - kind: ServiceAccount
-  name: "{{ template "apk-helm.resource.prefix" . }}-apk-wso2-cleanup-serviceaccount"
+  name: "{{ template "apk-helm.resource.prefix" . }}-webhook-cleanup"
   namespace: {{.Release.Namespace}}
 roleRef:
   kind: ClusterRole
-  name: "{{ template "apk-helm.resource.prefix" . }}-apk-wso2-webhook-cleanup-role"
+  name: "{{ template "apk-helm.resource.prefix" . }}-webhook-cleanup"
   apiGroup: rbac.authorization.k8s.io
 ---
 {{- end -}}
