@@ -13,6 +13,7 @@ import (
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 	gqlCommon "github.com/wso2/apk/common-go-libs/graphql"
+	utilscommon "github.com/wso2/apk/common-go-libs/utils"
 	"github.com/wso2/apk/common-go-libs/pkg/logging"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
@@ -187,7 +188,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	if apiResourceBundle.APKConf.AIProvider != nil {
 		aiProviderRoutePolicy := &dpv2alpha1.RoutePolicy{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: util.HashLast50SHA1(apiResourceBundle.APKConf.AIProvider.Name + apiResourceBundle.APKConf.AIProvider.APIVersion),
+				Name: utilscommon.CreateAIProviderName(apiResourceBundle.APKConf.AIProvider.Name, apiResourceBundle.APKConf.AIProvider.APIVersion),
 			},
 			TypeMeta: metav1.TypeMeta{
 				Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,

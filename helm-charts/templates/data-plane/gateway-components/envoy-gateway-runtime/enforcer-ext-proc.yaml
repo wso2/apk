@@ -43,6 +43,6 @@ spec:
           - "envoy.filters.http.ext_proc"
           - "envoy-gateway"
           - "envoy.filters.http.jwt_authn"
-        # writableNamespaces:
-        #   - "envoy.filters.http.ext_proc"
+        writableNamespaces:
+          - "com.wso2.kgw.ext_proc"
 {{- end -}}
