@@ -65,9 +65,10 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 	}
 	var err error
 	objects := make([]client.Object, 0)
+	routeMetadataList := createRouteMetadataList(apiResourceBundle, constants.PRODUCTION_TYPE)
 	// Production
 	if len(apiResourceBundle.APKConf.EndpointConfigurations.Production) > 0 {
-		objectsP, err := createResourcesForEnvironment(apiResourceBundle, constants.PRODUCTION_TYPE)
+		objectsP, err := createResourcesForEnvironment(apiResourceBundle, constants.PRODUCTION_TYPE, routeMetadataList)
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +92,7 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 	}
 	// Sandbox
 	if len(apiResourceBundle.APKConf.EndpointConfigurations.Sandbox) > 0 {
-		objectsS, err := createResourcesForEnvironment(apiResourceBundle, constants.SANDBOX_TYPE)
+		objectsS, err := createResourcesForEnvironment(apiResourceBundle, constants.SANDBOX_TYPE, routeMetadataList)
 		if err != nil {
 			return nil, err
 		}
@@ -113,6 +114,17 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 			objects = append(objects, routeMetadata)
 		}
 	}
+
+	// Collect HTTPRoute names for the APIResourceBundle
+	httpRouteNames := extractHTTPRouteNames(objects)
+	httpRouteAnnotations := generateHTTPRouteAnnotations(httpRouteNames)
+
+	// Convert and append routeMetadataList
+	for _, rm := range routeMetadataList {
+		rm.SetAnnotations(httpRouteAnnotations)
+		objects = append(objects, client.Object(rm))
+	}
+
 	if apiResourceBundle.Namespace != "" {
 		for _, object := range objects {
 			object.SetNamespace(apiResourceBundle.Namespace)
@@ -132,13 +144,11 @@ func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object,
 
 }
 
-func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, environment string) ([]client.Object, error) {
-	objects := make([]client.Object, 0)
+// createRouteMetadataList creates RouteMetadata objects for the given APIResourceBundle and environment.
+func createRouteMetadataList(apiResourceBundle *dto.APIResourceBundle, environment string) []*dpv2alpha1.RouteMetadata {
 	definitionCMName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
 		apiResourceBundle.Organization)
 	routeMetadataList := make([]*dpv2alpha1.RouteMetadata, 0)
-	routePolicies := make([]*dpv2alpha1.RoutePolicy, 0)
-	// Create the RouteMetadata object
 	routeMetadata := &dpv2alpha1.RouteMetadata{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
@@ -153,8 +163,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				Name:         apiResourceBundle.APKConf.Name,
 				Version:      apiResourceBundle.APKConf.Version,
 				Organization: apiResourceBundle.Organization,
-				Environment:  environment,
-				EnvType: func() string {
+				Environment: func() string {
 					if apiResourceBundle.APKConf.Environment != nil {
 						return *apiResourceBundle.APKConf.Environment
 					}
@@ -176,6 +185,16 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		},
 	}
 	routeMetadataList = append(routeMetadataList, routeMetadata)
+	return routeMetadataList
+}
+
+// createResourcesForEnvironment creates the necessary Kubernetes resources for a given environment
+func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, environment string,
+	routeMetadataList []*dpv2alpha1.RouteMetadata) ([]client.Object, error) {
+	objects := make([]client.Object, 0)
+	definitionCMName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+		apiResourceBundle.Organization)
+	routePolicies := make([]*dpv2alpha1.RoutePolicy, 0)
 
 	if apiResourceBundle.Definition != "" {
 		cm := createConfigMapForDefinition(
@@ -184,8 +203,6 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		)
 		objects = append(objects, cm)
 	}
-
-	objects = append(objects, routeMetadata)
 
 	// RoutePolicy
 	routePolicy := &dpv2alpha1.RoutePolicy{
@@ -438,10 +455,19 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: routeName,
+					Annotations: map[string]string{
+						constants.K8sHTTPRouteEnvTypeAnnotation: environment,
+					},
 				},
 				Spec: gatewayv1.HTTPRouteSpec{
 					Hostnames: []gatewayv1.Hostname{
-						"*.gw.wso2.com",
+						gatewayv1.Hostname(func() string {
+							gatewayHostName := config.GetConfig().GatewayHostName
+							if environment == constants.SANDBOX_TYPE {
+								return fmt.Sprintf("sandbox.%s.%s", bundle.Organization, gatewayHostName)
+							}
+							return fmt.Sprintf("%s.%s", bundle.Organization, gatewayHostName)
+						}()),
 					},
 					CommonRouteSpec: gatewayv1.CommonRouteSpec{
 						ParentRefs: []gatewayv1.ParentReference{
@@ -1260,6 +1286,17 @@ func createConfigMapForGQlSchema(name, schema string) *corev1.ConfigMap {
 			"Schema": schema,
 		},
 	}
+}
+
+// extractHTTPRouteNames extracts HTTP route names from the provided objects.
+func extractHTTPRouteNames(objectList []client.Object) []string {
+	httpRouteNames := make([]string, 0)
+	for _, object := range objectList {
+		if httpRoute, ok := object.(*gatewayv1.HTTPRoute); ok {
+			httpRouteNames = append(httpRouteNames, httpRoute.Name)
+		}
+	}
+	return httpRouteNames
 }
 
 // generateHTTPRouteAnnotations generates annotations for HTTP routes based on the provided route names.

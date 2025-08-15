@@ -153,5 +153,7 @@ const (
 	K8sKindReferenceGrant         = "ReferenceGrant"
 	K8sAPIVersionReferenceGrant   = "gateway.networking.k8s.io/v1beta1"
 
+	K8sHTTPRouteEnvTypeAnnotation = "gateway.envoyproxy.io/kgw-envtype"
+
 	K8sMaxAnnotationLength = 10000
 )
