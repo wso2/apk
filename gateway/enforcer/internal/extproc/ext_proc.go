@@ -52,6 +52,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
 	structpb "google.golang.org/protobuf/types/known/structpb"
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 )
 
 // ExternalProcessingServer represents a server for handling external processing requests.
@@ -201,14 +202,18 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 							if routePolicy != nil {
 								s.log.Sugar().Debugf("Found RoutePolicy: %+v", routePolicy)
 								if requestConfigHolder.RoutePolicy == nil {
-									requestConfigHolder.RoutePolicy = routePolicy
-								} else {
-									for _, reqPolicy := range routePolicy.Spec.RequestMediation {
-										requestConfigHolder.RoutePolicy.Spec.RequestMediation = append(requestConfigHolder.RoutePolicy.Spec.RequestMediation, reqPolicy)
+									requestConfigHolder.RoutePolicy = &dpv2alpha1.RoutePolicy{
+										Spec: dpv2alpha1.RoutePolicySpec{
+											RequestMediation:  make([]*dpv2alpha1.Mediation, 0),
+											ResponseMediation: make([]*dpv2alpha1.Mediation, 0),
+										},
 									}
-									for _, resPolicy := range routePolicy.Spec.ResponseMediation {
-										requestConfigHolder.RoutePolicy.Spec.ResponseMediation = append(requestConfigHolder.RoutePolicy.Spec.ResponseMediation, resPolicy)
-									}
+								}
+								for _, reqPolicy := range routePolicy.Spec.RequestMediation {
+									requestConfigHolder.RoutePolicy.Spec.RequestMediation = append(requestConfigHolder.RoutePolicy.Spec.RequestMediation, reqPolicy)
+								}
+								for _, resPolicy := range routePolicy.Spec.ResponseMediation {
+									requestConfigHolder.RoutePolicy.Spec.ResponseMediation = append(requestConfigHolder.RoutePolicy.Spec.ResponseMediation, resPolicy)
 								}
 							} else {
 								s.log.Sugar().Errorf("RoutePolicy %s/%s not found", namespace, name)
@@ -263,7 +268,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
-						if mediation.MediationAndRequestBodyProcessing[policy.PolicyName] {
+						reqBodyProcessing := mediation.MediationAndRequestBodyProcessing[policy.PolicyName]
+						if reqBodyProcessing {
 							requestBodyMode = v31.ProcessingMode_BUFFERED
 						}
 						s.log.Sugar().Debugf("Processing Mode for Policy %s: RequestBodyMode: %s, ResponseHeaderMode: %s, ResponseBodyMode: %s",
@@ -278,12 +284,13 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				if requestConfigHolder.RoutePolicy.Spec.ResponseMediation != nil {
 					s.log.Sugar().Debugf("Response Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.ResponseMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.ResponseMediation {
-						if mediation.MediationAndResponseHeaderProcessing[policy.PolicyName] {
+						if respHeaderProcessing, ok := mediation.MediationAndResponseHeaderProcessing[policy.PolicyName]; ok && respHeaderProcessing {
 							responseHeaderMode = v31.ProcessingMode_SEND
 						}
-						if mediation.MediationAndResponseBodyProcessing[policy.PolicyName] {
+						if respBodyProcessing, ok := mediation.MediationAndResponseBodyProcessing[policy.PolicyName]; ok && respBodyProcessing {
 							responseBodyMode = v31.ProcessingMode_BUFFERED
 						}
+						
 						s.log.Sugar().Debugf("Processing Mode for Policy %s: ResponseHeaderMode: %s, ResponseBodyMode: %s",
 							policy.PolicyName,
 							responseHeaderMode.String(),
@@ -363,7 +370,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		case *envoy_service_proc_v3.ProcessingRequest_ResponseHeaders:
 			s.log.Sugar().Debug("Response Headers Flow")
 			s.log.Sugar().Debug(fmt.Sprintf("response header %+v, ", v.ResponseHeaders))
-			requestConfigHolder.ResponseHeaders = req.GetRequestHeaders()
+			requestConfigHolder.ResponseHeaders = req.GetResponseHeaders()
 			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseResponseHeaders
 
 			rhq := &envoy_service_proc_v3.HeadersResponse{
@@ -377,9 +384,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 			if requestConfigHolder.RoutePolicy != nil {
 				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
-				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+				if requestConfigHolder.RoutePolicy.Spec.ResponseMediation != nil {
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
-					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.ResponseMediation {
 						if mediation.MediationAndResponseHeaderProcessing[policy.PolicyName] {
 							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
@@ -415,9 +422,9 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 
 			if requestConfigHolder.RoutePolicy != nil {
 				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
-				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {
+				if requestConfigHolder.RoutePolicy.Spec.ResponseMediation != nil {
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
-					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
+					for _, policy := range requestConfigHolder.RoutePolicy.Spec.ResponseMediation {
 						if mediation.MediationAndResponseBodyProcessing[policy.PolicyName] {
 							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)

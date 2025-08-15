@@ -62,7 +62,10 @@ func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *R
 	// Implement the logic to process the requestConfig for Subscription Validation
 	// This is a placeholder implementation
 	result := NewResult()
-
+	if !s.Enabled {
+		s.logger.Sugar().Debugf("Subscription Validation policy is disabled. Skipping processing.")
+		return result
+	}
 	// get the consumer key.
 	clientID := "" 
 	for _, header := range requestConfig.RequestHeaders.Headers.Headers {
