@@ -43,7 +43,7 @@ func GetRouteMetadataList(apiID string, namespace string, k8sClient client.Clien
 	return routeMetadataList, nil
 }
 
-// GetCRsUsedByRouteMetadataNotInAPIArtifact retrieves CRs that are currently used by the RouteMetadata
+// GetCRsUsedByRouteMetadataNotInAPIArtifact retrieves CRs that are used by a given RouteMetadata but not present in the provided APIArtifact.
 func GetCRsUsedByRouteMetadataNotInAPIArtifact(routeMetadata v2alpha1.RouteMetadata,
 	apiArtifact *dto.APIArtifact, namespace string, k8sClient client.Client) (*unstructured.UnstructuredList, error) {
 	routeLabels := GetFilteredLabels(routeMetadata.GetLabels())
