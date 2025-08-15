@@ -2,7 +2,8 @@ wso2:
   apk:
     dp:
       configdeployer:
-        enabled: false
+        deployment:
+          imagePullPolicy: IfNotPresent
       adapter:
         deployment:
           imagePullPolicy: IfNotPresent
@@ -11,16 +12,21 @@ wso2:
           imagePullPolicy: IfNotPresent
       ratelimiter:
         enabled: true
+        requestTimeoutInMillis: 800
         deployment:
           imagePullPolicy: IfNotPresent
       gatewayRuntime:
         deployment:
           router:
             imagePullPolicy: IfNotPresent
+            configs:
+              enableIntelligentRouting: true
           enforcer:
             imagePullPolicy: IfNotPresent
+      gateway:
+        httpListener:
+          enabled: true
 idp:
-  enabled: false
   idpds:
     deployment:
       imagePullPolicy: IfNotPresent
@@ -31,9 +37,3 @@ idp:
 gatewaySystem:
   deployment:
     imagePullPolicy: IfNotPresent
-
-postgresql:
-  enabled: false
-
-integrationTest:
-  addHelmConfigsRequiredForTests: false

@@ -89,7 +89,7 @@ resources:
 Common prefix prepended to Kubernetes resources of this chart
 */}}
 {{- define "apk-helm.resource.prefix" -}}
-{{- printf "%s-wso2-apk" .Release.Name -}}
+{{- printf "%s" .Release.Name -}}
 {{- end -}}
 
 

@@ -161,7 +161,7 @@ spec:
         app: "interceptor_service"
     spec:
       containers:
-      - image: "tharindu1st/interceptor_service:latest"
+      - image: "renukafernando/interceptor_service:latest"
         imagePullPolicy: "Always"
         name: "interceptor-service-deployment"
         ports:

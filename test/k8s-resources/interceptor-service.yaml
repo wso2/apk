@@ -59,7 +59,7 @@ spec:
         app: "interceptor_service"
     spec:
       containers:
-      - image: "tharindu1st/interceptor_service:latest"
+      - image: "renukafernando/interceptor_service:latest"
         imagePullPolicy: "IfNotPresent"
         name: "interceptor-service-deployment"
         ports:
