@@ -41,6 +41,7 @@ type Holder struct {
 	AI                              AIConfig
 	RequestAttributes               *Attributes
 	JWTAuthnPayloaClaims            map[string]interface{}
+	EnvType                         string
 }
 
 // Attributes holds the attributes related to the request configuration.
