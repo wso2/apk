@@ -16,8 +16,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-// AITokenRateLimit represents the configuration for AI token rate limiting in the API Gateway.
-type AITokenRateLimit struct {
+// AIProvider represents the configuration for AI token rate limiting in the API Gateway.
+type AIProvider struct {
 	PolicyName          string
 	PolicyVersion       string
 	PolicyID            string
@@ -39,8 +39,8 @@ const (
 	AITokenRatelimitPolicyKeyTotalTokenPath = "TotalTokenPath"
 )
 
-// NewAITokenRateLimit creates a new AITokenRateLimit instance with default values.
-func NewAITokenRateLimit(mediation *dpv2alpha1.Mediation) *AITokenRateLimit {
+// NewAIProvider creates a new AITokenRateLimit instance with default values.
+func NewAIProvider(mediation *dpv2alpha1.Mediation) *AIProvider {
 	enabled := true
 	if val, ok := extractPolicyValue(mediation.Parameters, AITokenRatelimitPolicyKeyEnabled); ok {
 		if val == "false" {
@@ -59,8 +59,8 @@ func NewAITokenRateLimit(mediation *dpv2alpha1.Mediation) *AITokenRateLimit {
 	if val, ok := extractPolicyValue(mediation.Parameters, AITokenRatelimitPolicyKeyTotalTokenPath); ok {
 		totalTokenPath = val
 	}
-	return &AITokenRateLimit{
-		PolicyName:          MediationAITokenRatelimit,
+	return &AIProvider{
+		PolicyName:          MediationAIProvider,
 		PolicyVersion:       mediation.PolicyVersion,
 		PolicyID:            mediation.PolicyID,
 		Enabled:             enabled,
@@ -72,8 +72,11 @@ func NewAITokenRateLimit(mediation *dpv2alpha1.Mediation) *AITokenRateLimit {
 }
 
 // Process processes the request configuration for AI token rate limiting.
-func (a *AITokenRateLimit) Process(requestConfig *requestconfig.Holder) *Result {
+func (a *AIProvider) Process(requestConfig *requestconfig.Holder) *Result {
 	result := NewResult()
+	if requestConfig.ProcessingPhase != requestconfig.ProcessingPhaseResponseBody {
+		return result
+	}
 
 	if requestConfig == nil || requestConfig.ResponseHeaders == nil || requestConfig.ResponseHeaders.Headers == nil {
 		a.logger.Sugar().Debug("No response headers found in requestConfig, skipping analytics processing")
