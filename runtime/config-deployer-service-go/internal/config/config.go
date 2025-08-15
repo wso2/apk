@@ -27,14 +27,17 @@ import (
 
 // Server holds the configuration parameters for the application.
 type Server struct {
-	LogLevel            string `envconfig:"LOG_LEVEL" default:"DEBUG"`
-	Logger              logging.Logger
-	ExtensionServerHost string `envconfig:"EXTENSION_SERVER_HOST" default:"0.0.0.0"`
-	ExtensionServerPort string `envconfig:"EXTENSION_SERVER_PORT" default:"5005"`
-	APKSchemaLocation   string `envconfig:"APK_SCHEMA_LOCATION" default:"conf/apk-schema.json"`
-	ParentGatewayName   string `envconfig:"PARENT_GATEWAY_NAME" default:"wso2-kgw-default"`
-	ParentGatewayNamespace string `envconfig:"PARENT_GATEWAY_NAMESPACE" default:"default"`
+	LogLevel                 string `envconfig:"LOG_LEVEL" default:"DEBUG"`
+	Logger                   logging.Logger
+	ExtensionServerHost      string `envconfig:"EXTENSION_SERVER_HOST" default:"0.0.0.0"`
+	ExtensionServerPort      string `envconfig:"EXTENSION_SERVER_PORT" default:"5005"`
+	APKSchemaLocation        string `envconfig:"APK_SCHEMA_LOCATION" default:"conf/apk-schema.json"`
+	ParentGatewayName        string `envconfig:"PARENT_GATEWAY_NAME" default:"wso2-kgw-default"`
+	ParentGatewayNamespace   string `envconfig:"PARENT_GATEWAY_NAMESPACE" default:"default"`
 	ParentGatewaySectionName string `envconfig:"PARENT_GATEWAY_SECTION_NAME" default:"httpslistener"`
+	GatewayHostName          string `envconfig:"GATEWAY_HOST_NAME" default:"gw.wso2.com"`
+	DefaultNamespace         string `envconfig:"DEFAULT_NAMESPACE" default:"default"`
+	DefaultOrganization      string `envconfig:"DEFAULT_ORGANIZATION" default:"carbon.super"`
 }
 
 type metrics struct {
