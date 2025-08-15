@@ -163,6 +163,11 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
+        helm install cert-manager jetstack/cert-manager \
+          --namespace apk-integration-test \
+          --create-namespace \
+          --version v1.17.1 \
+          --set crds.enabled=true
         helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-config-deployer-service:${{ github.sha }} \
@@ -291,6 +296,11 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
+        helm install cert-manager jetstack/cert-manager \
+          --namespace apk-integration-test \
+          --create-namespace \
+          --version v1.17.1 \
+          --set crds.enabled=true
         helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.apk.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apk-config-deployer-service:${{ github.sha }} \

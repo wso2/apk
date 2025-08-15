@@ -83,7 +83,14 @@ To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/lates
 1. Execute `helm repo add bitnami https://charts.bitnami.com/bitnami` and `helm repo add jetstack https://charts.jetstack.io`.
 2. Clone the repo and cd into the `HELM-HOME` folder.
 3. Execute `helm dependency build` command to download the dependent charts.
-4. Now execute `helm install apk-test .` to install the APK components.
+4. Install cert-manager.
+    ```sh
+        helm install \
+          cert-manager jetstack/cert-manager \
+          --version v1.17.1 \
+          --set crds.enabled=true
+    ```
+5. Now execute `helm install apk-test .` to install the APK components.
 
     > **Optional**
     >
@@ -91,7 +98,7 @@ To tryout APK please refer to this [document](https://apk.docs.wso2.com/en/lates
     >
     > To deploy data plane components only use `--set wso2.apk.cp.enabled=false`
 
-5. Verify the deployment by executing ```kubectl get pods```
+6. Verify the deployment by executing ```kubectl get pods```
 
 ### To Access Deployment through local machine
 
