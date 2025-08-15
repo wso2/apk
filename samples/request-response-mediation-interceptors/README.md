@@ -128,7 +128,7 @@ You can go through following to build, deploy, and test the sample interceptor s
 
 6. Port forward the gateway runtime service:
     ```sh
-    kubectl port-forward svc/apk-test-wso2-apk-router-service  9095:9095
+    kubectl port-forward svc/apk-test-router  9095:9095
     ```
 
 7. Get an access token to invoke the API:

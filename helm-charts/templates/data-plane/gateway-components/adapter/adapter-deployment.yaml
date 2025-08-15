@@ -18,7 +18,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-adapter-deployment
+  name: {{ template "apk-helm.resource.prefix" . }}-adapter
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.wso2.apk.dp.adapter.deployment.replicas }}

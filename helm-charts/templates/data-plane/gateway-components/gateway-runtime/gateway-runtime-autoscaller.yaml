@@ -28,7 +28,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ template "apk-helm.resource.prefix" . }}-gateway-runtime-deployment
+    name: {{ template "apk-helm.resource.prefix" . }}-gateway-runtime
   minReplicas: {{ .Values.wso2.apk.dp.gateway.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.wso2.apk.dp.gateway.autoscaling.maxReplicas }}
   metrics:

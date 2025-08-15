@@ -39,13 +39,13 @@ helm install apk-test-setup ../../helm-charts -n apk-integration-test \
 # Wait gateway resources to be available.
 kubectl wait --timeout=5m -n gateway-system deployment/gateway-api-admission-server --for=condition=Available
 kubectl wait --timeout=5m -n gateway-system job/gateway-api-admission --for=condition=Complete
-kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
-kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
-kubectl describe deployment apk-test-setup-wso2-apk-adapter-deployment -n apk-integration-test
+kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-adapter --for=condition=Available
+kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-gateway-runtime --for=condition=Available
+kubectl describe deployment apk-test-setup-adapter -n apk-integration-test
 POD=$(kubectl get pod -l networkPolicyId=adapter-npi -n apk-integration-test -o jsonpath="{.items[0].metadata.name}")
 kubectl describe pod $POD -n apk-integration-test
 kubectl logs $POD -n apk-integration-test
-IP=$(kubectl get svc apk-test-setup-wso2-apk-gateway-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+IP=$(kubectl get svc apk-test-setup-gateway-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 sudo echo "$IP localhost" | sudo tee -a /etc/hosts
 sudo echo "$IP all-http-methods-for-wildcard.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP api-policy-with-jwt-generator.test.gw.wso2.com" | sudo tee -a /etc/hosts

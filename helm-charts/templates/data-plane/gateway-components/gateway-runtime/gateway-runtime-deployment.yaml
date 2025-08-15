@@ -21,7 +21,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-gateway-runtime-deployment
+  name: {{ template "apk-helm.resource.prefix" . }}-gateway-runtime
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.replicas }}

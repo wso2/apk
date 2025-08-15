@@ -18,7 +18,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-deployment
+  name: {{ template "apk-helm.resource.prefix" . }}-ratelimiter
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.wso2.apk.dp.ratelimiter.deployment.replicas }}
