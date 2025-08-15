@@ -180,7 +180,8 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 		// log req.Attributes
 		s.log.Sugar().Debug(fmt.Sprintf("Attributes: %+v", req.Attributes))
 		if requestConfigHolder.AttributesPopulated == false {
-			extRefs, requestAttributes := s.extractExtensionRefsAndRouteAttributes(req.Attributes)
+			extRefs, requestAttributes, envType := s.extractExtensionRefsAndRouteAttributes(req.Attributes)
+			requestConfigHolder.EnvType = envType
 			requestConfigHolder.RequestAttributes = requestAttributes
 			if len(extRefs) > 0 {
 				requestConfigHolder.AttributesPopulated = true
@@ -777,16 +778,16 @@ func (s *ExternalProcessingServer) extractJWTAuthnNamespaceData(data *corev3.Met
 	return claims
 }
 
-func (s *ExternalProcessingServer) extractExtensionRefsAndRouteAttributes(data map[string]*structpb.Struct) ([]string, *requestconfig.Attributes) {
+func (s *ExternalProcessingServer) extractExtensionRefsAndRouteAttributes(data map[string]*structpb.Struct) ([]string, *requestconfig.Attributes, string) {
 	var extensionRefs []string
-
+	envType := ""
 	extProcData, exists := data[constants.ExternalProcessingNamespace]
 	if !exists || extProcData == nil {
 		s.cfg.Logger.Sugar().Debug("External processing data not found in attributes, Returning empty extensionRefs")
 		s.cfg.Logger.Sugar().Debugf("Attributes: %+v", data)
-		return extensionRefs, &requestconfig.Attributes{}
+		return extensionRefs, &requestconfig.Attributes{}, envType
 	}
-
+	
 	// Check if `xds.route_metadata` is a stringified proto and extract the nested `filter_metadata`
 	if rawTextStruct, ok := extProcData.Fields["xds.route_metadata"]; ok {
 		rawText := rawTextStruct.GetStringValue()
@@ -810,6 +811,28 @@ func (s *ExternalProcessingServer) extractExtensionRefsAndRouteAttributes(data m
 						}
 					}
 				}
+
+				// ----- Extract Annotations from envoy-gateway -----
+				if envoyGatewayFilter, ok := filterMetadata["envoy-gateway"]; ok && envoyGatewayFilter != nil {
+					if resourcesField, ok := envoyGatewayFilter.Fields["resources"]; ok {
+						for _, resVal := range resourcesField.GetListValue().GetValues() {
+							if resStruct := resVal.GetStructValue(); resStruct != nil {
+								if annotationsField, ok := resStruct.Fields["annotations"]; ok {
+									if annotationsStruct := annotationsField.GetStructValue(); annotationsStruct != nil {
+										for k, v := range annotationsStruct.Fields {
+											if strVal := v.GetStringValue(); strVal != "" {
+												if k == "kgw-envtype" {
+													envType = strVal
+													break
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -825,7 +848,7 @@ func (s *ExternalProcessingServer) extractExtensionRefsAndRouteAttributes(data m
 	return extensionRefs, &requestconfig.Attributes{
 		RouteName: routeName,
 		RequestID: requestID,
-	}
+	}, envType
 }
 
 func getNestedStruct(base *structpb.Value, key string) *structpb.Struct {

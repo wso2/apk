@@ -79,7 +79,7 @@ func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *R
 	}
 	subAppDataStore := datastore.GetSubAppDataStore(s.cfg)
 	if clientID != "" {
-		appID := s.getAppIDUsingConsumerKey(clientID, requestConfig.RouteMetadata.Spec.API.EnvType, requestConfig.RouteMetadata.Spec.API.Environment, requestConfig.RouteMetadata.Spec.API.Organization, "OAuth2")
+		appID := s.getAppIDUsingConsumerKey(clientID, requestConfig.EnvType, requestConfig.RouteMetadata.Spec.API.Environment, requestConfig.RouteMetadata.Spec.API.Organization, "OAuth2")
 		if appID != "" {
 			
 			appMaps := subAppDataStore.GetApplicationMappings(requestConfig.RouteMetadata.Spec.API.Organization, appID)
