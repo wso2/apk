@@ -3,14 +3,16 @@ package mediation
 import (
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
+	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"google.golang.org/protobuf/types/known/structpb"
-	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 )
 
 const (
 	// MediationAITokenRatelimit holds the name of the AI Token Rate Limit mediation policy.
 	MediationAITokenRatelimit = constantscommon.MediationAITokenRatelimit
+	// MediationAIProvider holds the name of the AI Provider mediation policy.
+	MediationAIProvider = constantscommon.MediationAIProvider
 	// MediationSubscriptionRatelimit holds the name of the Subscription Rate Limit mediation policy.
 	MediationSubscriptionRatelimit = constantscommon.MediationSubscriptionRatelimit
 	// MediationSubscriptionValidation holds the name of the Subscription Validation mediation policy.
@@ -49,7 +51,8 @@ var MediationAndRequestBodyProcessing = map[string]bool{
 
 // MediationAndResponseHeaderProcessing defines the mediation and request header processing
 var MediationAndResponseHeaderProcessing = map[string]bool{
-	MediationAITokenRatelimit:       false,
+	MediationAITokenRatelimit:       true,
+	MediationAIProvider:             true,
 	MediationSubscriptionRatelimit:  false,
 	MediationSubscriptionValidation: false,
 	MediationAIModelBasedRoundRobin: false,
@@ -61,6 +64,7 @@ var MediationAndResponseHeaderProcessing = map[string]bool{
 // MediationAndResponseBodyProcessing defines the mediation and response body processing
 var MediationAndResponseBodyProcessing = map[string]bool{
 	MediationAITokenRatelimit:       true,
+	MediationAIProvider:             true,
 	MediationSubscriptionRatelimit:  false,
 	MediationSubscriptionValidation: false,
 	MediationAIModelBasedRoundRobin: false,
@@ -87,11 +91,11 @@ type Result struct {
 
 // NewResult creates a new Result instance with default values.
 func NewResult() *Result {
-    return &Result{
-        AddHeaders:               make(map[string]string),
-        ImmediateResponseHeaders: make(map[string]string),
-        Metadata:                 make(map[string]*structpb.Value),
-    }
+	return &Result{
+		AddHeaders:               make(map[string]string),
+		ImmediateResponseHeaders: make(map[string]string),
+		Metadata:                 make(map[string]*structpb.Value),
+	}
 }
 
 // Mediation interface defines the methods that all mediation policies must implement.
@@ -105,9 +109,9 @@ func CreateMediation(mediationFromCluster *dpv2alpha1.Mediation) Mediation {
 		return MediationMap[mediationFromCluster]
 	}
 	switch mediationFromCluster.PolicyName {
-	case MediationAITokenRatelimit:
+	case MediationAIProvider:
 		// Check if the mediation already exists
-		mediation := NewAITokenRateLimit(mediationFromCluster)
+		mediation := NewAIProvider(mediationFromCluster)
 		MediationMap[mediationFromCluster] = mediation
 		return mediation
 	case MediationSubscriptionRatelimit:
