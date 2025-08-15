@@ -65,14 +65,3 @@ func GenerateCRName(apiName, env, version, organization string) string {
 func IsSameRatelimit(r1 model.RateLimit, r2 model.RateLimit) bool {
 	return r1.RequestsPerUnit == r2.RequestsPerUnit && r1.Unit == r2.Unit
 }
-
-// HashLast50SHA1 returns the last 50 characters of the SHA-1 hash of the input string.
-// Since SHA-1 is only 40 hex chars, this will just return the whole hash.
-func HashLast50SHA1(input string) string {
-	hash := sha1.Sum([]byte(input))
-	hexStr := hex.EncodeToString(hash[:]) // SHA-1 produces 40 hex chars
-	if len(hexStr) <= 50 {
-		return hexStr
-	}
-	return hexStr[len(hexStr)-50:]
-}
