@@ -92,9 +92,16 @@ func HandleAPIUndeployment(cxt *gin.Context, apiId string, organization *dto.Org
 	k8sClient := config.GetManager().GetClient()
 	routeMetadataList, err := util.GetRouteMetadataList(apiId, namespace, k8sClient)
 	if err != nil {
+		cxt.JSON(http.StatusInternalServerError, gin.H{
+			"code":    909022,
+			"message": "Failed to list route metadata" + err.Error(),
+		})
+		return
+	}
+	if routeMetadataList == nil || len(routeMetadataList.Items) == 0 {
 		cxt.JSON(http.StatusNotFound, gin.H{
 			"code":    909001,
-			"message": apiId + " not found: " + err.Error(),
+			"message": apiId + " not found in namespace " + namespace,
 		})
 		return
 	}
