@@ -133,6 +133,7 @@ const (
 	WSO2KubernetesGatewayRoutePolicyKind         = "RoutePolicy"
 	WSO2KubernetesGatewayRoutePolicyGroup        = "dp.wso2.com"
 
+	K8sKindConfigMap              = "ConfigMap"
 	K8sKindHTTPRoute              = "HTTPRoute"
 	K8sKindGRPCRoute              = "GRPCRoute"
 	K8sKindService                = "Service"
@@ -152,5 +153,5 @@ const (
 	K8sKindReferenceGrant         = "ReferenceGrant"
 	K8sAPIVersionReferenceGrant   = "gateway.networking.k8s.io/v1beta1"
 
-	K8sKindConfigMap = "ConfigMap"
+	K8sMaxAnnotationLength = 10000
 )
