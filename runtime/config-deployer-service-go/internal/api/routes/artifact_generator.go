@@ -52,13 +52,16 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 		artifactGeneratorApi.POST("/apis/generate-k8s-resources", func(c *gin.Context) {
 			organization := c.Query("organization")
 			if organization == "" {
-				organization = "default"
+				organization = config.GetConfig().DefaultOrganization
 			}
 			cpInitiated := c.Query("cpInitiated")
 			if cpInitiated == "" {
 				cpInitiated = "false"
 			}
 			namespace := c.Query("namespace")
+			if namespace == "" {
+				namespace = config.GetConfig().DefaultNamespace
+			}
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
 			handlers.GetGeneratedK8sResources(c, organizationObj, cpInitiated, namespace)
@@ -79,13 +82,13 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			//organizationObj := authenticatedUserContext.Organization
 			organization := c.Query("organization")
 			if organization == "" {
-				organization = "default"
+				organization = config.GetConfig().DefaultOrganization
 			}
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
 			namespace := c.Query("namespace")
 			if namespace == "" {
-				namespace = "default"
+				namespace = config.GetConfig().DefaultNamespace
 			}
 			handlers.HandleAPIDeployment(c, organizationObj, "false", namespace)
 		})
@@ -102,13 +105,13 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			//organizationObj := authenticatedUserContext.Organization
 			organization := c.Query("organization")
 			if organization == "" {
-				organization = "default"
+				organization = config.GetConfig().DefaultOrganization
 			}
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
 			namespace := c.Query("namespace")
 			if namespace == "" {
-				namespace = "default"
+				namespace = config.GetConfig().DefaultNamespace
 			}
 			apiId := c.Query("apiId")
 			handlers.HandleAPIUndeployment(c, apiId, organizationObj, namespace)
