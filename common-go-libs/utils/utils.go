@@ -19,6 +19,8 @@
 package utils
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"os"
 
 	"github.com/wso2/apk/common-go-libs/constants"
@@ -37,4 +39,21 @@ func GetEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// HashLast50SHA1 returns the last 50 characters of the SHA-1 hash of the input string.
+// Since SHA-1 is only 40 hex chars, this will just return the whole hash.
+func HashLast50SHA1(input string) string {
+	hash := sha1.Sum([]byte(input))
+	hexStr := hex.EncodeToString(hash[:]) // SHA-1 produces 40 hex chars
+	if len(hexStr) <= 50 {
+		return hexStr
+	}
+	return hexStr[len(hexStr)-50:]
+}
+
+func CreateAIProviderName(providerName string, ProviderAPIVersion string) string {
+	// Create a unique name for the AI provider by hashing the provider name
+	// This ensures that the name is unique and does not exceed length limits
+	return "ai-provider-" + HashLast50SHA1(providerName + ProviderAPIVersion) 
 }
