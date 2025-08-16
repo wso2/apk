@@ -14,13 +14,13 @@ import (
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 	gqlCommon "github.com/wso2/apk/common-go-libs/graphql"
-	utilscommon "github.com/wso2/apk/common-go-libs/utils"
 	"github.com/wso2/apk/common-go-libs/pkg/logging"
+	utilscommon "github.com/wso2/apk/common-go-libs/utils"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"github.com/wso2/apk/config-deployer-service-go/internal/model"
-	util "github.com/wso2/apk/config-deployer-service-go/internal/util"
+	"github.com/wso2/apk/config-deployer-service-go/internal/util"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,6 +45,38 @@ var logger logging.Logger
 
 func init() {
 	logger = config.GetConfig().Logger
+}
+
+// extractBackendBasePath extracts the base path from the backend endpoint of an operation based on the environment.
+func extractBackendBasePath(operation model.APKOperations, environment string) (string, error) {
+	var backendBasePath string
+	if environment == constants.SANDBOX_TYPE && operation.EndpointConfigurations.Sandbox != nil &&
+		len(operation.EndpointConfigurations.Sandbox) > 0 {
+		sandboxEndpoint := operation.EndpointConfigurations.Sandbox[0].Endpoint
+		fmt.Printf("Sandbox endpoint: %v\n", sandboxEndpoint)
+		typeofEndpoint, _ := endpointType(sandboxEndpoint)
+		fmt.Printf("endpoint type: %v\n", typeofEndpoint)
+		if typeofEndpoint == "string" {
+			if parsed, err := url.Parse(sandboxEndpoint.(string)); err == nil {
+				backendBasePath = parsed.Path
+			}
+		}
+
+	} else if environment == constants.PRODUCTION_TYPE && operation.EndpointConfigurations.Production != nil &&
+		len(operation.EndpointConfigurations.Production) > 0 {
+		productionEndpoint := operation.EndpointConfigurations.Production[0].Endpoint
+		fmt.Printf("Prod endpoint: %v\n", productionEndpoint)
+		typeofEndpoint, _ := endpointType(productionEndpoint)
+		fmt.Printf("endpoint type: %v\n", typeofEndpoint)
+		if typeofEndpoint == "string" {
+			if parsed, err := url.Parse(productionEndpoint.(string)); err == nil {
+				backendBasePath = parsed.Path
+			}
+		}
+	} else {
+		return "", fmt.Errorf("no valid endpoint configurations found for environment: %s", environment)
+	}
+	return backendBasePath, nil
 }
 
 func safeHTTPMethod(verb *string) *gatewayv1.HTTPMethod {
@@ -262,7 +294,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 					Key: constantscommon.GraphQLPolicyKeySchema,
 					ValueRef: &gwapiv1a2.LocalObjectReference{
 						Name: gwapiv1a2.ObjectName(gqlSchemaConfigMapName),
-						Kind: gwapiv1a2.Kind(constants.K8sKindConfigMap),
+						Kind: constants.K8sKindConfigMap,
 					},
 				},
 			},
@@ -308,13 +340,13 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	}
 	aiRatelimit := pickFirstAIRatelimit(endpoints)
 	if aiRatelimit != nil {
-		targetRefs := []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{}
+		var targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName
 		for _, httpRoutes := range routes {
 			for _, httpRoute := range httpRoutes {
 				targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 					LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 						Name:  gwapiv1a2.ObjectName(httpRoute.Name),
-						Kind:  gwapiv1a2.Kind(constants.K8sKindHTTPRoute),
+						Kind:  constants.K8sKindHTTPRoute,
 						Group: constants.K8sGroupNetworking,
 					},
 				})
@@ -329,13 +361,13 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 
 	// Ratelimit
 	if apiResourceBundle.APKConf.RateLimit != nil {
-		targetRefs := []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{}
+		var targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName
 		for _, httpRoutes := range routes {
 			for _, httpRoute := range httpRoutes {
 				targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 					LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 						Name:  gwapiv1a2.ObjectName(httpRoute.Name),
-						Kind:  gwapiv1a2.Kind(constants.K8sKindHTTPRoute),
+						Kind:  constants.K8sKindHTTPRoute,
 						Group: constants.K8sGroupNetworking,
 					},
 				})
@@ -367,13 +399,13 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			if len(indices) == 0 {
 				continue
 			}
-			targetRefs := []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{}
+			var targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName
 			for _, index := range indices {
 				for _, httpRoute := range routes[index] {
 					targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 						LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 							Name:  gwapiv1a2.ObjectName(httpRoute.Name),
-							Kind:  gwapiv1a2.Kind(constants.K8sKindHTTPRoute),
+							Kind:  constants.K8sKindHTTPRoute,
 							Group: constants.K8sGroupNetworking,
 						},
 					})
@@ -403,12 +435,12 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		if !isSecured && cors == nil {
 			continue
 		}
-		targetRefs := []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{}
+		var targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName
 		for _, httpRoute := range routes[i] {
 			targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 				LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 					Name:  gwapiv1a2.ObjectName(httpRoute.Name),
-					Kind:  gwapiv1a2.Kind(constants.K8sKindHTTPRoute),
+					Kind:  constants.K8sKindHTTPRoute,
 					Group: constants.K8sGroupNetworking,
 				},
 			})
@@ -434,6 +466,7 @@ func chunkOperations(ops []model.APKOperations, size int) [][]model.APKOperation
 	return chunks
 }
 
+// GenerateHTTPRoutes generates HTTPRoute objects for the given APIResourceBundle.
 func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string, routePolicies []*dpv2alpha1.RoutePolicy,
 	routeMetadataList []*dpv2alpha1.RouteMetadata) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
 	objects := make([]client.Object, 0)
@@ -485,7 +518,11 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 			}
 
 			for _, op := range batch {
-				backendBasePath := ""
+				backendBasePath, err := extractBackendBasePath(op, environment)
+				if err != nil {
+					logger.Sugar().Errorf("Error extracting backend base path for operation %s: %v", *op.Target, err)
+					continue
+				}
 				if op.Verb == nil {
 					getMethod := string(gatewayv1.HTTPMethodGet)
 					op.Verb = &getMethod
@@ -605,7 +642,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						URLRewrite: &gatewayv1.HTTPURLRewriteFilter{
 							Path: &gatewayv1.HTTPPathModifier{
 								ReplaceFullPath: &serviceContractPath,
-								Type:            gatewayv1.HTTPPathModifierType(gatewayv1.FullPathHTTPPathModifier),
+								Type:            gatewayv1.FullPathHTTPPathModifier,
 							},
 						},
 					})
@@ -624,10 +661,10 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 			if scheme == "https" {
 				backendTLSPolicy := generateBackendTLSPolicyWithWellKnownCerts(backend.Name, backend.Spec.Endpoints[0].FQDN.Hostname,
 					[]gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
-						gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
+						{
 							LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 								Name:  gwapiv1a2.ObjectName(backend.Name),
-								Kind:  gwapiv1a2.Kind(constants.K8sKindBackend),
+								Kind:  constants.K8sKindBackend,
 								Group: constants.K8sGroupEnvoyGateway,
 							},
 						},
@@ -745,7 +782,7 @@ func generateBackendTrafficPolicyForRatelimit(name string, targetRefs []gwapiv1a
 
 // generateRatelimitRules generates the rate limit rules based on the RatelimitConfiguration.
 func generateRatelimitRules(rlConf *model.RateLimit) []eg.RateLimitRule {
-	ratelimitRules := []eg.RateLimitRule{}
+	var ratelimitRules []eg.RateLimitRule
 	ratelimitRules = append(ratelimitRules, eg.RateLimitRule{
 		Limit: eg.RateLimitValue{
 			Unit:     eg.RateLimitUnit(rlConf.Unit),
@@ -757,7 +794,7 @@ func generateRatelimitRules(rlConf *model.RateLimit) []eg.RateLimitRule {
 
 // generateRatelimitRules generates the rate limit rules based on the RatelimitConfiguration.
 func generateAIRatelimitRules(rlConf *model.AIRatelimit) []eg.RateLimitRule {
-	ratelimitRules := []eg.RateLimitRule{}
+	var ratelimitRules []eg.RateLimitRule
 
 	ratelimitRules = append(ratelimitRules, eg.RateLimitRule{
 		Limit: eg.RateLimitValue{
