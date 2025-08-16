@@ -33,13 +33,16 @@ data:
     [commoncontroller.controlplane]
        enabled = {{ .Values.wso2.kgw.cp.enabledSubscription | default false }}
        host = "{{ .Values.wso2.kgw.cp.host | default "apim-kgw-agent-service.kgw.svc.cluster.local" }}"
-       eventPort = 18000
+       enableAPIPropagation = {{ .Values.wso2.kgw.cp.enableApiPropagation | default false }}
+       eventPort = {{ .Values.wso2.kgw.cp.port | default 18000 }}
+       restPort = {{ .Values.wso2.kgw.cp.restPort | default 18001 }}
        skipSSLVerification = {{ .Values.wso2.kgw.cp.skipSSLVerification | default false }}
     {{- if and .Values.wso2.kgw.cp .Values.wso2.kgw.cp.persistence }}
     [commoncontroller.controlplane.persistence] 
       type = "{{ .Values.wso2.kgw.cp.persistence.type | default "K8s" }}"
     {{- end }}
     {{- end }}
+
 
     {{- if .Values.wso2.kgw.dp.commonController.deployment.database }}
     [commoncontroller.database]
