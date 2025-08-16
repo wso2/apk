@@ -52,13 +52,15 @@ type commoncontroller struct {
 	Database          database
 }
 type controlplane struct {
-	Enabled             bool
-	Host                string
-	EventPort           int
-	RestPort            int
-	RetryInterval       time.Duration
-	Persistence         persistence
-	SkipSSLVerification bool
+	Enabled              bool
+	Host                 string
+	EventPort            int
+	RestPort             int
+	RetryInterval        time.Duration
+	Persistence          persistence
+	SkipSSLVerification  bool
+	EnableAPIPropagation bool
+	APIsRestPath         string
 }
 type persistence struct {
 	Type string
