@@ -26,6 +26,7 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 
+	eg "github.com/envoyproxy/gateway/api/v1alpha1"
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	cache "github.com/wso2/apk/common-controller/internal/cache"
@@ -38,6 +39,7 @@ import (
 	"github.com/wso2/apk/common-controller/pkg/metrics"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
+
 	// dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
 	// dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
 	// dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
@@ -72,6 +74,7 @@ func init() {
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
 	// utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
 	utilruntime.Must(dpv2alpha1.AddToScheme(scheme))
+	utilruntime.Must(eg.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
