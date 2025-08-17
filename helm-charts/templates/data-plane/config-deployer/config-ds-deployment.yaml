@@ -40,7 +40,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
-        - name: config-ds
+        - name: choreo-apk-config-ds
           image: {{ .Values.wso2.apk.dp.configdeployer.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.configdeployer.deployment.imagePullPolicy }}
           ports:

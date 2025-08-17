@@ -40,7 +40,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
-        - name: commoncontroller
+        - name: choreo-apk-common-controller
           image: {{ .Values.wso2.apk.dp.commonController.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.commonController.deployment.imagePullPolicy }}
           ports:

@@ -40,7 +40,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
-        - name: adapter
+        - name: choreo-apk-adapter
           image: {{ .Values.wso2.apk.dp.adapter.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.adapter.deployment.imagePullPolicy }}
           ports:

@@ -43,7 +43,7 @@ spec:
       {{- end }}
       automountServiceAccountToken: false
       containers:
-        - name: enforcer
+        - name: choreo-apk-enforcer
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.imagePullPolicy }}
           ports:
@@ -306,7 +306,7 @@ spec:
               drop: ["ALL"]
             readOnlyRootFilesystem: true
             runAsNonRoot: true
-        - name: router
+        - name: choreo-apk-router
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.imagePullPolicy }}
           ports:

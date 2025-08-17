@@ -47,7 +47,7 @@ spec:
             - name: statsd-metrics
               containerPort: 9102
         {{ end }}
-        - name: ratelimiter
+        - name: choreo-apk-ratelimiter
           image: {{ .Values.wso2.apk.dp.ratelimiter.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.ratelimiter.deployment.imagePullPolicy }}
           ports:
