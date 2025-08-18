@@ -21,7 +21,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/crbuilder"
@@ -60,7 +59,6 @@ func (apiClient *APIClient) FromAPIModelToAPKConf(api *dto.API) (*model.APKConf,
 	}
 
 	apkConf := &model.APKConf{
-		ID:                     uuid.New().String(),
 		Name:                   apkConfUtil.GetAPIName(api.Name, api.Type),
 		BasePath:               basePath,
 		Version:                api.Version,
@@ -102,23 +100,23 @@ func (apiClient *APIClient) FromAPIModelToAPKConf(api *dto.API) (*model.APKConf,
 }
 
 // PrepareArtifact creates the API artifact based on the provided configuration.
-func (apiClient *APIClient) PrepareArtifact(apkConfiguration dto.FileData, definitionFile dto.FileData,
-	organization *dto.Organization, cpInitiated bool, namespace string) (*dto.APIArtifact, error) {
+func (apiClient *APIClient) PrepareArtifact(apkConfiguration dto.FileData, definitionFile dto.FileData) (*model.APKConf,
+	string, error) {
 
 	var apkConf *model.APKConf = nil
 	apkContent := string(apkConfiguration.FileContent)
 	convertedJson, err := util.YamlToJSON(apkContent)
 	if err != nil {
-		return nil, fmt.Errorf("failed to convert YAML to JSON: %w", err)
+		return nil, "", fmt.Errorf("failed to convert YAML to JSON: %w", err)
 	}
 	if convertedJson != "" {
 		apkConf, err = services.ValidateAndRetrieveAPKConfiguration(convertedJson)
 		if err != nil {
-			return nil, fmt.Errorf("failed to validate APK configuration: %w", err)
+			return nil, "", fmt.Errorf("failed to validate APK configuration: %w", err)
 		}
 	}
 	if apkConf == nil {
-		return nil, fmt.Errorf("apkConfiguration is not provided")
+		return nil, "", fmt.Errorf("apkConfiguration is not provided")
 	}
 	var apiDefinition string
 	apiType := apkConf.Type
@@ -127,12 +125,12 @@ func (apiClient *APIClient) PrepareArtifact(apkConfiguration dto.FileData, defin
 		if strings.HasSuffix(definitionFile.FileName, ".yaml") {
 			apiDefinition, err = util.YamlToJSON(definitionFileContent)
 			if err != nil {
-				return nil, fmt.Errorf("invalid API definiton provided. Failed to convert YAML definition to JSON: %w", err)
+				return nil, "", fmt.Errorf("invalid API definiton provided. Failed to convert YAML definition to JSON: %w", err)
 			}
 		} else if strings.HasSuffix(definitionFile.FileName, ".json") {
 			apiDefinition = definitionFileContent
 		} else {
-			return nil, fmt.Errorf("invalid REST API definition file type provided: %s", definitionFile.FileName)
+			return nil, "", fmt.Errorf("invalid REST API definition file type provided: %s", definitionFile.FileName)
 		}
 	} else if apiType == constants.API_TYPE_GRAPHQL {
 		apiDefinition = string(definitionFile.FileContent)
@@ -142,20 +140,21 @@ func (apiClient *APIClient) PrepareArtifact(apkConfiguration dto.FileData, defin
 		} else if strings.HasSuffix(definitionFile.FileName, ".proto") {
 			apiDefinition = string(definitionFile.FileContent)
 		} else {
-			return nil, fmt.Errorf("invalid gRPC API definition file type provided: %s", definitionFile.FileName)
+			return nil, "", fmt.Errorf("invalid gRPC API definition file type provided: %s", definitionFile.FileName)
 		}
 	}
-
-	return GenerateK8sArtifacts(apkConf, apiDefinition, organization, cpInitiated, namespace)
+	return apkConf, apiDefinition, nil
 }
 
 // GenerateK8sArtifacts generates Kubernetes artifacts based on the APK configuration and API definition.
-func GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organization *dto.Organization,
+func (apiClient *APIClient) GenerateK8sArtifacts(apkConf *model.APKConf, definition string, organization *dto.Organization,
 	cpInitiated bool, namespace string) (*dto.APIArtifact, error) {
 	apkConfUtil := util.APKConfUtil{}
 	uniqueId := apkConfUtil.GetUniqueIdForAPI(apkConf.Name, apkConf.Version, organization)
 	if apkConf.ID != "" {
 		uniqueId = apkConf.ID
+	} else {
+		apkConf.ID = uniqueId
 	}
 	apiResourceBundle := apkConfUtil.CreateAPIResourceBundle(apkConf, organization, cpInitiated, namespace, definition)
 	k8sArtifacts, err := crbuilder.CreateResources(&apiResourceBundle)

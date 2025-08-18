@@ -21,6 +21,7 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/api/handlers"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
+	"github.com/wso2/apk/config-deployer-service-go/internal/util"
 	"os"
 
 	"net/http"
@@ -58,10 +59,7 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			if cpInitiated == "" {
 				cpInitiated = "false"
 			}
-			namespace := c.Query("namespace")
-			if namespace == "" {
-				namespace = config.GetConfig().DefaultNamespace
-			}
+			namespace := util.GetNamespace(c)
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
 			handlers.GetGeneratedK8sResources(c, organizationObj, cpInitiated, namespace)
@@ -86,10 +84,7 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			}
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
-			namespace := c.Query("namespace")
-			if namespace == "" {
-				namespace = config.GetConfig().DefaultNamespace
-			}
+			namespace := util.GetNamespace(c)
 			handlers.HandleAPIDeployment(c, organizationObj, "false", namespace)
 		})
 
@@ -109,10 +104,7 @@ func StartArtifactGeneratorServer(cfg *config.Server) {
 			}
 			organizationObj := dto.NewOrganization("", organization, "default",
 				"default", true)
-			namespace := c.Query("namespace")
-			if namespace == "" {
-				namespace = config.GetConfig().DefaultNamespace
-			}
+			namespace := util.GetNamespace(c)
 			apiId := c.Query("apiId")
 			handlers.HandleAPIUndeployment(c, apiId, organizationObj, namespace)
 		})
