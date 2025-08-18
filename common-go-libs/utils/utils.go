@@ -52,8 +52,9 @@ func HashLast50SHA1(input string) string {
 	return hexStr[len(hexStr)-50:]
 }
 
+// CreateAIProviderName creates a unique name for the AI provider based on the provider name and API version.
 func CreateAIProviderName(providerName string, ProviderAPIVersion string) string {
 	// Create a unique name for the AI provider by hashing the provider name
 	// This ensures that the name is unique and does not exceed length limits
-	return "ai-provider-" + HashLast50SHA1(providerName + ProviderAPIVersion) 
+	return "ai-provider-" + HashLast50SHA1(providerName+ProviderAPIVersion)
 }

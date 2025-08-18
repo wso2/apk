@@ -142,10 +142,10 @@ func (routeMetadataReconciler *RouteMetadataReconciler) Reconcile(ctx context.Co
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if routeMetadata.Spec.API.DefinitionFileRef == "" {
+	if routeMetadata.Spec.API.DefinitionFileRef == nil {
 		namespacedName := types.NamespacedName{
 			Namespace: req.Namespace,
-			Name:      routeMetadata.Spec.API.DefinitionFileRef,
+			Name:      string(routeMetadata.Spec.API.DefinitionFileRef.Name),
 		}
 		var cm corev1.ConfigMap
 		if err := routeMetadataReconciler.client.Get(ctx, namespacedName, &cm); err != nil {
@@ -284,10 +284,10 @@ func (routeMetadataReconciler *RouteMetadataReconciler) addRouteMetadataIndexes(
 		func(rawObj k8client.Object) []string {
 			routeMetadata := rawObj.(*dpV2alpha1.RouteMetadata)
 			namespacedConfigMaps := make([]string, 0)
-			if routeMetadata.Spec.API.DefinitionFileRef != "" {
+			if routeMetadata.Spec.API.DefinitionFileRef != nil {
 				namespacedConfigMaps = append(namespacedConfigMaps, types.NamespacedName{
 					Namespace: routeMetadata.Namespace,
-					Name:      routeMetadata.Spec.API.DefinitionFileRef,
+					Name:      string(routeMetadata.Spec.API.DefinitionFileRef.Name),
 				}.String())
 			}
 
@@ -306,10 +306,10 @@ func (routeMetadataReconciler *RouteMetadataReconciler) convertAPIStateToAPICp(c
 	spec := apiState.APIDefinition.Spec.API
 	configMap := &corev1.ConfigMap{}
 	apiDef := ""
-	if spec.DefinitionFileRef != "" {
-		err := routeMetadataReconciler.client.Get(ctx, types.NamespacedName{Namespace: apiState.APIDefinition.Namespace, Name: spec.DefinitionFileRef}, configMap)
+	if spec.DefinitionFileRef != nil {
+		err := routeMetadataReconciler.client.Get(ctx, types.NamespacedName{Namespace: apiState.APIDefinition.Namespace, Name: string(apiState.APIDefinition.Spec.API.DefinitionFileRef.Name)}, configMap)
 		if err != nil {
-			loggers.LoggerAPKOperator.Errorf("Error while loading config map for the api definition: %+v, Error: %v", types.NamespacedName{Namespace: apiState.APIDefinition.Namespace, Name: spec.DefinitionFileRef}, err)
+			loggers.LoggerAPKOperator.Errorf("Error while loading config map for the api definition: %+v, Error: %v", types.NamespacedName{Namespace: apiState.APIDefinition.Namespace, Name: string(apiState.APIDefinition.Spec.API.DefinitionFileRef.Name)}, err)
 		} else {
 			for _, val := range configMap.BinaryData {
 				buf := bytes.NewReader(val)
@@ -336,7 +336,7 @@ func (routeMetadataReconciler *RouteMetadataReconciler) convertAPIStateToAPICp(c
 	if !revisionIDExists {
 		revisionID = "0"
 	}
-
+	loggers.LoggerAPI.Info("dwwdwd", apiDef)
 	api := controlplane.API{
 		APIName:      spec.Name,
 		APIVersion:   spec.Version,

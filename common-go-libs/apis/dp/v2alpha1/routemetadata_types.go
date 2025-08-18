@@ -19,6 +19,7 @@ package v2alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
@@ -58,7 +59,7 @@ type API struct {
 	// definition of the API in a ConfigMap.
 	//
 	// +optional
-	DefinitionFileRef string `json:"definitionFileRef"`
+	DefinitionFileRef *gwapiv1.LocalObjectReference `json:"definitionFileRef"`
 
 	// DefinitionPath contains the path to expose the API definition.
 	//
