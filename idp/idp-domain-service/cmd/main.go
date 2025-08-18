@@ -35,41 +35,41 @@ func init() {
 }
 
 type TokenRequest struct {
-	GrantType      string `json:"grant_type"`
-	Code           string `json:"code,omitempty"`
-	RedirectURI    string `json:"redirect_uri,omitempty"`
-	ClientID       string `json:"client_id,omitempty"`
-	ClientSecret   string `json:"client_secret,omitempty"`
-	RefreshToken   string `json:"refresh_token,omitempty"`
-	Scope          string `json:"scope,omitempty"`
-	Username       string `json:"username,omitempty"`
-	Password       string `json:"password,omitempty"`
-	ValidityPeriod int    `json:"validity_period,omitempty"` // You may need to parse this manually if passed as string
+	GrantType      string  `json:"grant_type"`
+	Code           string  `json:"code,omitempty"`
+	RedirectURI    string  `json:"redirect_uri,omitempty"`
+	ClientID       *string `json:"client_id,omitempty"`
+	ClientSecret   string  `json:"client_secret,omitempty"`
+	RefreshToken   string  `json:"refresh_token,omitempty"`
+	Scope          string  `json:"scope,omitempty"`
+	Username       string  `json:"username,omitempty"`
+	Password       string  `json:"password,omitempty"`
+	ValidityPeriod int     `json:"validity_period,omitempty"` // You may need to parse this manually if passed as string
+	AppUUID        *string `json:"app_uuid,omitempty"`
 }
 
 func main() {
 	const keyFile = "private_key.pem"
-    if _, err := os.Stat(keyFile); os.IsNotExist(err) {
-        // Key file does not exist, generate new key
-        privateKey, err = rsa.GenerateKey(rand.Reader, 2048)
-        if err != nil {
-            panic(err)
-        }
-        // Save it to file
-        err = SavePrivateKeyToFile(privateKey, keyFile)
-        if err != nil {
-            panic(err)
-        }
-        fmt.Println("Generated and saved new private key.")
-    } else {
-        // Load existing key from file
-        privateKey, err = LoadPrivateKeyFromFile(keyFile)
-        if err != nil {
-            panic(err)
-        }
-        fmt.Println("Loaded private key from file.")
-    }
-
+	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+		// Key file does not exist, generate new key
+		privateKey, err = rsa.GenerateKey(rand.Reader, 2048)
+		if err != nil {
+			panic(err)
+		}
+		// Save it to file
+		err = SavePrivateKeyToFile(privateKey, keyFile)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Generated and saved new private key.")
+	} else {
+		// Load existing key from file
+		privateKey, err = LoadPrivateKeyFromFile(keyFile)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Loaded private key from file.")
+	}
 
 	// if err != nil {
 	// 	log.Fatalf("Failed to generate key: %v", err)
@@ -109,7 +109,14 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	req.GrantType = r.FormValue("grant_type")
 	req.Code = r.FormValue("code")
 	req.RedirectURI = r.FormValue("redirect_uri")
-	req.ClientID = r.FormValue("client_id")
+	clientID := r.FormValue("client_id")
+	if clientID != "" {
+		req.ClientID = &clientID
+	}
+	appUUID := r.FormValue("app_uuid")
+	if appUUID != "" {
+		req.AppUUID = &appUUID
+	}
 	req.ClientSecret = r.FormValue("client_secret")
 	req.RefreshToken = r.FormValue("refresh_token")
 	req.Scope = r.FormValue("scope")
@@ -138,13 +145,26 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleClientCredentialsGrant(w http.ResponseWriter, req TokenRequest) {
+	aud := "aud"
+	if req.ClientID != nil {
+		aud = *req.ClientID
+	}
 	claims := jwt.MapClaims{
-		"sub": "service-account",
-		"aud": req.ClientID,
+		"sub":   "service-account",
+		"aud":   aud,
 		"scope": req.Scope,
-		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Hour).Unix(),
-		"iss": "https://your-idp-host",
+		"iat":   time.Now().Unix(),
+		"exp":   time.Now().Add(time.Hour).Unix(),
+		"iss":   "https://your-idp-host",
+	}
+	if req.ClientID != nil {
+		claims["client_id"] = *req.ClientID
+	}
+	if req.AppUUID != nil {
+		claims["application"] = map[string]interface{}{
+			"id":   1,
+			"uuid": *req.AppUUID,
+		}
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
@@ -171,12 +191,12 @@ func handlePasswordGrant(w http.ResponseWriter, req TokenRequest) {
 		return
 	}
 	claims := jwt.MapClaims{
-		"sub": req.Username,
-		"aud": req.ClientID,
+		"sub":   req.Username,
+		"aud":   req.ClientID,
 		"scope": req.Scope,
-		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Hour).Unix(),
-		"iss": "https://your-idp-host",
+		"iat":   time.Now().Unix(),
+		"exp":   time.Now().Add(time.Hour).Unix(),
+		"iss":   "https://your-idp-host",
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = keyID
@@ -201,12 +221,12 @@ func handleAuthorizationCodeGrant(w http.ResponseWriter, req TokenRequest) {
 	}
 	// Here you would typically validate the authorization code and redirect URI
 	claims := jwt.MapClaims{
-		"sub": "user-id-from-code",
-		"aud": req.ClientID,
+		"sub":   "user-id-from-code",
+		"aud":   req.ClientID,
 		"scope": req.Scope,
-		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Hour).Unix(),
-		"iss": "https://your-idp-host",
+		"iat":   time.Now().Unix(),
+		"exp":   time.Now().Add(time.Hour).Unix(),
+		"iss":   "https://your-idp-host",
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = keyID
@@ -216,9 +236,9 @@ func handleAuthorizationCodeGrant(w http.ResponseWriter, req TokenRequest) {
 		return
 	}
 	resp := map[string]interface{}{
-		"access_token": signedToken,
-		"token_type":   "Bearer",
-		"expires_in":   3600,
+		"access_token":  signedToken,
+		"token_type":    "Bearer",
+		"expires_in":    3600,
 		"refresh_token": "some-refresh-token",
 	}
 
@@ -233,12 +253,12 @@ func handleRefreshTokenGrant(w http.ResponseWriter, req TokenRequest) {
 	}
 	// Here you would typically validate the refresh token
 	claims := jwt.MapClaims{
-		"sub": "user-id-from-refresh-token",
-		"aud": req.ClientID,
+		"sub":   "user-id-from-refresh-token",
+		"aud":   req.ClientID,
 		"scope": req.Scope,
-		"iat": time.Now().Unix(),
-		"exp": time.Now().Add(time.Hour).Unix(),
-		"iss": "https://your-idp-host",
+		"iat":   time.Now().Unix(),
+		"exp":   time.Now().Add(time.Hour).Unix(),
+		"iss":   "https://your-idp-host",
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = keyID
@@ -248,16 +268,14 @@ func handleRefreshTokenGrant(w http.ResponseWriter, req TokenRequest) {
 		return
 	}
 	resp := map[string]interface{}{
-		"access_token": signedToken,
-		"token_type":   "Bearer",
-		"expires_in":   3600,
+		"access_token":  signedToken,
+		"token_type":    "Bearer",
+		"expires_in":    3600,
 		"refresh_token": "new-refresh-token",
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
-
-
 
 func jwksHandler(w http.ResponseWriter, r *http.Request) {
 	n := base64.RawURLEncoding.EncodeToString(publicKey.N.Bytes())
@@ -280,11 +298,6 @@ func jwksHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(jwks)
 }
 
-
-
-
-
-
 type DeterministicReader struct {
 	data []byte
 	pos  int
@@ -303,31 +316,31 @@ func (r *DeterministicReader) Read(p []byte) (int, error) {
 	n := len(p)
 	for i := 0; i < n; i++ {
 		p[i] = r.data[r.pos]
-		r.pos = (r.pos + 1) % len(r.data)  // cycle through seed repeatedly
+		r.pos = (r.pos + 1) % len(r.data) // cycle through seed repeatedly
 	}
 	return n, nil
 }
 
 // SavePrivateKeyToFile saves RSA private key to a file in PEM format
 func SavePrivateKeyToFile(key *rsa.PrivateKey, filename string) error {
-    keyBytes := x509.MarshalPKCS1PrivateKey(key)
-    pemBlock := &pem.Block{
-        Type:  "RSA PRIVATE KEY",
-        Bytes: keyBytes,
-    }
-    pemData := pem.EncodeToMemory(pemBlock)
-    return ioutil.WriteFile(filename, pemData, 0600) // permission 600 to keep it private
+	keyBytes := x509.MarshalPKCS1PrivateKey(key)
+	pemBlock := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: keyBytes,
+	}
+	pemData := pem.EncodeToMemory(pemBlock)
+	return ioutil.WriteFile(filename, pemData, 0600) // permission 600 to keep it private
 }
 
 // LoadPrivateKeyFromFile loads RSA private key from PEM file
 func LoadPrivateKeyFromFile(filename string) (*rsa.PrivateKey, error) {
-    pemData, err := ioutil.ReadFile(filename)
-    if err != nil {
-        return nil, err
-    }
-    block, _ := pem.Decode(pemData)
-    if block == nil || block.Type != "RSA PRIVATE KEY" {
-        return nil, errors.New("failed to decode PEM block containing RSA private key")
-    }
-    return x509.ParsePKCS1PrivateKey(block.Bytes)
+	pemData, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	block, _ := pem.Decode(pemData)
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		return nil, errors.New("failed to decode PEM block containing RSA private key")
+	}
+	return x509.ParsePKCS1PrivateKey(block.Bytes)
 }
