@@ -446,10 +446,18 @@ func NewCORSConfiguration() *CORSConfiguration {
 
 // KeyManager represents configuration for a Key Manager
 type KeyManager struct {
-	Name         string  `json:"name" yaml:"name"`
-	Issuer       string  `json:"issuer" yaml:"issuer"`
-	JWKSEndpoint string  `json:"JWKSEndpoint" yaml:"JWKSEndpoint"`
-	ClaimMapping []Claim `json:"claimMappings" yaml:"claimMappings"`
+	Name         string      `json:"name" yaml:"name"`
+	Issuer       string      `json:"issuer" yaml:"issuer"`
+	JWKSEndpoint string      `json:"JWKSEndpoint" yaml:"JWKSEndpoint"`
+	ClaimMapping []Claim     `json:"claimMappings" yaml:"claimMappings"`
+	K8sBackend   *K8sBackend `json:"k8sBackend,omitempty" yaml:"k8sBackend,omitempty"`
+}
+
+// K8sBackend represents the backend configuration for a Key Manager
+type K8sBackend struct {
+	Name      *string `json:"name,omitempty" yaml:"name,omitempty"`
+	Namespace *string `json:"namespace,omitempty" yaml:"namespace,omitempty"`
+	Port      *int    `json:"port,omitempty" yaml:"port,omitempty"`
 }
 
 type Claim struct {
