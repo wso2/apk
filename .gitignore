@@ -71,3 +71,6 @@ gateway/router/envoy-filters/.idea
 # node_modules
 developer/samples/request-response-mediation-interceptors/apk-nodejs-legacy-xml-backend/node_modules/
 developer/samples/request-response-mediation-interceptors/apk-nodejs-interceptor-server-generated/node_modules/
+
+# router WASM cache
+gateway/router/resources/wasm/websocket/.cache

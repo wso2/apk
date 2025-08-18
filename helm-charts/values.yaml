@@ -19,10 +19,25 @@ wso2:
     imagePullSecrets: ""
 
   choreo:
-    egressDeployment:
+    deployment:
       enabled: false
 
   apk:
+    secretProviderClass:
+      enabled: false
+      vault:
+        url: ""
+        roleName: ""
+      secrets:
+        adapterKey:
+          key: ""
+          path: ""
+        adapterCert:
+          key: ""
+          path: ""
+        adapterCaCert:
+          key: ""
+          path: ""
     helmHooks:
       webhooksCleanupEnabled: true
     webhooks:

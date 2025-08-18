@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{{- if not .Values.wso2.choreo.egressDeployment.enabled }}
+{{- if not .Values.wso2.choreo.deployment.enabled }}
 {{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.commonController }}
 kind: "API"
 apiVersion: "dp.wso2.com/v1alpha3"
