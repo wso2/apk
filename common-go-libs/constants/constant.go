@@ -179,9 +179,14 @@ const (
 )
 
 const (
-	LabelKGWName         = "kgw.wso2.com/name"
-	LabelKGWVersion      = "kgw.wso2.com/version"
+	// LabelKGWName is the label key for the KGW name.
+	LabelKGWName = "kgw.wso2.com/name"
+	// LabelKGWVersion is the label key for the KGW version.
+	LabelKGWVersion = "kgw.wso2.com/version"
+	// LabelKGWOrganization is the label key for the KGW organization.
 	LabelKGWOrganization = "kgw.wso2.com/organization"
-	LabelKGWUUID         = "kgw.wso2.com/uuid"
-	LabelKGWCPInitiated  = "kgw.wso2.com/cpInitiated"
+	// LabelKGWUUID is the label key for the KGW UUID.
+	LabelKGWUUID = "kgw.wso2.com/uuid"
+	// LabelKGWCPInitiated is the label key for indicating if the KGW was initiated by the control plane.
+	LabelKGWCPInitiated = "kgw.wso2.com/cpInitiated"
 )
