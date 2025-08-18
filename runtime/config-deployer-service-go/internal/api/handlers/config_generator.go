@@ -222,9 +222,16 @@ func GetGeneratedK8sResources(cxt *gin.Context, organization *dto.Organization, 
 	}
 
 	apiClient := &APIClient{}
-	apiArtifact, err := apiClient.PrepareArtifact(definitionBody.APKConfiguration,
-		definitionBody.DefinitionFile, organization, cpInitiated, namespace)
+	apkConf, apiDefinition, err := apiClient.PrepareArtifact(definitionBody.APKConfiguration, definitionBody.DefinitionFile)
+	if err != nil {
+		cxt.JSON(http.StatusBadRequest, gin.H{
+			"code":    90091,
+			"message": "Error while validating the definition: " + err.Error(),
+		})
+		return
+	}
 
+	apiArtifact, err := apiClient.GenerateK8sArtifacts(apkConf, apiDefinition, organization, cpInitiated, namespace)
 	if err != nil {
 		cxt.JSON(http.StatusInternalServerError, gin.H{
 			"code":    909052,

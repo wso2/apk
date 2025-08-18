@@ -20,14 +20,18 @@ package util
 import (
 	"context"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	constantscommon "github.com/wso2/apk/common-go-libs/constants"
+	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 )
 
 // GetRouteMetadataList retrieves all RouteMetadata Custom Resources from the Kubernetes cluster based on API ID and namespace.
@@ -172,4 +176,35 @@ func ApplyK8sResource(k8sClient client.Client, namespace string, object client.O
 	// Copy resource version for proper updates
 	object.SetResourceVersion(existingResource.GetResourceVersion())
 	return k8sClient.Update(context.Background(), object)
+}
+
+// GetNamespace retrieves the namespace to be used for Kubernetes operations.
+func GetNamespace(c *gin.Context) string {
+	namespace := config.GetConfig().DefaultNamespace
+	currentNamespace, err := getCurrentNamespace()
+	if err == nil && currentNamespace != "" {
+		namespace = currentNamespace
+	}
+	queryNamespace := c.Query("namespace")
+	if queryNamespace != "" {
+		namespace = queryNamespace
+	}
+	return namespace
+}
+
+// getCurrentNamespace retrieves the current namespace of the pod from the service account token file.
+func getCurrentNamespace() (string, error) {
+	// Try to read the namespace from the service account token file
+	// This file is mounted by Kubernetes in every pod
+	namespaceBytes, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err != nil {
+		return "", fmt.Errorf("failed to read namespace from service account: %w", err)
+	}
+
+	namespace := strings.TrimSpace(string(namespaceBytes))
+	if namespace == "" {
+		return "", fmt.Errorf("namespace is empty")
+	}
+
+	return namespace, nil
 }
