@@ -67,7 +67,12 @@ func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *R
 		return result
 	}
 	// get the consumer key.
-	clientID := "" 
+	clientID := ""
+	if clientIDFromMap, ok := requestConfig.JWTAuthnPayloaClaims["client_id"]; ok {
+		if s, ok := clientIDFromMap.(string); ok && s != "" {
+			clientID = s
+		}
+	}
 	for _, header := range requestConfig.RequestHeaders.Headers.Headers {
 		if header.Key == constants.ClientIDHeaderKey {
 			clientID = header.Value
@@ -99,8 +104,8 @@ func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *R
 			}
 		}
 	} else {
-		application := requestConfig.JWTAuthnPayloaClaims["application"]
-		if application != nil {
+		if application, ok := requestConfig.JWTAuthnPayloaClaims["application"]; ok && application != nil {
+			s.cfg.Logger.Sugar().Debugf("Application found in JWT payload: %+v", application)
 			if applicationMap, ok := application.(map[string]interface{}); ok {
 				applicationUUID := applicationMap["uuid"].(string)
 				application := s.getApplicationForAPPUUID(requestConfig.RouteMetadata.Spec.API.Organization, applicationUUID)
@@ -140,7 +145,6 @@ func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *R
 	return result
 }
 
-
 func (s *SubscriptionValidation) getAppIDUsingConsumerKey(consumerKey string,  envType, environment, organization, securityScheme string) string {
 	subAppDatastore :=  datastore.GetSubAppDataStore(s.cfg)
 	appKeyMapKey := util.PrepareApplicationKeyMappingCacheKey(consumerKey, envType, securityScheme, environment)
@@ -150,6 +154,7 @@ func (s *SubscriptionValidation) getAppIDUsingConsumerKey(consumerKey string,  e
 	}
 	return ""
 }
+
 func (s *SubscriptionValidation) getApplicationForAPPUUID(organization string, applicationUUID string) *subscription_model.Application {
 	subAppDatastore :=  datastore.GetSubAppDataStore(s.cfg)
 	return subAppDatastore.GetApplication(organization, applicationUUID)
