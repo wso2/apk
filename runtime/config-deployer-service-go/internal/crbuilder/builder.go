@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -95,6 +96,14 @@ func extractHostFromEndpoint(endpoint interface{}) (string, error) {
 	typeofEndpoint, _ := endpointType(endpoint)
 	if typeofEndpoint == "string" {
 		if parsed, err := url.Parse(endpoint.(string)); err == nil {
+			// Extract hostname without port
+			if strings.Contains(parsed.Host, ":") {
+				hostname, _, err := net.SplitHostPort(parsed.Host)
+				if err != nil {
+					return "", err
+				}
+				return hostname, nil
+			}
 			return parsed.Host, nil
 		} else {
 			return "", err
@@ -502,7 +511,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 
 		for j, batch := range batches {
 			parentName := config.GetConfig().ParentGatewayName
-			parentNamespace := config.GetConfig().ParentGatewayNamespace
+			parentNamespace := bundle.Namespace
 			parentSectionName := config.GetConfig().ParentGatewaySectionName
 			routeName := fmt.Sprintf("%s-%d-%d", crName, i+1, j+1)
 			route := gatewayv1.HTTPRoute{
@@ -666,15 +675,18 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						},
 					})
 				} else {
-					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
-						Type: gatewayv1.HTTPRouteFilterURLRewrite,
-						URLRewrite: &gatewayv1.HTTPURLRewriteFilter{
-							Hostname: ptrTo(gatewayv1.PreciseHostname(backendHostname)),
-							Path: &gatewayv1.HTTPPathModifier{
-								ReplaceFullPath: &serviceContractPath,
-								Type:            gatewayv1.FullPathHTTPPathModifier,
-							},
+					urlRewrite := &gatewayv1.HTTPURLRewriteFilter{
+						Path: &gatewayv1.HTTPPathModifier{
+							ReplaceFullPath: &serviceContractPath,
+							Type:            gatewayv1.FullPathHTTPPathModifier,
 						},
+					}
+					if backendHostname != "" {
+						urlRewrite.Hostname = ptrTo(gatewayv1.PreciseHostname(backendHostname))
+					}
+					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+						Type:       gatewayv1.HTTPRouteFilterURLRewrite,
+						URLRewrite: urlRewrite,
 					})
 				}
 				route.Spec.Rules = append(route.Spec.Rules, rule)
@@ -1087,9 +1099,11 @@ func generateBackend(name string, backendEndpoint model.EndpointConfiguration) (
 }
 
 func extractSchemeHostPort(endpoint interface{}) (scheme, host string, port int, err error) {
-	switch v := endpoint.(type) {
-	case string:
-		parsed, parseErr := url.Parse(v)
+	endpointType, err := endpointType(endpoint)
+	switch endpointType {
+	case endpointTypeString:
+		endpointStr, _ := endpoint.(string)
+		parsed, parseErr := url.Parse(endpointStr)
 		if parseErr != nil {
 			return "", "", 0, parseErr
 		}
@@ -1106,19 +1120,19 @@ func extractSchemeHostPort(endpoint interface{}) (scheme, host string, port int,
 				port = 443
 			}
 		}
-
-	case model.K8sService:
+	case endpointTypeK8sService:
+		endpointK8s, _ := endpoint.(model.K8sService)
 		// If any field is nil, fill defaults
-		if v.Protocol != nil {
-			scheme = *v.Protocol
+		if endpointK8s.Protocol != nil {
+			scheme = *endpointK8s.Protocol
 		} else {
 			scheme = "http"
 		}
-		if v.Name != nil && v.Namespace != nil {
-			host = fmt.Sprintf("%s.%s.svc.cluster.local", *v.Name, *v.Namespace)
+		if endpointK8s.Name != nil && endpointK8s.Namespace != nil {
+			host = fmt.Sprintf("%s.%s.svc.cluster.local", *endpointK8s.Name, *endpointK8s.Namespace)
 		}
-		if v.Port != nil {
-			port = *v.Port
+		if endpointK8s.Port != nil {
+			port = *endpointK8s.Port
 		} else {
 			if scheme == "http" {
 				port = 80
@@ -1126,9 +1140,8 @@ func extractSchemeHostPort(endpoint interface{}) (scheme, host string, port int,
 				port = 443
 			}
 		}
-
 	default:
-		return "", "", 0, fmt.Errorf("unsupported endpoint type: %T", v)
+		return "", "", 0, fmt.Errorf("unsupported endpoint type: %T", endpoint)
 	}
 
 	return scheme, host, port, nil
@@ -1155,78 +1168,38 @@ func generateBackendTLSPolicyWithWellKnownCerts(name, host string,
 	}
 }
 
-func endpointsEqualStrict(e1, e2 interface{}) (bool, error) {
-	switch v1 := e1.(type) {
-	case string:
-		v2, ok := e2.(string)
-		if !ok {
-			return false, nil // one is string, the other is not
-		}
-		u1, err := url.Parse(v1)
-		if err != nil {
-			return false, err
-		}
-		u2, err := url.Parse(v2)
-		if err != nil {
-			return false, err
-		}
-		return u1.Scheme == u2.Scheme && u1.Host == u2.Host && u1.Path == u2.Path, nil
-
-	case model.K8sService:
-		v2, ok := e2.(model.K8sService)
-		if !ok {
-			return false, nil // one is K8sService, the other is not
-		}
-
-		// Compare all fields (pointer safe)
-		if (v1.Name == nil) != (v2.Name == nil) || (v1.Name != nil && *v1.Name != *v2.Name) {
-			return false, nil
-		}
-		if (v1.Namespace == nil) != (v2.Namespace == nil) || (v1.Namespace != nil && *v1.Namespace != *v2.Namespace) {
-			return false, nil
-		}
-		if (v1.Port == nil) != (v2.Port == nil) || (v1.Port != nil && *v1.Port != *v2.Port) {
-			return false, nil
-		}
-		if (v1.Protocol == nil) != (v2.Protocol == nil) || (v1.Protocol != nil && *v1.Protocol != *v2.Protocol) {
-			return false, nil
-		}
-		return true, nil
-
-	default:
-		return false, fmt.Errorf("unsupported endpoint type: %T", v1)
-	}
-}
-
 var dnsSafeRegex = regexp.MustCompile(`[^a-z0-9-]`)
 
 func endpointCRName(endpoint interface{}) (string, error) {
 	var base string
 
-	switch v := endpoint.(type) {
-	case string:
+	endpointType, _ := endpointType(endpoint)
+	switch endpointType {
+	case endpointTypeString:
+		endpointStr, _ := endpoint.(string)
 		// Lowercase and replace invalid chars
-		base = "backend-" + strings.ToLower(v)
-	case model.K8sService:
+		base = "backend-" + strings.ToLower(endpointStr)
+	case endpointTypeK8sService:
+		endpointK8s, _ := endpoint.(model.K8sService)
 		name := ""
-		if v.Name != nil {
-			name = *v.Name
+		if endpointK8s.Name != nil {
+			name = *endpointK8s.Name
 		}
 		namespace := ""
-		if v.Namespace != nil {
-			namespace = *v.Namespace
+		if endpointK8s.Namespace != nil {
+			namespace = *endpointK8s.Namespace
 		}
 		port := ""
-		if v.Port != nil {
-			port = fmt.Sprintf("%d", *v.Port)
+		if endpointK8s.Port != nil {
+			port = fmt.Sprintf("%d", *endpointK8s.Port)
 		}
 		protocol := ""
-		if v.Protocol != nil {
-			protocol = *v.Protocol
+		if endpointK8s.Protocol != nil {
+			protocol = *endpointK8s.Protocol
 		}
 		base = fmt.Sprintf("k8s-%s-%s-%s-%s", name, namespace, port, protocol)
 	default:
-		return "", fmt.Errorf("unsupported endpoint type: %T", v)
+		return "", fmt.Errorf("unsupported endpoint type: %T", endpoint)
 	}
 
 	// Sanitize: only lowercase letters, numbers, dash
@@ -1259,7 +1232,11 @@ func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]
 		}
 
 		if endpointType == endpointTypeK8sService {
-			endpoint := ec.Endpoint.(model.K8sService)
+			endpoint, err := convertMapToK8sService(ec.Endpoint)
+			if err != nil {
+				logger.Sugar().Errorf("Failed to convert endpoint %v to K8sService: %v", ec.Endpoint, err)
+				continue
+			}
 			if endpoint.Name == nil {
 				continue
 			}
@@ -1333,8 +1310,62 @@ func endpointType(endpoint interface{}) (string, error) {
 	case model.K8sService:
 		return endpointTypeK8sService, nil
 	default:
+		// Try to cast map[string]interface{} to K8sService
+		if endpointMap, ok := endpoint.(map[string]interface{}); ok {
+			// Check if it has the typical K8s service fields
+			if _, hasName := endpointMap["name"]; hasName {
+				return endpointTypeK8sService, nil
+			}
+			if _, hasNamespace := endpointMap["namespace"]; hasNamespace {
+				return endpointTypeK8sService, nil
+			}
+			if _, hasPort := endpointMap["port"]; hasPort {
+				return endpointTypeK8sService, nil
+			}
+			if _, hasProtocol := endpointMap["protocol"]; hasProtocol {
+				return endpointTypeK8sService, nil
+			}
+		}
 		return "", fmt.Errorf("unsupported endpoint type: %T", endpoint)
 	}
+}
+
+func convertMapToK8sService(endpoint interface{}) (*model.K8sService, error) {
+	endpointMap, ok := endpoint.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("endpoint is not a map[string]interface{}")
+	}
+
+	service := &model.K8sService{}
+
+	if name, exists := endpointMap["name"]; exists {
+		if nameStr, ok := name.(string); ok {
+			service.Name = &nameStr
+		}
+	}
+
+	if namespace, exists := endpointMap["namespace"]; exists {
+		if namespaceStr, ok := namespace.(string); ok {
+			service.Namespace = &namespaceStr
+		}
+	}
+
+	if port, exists := endpointMap["port"]; exists {
+		if portInt, ok := port.(int); ok {
+			service.Port = &portInt
+		} else if portFloat, ok := port.(float64); ok {
+			portInt := int(portFloat)
+			service.Port = &portInt
+		}
+	}
+
+	if protocol, exists := endpointMap["protocol"]; exists {
+		if protocolStr, ok := protocol.(string); ok {
+			service.Protocol = &protocolStr
+		}
+	}
+
+	return service, nil
 }
 
 func createConfigMapForDefinition(name, definition string) *corev1.ConfigMap {
