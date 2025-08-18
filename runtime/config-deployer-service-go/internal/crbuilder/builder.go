@@ -928,6 +928,18 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 				},
 				Issuer: km.Issuer,
 			}
+			if km.K8sBackend != nil && km.K8sBackend.Name != nil && km.K8sBackend.Port != nil {
+				provider.RemoteJWKS.BackendRefs = []eg.BackendRef{
+					{
+						BackendObjectReference: gatewayv1.BackendObjectReference{
+							Group: ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
+							Kind:  ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
+							Name:  gatewayv1.ObjectName(*km.K8sBackend.Name),
+							Port:  ptrTo(gatewayv1.PortNumber(*km.K8sBackend.Port)),
+						},
+					},
+				}
+			}
 
 			if sp.Spec.JWT == nil {
 				sp.Spec.JWT = &eg.JWT{
@@ -1287,9 +1299,9 @@ const (
 func endpointType(endpoint interface{}) (string, error) {
 	switch endpoint.(type) {
 	case string:
-		return "string", nil
+		return endpointTypeString, nil
 	case model.K8sService:
-		return "k8sservice", nil
+		return endpointTypeK8sService, nil
 	default:
 		return "", fmt.Errorf("unsupported endpoint type: %T", endpoint)
 	}
