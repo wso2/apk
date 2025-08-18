@@ -49,34 +49,58 @@ func init() {
 
 // extractBackendBasePath extracts the base path from the backend endpoint of an operation based on the environment.
 func extractBackendBasePath(operation model.APKOperations, environment string) (string, error) {
-	var backendBasePath string
+	endpoint, err := getEndpointForEnvironment(operation, environment)
+	if err != nil {
+		return "", err
+	}
+	return extractPathFromEndpoint(endpoint)
+}
+
+// extractBackendHostname extracts the hostname from the backend endpoint of an operation based on the environment.
+func extractBackendHostname(operation model.APKOperations, environment string) (string, error) {
+	endpoint, err := getEndpointForEnvironment(operation, environment)
+	if err != nil {
+		return "", err
+	}
+	return extractHostFromEndpoint(endpoint)
+}
+
+// getEndpointForEnvironment retrieves the endpoint for the specified environment.
+func getEndpointForEnvironment(operation model.APKOperations, environment string) (interface{}, error) {
 	if environment == constants.SANDBOX_TYPE && operation.EndpointConfigurations.Sandbox != nil &&
 		len(operation.EndpointConfigurations.Sandbox) > 0 {
-		sandboxEndpoint := operation.EndpointConfigurations.Sandbox[0].Endpoint
-		fmt.Printf("Sandbox endpoint: %v\n", sandboxEndpoint)
-		typeofEndpoint, _ := endpointType(sandboxEndpoint)
-		fmt.Printf("endpoint type: %v\n", typeofEndpoint)
-		if typeofEndpoint == "string" {
-			if parsed, err := url.Parse(sandboxEndpoint.(string)); err == nil {
-				backendBasePath = parsed.Path
-			}
-		}
-
+		return operation.EndpointConfigurations.Sandbox[0].Endpoint, nil
 	} else if environment == constants.PRODUCTION_TYPE && operation.EndpointConfigurations.Production != nil &&
 		len(operation.EndpointConfigurations.Production) > 0 {
-		productionEndpoint := operation.EndpointConfigurations.Production[0].Endpoint
-		fmt.Printf("Prod endpoint: %v\n", productionEndpoint)
-		typeofEndpoint, _ := endpointType(productionEndpoint)
-		fmt.Printf("endpoint type: %v\n", typeofEndpoint)
-		if typeofEndpoint == "string" {
-			if parsed, err := url.Parse(productionEndpoint.(string)); err == nil {
-				backendBasePath = parsed.Path
-			}
-		}
-	} else {
-		return "", fmt.Errorf("no valid endpoint configurations found for environment: %s", environment)
+		return operation.EndpointConfigurations.Production[0].Endpoint, nil
 	}
-	return backendBasePath, nil
+	return nil, fmt.Errorf("no valid endpoint configurations found for environment: %s", environment)
+}
+
+// extractPathFromEndpoint extracts the path from an endpoint interface.
+func extractPathFromEndpoint(endpoint interface{}) (string, error) {
+	typeofEndpoint, _ := endpointType(endpoint)
+	if typeofEndpoint == "string" {
+		if parsed, err := url.Parse(endpoint.(string)); err == nil {
+			return parsed.Path, nil
+		} else {
+			return "", err
+		}
+	}
+	return "", nil
+}
+
+// extractHostFromEndpoint extracts the hostname from an endpoint interface.
+func extractHostFromEndpoint(endpoint interface{}) (string, error) {
+	typeofEndpoint, _ := endpointType(endpoint)
+	if typeofEndpoint == "string" {
+		if parsed, err := url.Parse(endpoint.(string)); err == nil {
+			return parsed.Host, nil
+		} else {
+			return "", err
+		}
+	}
+	return "", nil
 }
 
 func safeHTTPMethod(verb *string) *gatewayv1.HTTPMethod {
@@ -523,6 +547,11 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					logger.Sugar().Errorf("Error extracting backend base path for operation %s: %v", *op.Target, err)
 					continue
 				}
+				backendHostname, err := extractBackendHostname(op, environment)
+				if err != nil {
+					logger.Sugar().Errorf("Error extracting backend hostname for operation %s: %v", *op.Target, err)
+					continue
+				}
 				if op.Verb == nil {
 					getMethod := string(gatewayv1.HTTPMethodGet)
 					op.Verb = &getMethod
@@ -640,6 +669,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterURLRewrite,
 						URLRewrite: &gatewayv1.HTTPURLRewriteFilter{
+							Hostname: ptrTo(gatewayv1.PreciseHostname(backendHostname)),
 							Path: &gatewayv1.HTTPPathModifier{
 								ReplaceFullPath: &serviceContractPath,
 								Type:            gatewayv1.FullPathHTTPPathModifier,
