@@ -67,6 +67,8 @@ type RouteMetadataReconciler struct {
 const (
 	// configMapIndex is the index for ConfigMap resources in the RouteMetadata controller
 	configMapIndexRouteMetadata = "ConfigMapIndexRouteMetadata"
+	// httpRouteIndexRouteMetadata is the index for HTTPRoute resources in the RouteMetadata controller
+	httpRouteIndexRouteMetadata = "HTTPRouteIndexRouteMetadata"
 )
 
 // NewRouteMetadataController creates a new controller for RouteMetadata.
@@ -79,6 +81,11 @@ func NewRouteMetadataController(mgr manager.Manager, store *cache.RouteMetadataD
 	ctx := context.Background()
 	if err := reconciler.addRouteMetadataIndexes(ctx, mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER, "Error adding indexes: %v", err))
+		return err
+	}
+	if err := reconciler.addRouteMetadataIndexes(ctx, mgr); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER,
+			"Error adding indexes: %v", err))
 		return err
 	}
 
@@ -105,6 +112,14 @@ func NewRouteMetadataController(mgr manager.Manager, store *cache.RouteMetadataD
 	predicateConfigMap := []predicate.TypedPredicate[*corev1.ConfigMap]{predicate.NewTypedPredicateFuncs(utils.FilterConfigMapByNamespaces(conf.CommonController.Operator.Namespaces))}
 	if err := c.Watch(source.Kind(mgr.GetCache(), &corev1.ConfigMap{},
 		handler.TypedEnqueueRequestsFromMapFunc(reconciler.getRouteMetadataForConfigMap), predicateConfigMap...)); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
+			"Error watching ConfigMap resources: %v", err))
+		return err
+	}
+
+	predicateHttproute := []predicate.TypedPredicate[*gwapiv1.HTTPRoute]{predicate.NewTypedPredicateFuncs(utils.FilterHTTPRouteByNamespaces(conf.CommonController.Operator.Namespaces))}
+	if err := c.Watch(source.Kind(mgr.GetCache(), &gwapiv1.HTTPRoute{},
+		handler.TypedEnqueueRequestsFromMapFunc(reconciler.getRouteMetadataForHTTPRoute), predicateHttproute...)); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2613, logging.BLOCKER,
 			"Error watching ConfigMap resources: %v", err))
 		return err
@@ -278,6 +293,16 @@ func (routeMetadataReconciler *RouteMetadataReconciler) AddRouteMetadataRequest(
 	return []reconcile.Request{{NamespacedName: routePolicyKey}}
 }
 
+func (routeMetadataReconciler *RouteMetadataReconciler) AddhttprouteRouteMetadataRequest(routePolicy *dpV2alpha1.RouteMetadata) []reconcile.Request {
+	routePolicyKey := client.ObjectKey{
+		Namespace: routePolicy.Namespace,
+		Name:      routePolicy.Name,
+	}
+
+	loggers.LoggerAPKOperator.Debugf("Adding RouteMetadata request for %s", routePolicyKey.String())
+	return []reconcile.Request{{NamespacedName: routePolicyKey}}
+}
+
 func (routeMetadataReconciler *RouteMetadataReconciler) addRouteMetadataIndexes(ctx context.Context, mgr manager.Manager) error {
 	// Index by referenced ConfigMaps
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpV2alpha1.RouteMetadata{}, configMapIndex,
@@ -299,6 +324,57 @@ func (routeMetadataReconciler *RouteMetadataReconciler) addRouteMetadataIndexes(
 	}
 
 	return nil
+}
+
+func (routeMetadataReconciler *RouteMetadataReconciler) addRouteMetadataHttpRouteIndexes(ctx context.Context, mgr manager.Manager) error {
+	// Index HTTPRoutes from annotations
+	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpV2alpha1.RouteMetadata{}, httpRouteIndexRouteMetadata,
+		func(rawObj k8client.Object) []string {
+			routeMetadata := rawObj.(*dpV2alpha1.RouteMetadata)
+			annotations := routeMetadata.GetAnnotations()
+			namespacedRoutes := make([]string, 0)
+
+			for key, val := range annotations {
+				if strings.HasPrefix(key, "dp.wso2.com/httproute_") {
+					routes := strings.Split(val, ",")
+					for _, routeName := range routes {
+						routeName = strings.TrimSpace(routeName)
+						if routeName != "" {
+							namespacedRoutes = append(namespacedRoutes, types.NamespacedName{
+								Namespace: routeMetadata.Namespace,
+								Name:      routeName,
+							}.String())
+						}
+					}
+				}
+			}
+			return namespacedRoutes
+		}); err != nil {
+		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error1000, logging.BLOCKER,
+			"Error adding HTTPRoute index for RouteMetadata: %v", err))
+		return err
+	}
+
+	return nil
+}
+
+func (routeMetadataReconciler *RouteMetadataReconciler) getRouteMetadataForHTTPRoute(ctx context.Context, route *gwapiv1.HTTPRoute) []reconcile.Request {
+	requests := []reconcile.Request{}
+
+	routeMetadataList := &dpV2alpha1.RouteMetadataList{}
+	if err := routeMetadataReconciler.client.List(ctx, routeMetadataList, &k8client.ListOptions{
+		FieldSelector: fields.OneTermEqualSelector(httpRouteIndexRouteMetadata, utils.NamespacedName(route).String()),
+	}); err != nil {
+		loggers.LoggerAPKOperator.Errorf("Failed to list RouteMetadata for HTTPRoute %s: %v", route.Name, err)
+		return requests
+	}
+
+	for i := range routeMetadataList.Items {
+		routeMetadata := &routeMetadataList.Items[i]
+		requests = append(requests, routeMetadataReconciler.AddhttprouteRouteMetadataRequest(routeMetadata)...)
+	}
+
+	return requests
 }
 
 func (routeMetadataReconciler *RouteMetadataReconciler) convertAPIStateToAPICp(ctx context.Context, apiState synchronizer.APIState) controlplane.APICPEvent {
