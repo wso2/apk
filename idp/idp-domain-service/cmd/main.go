@@ -145,9 +145,13 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleClientCredentialsGrant(w http.ResponseWriter, req TokenRequest) {
+	aud := "aud"
+	if req.ClientID != nil {
+		aud = *req.ClientID
+	}
 	claims := jwt.MapClaims{
 		"sub":   "service-account",
-		"aud":   req.ClientID,
+		"aud":   aud,
 		"scope": req.Scope,
 		"iat":   time.Now().Unix(),
 		"exp":   time.Now().Add(time.Hour).Unix(),
