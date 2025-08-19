@@ -23,7 +23,7 @@ apply from: "$rootDir/../../common-gradle-scripts/docker.gradle"
 apply from: "$rootDir/../../common-gradle-scripts/go.gradle"
 
 release {
-    tagTemplate = 'config-deployer-go-$version'
+    tagTemplate = 'config-deployer-service-$version'
 
     git {
         requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
