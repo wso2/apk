@@ -29,6 +29,9 @@ wso2:
         url: ""
         roleName: ""
       secrets:
+        ratelimiterRedisCredentials:
+          key: ""
+          path: ""
         adapterKey:
           key: ""
           path: ""
@@ -235,6 +238,14 @@ wso2:
       ratelimiter:
         enabled: true
         deployment:
+          hpa:
+            enabled: false
+            minReplicas: 2
+            maxReplicas: 5
+            cpu:
+              averageUtilization: 75
+            memory:
+              averageUtilization: 75
           resources:
             requests:
               memory: "64Mi"
@@ -265,6 +276,14 @@ wso2:
       gatewayRuntime:
         deployment:
           replicas: 1
+          hpa:
+            enabled: false
+            minReplicas: 2
+            maxReplicas: 5
+            cpu:
+              averageUtilization: 75
+            memory:
+              averageUtilization: 75
           router:
             resources:
               requests:
