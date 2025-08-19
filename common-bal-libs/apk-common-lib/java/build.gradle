@@ -1,9 +1,0 @@
-apply from: "$projectDir/../../../common-gradle-scripts/java.gradle"
-dependencies {
-    implementation libs.commons.logging
-    implementation libs.gson
-    implementation libs.jackson.dataformat.yaml
-    implementation libs.jackson.annotations
-    implementation libs.json
-    implementation libs.commons.lang
-}
