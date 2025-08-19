@@ -83,7 +83,7 @@ func NewRouteMetadataController(mgr manager.Manager, store *cache.RouteMetadataD
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER, "Error adding indexes: %v", err))
 		return err
 	}
-	if err := reconciler.addRouteMetadataIndexes(ctx, mgr); err != nil {
+	if err := reconciler.addRouteMetadataHTTPRouteIndexes(ctx, mgr); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2612, logging.BLOCKER,
 			"Error adding indexes: %v", err))
 		return err
@@ -293,6 +293,7 @@ func (routeMetadataReconciler *RouteMetadataReconciler) AddRouteMetadataRequest(
 	return []reconcile.Request{{NamespacedName: routePolicyKey}}
 }
 
+// AddhttprouteRouteMetadataRequest adds a reconcile request for the given RouteMetadata
 func (routeMetadataReconciler *RouteMetadataReconciler) AddhttprouteRouteMetadataRequest(routePolicy *dpV2alpha1.RouteMetadata) []reconcile.Request {
 	routePolicyKey := client.ObjectKey{
 		Namespace: routePolicy.Namespace,
@@ -326,7 +327,8 @@ func (routeMetadataReconciler *RouteMetadataReconciler) addRouteMetadataIndexes(
 	return nil
 }
 
-func (routeMetadataReconciler *RouteMetadataReconciler) addRouteMetadataHttpRouteIndexes(ctx context.Context, mgr manager.Manager) error {
+// addRouteMetadataHTTPRouteIndexes adds an index for HTTPRoutes referenced in RouteMetadata annotations.
+func (routeMetadataReconciler *RouteMetadataReconciler) addRouteMetadataHTTPRouteIndexes(ctx context.Context, mgr manager.Manager) error {
 	// Index HTTPRoutes from annotations
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &dpV2alpha1.RouteMetadata{}, httpRouteIndexRouteMetadata,
 		func(rawObj k8client.Object) []string {
