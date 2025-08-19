@@ -522,7 +522,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				ObjectMeta: metav1.ObjectMeta{
 					Name: routeName,
 					Annotations: map[string]string{
-						constants.K8sHTTPRouteEnvTypeAnnotation: environment,
+						constants.K8sHTTPRouteEnvTypeAnnotation: strings.ToUpper(environment),
 					},
 				},
 				Spec: gatewayv1.HTTPRouteSpec{
