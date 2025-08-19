@@ -65,6 +65,15 @@ wso2:
         ratelimiterCaCert:
           key: ""
           path: ""
+        commonControllerKey:
+          key: ""
+          path: ""
+        commonControllerCert:
+          key: ""
+          path: ""
+        commonControllerCaCert:
+          key: ""
+          path: ""
     helmHooks:
       webhooksCleanupEnabled: true
     webhooks:
