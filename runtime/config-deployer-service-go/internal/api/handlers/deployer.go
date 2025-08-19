@@ -48,8 +48,17 @@ func HandleAPIDeployment(cxt *gin.Context, organization *dto.Organization, cpIni
 		return
 	}
 	apiClient := &APIClient{}
-	apiArtifact, err := apiClient.PrepareArtifact(deployAPIBody.APKConfiguration,
-		deployAPIBody.DefinitionFile, organization, strings.ToLower(cpInitiatedParam) == "true", namespace)
+	cpInitiated := strings.ToLower(cpInitiatedParam) == "true"
+	apkConf, apiDefinition, err := apiClient.PrepareArtifact(deployAPIBody.APKConfiguration, deployAPIBody.DefinitionFile)
+	if err != nil {
+		cxt.JSON(http.StatusBadRequest, gin.H{
+			"code":    90091,
+			"message": "Error while validating the definition: " + err.Error(),
+		})
+		return
+	}
+
+	apiArtifact, err := apiClient.GenerateK8sArtifacts(apkConf, apiDefinition, organization, cpInitiated, namespace)
 	if err != nil {
 		cxt.JSON(http.StatusInternalServerError, gin.H{
 			"code":    909052,
@@ -66,7 +75,7 @@ func HandleAPIDeployment(cxt *gin.Context, organization *dto.Organization, cpIni
 		})
 		return
 	}
-	apkConf, err := util.GetAPKConf(deployAPIBody.APKConfiguration)
+	apkConf, err = util.GetAPKConf(deployAPIBody.APKConfiguration)
 	if err != nil {
 		cxt.JSON(http.StatusInternalServerError, gin.H{
 			"code":    909022,
@@ -118,7 +127,7 @@ func HandleAPIUndeployment(cxt *gin.Context, apiId string, organization *dto.Org
 		"status": response,
 	}
 	jsonBytes, err := json.Marshal(jsonResponse)
-	cxt.Data(http.StatusOK, "application/json", jsonBytes)
+	cxt.Data(http.StatusAccepted, "application/json", jsonBytes)
 	return
 }
 

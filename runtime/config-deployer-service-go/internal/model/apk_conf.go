@@ -21,7 +21,7 @@ import "github.com/wso2/apk/config-deployer-service-go/internal/constants"
 
 // APKConf represents the APK configuration for a given API
 type APKConf struct {
-	ID                     string                        `json:"id" yaml:"id"`
+	ID                     string                        `json:"id,omitempty" yaml:"id,omitempty"`
 	Name                   string                        `json:"name" yaml:"name" validate:"required,min=1,max=60"`
 	BasePath               string                        `json:"basePath" yaml:"basePath" validate:"required,min=1,max=256"`
 	Version                string                        `json:"version" yaml:"version" validate:"required,min=1,max=30"`
