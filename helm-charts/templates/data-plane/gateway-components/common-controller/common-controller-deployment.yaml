@@ -167,7 +167,7 @@ spec:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: {{ .Values.wso2.apk.secretProviderClass.name }}
+              secretProviderClass: {{ template "apk-helm.resource.prefix" . }}-secrets
       {{- else }}
         - name: common-controller-keystore-secret-volume
           secret:

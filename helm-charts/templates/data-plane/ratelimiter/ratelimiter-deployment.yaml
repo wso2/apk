@@ -106,13 +106,21 @@ spec:
             - name: REDIS_TLS_CLIENT_KEY
               value: "/home/wso2/security/keystore/ratelimiter.key"
             {{ end }}
-            {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.auth .Values.wso2.apk.dp.redis.auth.enabled}}
+            {{- if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.auth .Values.wso2.apk.dp.redis.auth.enabled}}
+              {{- if .Values.wso2.apk.secretProviderClass.enabled -}}
+            - name: REDIS_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "apk-helm.resource.prefix" . }}-secrets
+                  key: ratelimiter_redis_credentials
+              {{- else -}}
             - name: REDIS_AUTH
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.wso2.apk.dp.redis.auth.certificatesSecret }}
                   key: {{ .Values.wso2.apk.dp.redis.auth.secretKey }}
-            {{end}}
+              {{- end }}
+            {{ end }}
             {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.poolSize }}
             - name: REDIS_POOL_SIZE
               value: "{{ .Values.wso2.apk.dp.redis.poolSize }}"
@@ -270,7 +278,7 @@ spec:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: {{ .Values.wso2.apk.secretProviderClass.name }}
+              secretProviderClass: {{ template "apk-helm.resource.prefix" . }}-secrets
       {{- else }}
         - name: ratelimiter-keystore-secret-volume
           secret:
