@@ -216,9 +216,6 @@ spec:
             - name: secret-provider-class
               mountPath: /home/wso2/security/truststore/ratelimiter.crt
               subPath: ratelimiter.crt
-            - name: secret-provider-class
-              mountPath: /home/wso2/security/truststore/ratelimiter-ca.crt
-              subPath: ratelimiter-ca.crt
             {{- end }}
           {{- else }}
             - name: enforcer-keystore-secret-volume
@@ -402,9 +399,6 @@ spec:
             - name: secret-provider-class
               mountPath: /home/wso2/security/truststore/ratelimiter.crt
               subPath: ratelimiter.crt
-            - name: secret-provider-class
-              mountPath: /home/wso2/security/truststore/ratelimiter-ca.crt
-              subPath: ratelimiter-ca.crt
             {{- end }}
           {{- else }}
             - name: router-keystore-secret-volume

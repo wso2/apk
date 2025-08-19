@@ -77,6 +77,15 @@ wso2:
         commonControllerCaCert:
           key: ""
           path: ""
+        enforcerJwksKey:
+          key: ""
+          path: ""
+        enforcerJwksCert:
+          key: ""
+          path: ""
+        enforcerJwksCaCert:
+          key: ""
+          path: ""
         tracingCaCert:
           key: ""
           path: ""
