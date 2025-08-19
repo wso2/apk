@@ -66,24 +66,6 @@ jobs:
           cache-read-only: false
       - name: Verify Gradle version
         run: gradle --version
-      # - name: Cache Ballerina.
-      #   uses: actions/cache@v3
-      #   id: cache
-      #   with:
-      #     path: "ballerina-dist/*.deb"
-      #     key: "ballerina-2201.11.0"
-      # - name: Download Ballerina distribution.
-      #   shell: sh
-      #   run: |
-      #     mkdir -p ballerina-dist
-      #     wget 'https://dist.ballerina.io/downloads/2201.11.0/ballerina-2201.11.0-swan-lake-linux-x64.deb' -P ballerina-dist
-      #   if: steps.cache.outputs.cache-hit != 'true'
-      # - name: Install Ballerina distribution.
-      #   shell: sh
-      #   run: "sudo dpkg -i ballerina-dist/ballerina-2201.11.0-swan-lake-linux-x64.deb"
-      # - name: Verify Ballerina Version
-      #   shell: sh
-      #   run: "bal -v"
       - name: Checkout apk-repo
         uses: actions/checkout@v3
         with:
@@ -119,7 +101,6 @@ jobs:
           cd runtime/config-deployer-service-go
           chmod +x gradlew
           ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=config-deployer-service-2.x
-          ./gradlew :ballerina:commit_toml_files
           git push origin config-deployer-service-2.x -f
       - name: Run Gradle Build
         run: |
