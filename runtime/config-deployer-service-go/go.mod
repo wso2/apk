@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-openapi/loads v0.22.0
 	github.com/go-openapi/spec v0.21.0
-	github.com/google/uuid v1.6.0
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/graphql-go/graphql v0.8.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/wso2/apk/common-go-libs v0.0.0-20250805082619-1ce1ff625880
@@ -53,6 +53,7 @@ require (
 	github.com/google/btree v1.1.3 // indirect
 	github.com/google/gnostic-models v0.7.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
