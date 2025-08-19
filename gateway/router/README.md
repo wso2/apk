@@ -1,3 +1,0 @@
-## Router
-
-APK router.
