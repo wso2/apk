@@ -1,0 +1,26 @@
+---
+name: "APIDifferentSandProdEndpoint"
+basePath: "/test-different-sand-prod-endpoint"
+id: "test-different-sand-prod-endpoint"
+version: "3.14"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    - endpoint: "https://httpbin.org/anything/prod"
+  sandbox:
+    - endpoint: "https://httpbin.org/anything/sand"
+operations:
+  - target: "/endpoint1"
+    verb: "GET"
+    secured: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        - endpoint: "https://httpbin.org/anything/prodr"
+      sandbox:
+        - endpoint: "https://httpbin.org/anything/sandr"
+  - target: "/endpoint2"
+    verb: "GET"
+    secured: true
+    scopes: []
