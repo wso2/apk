@@ -20,7 +20,7 @@ package util
 import (
 	"archive/zip"
 	"fmt"
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"io"
 	"net/http"
@@ -306,8 +306,8 @@ func ZipDirectory(zipFileName, directoryPath string) ([2]string, error) {
 // CreateTempDir creates a temporary directory with a unique name
 func CreateTempDir() (string, error) {
 	tempDir := os.TempDir()
-	uniqueID := uuid.New().String()
-	tempPath := filepath.Join(tempDir, uniqueID)
+	uniqueID, _ := uuid.NewV4()
+	tempPath := filepath.Join(tempDir, uniqueID.String())
 
 	err := os.MkdirAll(tempPath, 0755)
 	if err != nil {

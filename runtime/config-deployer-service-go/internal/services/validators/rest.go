@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"github.com/wso2/apk/config-deployer-service-go/internal/parsers"
@@ -38,7 +38,8 @@ type RESTAPIValidator struct{}
 // ExtractAndValidateOpenAPIArchive extracts the OpenAPI archive, validates it, and returns the validation response.
 func (restAPIValidator *RESTAPIValidator) ExtractAndValidateOpenAPIArchive(inputByteArray []byte,
 	returnContent bool) (*dto.APIDefinitionValidationResponse, error) {
-	tempDir := filepath.Join(os.Getenv(constants.JAVA_IO_TMPDIR), constants.OPENAPI_ARCHIVES_TEMP_FOLDER, uuid.New().String())
+	uniqueID, _ := uuid.NewV4()
+	tempDir := filepath.Join(os.Getenv(constants.JAVA_IO_TMPDIR), constants.OPENAPI_ARCHIVES_TEMP_FOLDER, uniqueID.String())
 	archivePath := filepath.Join(tempDir, constants.OPENAPI_ARCHIVE_ZIP_FILE)
 	extractedLocation, err := util.ExtractUploadedArchive(inputByteArray, constants.OPENAPI_EXTRACTED_DIRECTORY, archivePath, tempDir)
 	if err != nil {
