@@ -19,26 +19,25 @@ package v2alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
 
 // RouteMetadataSpec defines the desired state of RouteMetadata
 type RouteMetadataSpec struct {
-	API               API         `json:"api,omitempty"`
+	API API `json:"api,omitempty"`
 }
-
 
 // API represents the API metadata for the RoutePolicy
 type API struct {
 	// Name is the name of the API
-	Name         string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 	// Version is the version of the API
-	Version      string `json:"version,omitempty"`
+	Version string `json:"version,omitempty"`
 	// Organization is the organization that owns the API
 	Organization string `json:"organization,omitempty"`
 	// Type is the type of the API
-	Type         string `json:"type,omitempty"` 
+	Type string `json:"type,omitempty"`
 	// Environment denotes the environment of the API.
 	//
 	// +optional
@@ -48,9 +47,9 @@ type API struct {
 	// +optional
 	// +kubebuilder:default:=production
 	// +kubebuilder:validation:Enum=production;staging;development
-	EnvType      string `json:"envType,omitempty"`
+	EnvType string `json:"envType,omitempty"`
 	// Context is the context of the API
-	Context      string `json:"context,omitempty"`
+	Context string `json:"context,omitempty"`
 	// APIProperties denotes the custom properties of the API.
 	//
 	// +optional
@@ -71,7 +70,7 @@ type API struct {
 	// Definition is the API definition.
 	// +optional
 	Definition string `json:"definition,omitempty"`
-	
+
 	// UUID is the unique identifier for the API.
 	// +optional
 	// +kubebuilder:validation:MinLength=1
@@ -102,7 +101,7 @@ type RouteMetadata struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   RouteMetadataSpec   `json:"spec,omitempty"`
+	Spec   RouteMetadataSpec      `json:"spec,omitempty"`
 	Status gwapiv1a2.PolicyStatus `json:"status,omitempty"`
 }
 
