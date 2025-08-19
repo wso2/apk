@@ -38,6 +38,33 @@ wso2:
         adapterCaCert:
           key: ""
           path: ""
+        enforcerKey:
+          key: ""
+          path: ""
+        enforcerCert:
+          key: ""
+          path: ""
+        enforcerCaCert:
+          key: ""
+          path: ""
+        routerKey:
+          key: ""
+          path: ""
+        routerCert:
+          key: ""
+          path: ""
+        routerCaCert:
+          key: ""
+          path: ""
+        ratelimiterKey:
+          key: ""
+          path: ""
+        ratelimiterCert:
+          key: ""
+          path: ""
+        ratelimiterCaCert:
+          key: ""
+          path: ""
     helmHooks:
       webhooksCleanupEnabled: true
     webhooks:
