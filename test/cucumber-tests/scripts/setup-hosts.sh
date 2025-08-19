@@ -11,9 +11,8 @@ kubectl wait deployment/llm-deployment-header -n apk-integration-test --for=cond
 kubectl wait deployment/interceptor-service-deployment -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/graphql-faker -n apk-integration-test --for=condition=available --timeout=600s
 kubectl wait deployment/grpc-backend -n apk-integration-test --for=condition=available --timeout=600s
-kubectl wait --timeout=5m -n apk-integration-test deployment/apk-test-setup-wso2-apk-adapter-deployment --for=condition=Available
-kubectl wait --timeout=15m -n apk-integration-test deployment/apk-test-setup-wso2-apk-gateway-runtime-deployment --for=condition=Available
-IP=$(kubectl get svc apk-test-setup-wso2-apk-gateway-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+kubectl wait deployment -l app.kubernetes.io/component=proxy -n apk-integration-test --for=condition=available --timeout=300s
+IP=$(kubectl get svc -n apk-integration-test -l app.kubernetes.io/component=proxy -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
 CC_IP=$(kubectl get svc apk-test-setup-wso2-apk-common-controller-web-server-service -n apk-integration-test --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 sudo echo "$IP localhost" | sudo tee -a /etc/hosts
 sudo echo "$IP idp.am.wso2.com" | sudo tee -a /etc/hosts
