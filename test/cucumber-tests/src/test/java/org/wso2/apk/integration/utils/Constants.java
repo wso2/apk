@@ -22,7 +22,7 @@ public class Constants {
     public static final String DEFAULT_IDP_HOST = "idp.am.wso2.com";
     public static final String DEFAULT_API_HOST = "api.am.wso2.com";
     public static final String DEFAULT_GW_PORT = "9095";
-    public static final String DEFAULT_TOKEN_EP = "oauth2/token";
+    public static final String DEFAULT_TOKEN_EP = "oauth2/1.0.0/token";
     public static final String DEFAULT_API_CONFIGURATOR = "api/configurator/1.3.0/";
     public static final String DEFAULT_API_DEPLOYER = "api/deployer/1.3.0/";
     public static final String ACCESS_TOKEN = "accessToken";
