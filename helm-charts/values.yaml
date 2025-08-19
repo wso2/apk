@@ -74,6 +74,12 @@ wso2:
         commonControllerCaCert:
           key: ""
           path: ""
+        tracingCaCert:
+          key: ""
+          path: ""
+        tracingCert:
+          key: ""
+          path: ""
     helmHooks:
       webhooksCleanupEnabled: true
     webhooks:
