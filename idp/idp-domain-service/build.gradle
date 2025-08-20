@@ -26,7 +26,7 @@ release {
     tagTemplate = 'go-idp-$version'
 
     git {
-        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : '2.x'
+        requireBranch = project.hasProperty('releaseBranch') ? project.releaseBranch : 'main'
         pushToRemote= "origin"
     }
 }
