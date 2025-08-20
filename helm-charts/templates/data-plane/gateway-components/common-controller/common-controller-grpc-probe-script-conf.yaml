@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # -----------------------------------------------------------------------
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if .Values.wso2.kgw.dp.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-common-controller-grpc-probe-script-conf
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-grpc-probe-script-conf
   namespace: {{ .Release.Namespace }}
 data:
   check_health.sh: |
@@ -44,6 +44,6 @@ data:
         -tls-ca-cert "${COMMON_CONTROLLER_PUBLIC_CERT_PATH}" \
         -tls-client-cert "${COMMON_CONTROLLER_PUBLIC_CERT_PATH}" \
         -tls-client-key "${COMMON_CONTROLLER_PRIVATE_KEY_PATH}" \
-        -tls-server-name {{ .Values.wso2.apk.dp.commonController.deployment.security.sslHostname }} \
+        -tls-server-name {{ .Values.wso2.kgw.dp.commonController.deployment.security.sslHostname }} \
         -connect-timeout=3s
 {{- end -}}

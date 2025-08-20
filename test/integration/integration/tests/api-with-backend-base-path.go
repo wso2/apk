@@ -25,7 +25,8 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIWithBackendBasePath)
+	// We no longer support backend base path as a special feature. If someone wants a base path they need to use the path rewrite filters
+	//IntegrationTests = append(IntegrationTests, APIWithBackendBasePath)
 }
 
 // APIWithBackendBasePath test

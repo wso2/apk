@@ -13,23 +13,20 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{- if .Values.idp.enabled }}
-apiVersion: "dp.wso2.com/v1alpha2"
-kind: "Authentication"
-metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-commonoauth-ds-authentication
-  namespace: {{ .Release.Namespace }}
-  labels:
-    api-name: "idp-domain-service"
-    api-version: "1.0.0"
-  annotations:
-    "helm.sh/hook": post-install,post-upgrade
-spec:
-  override:
-    disabled: true
-  targetRef:
-    group: ""
-    kind: "API"
-    name: {{ template "apk-helm.resource.prefix" . }}-commonoauth-api
-    namespace: {{ .Release.Namespace }}
-{{- end -}}
+# {{- if .Values.idp.enabled }}
+# apiVersion: "gateway.envoyproxy.io/v1alpha1"
+# kind: "SecurityPolicy"
+# metadata:
+#   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-commonoauth-ds-authentication
+#   namespace: {{ .Release.Namespace }}
+#   labels:
+#     api-name: "idp-domain-service"
+#     api-version: "1.0.0"
+#   annotations:
+#     "helm.sh/hook": post-install,post-upgrade
+# spec:
+#   targetRefs:
+#     - kind: HTTPRoute
+#       group: "gateway.networking.k8s.io"
+#       name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-commonoauth-ds-httproute
+# {{- end -}}

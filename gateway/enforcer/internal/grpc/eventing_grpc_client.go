@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/wso2/apk/common-go-libs/constants"
 	subscription_service "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/service/apkmgt"
 	subscription_proto_model "github.com/wso2/apk/common-go-libs/pkg/discovery/api/wso2/discovery/subscription"
 	rest_server_model "github.com/wso2/apk/common-go-libs/pkg/server/model"
@@ -32,8 +33,10 @@ import (
 	data_store "github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/logging"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
+	"github.com/wso2/apk/gateway/enforcer/internal/mediation"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	types "k8s.io/apimachinery/pkg/types"
 )
 
 // EventingGRPCClient is a client for managing gRPC connections to an eventing service.
@@ -47,11 +50,13 @@ type EventingGRPCClient struct {
 	grpcConn        *grpc.ClientConn
 	log             logging.Logger
 	subAppDataStore *data_store.SubscriptionApplicationDataStore
+	routePolicyMetatadataDatastore *data_store.RoutePolicyAndMetadataDataStore
+
 }
 
 // NewEventingGRPCClient creates a new instance of EventingGRPCClient.
 // It initializes the client with the given host, port, retry parameters, TLS configuration, and logger.
-func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, dataStore *data_store.SubscriptionApplicationDataStore) *EventingGRPCClient {
+func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterval time.Duration, tlsConfig *tls.Config, cfg *config.Server, dataStore *data_store.SubscriptionApplicationDataStore, routePolicyAndMetadataDS *data_store.RoutePolicyAndMetadataDataStore) *EventingGRPCClient {
 	// Create a new APIClient object
 	return &EventingGRPCClient{
 		Host:            host,
@@ -62,6 +67,7 @@ func NewEventingGRPCClient(host string, port string, maxRetries int, retryInterv
 		grpcConn:        nil,
 		log:             cfg.Logger,
 		subAppDataStore: dataStore,
+		routePolicyMetatadataDatastore: routePolicyAndMetadataDS,
 	}
 }
 
@@ -114,7 +120,14 @@ func (c *EventingGRPCClient) HandleNotificationEvent(event *subscription_proto_m
 	switch event.Type {
 	case "ALL_EVENTS":
 		log.Println("Received all events from the server")
-		c.subAppDataStore.LoadStartupData()
+		err := c.subAppDataStore.LoadStartupData()
+		if err != nil {
+			c.log.Error(err, "Failed to load subscriptions and applications from common controller REST APIs")
+		}
+		err = c.routePolicyMetatadataDatastore.LoadStartupData()
+		if err != nil {
+			c.log.Error(err, "Failed to load RoutePolicies and RouteMetadata from common controller REST APIs")
+		}
 	case "SUBSCRIPTION_CREATED", "SUBSCRIPTION_UPDATED":
 		log.Println("Subscription created or updated")
 		c.subAppDataStore.AddSubscription(convertProtoSubscriptionToRestSubscription(event.Subscription))
@@ -132,6 +145,62 @@ func (c *EventingGRPCClient) HandleNotificationEvent(event *subscription_proto_m
 		c.subAppDataStore.DeleteApplicationKeyMapping(convertProtoApplicationKeyMappingToRestApplicationKeyMapping(event.ApplicationKeyMapping))
 	case "APPLICATION_DELETED":
 		c.subAppDataStore.DeleteApplication(convertProtoApplicationToRestApplication(event.Application))
+	case constants.RoutePolicyCreatedOrUpdated:
+		c.log.Sugar().Debug("RoutePolicy created or updated event received")
+		routePolciy, err := util.ConvertToRoutePolicy(event.RoutePolicy)
+		if err != nil {
+			c.log.Error(err, "Failed to convert RoutePolicy from proto to rest model")
+		} else {
+			for _, requestMediation := range routePolciy.Spec.RequestMediation {
+				// Store the mediation in the MediationMap for easy access later
+				mediation.CreateMediation(requestMediation)
+			}
+			for _, responseMediation := range routePolciy.Spec.ResponseMediation {
+				// Store the mediation in the MediationMap for easy access later
+				mediation.CreateMediation(responseMediation)
+			}
+			c.routePolicyMetatadataDatastore.AddRoutePolicy(routePolciy)
+		}
+	case constants.RoutePolicyDeleted:
+		c.log.Sugar().Debug("RoutePolicy deleted event received")
+		routePolciy, err := util.ConvertToRoutePolicy(event.RoutePolicy)
+		if err != nil {
+			c.log.Error(err, "Failed to convert RoutePolicy from proto to rest model")
+		} else {
+			namespacedName := types.NamespacedName{
+				Name:      routePolciy.Name,
+				Namespace: routePolciy.Namespace,
+			}.String()
+			for _, requestMediation := range routePolciy.Spec.RequestMediation {
+				// Delete the mediation from the MediationMap
+				mediation.DeleteMediation(requestMediation)
+			}
+			for _, responseMediation := range routePolciy.Spec.ResponseMediation {
+				// Delete the mediation from the MediationMap
+				mediation.DeleteMediation(responseMediation)
+			}
+			c.routePolicyMetatadataDatastore.DeleteRoutePolicy(namespacedName)
+		}
+	case constants.RouteMetadataCreatedOrUpdated:
+		c.log.Sugar().Debug("RouteMetadata created or updated event received")
+		routeMetadata, err := util.ConvertToRouteMetadata(event.RouteMetadata)
+		if err != nil {
+			c.log.Error(err, "Failed to convert RouteMetadata from proto to rest model")
+		} else {
+			c.routePolicyMetatadataDatastore.AddRouteMetadata(routeMetadata)
+		}
+	case constants.RouteMetadataDeleted:
+		c.log.Sugar().Debug("RouteMetadata deleted event received")
+		routeMetadata, err := util.ConvertToRouteMetadata(event.RouteMetadata)
+		if err != nil {
+			c.log.Error(err, "Failed to convert RouteMetadata from proto to rest model")
+		} else {
+			namespacedName := types.NamespacedName{
+				Name:      routeMetadata.Name,
+				Namespace: routeMetadata.Namespace,
+			}.String()
+			c.routePolicyMetatadataDatastore.DeleteRouteMetadata(namespacedName)
+		}
 	default:
 		log.Println("Unknown event type received from the server")
 	}

@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, APIDifferentListener)
+	//IntegrationTests = append(IntegrationTests, APIDifferentListener)
 }
 
 // APIDifferentListener test

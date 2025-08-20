@@ -1,0 +1,12 @@
+apiVersion: dp.wso2.com/v2alpha1
+kind: RoutePolicy
+metadata:
+  labels:
+    app.kubernetes.io/name: routepolicy
+    app.kubernetes.io/instance: routepolicy-sample
+    app.kubernetes.io/part-of: operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator
+  name: routepolicy-sample
+spec:
+  # TODO(user): Add fields here

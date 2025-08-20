@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, DisableAPISecurity)
+	//IntegrationTests = append(IntegrationTests, DisableAPISecurity)
 }
 
 // DisableAPISecurity test

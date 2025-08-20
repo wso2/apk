@@ -17,21 +17,21 @@
 # The following manifests contain a self-signed issuer CR and a certificate CR.
 # More document can be found at https://docs.cert-manager.io
 
-{{- if .Values.wso2.apk.dp.enabled }}
+{{- if .Values.wso2.kgw.dp.enabled }}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-gw-listener-cert
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-gw-listener-cert
   namespace: {{ .Release.Namespace }}
 spec:
   dnsNames:
-{{ include  "createYamlList" .Values.wso2.apk.dp.gateway.listener.dns | indent 4}}
+{{ include  "createYamlList" .Values.wso2.kgw.dp.gateway.listener.dns | indent 4}}
   issuerRef:
     kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
     {{ if .Values.certmanager.listeners -}}
     name: {{  .Values.certmanager.listeners.issuerName | default "selfsigned-issuer" }}
     {{- else -}}
-    name: {{ template "apk-helm.resource.prefix" . }}-selfsigned-issuer
+    name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-selfsigned-issuer
     {{- end }}
-  secretName: {{ template "apk-helm.resource.prefix" . }}-gw-listener-cert
+  secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-gw-listener-cert
 {{- end -}}

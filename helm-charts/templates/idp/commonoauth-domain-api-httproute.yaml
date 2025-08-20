@@ -14,10 +14,10 @@
 # specific language governing permissions and limitations
 # under the License.
 {{- if .Values.idp.enabled }}
-apiVersion: "gateway.networking.k8s.io/v1beta1"
+apiVersion: "gateway.networking.k8s.io/v1"
 kind: "HTTPRoute"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-commonoauth-ds-httproute
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-commonoauth-ds-httproute
   namespace: {{ .Release.Namespace }}
   labels:
     api-name: "idp-domain-service"
@@ -29,14 +29,20 @@ spec:
   - matches:
     - path:
         type: "PathPrefix"
-        value: "/"
+        value: "/commonoauth/1.0.0"
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /commonoauth
     backendRefs:
-    - group: dp.wso2.com
+    - group: gateway.envoyproxy.io
       kind: Backend
-      name: {{ template "apk-helm.resource.prefix" . }}-commonoauth-ds-backend
+      name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-commonoauth-ds-backend
   parentRefs:
   - group: "gateway.networking.k8s.io"
     kind: "Gateway"
-    name: {{ .Values.wso2.apk.dp.gateway.name | default "wso2-apk-default" }}
+    name: {{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}
     sectionName: "idplistener"
 {{- end -}}

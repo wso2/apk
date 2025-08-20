@@ -18,7 +18,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-idpds-deployment
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idpds-deployment
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.idp.idpds.deployment.replicas }}
@@ -26,11 +26,11 @@ spec:
     type: {{ .Values.idp.idpds.deployment.strategy }}
   selector:
     matchLabels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 6}}
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 6}}
   template:
     metadata:
       labels:
-{{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 8}}
+{{ include "kubernetes-gateway-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 8}}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/idp/idp-ds/idp-ds-configmap.yaml") . | sha256sum }}
     spec:
@@ -51,14 +51,14 @@ spec:
           ports:
             - containerPort: 9443
               protocol: "TCP"
-            {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+            {{ if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
             - containerPort: 18006
               protocol: "TCP"
             - containerPort: 18007
               protocol: "TCP"
             {{ end }}            
-{{ include "apk-helm.deployment.env" .Values.idp.idpds.deployment.env | indent 10 }}
-            {{ if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+{{ include "kubernetes-gateway-helm.deployment.env" .Values.idp.idpds.deployment.env | indent 10 }}
+            {{ if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
             - name: METRICS_ENABLED
               value: "true"
             {{ end }}
@@ -76,71 +76,36 @@ spec:
               scheme: HTTPS
             initialDelaySeconds: {{ .Values.idp.idpds.deployment.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.idp.idpds.deployment.livenessProbe.periodSeconds }}
-{{ include "apk-helm.deployment.resources" .Values.idp.idpds.deployment.resources | indent 10 }}
+{{ include "kubernetes-gateway-helm.deployment.resources" .Values.idp.idpds.deployment.resources | indent 10 }}
           volumeMounts:
-            - mountPath: /home/wso2apk/idp/conf/Config.toml
-              name: config-toml-volume
-              subPath: Config.toml
-            - mountPath: /home/wso2apk/idp/security/wso2carbon.key
-              name: idp-signing-keystore-volume
-              subPath: wso2carbon.key
-            - mountPath: /home/wso2apk/idp/security/wso2carbon.pem
-              name: idp-signing-keystore-volume
-              subPath: wso2carbon.pem
-            {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
-            - name: prometheus-jmx-config-volume	
-              mountPath: /tmp/metrics/prometheus-jmx-config-idpds.yml	
-              subPath: prometheus-jmx-config-idpds.yml
-            {{- end }}
-            - name: idp-ds-tls-volume
-              mountPath: /home/wso2apk/idp/security/idp.key
-            {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
-              subPath: {{ .Values.idp.idpds.configs.tls.certKeyFilename | default "tls.key" }}
-            {{- else }}
+            - mountPath: /home/wso2/idp.key
+              name: idp-ds-tls-volume
               subPath: tls.key
-            {{- end }}
-            - name: idp-ds-tls-volume
-              mountPath: /home/wso2apk/idp/security/idp.crt
-            {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
-              subPath: {{ .Values.idp.idpds.configs.tls.certFilename | default "tls.crt" }}
-            {{- else }}
+            - mountPath: /home/wso2/idp.crt
+              name: idp-ds-tls-volume
               subPath: tls.crt
-            {{- end }}
-            - name: db-secret-volume
-              mountPath: /home/wso2apk/idp/security/database/
-            - name: tmp
-              mountPath: /tmp
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
-      {{ end }}      
-      securityContext:
-        seccompProfile:
-          type: "RuntimeDefault"
+      {{ end }}  
       volumes:
         - name: config-toml-volume
           configMap:
-            name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-configmap
-        {{- if and .Values.wso2.apk.metrics .Values.wso2.apk.metrics.enabled }}
+            name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ds-configmap
+        {{- if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
         - name: prometheus-jmx-config-volume	
           configMap: 	
             name: prometheus-jmx-config-idpds
         {{- end }}
         - name: idp-signing-keystore-volume
           secret: 
-            secretName: {{ template "apk-helm.resource.prefix" . }}-idp-signing-keystore-secret
+            secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-signing-keystore-secret
         - name: idp-ds-tls-volume
           secret:
        {{ if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
-            secretName: {{ .Values.idp.idpds.configs.tls.secretName | default (printf "%s-idpds-ds-server-cert" (include "apk-helm.resource.prefix" .)) }}
+            secretName: {{ .Values.idp.idpds.configs.tls.secretName | default (printf "%s-idpds-ds-server-cert" (include "kubernetes-gateway-helm.resource.prefix" .)) }}
        {{ else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-idp-ds-server-cert
+            secretName: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ds-server-cert
        {{ end }}
         - name: db-secret-volume
           secret:
@@ -150,7 +115,7 @@ spec:
               - key: "{{ .Values.idp.database.secretKey }}"
                 path: db-password
        {{ else }}
-            secretName: apk-db-secret
+            secretName: kgw-db-secret
             items:
               - key: DB_PASSWORD
                 path: db-password

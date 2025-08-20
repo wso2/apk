@@ -33,10 +33,10 @@ on:
     types:
       - closed
     paths:
-      - '**/runtime/config-deployer-service/**'
+      - '**/runtime/config-deployer-service-go/**'
       - '**/common-bal-libs/**'
     branches:
-      - 'main'
+      - '2.x'
 env:
   GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
 concurrency:
@@ -46,6 +46,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.24"
+      - name: Install Revive
+        shell: sh
+        run: |
+          go install github.com/mgechev/revive@v1.3.4
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
@@ -58,24 +66,6 @@ jobs:
           cache-read-only: false
       - name: Verify Gradle version
         run: gradle --version
-      - name: Cache Ballerina.
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: "ballerina-dist/*.deb"
-          key: "ballerina-2201.11.0"
-      - name: Download Ballerina distribution.
-        shell: sh
-        run: |
-          mkdir -p ballerina-dist
-          wget 'https://dist.ballerina.io/downloads/2201.11.0/ballerina-2201.11.0-swan-lake-linux-x64.deb' -P ballerina-dist
-        if: steps.cache.outputs.cache-hit != 'true'
-      - name: Install Ballerina distribution.
-        shell: sh
-        run: "sudo dpkg -i ballerina-dist/ballerina-2201.11.0-swan-lake-linux-x64.deb"
-      - name: Verify Ballerina Version
-        shell: sh
-        run: "bal -v"
       - name: Checkout apk-repo
         uses: actions/checkout@v3
         with:
@@ -94,37 +84,36 @@ jobs:
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
-          git merge origin/main
+          git merge origin/2.x
 
-      - name: build common bal libs
-        run: |
-          cd apk-repo/common-bal-libs
-          chmod +x gradlew
-          gradle build
-      - name: Run Gradle build
+      # - name: build common bal libs
+      #   run: |
+      #     cd apk-repo/common-bal-libs
+      #     chmod +x gradlew
+      #     gradle build
+      - name: Run Gradle Realease build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         shell: sh
         run: |
           cd apk-repo
-          git checkout -b config-deployer-service-1.x
-          git push origin config-deployer-service-1.x
-          cd runtime/config-deployer-service
+          git checkout -b config-deployer-service-2.x
+          git push origin config-deployer-service-2.x -f
+          cd runtime/config-deployer-service-go
           chmod +x gradlew
-          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=config-deployer-service-1.x
-          ./gradlew :ballerina:commit_toml_files
-          git push origin config-deployer-service-1.x
+          ./gradlew release -Prelease.useAutomaticVersion=true -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Prelease.releaseVersion=${{ github.event.inputs.release_version }} -Prelease.newVersion=${{ github.event.inputs.next_version }} -PmultiArch=true -PreleaseBranch=config-deployer-service-2.x
+          git push origin config-deployer-service-2.x -f
       - name: Run Gradle Build
         run: |
-          cd apk-repo/runtime/config-deployer-service
+          cd apk-repo/runtime/config-deployer-service-go
           chmod +x gradlew
           ./gradlew build
       - name: Run Gradle Build
         if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true
         run: |
-          cd apk-repo/runtime/config-deployer-service
+          cd apk-repo/runtime/config-deployer-service-go
           chmod +x gradlew
-          ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
-          ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
       - name: Login to azure.
         if: ${{inputs.aks_deployment}}
         uses: azure/login@v1
@@ -134,12 +123,12 @@ jobs:
         if: ${{inputs.aks_deployment}}
         run: |
           az acr login -n ${{ secrets.AZURE_ACR_NAME }}
-          cd apk-repo/runtime/config-deployer-service
+          cd apk-repo/runtime/config-deployer-service-go
           chmod +x gradlew
-          ./gradlew docker:docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true  
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pimage_version=${{ github.sha }} -PmultiArch=true  
       - name: run codecov
         uses: codecov/codecov-action@v3
         with:
           verbose: true # optional (default = false)
-          directory: apk-repo/runtime/config-deployer-service
+          directory: apk-repo/runtime/config-deployer-service-go
           flags: config-deployer-service           

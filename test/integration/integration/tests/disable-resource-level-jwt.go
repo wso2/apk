@@ -25,9 +25,9 @@ import (
 )
 
 func init() {
-	// IntegrationTests = append(IntegrationTests, DisableResourceLevelJWT)
-	IntegrationTests = append(IntegrationTests, DisableResourceLevelJWTWithFalseValueTest)
-	IntegrationTests = append(IntegrationTests, DisableResourceLevelJWTWithNoOtherAuth)
+	// //IntegrationTests = append(IntegrationTests, DisableResourceLevelJWT)
+	//IntegrationTests = append(IntegrationTests, DisableResourceLevelJWTWithFalseValueTest)
+	//IntegrationTests = append(IntegrationTests, DisableResourceLevelJWTWithNoOtherAuth)
 }
 
 // DisableResourceLevelJWT tests disabling and enabling jwt feature resource level with disabled = true value

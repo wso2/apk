@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	// IntegrationTests = append(IntegrationTests, ResourceLevelJWT)
+	// //IntegrationTests = append(IntegrationTests, ResourceLevelJWT)
 }
 
 // ResourceLevelJWT test

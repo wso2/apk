@@ -19,6 +19,8 @@
 package utils
 
 import (
+	"encoding/json"
+	"errors"
 	"sync"
 
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
@@ -28,10 +30,12 @@ import (
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
 	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/common-go-libs/constants"
 	"k8s.io/apimachinery/pkg/types"
 	k8client "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const nodeIDArrayMaxLength int = 20
@@ -152,6 +156,30 @@ func FilterAIRatelimitPolicyByNamespaces(namespaces []string) func(object *dpv1a
 	}
 }
 
+// FilterRoutePolicyByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterRoutePolicyByNamespaces(namespaces []string) func(object *dpv2alpha1.RoutePolicy) bool {
+	return func(object *dpv2alpha1.RoutePolicy) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterRouteMetadataByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterRouteMetadataByNamespaces(namespaces []string) func(object *dpv2alpha1.RouteMetadata) bool {
+	return func(object *dpv2alpha1.RouteMetadata) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
 // FilterAPIByNamespaces takes a list of namespaces and returns a filter function
 // which return true if the input object is in the given namespaces list,
 // and returns false otherwise
@@ -169,6 +197,31 @@ func FilterAPIByNamespaces(namespaces []string) func(object *dpv1alpha3.API) boo
 // and returns false otherwise
 func FilterHTTPRouteByNamespaces(namespaces []string) func(object *gwapiv1.HTTPRoute) bool {
 	return func(object *gwapiv1.HTTPRoute) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+
+// FilterConfigMapByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterConfigMapByNamespaces(namespaces []string) func(object *corev1.ConfigMap) bool {
+	return func(object *corev1.ConfigMap) bool {
+		if namespaces == nil {
+			return true
+		}
+		return stringutils.StringInSlice(object.GetNamespace(), namespaces)
+	}
+}
+
+// FilterSecretByNamespaces takes a list of namespaces and returns a filter function
+// which return true if the input object is in the given namespaces list,
+// and returns false otherwise
+func FilterSecretByNamespaces(namespaces []string) func(object *corev1.Secret) bool {
+	return func(object *corev1.Secret) bool {
 		if namespaces == nil {
 			return true
 		}
@@ -210,3 +263,17 @@ func NamespacedName(obj k8client.Object) types.NamespacedName {
 		Name:      obj.GetName(),
 	}
 }
+
+// ToJSONString converts any Go object to its JSON string representation.
+// If it fails to marshal, it returns an error message as the string.
+func ToJSONString(obj interface{}) (string, error) {
+	if obj == nil {
+		return "", errors.New("cannot convert nil to JSON")
+	}
+	jsonBytes, err := json.Marshal(obj)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBytes), nil
+}
+

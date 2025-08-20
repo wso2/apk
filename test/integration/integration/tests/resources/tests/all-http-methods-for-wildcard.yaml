@@ -14,53 +14,107 @@
 # specific language governing permissions and limitations
 # under the License.
 
-apiVersion: dp.wso2.com/v1alpha3
-kind: API
+apiVersion: dp.wso2.com/v2alpha1
+kind: RouteMetadata
 metadata:
   name: all-http-methods-for-wildcard
   namespace: gateway-integration-test-infra
 spec:
-  apiName: API with Backend Base Path
-  apiType: REST
-  apiVersion: v1.0.0
-  basePath: /all-http-methods-for-wildcard/v1.0.0
-  isDefaultVersion: true
-  #definitionFileRef: definition-file
-  production:
-    - routeRefs:
-        - all-http-methods-for-wildcard-httproute
-  organization: wso2-org
+  api:
+    name: API with Backend Base Path
+    version: v1.0.0
+    organization: wso2-org
+    type: REST
+    context: /all-http-methods-for-wildcard/v1.0.0
+    envType: production
 ---
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: all-http-methods-for-wildcard-httproute
   namespace: gateway-integration-test-infra
+  labels:
+    kgw-authenticate: "true"
 spec:
   parentRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: wso2-apk-default
-      namespace: apk-integration-test
-      sectionName: httpslistener
+  - name: wso2-kgw-default
+    namespace: apk-integration-test
+    sectionName: httpslistener
   hostnames:
     - all-http-methods-for-wildcard.test.gw.wso2.com
   rules:
     - matches:
         - path:
             type: PathPrefix
-            value: /v2/echo-full
+            value: /all-http-methods-for-wildcard/v1.0.0/v2/echo-full
       backendRefs:
-        - group: dp.wso2.com
+        - group: gateway.envoyproxy.io
           kind: Backend
           name: infra-backend-v1
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            replacePrefixMatch: /v2/echo-full
+            type: ReplacePrefixMatch
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: RouteMetadata
+          name: all-http-methods-for-wildcard
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /all-http-methods-for-wildcard/v2/echo-full
+      backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: infra-backend-v1
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            replacePrefixMatch: /v2/echo-full
+            type: ReplacePrefixMatch
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: RouteMetadata
+          name: all-http-methods-for-wildcard
 ---
-apiVersion: dp.wso2.com/v1alpha2
+apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
 metadata:
   name: infra-backend-v1
   namespace: gateway-integration-test-infra
 spec:
-  services:
-    - host: infra-backend-v1.gateway-integration-test-infra
+  endpoints:
+  - fqdn:
+      hostname: infra-backend-v1.gateway-integration-test-infra.svc
       port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: jwt-authn-policy
+  namespace: gateway-integration-test-infra
+spec:
+  jwt:
+    providers:
+    - name: example
+      remoteJWKS:
+        uri: https://apk-test-setup-wso2-kgw-idp-ds-service.apk-integration-test.svc:9443/oauth2/jwks
+        backendRefs:
+          - group: gateway.envoyproxy.io
+            kind: Backend
+            name: apk-test-setup-wso2-kgw-oauth-ds-backend
+            namespace: apk-integration-test
+            port: 9443
+      claimToHeaders:
+        - claim: scope
+          header: wso2-scope
+  targetSelectors:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      matchLabels:
+        kgw-authenticate: "true"

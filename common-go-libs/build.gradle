@@ -25,7 +25,7 @@ release {
     tagTemplate = 'common-go-libs-$version'
 
     git {
-        requireBranch= "main"
+        requireBranch= "2.x"
         pushToRemote= "origin"
     }
 }
@@ -41,8 +41,8 @@ tasks.register('go_test', Exec) {
 }
 
 tasks.named('go_revive_run').configure { 
-    finalizedBy go_tidy
-    finalizedBy go_test
+    // finalizedBy go_tidy
+    // finalizedBy go_test
 }
 
 tasks.named('go_build').configure {

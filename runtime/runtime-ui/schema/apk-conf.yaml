@@ -80,6 +80,11 @@ properties:
   corsConfiguration:
     "$ref": "#/schemas/CORSConfiguration"
     description: Cross-Origin Resource Sharing (CORS) configuration for the API.
+  keyManagers:
+    type: array
+    items:
+      "$ref": "#/schemas/KeyManager"
+    description: "List of key managers associated with the API."
 additionalProperties: false
 schemas:
   OAuth2Authentication:
@@ -738,6 +743,39 @@ schemas:
       type:
         type: string
         default: string
+    additionalProperties: false
+  KeyManager:
+    type: object
+    required:
+      - name
+      - issuer
+      - JWKSEndpoint
+    properties:
+      name:
+        type: string
+        description: The name of the key manager.
+      issuer:
+        type: string
+        description: The token issuer URL of the key manager.
+      JWKSEndpoint:
+        type: string
+        description: The JWKs endpoint URL of the key manager.
+      claimMappings:
+        type: array
+        items:
+          "$ref": "#/schemas/ClaimMapping"
+        description: "List of claim mappings for the key manager."
+    additionalProperties: false
+  ClaimMapping:
+    type: object
+    required:
+      - localClaim
+      - remoteClaim
+    properties:
+      localClaim:
+        type: string
+      remoteClaim:
+        type: string
     additionalProperties: false
 required:
   - name

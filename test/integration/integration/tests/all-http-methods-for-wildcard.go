@@ -519,9 +519,41 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 		}
+		invalidAuthTestCases := []http.ExpectedResponse{
+			{
+				TestCaseName: "Test without sending auth header",
+				Request: http.Request{
+					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
+					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
+					Method: "DELETE",
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full/test",
+						Method: "DELETE",
+					},
+				},
+				Backend:   "infra-backend-v1",
+				Namespace: ns,
+				Response: http.Response{
+					StatusCode: 401,
+				},
+			},
+		}	
+
+
+
+
 		for i := range testCases {
 			tc := testCases[i]
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)
+			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
+				t.Parallel()
+				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)
+			})
+		}
+		for i := range invalidAuthTestCases {
+			tc := invalidAuthTestCases[i]
 			t.Run(tc.GetTestCaseName(i), func(t *testing.T) {
 				t.Parallel()
 				http.MakeRequestAndExpectEventuallyConsistentResponse(t, suite.RoundTripper, suite.TimeoutConfig, gwAddr, tc)

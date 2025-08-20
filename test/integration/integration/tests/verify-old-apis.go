@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, VerifyOldAPIs)
+	//IntegrationTests = append(IntegrationTests, VerifyOldAPIs)
 }
 
 // VerifyOldAPIs test

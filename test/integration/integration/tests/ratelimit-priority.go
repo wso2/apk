@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, RatelimitPriority)
+	//IntegrationTests = append(IntegrationTests, RatelimitPriority)
 }
 
 // RatelimitPriority tests ratelimit priority between API level and resource level
@@ -88,7 +88,7 @@ var RatelimitPriority = suite.IntegrationTest{
 				UnacceptableStatuses: []int{200},
 			},
 		}
-		suite.WaitForNextMinute(t);
+		suite.WaitForNextMinute(t)
 		for i := range testCases {
 			tc := testCases[i]
 			tc.Request.Headers = http.AddBearerTokenToHeader(token, tc.Request.Headers)

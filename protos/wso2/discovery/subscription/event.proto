@@ -38,5 +38,7 @@
      ApplicationMapping applicationMapping = 5;
      ApplicationKeyMapping applicationKeyMapping = 6;
      Subscription subscription = 7;
+     string routePolicy = 8;
+     string routeMetadata = 9;
+
  }
- 

@@ -26,6 +26,7 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 
+	eg "github.com/envoyproxy/gateway/api/v1alpha1"
 	"github.com/google/uuid"
 	"github.com/wso2/apk/adapter/pkg/logging"
 	cache "github.com/wso2/apk/common-controller/internal/cache"
@@ -39,10 +40,12 @@ import (
 	"github.com/wso2/apk/common-controller/pkg/metrics"
 	cpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha2"
 	cpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/cp/v1alpha3"
-	dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
-	dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
-	dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
-	dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+
+	// dpv1alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha1"
+	// dpv1alpha2 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha2"
+	// dpv1alpha3 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha3"
+	// dpv1alpha4 "github.com/wso2/apk/common-go-libs/apis/dp/v1alpha4"
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -64,14 +67,16 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(gwapiv1.AddToScheme(scheme))
-	utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
-	utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
-	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
-	utilruntime.Must(dpv1alpha4.AddToScheme(scheme))
+	// utilruntime.Must(dpv1alpha1.AddToScheme(scheme))
+	// utilruntime.Must(dpv1alpha2.AddToScheme(scheme))
+	// utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
+	// utilruntime.Must(dpv1alpha4.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha2.AddToScheme(scheme))
 	utilruntime.Must(cpv1alpha3.AddToScheme(scheme))
-	utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
+	// utilruntime.Must(dpv1alpha3.AddToScheme(scheme))
+	utilruntime.Must(dpv2alpha1.AddToScheme(scheme))
+	utilruntime.Must(eg.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -93,8 +98,9 @@ func InitOperator(metricsConfig config.Metrics) {
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
-	ratelimitStore := cache.CreateNewOperatorDataStore()
 	subscriptionStore := cache.CreateNewSubscriptionDataStore()
+	routePolicyDataStore := cache.GetRoutePolicyDataStore()
+	routeMetadataDataStore := cache.GetRouteMetadataDataStore()
 
 	options := ctrl.Options{
 		Scheme:                 scheme,
@@ -143,61 +149,11 @@ func InitOperator(metricsConfig config.Metrics) {
 		os.Exit(1)
 	}
 
-	if err = (&dpv1alpha1.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.MAJOR,
-			"Unable to create webhook API, error: %v", err))
-	}
-
-	if err = (&dpv1alpha2.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.MAJOR,
-			"Unable to create webhook API, error: %v", err))
-	}
-
-	if err = (&dpv1alpha3.API{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2601, logging.MAJOR,
-			"Unable to create webhook API, error: %v", err))
-	}
-
-	if err = (&dpv1alpha1.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2637, logging.MAJOR,
-			"Unable to create webhook for Ratelimit, error: %v", err))
-	}
-
-	if err = (&dpv1alpha3.RateLimitPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2637, logging.MAJOR,
-			"Unable to create webhook for Ratelimit, error: %v", err))
-	}
-
-	if err = (&dpv1alpha3.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
-			"Unable to create webhook for APIPolicy, error: %v", err))
-	}
-
-	if err = (&dpv1alpha4.APIPolicy{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
-			"Unable to create webhook for APIPolicy, error: %v", err))
-	}
-
-	if err = (&dpv1alpha2.Authentication{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2638, logging.MAJOR,
-			"Unable to create webhook for Authentication, error: %v", err))
-	}
-
-	if err = (&dpv1alpha1.InterceptorService{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2652, logging.MAJOR,
-			"Unable to create webhook for InterceptorService, error: %v", err))
-	}
-
-	if err = (&dpv1alpha1.Backend{}).SetupWebhookWithManager(mgr); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error2655, logging.MAJOR,
-			"Unable to create webhook for Backend, error: %v", err))
-	}
-
-	if err := dpcontrollers.NewratelimitController(mgr, ratelimitStore); err != nil {
+	if err := dpcontrollers.NewRoutePolicyController(mgr, routePolicyDataStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
-	if err := dpcontrollers.NewAIRatelimitController(mgr, ratelimitStore); err != nil {
+	if err := dpcontrollers.NewRouteMetadataController(mgr, routeMetadataDataStore); err != nil {
 		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
 			"Error creating JWT Issuer controller, error: %v", err))
 	}
@@ -221,10 +177,6 @@ func InitOperator(metricsConfig config.Metrics) {
 	updateHandler := status.NewUpdateHandler(mgr.GetClient())
 	if err := mgr.Add(updateHandler); err != nil {
 		loggers.LoggerAPKOperator.Errorf("Failed to add status update handler %v", err)
-	}
-	if err := dpcontrollers.NewGatewayClassController(mgr, updateHandler); err != nil {
-		loggers.LoggerAPKOperator.ErrorC(logging.PrintError(logging.Error3114, logging.MAJOR,
-			"Error creating GatewayClass controller, error: %v", err))
 	}
 
 	//+kubebuilder:scaffold:builder

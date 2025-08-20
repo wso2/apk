@@ -15,28 +15,15 @@
 # under the License.
 {{- if .Values.idp.enabled }}
 kind: "Backend"
-apiVersion: "dp.wso2.com/v1alpha2"
+apiVersion: "gateway.envoyproxy.io/v1alpha1"
 metadata:
-  name: {{ template "apk-helm.resource.prefix" . }}-authentication-endpoint-ds-backend
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-authentication-endpoint-ds-backend
   namespace: {{ .Release.Namespace }}
   annotations:
     "helm.sh/hook": post-install,post-upgrade
 spec:
- basePath: /commonoauth
- services:
-  - host:  {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
-    port: 9443
- protocol: "https"
- tls:
-  allowedSANs:
-   - {{ template "apk-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
-  secretRef:
-  {{- if and .Values.idp.idpds.configs .Values.idp.idpds.configs.tls }}
-    name: {{.Values.idp.idpds.configs.tls.secretName}}
-    key: {{.Values.idp.idpds.configs.tls.certFilename}}
-  {{- else }}
-    name: {{ template "apk-helm.resource.prefix" . }}-idp-ds-server-cert
-    key: tls.crt
-  {{- end }}
-    
+  endpoints:
+    - fqdn:
+        hostname: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-ds-service.{{ .Release.Namespace }}.svc
+        port: 9443
 {{- end -}}

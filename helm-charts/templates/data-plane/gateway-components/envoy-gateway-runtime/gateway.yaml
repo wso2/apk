@@ -1,0 +1,97 @@
+# Copyright (c) 2025 WSO2 LLC. (http://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+{{- if .Values.wso2.kgw.dp.enabled }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Values.wso2.kgw.dp.gateway.name | default "wso2-kgw-default" }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    cert-manager.io/issuer: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-selfsigned-issuer
+  labels:
+    managed-by: wso2kgw
+spec:
+  {{- if .Values.wso2.kgw.dp.gatewayClass }}
+  gatewayClassName: {{ .Values.wso2.kgw.dp.gatewayClass.name | default "wso2-kgw-default" }}
+  {{- else }}
+  gatewayClassName: "wso2-kgw-default"
+  {{- end }}
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: {{ .Values.wso2.kgw.dp.envoyProxy.name | default "wso2-kgw-envoy-proxy-default" }}
+  listeners:
+    {{ if and .Values.wso2.kgw.dp.gateway.httpListener .Values.wso2.kgw.dp.gateway.httpListener.enabled }}
+    - name: httplistener
+      hostname: "{{ .Values.wso2.kgw.dp.gateway.httpListener.hostname | default "api.am.wso2.com"}}"
+      port: {{ .Values.wso2.kgw.dp.gateway.httpListener.port | default 9080}}
+      protocol: HTTP
+    {{ end }}
+    {{- if .Values.wso2.kgw.dp.enabled }}
+    - name: httpslistener
+      hostname: "{{ .Values.wso2.kgw.dp.gateway.listener.hostname | default "*.gw.wso2.com"}}"
+      port: 9095
+      protocol: "HTTPS"
+      allowedRoutes:
+        namespaces: 
+          from: "All"
+      tls:  
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: {{ .Values.wso2.kgw.dp.gateway.listener.secretName | default (printf "%s-gw-listener-cert" (include "kubernetes-gateway-helm.resource.prefix" .)) }}
+            namespace: {{ .Release.Namespace }}
+    {{ end }}
+    - name: apilistener
+      hostname: "{{ .Values.wso2.kgw.listener.hostname | default "api.am.wso2.com"}}"
+      port: 9095
+      protocol: "HTTPS"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: {{ .Values.wso2.kgw.listener.secretName | default (printf "%s-system-api-listener-cert" (include "kubernetes-gateway-helm.resource.prefix" .))}}
+            namespace: {{ .Release.Namespace }}
+    {{ if and .Values.idp.enabled}}
+    - name: idplistener
+      hostname: "{{ .Values.idp.listener.hostname | default "idp.am.wso2.com"}}"
+      port: 9095
+      protocol: "HTTPS"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: {{ .Values.idp.listener.secretName | default (printf "%s-idp-listener-cert" (include "kubernetes-gateway-helm.resource.prefix" .))}}
+            namespace: {{ .Release.Namespace }}
+    {{ end }}
+    {{ if .Values.wso2.kgw.dp.enabled }}
+    - name: systemlistener
+      hostname: "localhost"
+      port: 9095
+      protocol: "HTTPS"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            group: ""
+            name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-localhost-listener-cert
+            namespace: {{ .Release.Namespace }}
+    {{ end }}
+{{- end}}
