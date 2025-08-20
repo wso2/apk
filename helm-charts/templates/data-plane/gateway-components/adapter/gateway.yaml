@@ -32,7 +32,11 @@ spec:
         certificateRefs:
           - kind: Secret
             group: ""
+          {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+            name: {{ template "apk-helm.resource.prefix" . }}-router-tls
+          {{- else }}
             name: {{ .Values.wso2.apk.dp.gateway.listener.secretName | default (printf "%s-gw-listener-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- end }}
             namespace: {{ .Release.Namespace }}
     {{ end }}
     - name: apilistener
@@ -44,7 +48,11 @@ spec:
         certificateRefs:
           - kind: Secret
             group: ""
+          {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+            name: {{ template "apk-helm.resource.prefix" . }}-system-listener-tls
+          {{- else }}
             name: {{ .Values.wso2.apk.listener.secretName | default (printf "%s-system-api-listener-cert" (include "apk-helm.resource.prefix" .))}}
+          {{- end }}
             namespace: {{ .Release.Namespace }}
     {{end}}
     {{ if and .Values.idp.enabled}}
@@ -70,6 +78,10 @@ spec:
         certificateRefs:
           - kind: Secret
             group: ""
+          {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+            name: {{ template "apk-helm.resource.prefix" . }}-system-listener-tls
+          {{- else }}
             name: {{ template "apk-helm.resource.prefix" . }}-localhost-listener-cert
+          {{- end }}
             namespace: {{ .Release.Namespace }}
 {{- end}}

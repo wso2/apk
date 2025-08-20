@@ -40,7 +40,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
-        - name: adapter
+        - name: choreo-apk-adapter
           image: {{ .Values.wso2.apk.dp.adapter.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.adapter.deployment.imagePullPolicy }}
           ports:
@@ -67,6 +67,23 @@ spec:
           - name: ADAPTER_SERVER_NAME
             value: {{ template "apk-helm.resource.prefix" . }}-adapter-service.{{ .Release.Namespace }}.svc
           volumeMounts:
+          {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/keystore/adapter.key
+              subPath: adapter.key
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/keystore/adapter.crt
+              subPath: adapter.crt
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/adapter-ca.crt
+              subPath: adapter-ca.crt
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/router.crt
+              subPath: router.crt # TODO: (renuka) should be router-ca.crt check this
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/enforcer.crt
+              subPath: enforcer.crt # TODO: (renuka) should be enforcer-ca.crt check this
+          {{- else }}
             - name: adapter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/adapter.key
             {{- if and .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.tls }}
@@ -106,6 +123,7 @@ spec:
             - name: adapter-truststore-consul-secret-volume
               mountPath: /home/wso2/security/truststore/consul
             {{- end }}
+          {{- end }}
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
           {{- if .Values.integrationTest.addHelmConfigsRequiredForTests }}
@@ -151,6 +169,14 @@ spec:
         seccompProfile:
           type: "RuntimeDefault"
       volumes: 
+      {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+        - name: secret-provider-class
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ template "apk-helm.resource.prefix" . }}-secrets
+      {{- else }}
         - name: adapter-keystore-secret-volume
           secret:
           {{- if and .Values.wso2.apk.dp.adapter.deployment.configs .Values.wso2.apk.dp.adapter.deployment.configs.tls }}
@@ -188,6 +214,7 @@ spec:
           {{- else }}
             secretName: {{ template "apk-helm.resource.prefix" . }}-enforcer-server-cert
           {{- end }}
+      {{- end }}
         {{if and .Values.wso2.apk.dp.partitionServer .Values.wso2.apk.dp.partitionServer.tls}}
         - name:  partition-server-truststore-secret-volume
           secret:

@@ -47,7 +47,7 @@ spec:
             - name: statsd-metrics
               containerPort: 9102
         {{ end }}
-        - name: ratelimiter
+        - name: choreo-apk-ratelimiter
           image: {{ .Values.wso2.apk.dp.ratelimiter.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.ratelimiter.deployment.imagePullPolicy }}
           ports:
@@ -106,13 +106,21 @@ spec:
             - name: REDIS_TLS_CLIENT_KEY
               value: "/home/wso2/security/keystore/ratelimiter.key"
             {{ end }}
-            {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.auth .Values.wso2.apk.dp.redis.auth.enabled}}
+            {{- if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.auth .Values.wso2.apk.dp.redis.auth.enabled}}
+              {{- if .Values.wso2.apk.secretProviderClass.enabled -}}
+            - name: REDIS_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "apk-helm.resource.prefix" . }}-secrets
+                  key: ratelimiter_redis_credentials
+              {{- else -}}
             - name: REDIS_AUTH
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.wso2.apk.dp.redis.auth.certificatesSecret }}
                   key: {{ .Values.wso2.apk.dp.redis.auth.secretKey }}
-            {{end}}
+              {{- end }}
+            {{ end }}
             {{ if and .Values.wso2.apk.dp.redis .Values.wso2.apk.dp.redis.poolSize }}
             - name: REDIS_POOL_SIZE
               value: "{{ .Values.wso2.apk.dp.redis.poolSize }}"
@@ -163,6 +171,23 @@ spec:
             {{ end }}
             {{ end }}
           volumeMounts:
+          {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/keystore/ratelimiter.key
+              subPath: ratelimiter.key
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/keystore/ratelimiter.crt
+              subPath: ratelimiter.crt
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/ratelimiter-ca.crt
+              subPath: ratelimiter-ca.crt
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/adapter.pem
+              subPath: adapter-ca.crt
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/router.pem
+              subPath: router-ca.crt
+          {{- else }}
             - name: ratelimiter-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/ratelimiter.key
             {{- if and .Values.wso2.apk.dp.ratelimiter.deployment.configs .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls }}
@@ -198,14 +223,24 @@ spec:
             {{- else }}
               subPath: tls.crt
             {{- end }}
-            {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.enabled }}
+          {{- end }}
+          {{ if and .Values.wso2.apk.dp.gatewayRuntime.tracing .Values.wso2.apk.dp.gatewayRuntime.tracing.enabled .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.enabled }}
+            {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/tracing-ca.pem
+              subPath: tracing-ca.pem
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/tracing.pem
+              subPath: tracing.pem
+            {{- else }}
             - name: tracing-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/tracing-ca.pem
               subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.certCAFilename}}
             - name: tracing-truststore-secret-volume
               mountPath: /home/wso2/security/truststore/tracing.pem
               subPath: {{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.certFilename}}
-            {{ end }}
+            {{- end }}
+          {{ end }}
           livenessProbe:
             httpGet:
               port: 8090
@@ -237,6 +272,14 @@ spec:
           type: "RuntimeDefault"
 
       volumes:
+      {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+        - name: secret-provider-class
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ template "apk-helm.resource.prefix" . }}-secrets
+      {{- else }}
         - name: ratelimiter-keystore-secret-volume
           secret:
           {{- if and .Values.wso2.apk.dp.ratelimiter.deployment.configs .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls }}
@@ -266,5 +309,6 @@ spec:
           secret:
             secretName: {{ .Values.wso2.apk.dp.gatewayRuntime.tracing.configProperties.tls.secretName}}
             defaultMode: 420
-        {{ end }}
+        {{- end }}
+      {{- end }}
 {{- end -}}

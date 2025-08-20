@@ -40,7 +40,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
-        - name: commoncontroller
+        - name: choreo-apk-common-controller
           image: {{ .Values.wso2.apk.dp.commonController.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.apk.dp.commonController.deployment.imagePullPolicy }}
           ports:
@@ -69,6 +69,22 @@ spec:
           - name: COMMON_CONTROLLER_SERVER_NAME
             value: {{ template "apk-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
           volumeMounts:
+      {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/keystore/commoncontroller.key
+              subPath: commoncontroller.key
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/keystore/commoncontroller.crt
+              subPath: commoncontroller.crt
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/adapter-ca.crt
+              subPath: adapter-ca.crt
+            {{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
+            - name: secret-provider-class
+              mountPath: /home/wso2/security/truststore/ratelimiter-ca.crt
+              subPath: ratelimiter-ca.crt
+            {{- end }}
+      {{- else }}
             - name: common-controller-keystore-secret-volume
               mountPath: /home/wso2/security/keystore/commoncontroller.key
             {{- if and .Values.wso2.apk.dp.commonController.deployment.configs .Values.wso2.apk.dp.commonController.deployment.configs.tls }}
@@ -90,7 +106,7 @@ spec:
             {{- else }}
               subPath: ca.crt
             {{- end }}
-        {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
+          {{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
             # - name: enforcer-truststore-secret-volume
             #   mountPath: /home/wso2/security/truststore/enforcer.crt
             - name: ratelimiter-truststore-secret-volume
@@ -107,7 +123,8 @@ spec:
             {{- else }}
               subPath: ca.crt
             {{- end }}
-        {{ end }}
+          {{- end }}
+      {{- end }}
             - name: log-conf-volume
               mountPath: /home/wso2/conf/
             - mountPath: /tmp/k8s-webhook-server/serving-certs
@@ -138,12 +155,20 @@ spec:
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
-      {{ end }}      
+      {{- end }}      
       securityContext:
         runAsNonRoot: true
         seccompProfile:
           type: "RuntimeDefault"
       volumes:
+      {{- if .Values.wso2.apk.secretProviderClass.enabled }}
+        - name: secret-provider-class
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ template "apk-helm.resource.prefix" . }}-secrets
+      {{- else }}
         - name: common-controller-keystore-secret-volume
           secret:
           {{- if and .Values.wso2.apk.dp.commonController.deployment.configs .Values.wso2.apk.dp.commonController.deployment.configs.tls }}
@@ -152,26 +177,27 @@ spec:
             secretName: {{ template "apk-helm.resource.prefix" . }}-common-controller-server-cert
           {{- end }}
             defaultMode: 420
-        - name: log-conf-volume
-          configMap: 
-            name: {{ template "apk-helm.resource.prefix" . }}-common-log-conf
+        {{- if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
+        - name: ratelimiter-truststore-secret-volume
+          secret:
+          {{- if and .Values.wso2.apk.dp.ratelimiter.deployment.configs .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls }}
+            secretName: {{ .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls.secretName | default (printf "%s-ratelimiter-server-cert" (include "apk-helm.resource.prefix" .)) }}
+          {{- else }}
+            secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
+          {{- end }}
+        {{- end }}
         - name: adapter-webhook-server-cert
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-webhook-server-cert
             defaultMode: 420
+      {{- end }}
+        - name: log-conf-volume
+          configMap: 
+            name: {{ template "apk-helm.resource.prefix" . }}-common-log-conf
       {{- if .Values.integrationTest.addHelmConfigsRequiredForTests }}
         - name: sts-shared-auth-key
           secret:
             secretName: {{ template "apk-helm.resource.prefix" . }}-sts-shared-auth-key
             defaultMode: 420
       {{- end }}
-      {{ if and .Values.wso2.apk.dp.enabled .Values.wso2.apk.dp.ratelimiter.enabled }}
-        - name: ratelimiter-truststore-secret-volume
-          secret:
-            {{- if and .Values.wso2.apk.dp.ratelimiter.deployment.configs .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls }}
-            secretName: {{ .Values.wso2.apk.dp.ratelimiter.deployment.configs.tls.secretName | default (printf "%s-ratelimiter-server-cert" (include "apk-helm.resource.prefix" .)) }}
-          {{- else }}
-            secretName: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-server-cert
-          {{- end }}
-      {{ end }}
 {{- end -}}

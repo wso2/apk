@@ -19,8 +19,17 @@ wso2:
   
     # -- Optionally specify image pull secrets.
     imagePullSecrets: ""
-    
+
+  choreo:
+    deployment:
+        enabled: false
+      # This skips the following
+      # 1. Common Controller Notification API
+
   apk:
+    secretProviderClass:
+      # -- Enable the use of a secret provider class instead of mounting secrets as files
+      enabled: false
     helmHooks:
       # -- Helm hooks for cleaning up webhooks before installing, upgrading and uninstalling
       webhooksCleanupEnabled: true

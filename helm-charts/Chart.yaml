@@ -1,8 +1,8 @@
 apiVersion: v2
-name: choreo-apk-helm
+name: choreo-apk
 description: A Helm chart for APK components
 type: application
-version: 1.3.0-8
+version: 1.3.0-1
 appVersion: "1.3.0"
 dependencies:
   - name: postgresql
@@ -13,7 +13,3 @@ dependencies:
     version: "20.10.0"
     repository: "https://charts.bitnami.com/bitnami"
     condition: redis.enabled
-  - name: cert-manager
-    version: "v1.17.1"
-    repository: "https://charts.jetstack.io"
-    condition: certmanager.enabled
