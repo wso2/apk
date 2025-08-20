@@ -20,26 +20,26 @@ Feature: API Deployment and invocation
     And the response status code should be 200
     And I send "DELETE" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
     And the response status code should be 200
-    # Then I set headers
-    #   | Authorization | Bearer invalidToken           |
-    #   | Host          | carbon.super.gw.wso2.com      |
-    # And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
-    # And the response status code should be 401
-    # And I send "POST" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
-    # And the response status code should be 401
-    # And I send "PUT" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
-    # And the response status code should be 401
-    # And I send "DELETE" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
-    # And the response status code should be 401
+    Then I set headers
+      | Authorization | Bearer invalidToken           |
+      | Host          | carbon.super.gw.wso2.com      |
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
+    And the response status code should be 401
+    And I send "POST" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
+    And the response status code should be 401
+    And I send "PUT" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
+    And the response status code should be 401
+    And I send "DELETE" request to "https://default.gw.wso2.com:9095/test/3.14/employee/12" with body ""
+    And the response status code should be 401
 
   Scenario: Deploying an API with new version
     Given The system is ready
     And I have a valid subscription
-    When I use the APK Conf file "artifacts/apk-confs/new_version_conf.yaml"
+    When I use the APK Conf file "artifacts/apk-confs/new_version_conf_new.yaml"
     And the definition file "artifacts/definitions/employees_api_new.json"
     And make the API deployment request
     Then the response status code should be 200
-    When I use the APK Conf file "artifacts/apk-confs/new_version_conf2.yaml"
+    When I use the APK Conf file "artifacts/apk-confs/new_version_conf2_new.yaml"
     And the definition file "artifacts/definitions/employees_api_new.json"
     And make the API deployment request
     Then the response status code should be 200
@@ -47,45 +47,45 @@ Feature: API Deployment and invocation
       | Authorization | Bearer ${accessToken}         |
       | Host          | carbon.super.gw.wso2.com      |
     And I wait for next minute
-    # And I send "GET" request to "https://default.gw.wso2.com:9095/test-version/1.0/employee/" with body ""
-    # And I eventually receive 200 response code, not accepting
-    #   | 429 |
-    # And I send "GET" request to "https://default.gw.wso2.com:9095/test-version/2.0/employee/" with body ""
-    # And I eventually receive 200 response code, not accepting
-    #   | 429 |
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test-version/1.0/employee/" with body ""
+    And I eventually receive 200 response code, not accepting
+      | 429 |
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test-version/2.0/employee/" with body ""
+    And I eventually receive 200 response code, not accepting
+      | 429 |
 
-  # Scenario: Deploying an API with default version
-  #   Given The system is ready
-  #   And I have a valid subscription
-  #   When I use the APK Conf file "artifacts/apk-confs/default_version_conf.yaml"
-  #   And the definition file "artifacts/definitions/employees_api.json"
-  #   And make the API deployment request
-  #   Then the response status code should be 200
-  #   Then I set headers
-  #     | Authorization | Bearer ${accessToken}         |
-  #     | Host          | carbon.super.gw.wso2.com      |
-  #   And I send "GET" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/" with body ""
-  #   And I eventually receive 200 response code, not accepting
-  #     | 429 |
-  #   And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/" with body ""
-  #   And the response status code should be 200
-  #   And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/3.14/test/" with body ""
-  #   And the response status code should be 404
-  #   And I send "PUT" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/12" with body ""
-  #   And the response status code should be 200
-  #   And I send "DELETE" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/12" with body ""
-  #   And the response status code should be 200
-  #   And I send "GET" request to "https://default.gw.wso2.com:9095/test-default/employee/" with body ""
-  #   And I eventually receive 200 response code, not accepting
-  #     | 429 |
-  #   And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/employee/" with body ""
-  #   And the response status code should be 200
-  #   And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/test/" with body ""
-  #   And the response status code should be 404
-  #   And I send "PUT" request to "https://default.gw.wso2.com:9095/test-default/employee/12" with body ""
-  #   And the response status code should be 200
-  #   And I send "DELETE" request to "https://default.gw.wso2.com:9095/test-default/employee/12" with body ""
-  #   And the response status code should be 200
+  Scenario: Deploying an API with default version
+    Given The system is ready
+    And I have a valid subscription
+    When I use the APK Conf file "artifacts/apk-confs/default_version_conf_new.yaml"
+    And the definition file "artifacts/definitions/employees_api_new.json"
+    And make the API deployment request
+    Then the response status code should be 200
+    Then I set headers
+      | Authorization | Bearer ${accessToken}         |
+      | Host          | carbon.super.gw.wso2.com      |
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/" with body ""
+    And I eventually receive 200 response code, not accepting
+      | 429 |
+    And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/" with body ""
+    And the response status code should be 200
+    And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/3.14/test/" with body ""
+    And the response status code should be 404
+    And I send "PUT" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/12" with body ""
+    And the response status code should be 200
+    And I send "DELETE" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/12" with body ""
+    And the response status code should be 200
+    And I send "GET" request to "https://default.gw.wso2.com:9095/test-default/employee/" with body ""
+    And I eventually receive 200 response code, not accepting
+      | 429 |
+    And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/employee/" with body ""
+    And the response status code should be 200
+    And I send "POST" request to "https://default.gw.wso2.com:9095/test-default/test/" with body ""
+    And the response status code should be 404
+    And I send "PUT" request to "https://default.gw.wso2.com:9095/test-default/employee/12" with body ""
+    And the response status code should be 200
+    And I send "DELETE" request to "https://default.gw.wso2.com:9095/test-default/employee/12" with body ""
+    And the response status code should be 200
 
   # Scenario: Scope Validation
   #   Given The system is ready
@@ -139,7 +139,7 @@ Feature: API Deployment and invocation
     Examples:
       | apiID                                    | expectedStatusCode |
       | af081022ed421049c5db87e8cbce67d3477d8415 | 202                |
-      # | default-version-api-test                 | 202                |
+      | default-version-api-test                 | 202                |
       # | emp-api-test-scope                       | 202                |
       | version-api-test                         | 202                |
       | version-api-test2                        | 202                |
