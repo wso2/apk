@@ -25,5 +25,5 @@ Feature: API different endpoint resource level
     Then the response status code should be <expectedStatusCode>
 
     Examples:
-      | apiID                 | expectedStatusCode  |
+      | apiID                  | expectedStatusCode  |
       | different-endpoint-resource-level-test | 202 |
