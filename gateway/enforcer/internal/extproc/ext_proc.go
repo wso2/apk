@@ -726,46 +726,44 @@ func (s *ExternalProcessingServer) extractJWTAuthnNamespaceData(data *corev3.Met
 		if !exists || jwtAuthnData == nil {
 			s.cfg.Logger.Sugar().Debug("JWT Authn data not found")
 		} else {
-			for key, structValue := range jwtAuthnData.Fields {
-				if key == constants.JWTAuthnPayloadInMetadata {
-					s.cfg.Logger.Sugar().Debugf("JWT Authn Payload: %s", structValue.GetStringValue())
-					jwtPayload := structValue.GetStructValue()
-					if jwtPayload != nil {
-						for key, value := range jwtPayload.GetFields() {
-							if value != nil {
-								switch value.Kind.(type) {
-								case *structpb.Value_StringValue:
-									claims[key] = value.GetStringValue()
-								case *structpb.Value_NumberValue:
-									claims[key] = value.GetNumberValue()
-								case *structpb.Value_BoolValue:
-									claims[key] = value.GetBoolValue()
-								case *structpb.Value_ListValue:
-									jsonData, err := value.MarshalJSON()
+			for _, structValue := range jwtAuthnData.Fields {
+				s.cfg.Logger.Sugar().Debugf("JWT Authn Payload: %s", structValue.GetStringValue())
+				jwtPayload := structValue.GetStructValue()
+				if jwtPayload != nil {
+					for key, value := range jwtPayload.GetFields() {
+						if value != nil {
+							switch value.Kind.(type) {
+							case *structpb.Value_StringValue:
+								claims[key] = value.GetStringValue()
+							case *structpb.Value_NumberValue:
+								claims[key] = value.GetNumberValue()
+							case *structpb.Value_BoolValue:
+								claims[key] = value.GetBoolValue()
+							case *structpb.Value_ListValue:
+								jsonData, err := value.MarshalJSON()
+								if err == nil {
+									var list []interface{}
+									err = json.Unmarshal(jsonData, &list)
 									if err == nil {
-										var list []interface{}
-										err = json.Unmarshal(jsonData, &list)
-										if err == nil {
-											claims[key] = list
-										} else {
-											s.cfg.Logger.Sugar().Errorf("Failed to unmarshal list value for key %s: %v", key, err)
-										}
+										claims[key] = list
 									} else {
-										s.cfg.Logger.Sugar().Errorf("Failed to marshal JSON for list value for key %s: %v", key, err)
+										s.cfg.Logger.Sugar().Errorf("Failed to unmarshal list value for key %s: %v", key, err)
 									}
-								case *structpb.Value_StructValue:
-									jsonData, err := value.MarshalJSON()
+								} else {
+									s.cfg.Logger.Sugar().Errorf("Failed to marshal JSON for list value for key %s: %v", key, err)
+								}
+							case *structpb.Value_StructValue:
+								jsonData, err := value.MarshalJSON()
+								if err == nil {
+									var mapData map[string]interface{}
+									err = json.Unmarshal(jsonData, &mapData)
 									if err == nil {
-										var mapData map[string]interface{}
-										err = json.Unmarshal(jsonData, &mapData)
-										if err == nil {
-											claims[key] = mapData
-										} else {
-											s.cfg.Logger.Sugar().Errorf("Failed to unmarshal struct value for key %s: %v", key, err)
-										}
+										claims[key] = mapData
 									} else {
-										s.cfg.Logger.Sugar().Errorf("Failed to marshal JSON for struct value for key %s: %v", key, err)
+										s.cfg.Logger.Sugar().Errorf("Failed to unmarshal struct value for key %s: %v", key, err)
 									}
+								} else {
+									s.cfg.Logger.Sugar().Errorf("Failed to marshal JSON for struct value for key %s: %v", key, err)
 								}
 							}
 						}

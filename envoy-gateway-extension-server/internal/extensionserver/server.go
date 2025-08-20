@@ -81,7 +81,6 @@ func (s *Server) PostHTTPListenerModify(ctx context.Context, req *pb.PostHTTPLis
 					// Not a RemoteJwks, maybe it's a LocalJwks or nil
 					s.cfg.Logger.Sugar().Info("jwksSourceSpecifier is not of type *JwtProvider_RemoteJwks")
 				}
-				provider.PayloadInMetadata = constants.JWTAuthnPayloadInMetadata
 			}
 		}
 		// Add or update the Basic Authentication filter in the HCM

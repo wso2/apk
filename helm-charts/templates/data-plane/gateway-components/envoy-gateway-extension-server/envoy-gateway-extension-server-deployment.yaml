@@ -44,7 +44,22 @@ spec:
         - name: envoy-gateway-extension-server
           image: {{ .Values.wso2.kgw.dp.envoyGatewayExtensionServer.deployment.image }}
           imagePullPolicy: {{ .Values.wso2.kgw.dp.envoyGatewayExtensionServer.deployment.imagePullPolicy }}
+          {{- if .Values.wso2.kgw.dp.envoyGatewayExtensionServer.debug }}
+          command: ["dlv"]
+          args:
+            - "exec"
+            - "./envoy-gateway-extension-server"
+            - "--headless"
+            - "--listen=:2345"
+            - "--api-version=2"
+            - "--accept-multiclient"
+            - "--log"
+          {{- end }}
           ports:
+            {{- if .Values.wso2.kgw.dp.envoyGatewayExtensionServer.debug }}
+            - containerPort: 2345
+              name: debug
+            {{- end }}
             - containerPort: 5005
 {{ include "kubernetes-gateway-helm.deployment.resources" .Values.wso2.kgw.dp.envoyGatewayExtensionServer.deployment.resources | indent 10 }}
 {{ include "kubernetes-gateway-helm.deployment.env" .Values.wso2.kgw.dp.envoyGatewayExtensionServer.deployment.env | indent 10 }}
