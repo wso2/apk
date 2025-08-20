@@ -128,7 +128,7 @@ jobs:
         helm dependency build
         helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
-        --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service-go:${{ github.sha }} \
+        --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
         --set wso2.kgw.dp.configdeployer.deployment.readinessProbe.failureThreshold=10 \
         --set wso2.kgw.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-adapter:${{ github.sha }} \
         --set wso2.kgw.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-common-controller:${{ github.sha }} \
@@ -256,7 +256,7 @@ jobs:
         helm dependency build
         helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
-        --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service-go:${{ github.sha }} \
+        --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
         --set wso2.kgw.dp.configdeployer.deployment.readinessProbe.failureThreshold=10 \
         --set wso2.kgw.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-adapter:${{ github.sha }} \
         --set wso2.kgw.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-common-controller:${{ github.sha }} \
