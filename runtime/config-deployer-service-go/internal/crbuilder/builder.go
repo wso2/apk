@@ -1035,7 +1035,6 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 // generateDefaultIDPJWTProvider generates a default JWT provider configuration for the inbuilt IDP.
 func generateDefaultIDPJWTProvider(namespace string) eg.JWTProvider {
 	k8sRelease := config.GetConfig().K8sReleaseName
-	fmt.Printf("K8s Release: %s\n", k8sRelease)
 	k8sResourcePrefix := fmt.Sprintf("%s-%s", k8sRelease, config.GetConfig().K8sResourcePrefix)
 	jwtProviderName := fmt.Sprintf("%s-idp-jwt-issuer", k8sResourcePrefix)
 	jwksURI := fmt.Sprintf("https://%s-idp-ds-service.%s.svc:%s/oauth2/jwks", k8sResourcePrefix, namespace,
