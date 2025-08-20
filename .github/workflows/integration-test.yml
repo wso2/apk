@@ -116,7 +116,7 @@ jobs:
         cd apk-repo
         gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
         git checkout pr-${{ github.event.number }}
-        git merge origin/2.x
+        git merge origin/main
 
     - name: Helm release deploy
       if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
@@ -244,7 +244,7 @@ jobs:
         cd apk-repo
         gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
         git checkout pr-${{ github.event.number }}
-        git merge origin/2.x
+        git merge origin/main
 
     - name: Helm release deploy
       if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')

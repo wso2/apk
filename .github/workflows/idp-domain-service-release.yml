@@ -35,7 +35,7 @@ on:
     paths:
       - '**/idp/idp-domain-service/**'
     branches:
-      - '2.x'
+      - 'main'
 env:
   GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
 concurrency:
@@ -71,7 +71,7 @@ jobs:
           cd apk-repo
           gh pr checkout ${{ github.event.number }} -b pr-${{ github.event.number }}
           git checkout pr-${{ github.event.number }}
-          git merge origin/2.x
+          git merge origin/main
       - name: Run Gradle build
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_version != '' && github.event.inputs.next_version != ''   
         shell: sh
