@@ -137,23 +137,29 @@
           "type": "string",
           "enum": [
             "OAuth2"
-          ]
+          ],
+          "description": "The type of authentication to be used, e.g., OAuth2, etc."
         },
         "sendTokenToUpstream": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Specifies whether to send the authentication token to the upstream service."
         },
         "enabled": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Specifies whether authentication is enabled for the API."
         },
         "headerName": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the header field used to send the authentication token."
         },
         "queryParamName": {
-          "type": "string"
+          "type": "string",
+          "description": "The name of the query parameter used to send the authentication token."
         },
         "headerEnable": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Specifies whether the authentication token can be sent in the header."
         },
         "queryParamEnable": {
           "type": "boolean"
@@ -210,7 +216,8 @@
           "type": "string",
           "enum": [
             "mTLS"
-          ]
+          ],
+          "description": "The type of authentication to be used, e.g., mTLS, etc."
         },
         "required": {
           "type": "string",
@@ -218,11 +225,13 @@
           "enum": [
             "mandatory",
             "optional"
-          ]
+          ],
+          "description": "Specifies whether mTLS is mandatory or optional"
         },
         "enabled": {
           "type": "boolean",
-          "default": true
+          "default": true,
+          "description": "Specifies whether mTLS authentication is enabled for the API."
         },
         "certificates": {
           "type": "array",
@@ -230,13 +239,16 @@
             "type": "object",
             "properties": {
               "name": {
-                "type": "string"
+                "type": "string",
+                "description": "Name of the config map containing the certificate"
               },
               "key": {
-                "type": "string"
+                "type": "string",
+                "description": "The key of the certificate value"
               }
             }
-          }
+          },
+          "description": "The list of certificates used for mTLS"
         }
       },
       "additionalProperties": false
@@ -510,13 +522,13 @@
           "type": "array",
           "items": {
             "$ref": "#/schemas/EndpointConfiguration"
-          }   
+          }
         },
         "sandbox": {
           "type": "array",
           "items": {
             "$ref": "#/schemas/EndpointConfiguration"
-          } 
+          }
         }
       },
       "additionalProperties": false
@@ -666,8 +678,8 @@
       ],
       "description": "Endpoint AI ratelimit related configurations of the API",
       "properties": {
-        "enabled" : {
-          "type" : "boolean",
+        "enabled": {
+          "type": "boolean",
           "default": true,
           "description": "States whether the AI ratelimit is turned on or not"
         },
