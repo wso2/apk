@@ -24,6 +24,20 @@ app.kubernetes.io/app: {{ .app }}
 app.kubernetes.io/release: {{ .root.Release.Name }}
 {{- end }}
 
+{{/*
+Common labels
+*/}}
+{{- define "apk-helm.labels" -}}
+choreo.component: choreo-apk
+{{- if .Values.labels }}
+{{- if .Values.labels.common }}
+{{- range $key, $val := .Values.labels.common }}
+{{ $key }}: {{ $val }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "apk-helm.deployment.affinity" -}}
 {{- $value := typeIs "string" .value | ternary .value (.value | toYaml) }}
 {{- if  (not .value) -}}

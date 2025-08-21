@@ -20,6 +20,8 @@ kind: Deployment
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-ratelimiter-deployment
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apk-helm.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.wso2.apk.dp.ratelimiter.deployment.replicas }}
   strategy:
@@ -27,10 +29,12 @@ spec:
   selector:
     matchLabels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "ratelimiter" ) | indent 6}}
+      {{- include "apk-helm.labels" . | nindent 6 }}
   template:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "ratelimiter" ) | indent 8}}
+        {{- include "apk-helm.labels" . | nindent 8 }}
     spec:
       affinity: {{- include "apk-helm.deployment.affinity" ( dict "value" .Values.wso2.apk.dp.ratelimiter.deployment.affinity "app" "rate-limiter" "context" $) | nindent 8 }}
       {{- if .Values.wso2.apk.dp.ratelimiter.deployment.nodeSelector }}

@@ -24,6 +24,8 @@ kind: Certificate
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-localhost-listener-cert
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apk-helm.labels" . | nindent 4 }}
 spec:
   dnsNames:
   - "localhost"
