@@ -57,8 +57,8 @@ wso2:
               memory: "64Mi"
               cpu: "50m"
             limits:
-              memory: "128Mi"
-              cpu: "200m"
+              memory: "256Mi"
+              cpu: "400m"
           readinessProbe:
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -70,7 +70,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/kgw-envoy-gateway-extension-server:2.0.0-m1
+          image: wso2/kgw-envoy-gateway-extension-server:2.0.0-alpha
           security:
             sslHostname: "adapter"
         service:
@@ -96,7 +96,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/kgw-config-deployer-service:2.0.0-m1
+          image: wso2/kgw-config-deployer-service:2.0.0-alpha
           # debug: true
           # configs:
           #   tls:
@@ -122,7 +122,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/apk-common-controller:2.0.0-m1
+          image: wso2/kgw-common-controller:2.0.0-alpha
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -149,7 +149,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/kgw-enforcer:2.0.0-m1
+            image: wso2/kgw-enforcer:2.0.0-alpha
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -255,6 +255,11 @@ envoy:
           fqdn:
             hostname: envoy-gateway-extension-server-service.default.svc.cluster.local
             port: 5005
+      rateLimit:
+        backend:
+          type: Redis
+          redis:
+            url: redis-master.default.svc.cluster.local:6379
 
   createNamespace: false
 
@@ -329,31 +334,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/kgw-idp-domain-service:2.0.0-m1
-  idpui:
-    deployment:
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "50m"
-        limits:
-          memory: "256Mi"
-          cpu: "100m"
-      readinessProbe:
-        initialDelaySeconds: 20
-        periodSeconds: 20
-        failureThreshold: 5
-      livenessProbe:
-        initialDelaySeconds: 20
-        periodSeconds: 20
-        failureThreshold: 5
-      strategy: RollingUpdate
-      replicas: 1
-      imagePullPolicy: Always
-      image: wso2/kgw-idp-ui:2.0.0-m1
-    configs:
-      idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
-      idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
+      image: wso2/kgw-idp-domain-service:2.0.0-alpha
 
 certmanager:
   enabled: true
