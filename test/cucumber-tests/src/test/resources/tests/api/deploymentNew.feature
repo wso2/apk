@@ -1,11 +1,11 @@
 Feature: API Deployment
-  # Scenario: Deploying an API without api create scope
-  #   Given The system is ready
-  #   And I have a valid subscription without api deploy permission
-  #   When I use the APK Conf file "artifacts/apk-confs/cors_API.apk-conf"
-  #   And the definition file "artifacts/definitions/cors_api.yaml"
-  #   And make the API deployment request
-  #   Then the response status code should be 403
+  Scenario: Deploying an API without api create scope
+    Given The system is ready
+    And I have a valid subscription without api deploy permission
+    When I use the APK Conf file "artifacts/apk-confs/cors_API.apk-conf"
+    And the definition file "artifacts/definitions/cors_api.yaml"
+    And make the API deployment request
+    Then the response status code should be 403
     
   Scenario: Deploying an API
     Given The system is ready
@@ -26,11 +26,11 @@ Feature: API Deployment
     And the response body should contain
       |APK configuration is not valid: invalid_type: Invalid type. Expected: boolean, given: string|
   
-  # Scenario Outline: Undeploy an API without api create scope
-  #   Given The system is ready
-  #   And I have a valid subscription without api deploy permission
-  #   When I undeploy the API whose ID is "<apiID>"
-  #   Then the response status code should be 403
+  Scenario Outline: Undeploy an API without api create scope
+    Given The system is ready
+    And I have a valid subscription without api deploy permission
+    When I undeploy the API whose ID is "<apiID>"
+    Then the response status code should be 403
 
   Scenario Outline: Undeploy an API
     Given The system is ready

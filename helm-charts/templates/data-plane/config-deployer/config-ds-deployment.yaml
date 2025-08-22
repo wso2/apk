@@ -53,6 +53,8 @@ spec:
               protocol: "TCP"
             {{ end }}
 {{ include "kubernetes-gateway-helm.deployment.env" .Values.wso2.kgw.dp.configdeployer.deployment.env | indent 10 }}
+            - name: K8S_RELEASE_NAME
+              value: "{{ .Release.Name }}"
             {{ if and .Values.wso2.kgw.metrics .Values.wso2.kgw.metrics.enabled }}
             - name: METRICS_ENABLED
               value: "true"
