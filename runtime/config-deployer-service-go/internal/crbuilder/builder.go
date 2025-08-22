@@ -124,6 +124,7 @@ func safeHTTPMethod(verb *string) *gatewayv1.HTTPMethod {
 	return &fallback
 }
 
+// CreateResources creates Kubernetes resources based on the provided APIResourceBundle.
 func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object, error) {
 	if apiResourceBundle == nil || apiResourceBundle.APKConf == nil || apiResourceBundle.APKConf.EndpointConfigurations == nil {
 		return nil, fmt.Errorf("invalid APIResourceBundle")
@@ -482,7 +483,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			apiResourceBundle.Organization)
 		spName = fmt.Sprintf("%s-%d", spName, i+1)
 		sp := generateSecurityPolicy(spName, isSecured, scopes, targetRefs, cors, apiResourceBundle.APKConf.KeyManagers,
-			apiResourceBundle.APKConf.Authentication)
+			apiResourceBundle.APKConf.Authentication, apiResourceBundle.Namespace)
 		objects = append(objects, sp)
 
 	}
@@ -513,7 +514,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 			parentName := config.GetConfig().ParentGatewayName
 			parentNamespace := bundle.Namespace
 			parentSectionName := config.GetConfig().ParentGatewaySectionName
-			routeName := fmt.Sprintf("%s-%d-%d", crName, i+1, j+1)
+			routeName := getHTTPRouteCRName(crName, i, j, withVersion)
 			route := gatewayv1.HTTPRoute{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: "gateway.networking.k8s.io/v1",
@@ -716,6 +717,16 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 		}
 	}
 	return routesMap, objects
+}
+
+func getHTTPRouteCRName(crName string, i int, j int, includesVersion bool) string {
+	var withVersion string
+	if includesVersion {
+		withVersion = "1"
+	} else {
+		withVersion = "0"
+	}
+	return fmt.Sprintf("%s-%d-%d-%s", crName, i+1, j+1, withVersion)
 }
 
 func ptrTo[T any](v T) *T {
@@ -921,8 +932,9 @@ func pickIsSecuredAndScopes(apkOperations []model.APKOperations) (bool, []string
 	return isSecured, scopes
 }
 
+// generateSecurityPolicy generates a SecurityPolicy object based on the provided parameters.
 func generateSecurityPolicy(name string, isSecured bool, scopes []string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName,
-	cors *model.CORSConfiguration, kms []model.KeyManager, auths []model.AuthenticationRequest) *eg.SecurityPolicy {
+	cors *model.CORSConfiguration, kms []model.KeyManager, auths []model.AuthenticationRequest, namespace string) *eg.SecurityPolicy {
 	sp := &eg.SecurityPolicy{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       constants.K8sKindSecurityPolicy,
@@ -991,6 +1003,12 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 				sp.Spec.JWT.Providers = append(sp.Spec.JWT.Providers, provider)
 			}
 		}
+		if sp.Spec.JWT == nil {
+			defaultProvider := generateDefaultIDPJWTProvider(namespace)
+			sp.Spec.JWT = &eg.JWT{
+				Providers: []eg.JWTProvider{defaultProvider},
+			}
+		}
 		if len(scopes) > 0 {
 			rules := make([]eg.AuthorizationRule, 0, len(kms))
 			jwtScopes := ConvertStringsToJWTScope(scopes)
@@ -1012,6 +1030,41 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 		}
 	}
 	return sp
+}
+
+// generateDefaultIDPJWTProvider generates a default JWT provider configuration for the inbuilt IDP.
+func generateDefaultIDPJWTProvider(namespace string) eg.JWTProvider {
+	k8sRelease := config.GetConfig().K8sReleaseName
+	k8sResourcePrefix := fmt.Sprintf("%s-%s", k8sRelease, config.GetConfig().K8sResourcePrefix)
+	jwtProviderName := fmt.Sprintf("%s-idp-jwt-issuer", k8sResourcePrefix)
+	jwksURI := fmt.Sprintf("https://%s-idp-ds-service.%s.svc:%s/oauth2/jwks", k8sResourcePrefix, namespace,
+		config.GetConfig().ConfigDSServerPort)
+	defaultDSBackendName := fmt.Sprintf("%s-oauth-ds-backend", k8sResourcePrefix)
+
+	provider := eg.JWTProvider{
+		Name: jwtProviderName,
+		RemoteJWKS: &eg.RemoteJWKS{
+			URI: jwksURI,
+		},
+	}
+	provider.RemoteJWKS.BackendRefs = []eg.BackendRef{
+		{
+			BackendObjectReference: gatewayv1.BackendObjectReference{
+				Group:     ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
+				Kind:      ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
+				Name:      gatewayv1.ObjectName(defaultDSBackendName),
+				Namespace: ptrTo(gatewayv1.Namespace(namespace)),
+				Port: ptrTo(gatewayv1.PortNumber(func() int32 {
+					port, err := strconv.Atoi(config.GetConfig().ConfigDSServerPort)
+					if err != nil {
+						return 9443
+					}
+					return int32(port)
+				}())),
+			},
+		},
+	}
+	return provider
 }
 
 var originPattern = regexp.MustCompile(`^(\*|https?:\/\/(\*|(\*\.)?(([\w-]+\.?)+)?[\w-]+)(:\d{1,5})?)$`)

@@ -1,0 +1,25 @@
+---
+name: "APIDifferentEndpointResourceLevel"
+basePath: "/test-different-endpoint-resource-level"
+id: "different-endpoint-resource-level-test"
+version: "3.14"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    - endpoint: "https://httpbin.org/anything"
+operations:
+  - target: "/endpoint1"
+    verb: "GET"
+    secured: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        - endpoint: "https://httpbin.org/anything/base1"
+  - target: "/endpoint2"
+    verb: "GET"
+    secured: true
+    scopes: []
+    endpointConfigurations:
+      production:
+        - endpoint: "https://httpbin.org/anything/base2"
