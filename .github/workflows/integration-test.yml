@@ -130,6 +130,7 @@ jobs:
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
         --set wso2.kgw.dp.configdeployer.deployment.readinessProbe.failureThreshold=10 \
+        --set wso2.kgw.dp.configdeployer.deployment.env.K8S_RELEASE_NAME=apk-test-setup \
         --set wso2.kgw.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-adapter:${{ github.sha }} \
         --set wso2.kgw.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-common-controller:${{ github.sha }} \
         --set wso2.kgw.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-enforcer:${{ github.sha }} \
@@ -258,6 +259,7 @@ jobs:
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
         --set wso2.kgw.dp.configdeployer.deployment.readinessProbe.failureThreshold=10 \
+        --set wso2.kgw.dp.configdeployer.deployment.env.K8S_RELEASE_NAME=apk-test-setup \
         --set wso2.kgw.dp.adapter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-adapter:${{ github.sha }} \
         --set wso2.kgw.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-common-controller:${{ github.sha }} \
         --set wso2.kgw.dp.gatewayRuntime.deployment.enforcer.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-enforcer:${{ github.sha }} \
