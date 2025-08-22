@@ -1,0 +1,411 @@
+# Copyright (c) 2022, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+wso2:
+  subscription:
+    imagePullSecrets: ""
+
+  apk:
+    webhooks:
+      validatingwebhookconfigurations: true
+      mutatingwebhookconfigurations: true
+      conversionwebhookconfigurations: true
+    auth:
+      enabled: true
+      enableServiceAccountCreation: true
+      enableClusterRoleCreation: true
+      serviceAccountName: wso2apk-platform
+      roleName: wso2apk-role
+    listener:
+      hostname: "api.am.wso2.com"
+      port: 9095
+      # secretName: "idp-tls"
+    idp:
+      issuer: "https://idp.am.wso2.com/token"
+      usernameClaim: "sub"
+      organizationClaim: "organization"
+      groupsClaim: "groups"
+      consumerKeyClaim: "clientId"
+      # organizationResolver: "controlPlane" # controlplane,none
+      # tls:
+      #   secretName: "wso2apk-idp-certificates"
+      #   fileName: "idp.crt"
+      # signing:
+      #   jwksEndpoint: "https://idp.am.wso2.com:9095/oauth2/jwks"
+      #   secretName: "wso2apk-idp-signing"
+      #   fileName: "idp.crt"
+    cp:
+      enabledSubscription: true
+      host: "apim-apk-agent-service.apk.svc.cluster.local"
+      skipSSLVerification: true
+    dp:
+      enabled: true
+      gateway:
+        listener:
+          hostname: "gw.wso2.com"
+        service: {}
+          # secretName: "idp-tls"
+      # partitionServer:
+      #   enabled: false
+      #   host: "https://control-plane-wso2-apk-partition-server.control-plane.svc.cluster.local"
+      #   serviceBasePath: "/api/publisher/v1"
+      #   partitionName: "default"
+      #   hostnameVerificationEnable: true
+      #   tls:
+      #     secretName: "partition-server-cert"
+      #     fileName: "certificate.crt"
+      #   headers:
+      #     - name: "apiKey"
+      #       value: "123-456-789"
+      configdeployer:
+        enabled: true
+        deployment:
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: RollingUpdate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/apk-config-deployer-service:1.1.0
+          # configs:
+          #   tls:
+          #     secretName: "my-secret"
+          #     certKeyFilename: "tls.key"
+          #     certFilename: "certchain.crt"
+      adapter:
+        deployment:
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: RollingUpdate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/apk-adapter:1.1.0
+          security:
+            sslHostname: "adapter"
+        #     logging:
+        #       level: "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+        # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
+        # configs:
+        #   apiNamespaces:
+        #     - "apk-v12"
+        #   tls:
+        #     secretName: "adapter-cert"
+        #     certKeyFilename: ""
+        #     certFilename: ""
+      commonController:
+        deployment:
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: RollingUpdate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/apk-common-controller:1.1.0
+          security:
+            sslHostname: "commoncontroller"
+          # configs:
+          #   apiNamespaces:
+          #     - "apk-v12"
+      ratelimiter:
+        enabled: true
+        deployment:
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            failureThreshold: 5
+          strategy: RollingUpdate
+          replicas: 1
+          imagePullPolicy: Always
+          image: wso2/apk-ratelimiter:1.1.0
+          security:
+            sslHostname: "ratelimiter"
+          # configs:
+          #   tls:
+          #     secretName: "ratelimiter-cert"
+          #     certKeyFilename: ""
+          #     certFilename: ""
+          #     certCAFilename: ""
+      gatewayRuntime:
+        deployment:
+          replicas: 1
+          router:
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "200m"
+              limits:
+                memory: "1028Mi"
+                cpu: "1000m"
+            readinessProbe:
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            livenessProbe:
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            strategy: RollingUpdate
+            imagePullPolicy: Always
+            image: wso2/apk-router:1.1.0
+            # configs:
+            #   tls:
+            #     secretName: "router-cert"
+            #     certKeyFilename: ""
+            #     certFilename: ""
+            #     logging:
+            #       wireLogs:
+            #         enable: true
+            #       accessLogs:
+            #         enable: true
+            #     env:
+            #       TRAILING_ARGS: "--log-level trace"
+          enforcer:
+            resources:
+              requests:
+                memory: "512Mi"
+                cpu: "500m"
+              limits:
+                memory: "1028Mi"
+                cpu: "1000m"
+            readinessProbe:
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            livenessProbe:
+              initialDelaySeconds: 20
+              periodSeconds: 20
+              failureThreshold: 5
+            strategy: RollingUpdate
+            imagePullPolicy: Always
+            image: wso2/apk-enforcer:1.1.0
+            security:
+              sslHostname: "enforcer"
+            #            logging:
+            #              level: DEBUG
+            configs:
+              #              tls:
+              #                secretName: "router-cert"
+              #                certKeyFilename: ""
+              #                certFilename: ""
+              JWKSClient:
+                skipSSLVerification: false
+                hostnameVerifier: "AllowAll"
+
+    metrics:
+      enabled: false
+      # configDSBalHost: 0.0.0.0
+      # idpDSBalHost: 0.0.0.0
+      # statsd:
+      #   image:
+      #     repository: prom/statsd-exporter
+      #     tag: v0.26.0
+      #   imagePullPolicy: IfNotPresent
+      #   resources:
+      #     limits:
+      #       memory: 128Mi
+      #     requests:
+      #       cpu: 0.1
+      #       memory: 64Mi
+idp:
+  enabled: true
+  listener:
+    hostname: "idp.am.wso2.com"
+    # secretName: "idp-tls"
+  database:
+    driver: "org.postgresql.Driver"
+    url: "jdbc:postgresql://wso2apk-db-service:5432/WSO2AM_DB"
+    host: "wso2apk-db-service"
+    port: 5432
+    databaseName: "WSO2AM_DB"
+    username: "wso2carbon"
+    secretName: "apk-db-secret"
+    secretKey: "DB_PASSWORD"
+    validationQuery: "SELECT 1"
+    validationTimeout: 250
+  idpds:
+    configs:
+      issuer: "https://idp.am.wso2.com/token"
+      keyId: "gateway_certificate_alias"
+      hostname: "idp.am.wso2.com"
+      loginPageURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login"
+      loginErrorPageUrl: "https://idp.am.wso2.com:9095/authenticationEndpoint/error"
+      loginCallBackURl: "https://idp.am.wso2.com:9095/authenticationEndpoint/login-callback"
+    deployment:
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "200m"
+        limits:
+          memory: "1024Mi"
+          cpu: "500m"
+      readinessProbe:
+        initialDelaySeconds: 20
+        periodSeconds: 20
+        failureThreshold: 5
+      livenessProbe:
+        initialDelaySeconds: 20
+        periodSeconds: 20
+        failureThreshold: 5
+      strategy: RollingUpdate
+      replicas: 1
+      imagePullPolicy: Always
+      image: wso2/apk-idp-domain-service:1.1.0
+  idpui:
+    deployment:
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "256Mi"
+          cpu: "100m"
+      readinessProbe:
+        initialDelaySeconds: 20
+        periodSeconds: 20
+        failureThreshold: 5
+      livenessProbe:
+        initialDelaySeconds: 20
+        periodSeconds: 20
+        failureThreshold: 5
+      strategy: RollingUpdate
+      replicas: 1
+      imagePullPolicy: Always
+      image: wso2/apk-idp-ui:1.1.0
+    configs:
+      idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
+      idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
+
+gatewaySystem:
+  enabled: true
+  enableServiceAccountCreation: true
+  enableClusterRoleCreation: true
+  serviceAccountName: gateway-api-admission
+  applyGatewayWehbhookJobs: true
+  deployment:
+    image: registry.k8s.io/gateway-api/admission-server:v1.0.0
+    imagePullPolicy: Always
+
+certmanager:
+  enabled: true
+  enableClusterIssuer: true
+  enableRootCa: true
+  rootCaSecretName: "apk-root-certificate"
+
+postgresql:
+  enabled: true
+  fullnameOverride: "wso2apk-db-service"
+  auth:
+    database: WSO2AM_DB
+    postgresPassword: wso2carbon
+    username: wso2carbon
+    password: wso2carbon
+  primary:
+    extendedConfiguration: |
+      max_connections = 400
+    initdb:
+      scriptsConfigMap: postgres-initdb-scripts-configmap
+      user: wso2carbon
+      password: wso2carbon
+    service:
+      ports:
+        postgresql: 5432
+    podSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsUser: null
+
+  image:
+    debug: true
+
+redis:
+  enabled: true
+  architecture: standalone
+  fullnameOverride: redis
+  primary:
+    service:
+      ports:
+        redis: 6379
+  master:
+    podSecurityContext:
+      enabled: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    containerSecurityContext:
+      enabled: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      runAsUser: null
+  auth:
+    enabled: false
+  image:
+    debug: true
