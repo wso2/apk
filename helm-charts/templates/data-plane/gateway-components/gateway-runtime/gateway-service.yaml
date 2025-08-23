@@ -23,6 +23,8 @@ kind: Service
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-gateway-service
   namespace : {{ .Release.Namespace }}
+  labels:
+    {{- include "apk-helm.labels" . | nindent 4 }}
 {{if and .Values.wso2.apk.dp.gatewayRuntime.service .Values.wso2.apk.dp.gatewayRuntime.service.annotations }}
   annotations:
 {{ toYaml .Values.wso2.apk.dp.gatewayRuntime.service.annotations | indent 4 }}

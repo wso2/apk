@@ -20,6 +20,8 @@ kind: Service
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-adapter-service
   namespace : {{ .Release.Namespace }}
+  labels:
+    {{- include "apk-helm.labels" . | nindent 4 }}
 spec:
   # label keys and values that must match in order to receive traffic for this service
   selector:

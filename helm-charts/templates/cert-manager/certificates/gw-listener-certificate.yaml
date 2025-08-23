@@ -24,6 +24,8 @@ kind: Certificate
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-gw-listener-cert
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apk-helm.labels" . | nindent 4 }}
 spec:
   dnsNames:
 {{ include  "createYamlList" .Values.wso2.apk.dp.gateway.listener.dns | indent 4}}

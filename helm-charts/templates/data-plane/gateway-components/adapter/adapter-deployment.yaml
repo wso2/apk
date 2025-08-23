@@ -20,6 +20,8 @@ kind: Deployment
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-adapter-deployment
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apk-helm.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.wso2.apk.dp.adapter.deployment.replicas }}
   strategy:
@@ -27,10 +29,12 @@ spec:
   selector:
     matchLabels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "adapter" ) | indent 6}}
+      {{- include "apk-helm.labels" . | nindent 6 }}
   template:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "adapter" ) | indent 8}}
+        {{- include "apk-helm.labels" . | nindent 8 }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/data-plane/gateway-components/log-conf.yaml") . | sha256sum }}
     spec:
