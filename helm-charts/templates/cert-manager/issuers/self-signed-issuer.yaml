@@ -20,6 +20,8 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-selfsigned-issuer
+  labels:
+    {{- include "apk-helm.labels" . | nindent 4 }}
 spec:
   ca:
     secretName: {{.Values.certmanager.rootCaSecretName}}

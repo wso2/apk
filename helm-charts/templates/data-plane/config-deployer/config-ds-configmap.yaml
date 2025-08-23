@@ -20,6 +20,8 @@ kind: ConfigMap
 metadata:
   name: {{ template "apk-helm.resource.prefix" . }}-config-ds-configmap
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "apk-helm.labels" . | nindent 4 }}
 data:
   Config.toml: |
   {{- if .Values.wso2.apk.dp.configdeployer.debug}}
