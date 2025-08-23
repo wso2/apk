@@ -43,13 +43,13 @@ spec:
       claimToHeaders:
         - claim: scope
           header: wso2-scope
-  # authorization:
-  #   rules:
-  #   - name: "api-create-rule"
-  #     action: Allow
-  #     principal:
-  #       jwt:
-  #         provider: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-jwt-issuer
-  #         scopes:
-  #         - apk:api_create
+  authorization:
+    rules:
+    - name: "api-create-rule"
+      action: Allow
+      principal:
+        jwt:
+          provider: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-jwt-issuer
+          scopes:
+          - apk:api_create
 {{- end -}}

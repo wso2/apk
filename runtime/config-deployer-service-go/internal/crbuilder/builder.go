@@ -971,6 +971,10 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 		})
 	}
 	if isSecured {
+		if len(kms) == 0 {
+			defaultIDPKM := generateDefaultIDPKeyManager(namespace)
+			kms = append(kms, defaultIDPKM)
+		}
 		for _, km := range kms {
 			provider := eg.JWTProvider{
 				Name: km.Name,
@@ -986,10 +990,11 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 				provider.RemoteJWKS.BackendRefs = []eg.BackendRef{
 					{
 						BackendObjectReference: gatewayv1.BackendObjectReference{
-							Group: ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
-							Kind:  ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
-							Name:  gatewayv1.ObjectName(*km.K8sBackend.Name),
-							Port:  ptrTo(gatewayv1.PortNumber(*km.K8sBackend.Port)),
+							Group:     ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
+							Kind:      ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
+							Name:      gatewayv1.ObjectName(*km.K8sBackend.Name),
+							Namespace: ptrTo(gatewayv1.Namespace(*km.K8sBackend.Namespace)),
+							Port:      ptrTo(gatewayv1.PortNumber(*km.K8sBackend.Port)),
 						},
 					},
 				}
@@ -1001,12 +1006,6 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 				}
 			} else {
 				sp.Spec.JWT.Providers = append(sp.Spec.JWT.Providers, provider)
-			}
-		}
-		if sp.Spec.JWT == nil {
-			defaultProvider := generateDefaultIDPJWTProvider(namespace)
-			sp.Spec.JWT = &eg.JWT{
-				Providers: []eg.JWTProvider{defaultProvider},
 			}
 		}
 		if len(scopes) > 0 {
@@ -1032,8 +1031,8 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 	return sp
 }
 
-// generateDefaultIDPJWTProvider generates a default JWT provider configuration for the inbuilt IDP.
-func generateDefaultIDPJWTProvider(namespace string) eg.JWTProvider {
+// generateDefaultIDPKeyManager generates a default KeyManager configuration for the inbuilt IDP.
+func generateDefaultIDPKeyManager(namespace string) model.KeyManager {
 	k8sRelease := config.GetConfig().K8sReleaseName
 	k8sResourcePrefix := fmt.Sprintf("%s-%s", k8sRelease, config.GetConfig().K8sResourcePrefix)
 	jwtProviderName := fmt.Sprintf("%s-idp-jwt-issuer", k8sResourcePrefix)
@@ -1041,30 +1040,22 @@ func generateDefaultIDPJWTProvider(namespace string) eg.JWTProvider {
 		config.GetConfig().ConfigDSServerPort)
 	defaultDSBackendName := fmt.Sprintf("%s-oauth-ds-backend", k8sResourcePrefix)
 
-	provider := eg.JWTProvider{
-		Name: jwtProviderName,
-		RemoteJWKS: &eg.RemoteJWKS{
-			URI: jwksURI,
+	km := model.KeyManager{
+		Name:         jwtProviderName,
+		JWKSEndpoint: jwksURI,
+		K8sBackend: &model.K8sBackend{
+			Name: ptrTo(defaultDSBackendName),
+			Port: ptrTo(func() int {
+				port, err := strconv.Atoi(config.GetConfig().ConfigDSServerPort)
+				if err != nil {
+					return 9443
+				}
+				return port
+			}()),
+			Namespace: ptrTo(namespace),
 		},
 	}
-	provider.RemoteJWKS.BackendRefs = []eg.BackendRef{
-		{
-			BackendObjectReference: gatewayv1.BackendObjectReference{
-				Group:     ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
-				Kind:      ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
-				Name:      gatewayv1.ObjectName(defaultDSBackendName),
-				Namespace: ptrTo(gatewayv1.Namespace(namespace)),
-				Port: ptrTo(gatewayv1.PortNumber(func() int32 {
-					port, err := strconv.Atoi(config.GetConfig().ConfigDSServerPort)
-					if err != nil {
-						return 9443
-					}
-					return int32(port)
-				}())),
-			},
-		},
-	}
-	return provider
+	return km
 }
 
 var originPattern = regexp.MustCompile(`^(\*|https?:\/\/(\*|(\*\.)?(([\w-]+\.?)+)?[\w-]+)(:\d{1,5})?)$`)
