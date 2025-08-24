@@ -46,6 +46,7 @@ spec:
       nodeSelector: {{- include "apk-helm.deployment.nodeSelector" ( dict "value" .Values.wso2.apk.dp.gatewayRuntime.deployment.nodeSelector "context" $) | nindent 8 }}
       {{- end }}
       automountServiceAccountToken: false
+      serviceAccountName: {{ .Values.wso2.apk.auth.serviceAccountName }}
       containers:
         - name: choreo-apk-enforcer
           image: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.enforcer.image }}
