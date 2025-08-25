@@ -3,11 +3,6 @@
 ```sh
 helm template apk-eg ./helm-charts -n apk-egress-gateway --create-namespace -f helm-charts/values-local.yaml > local-test-v2.yaml
 ```
-### Kubernetes YAML files - Choreo
-
-```sh
-helm template apk-eg ./helm-charts -n apk-egress-gateway --create-namespace -f helm-charts/values-choreo.yaml > choreo-test.yaml
-```
 
 ### Install Helm Chart
 
