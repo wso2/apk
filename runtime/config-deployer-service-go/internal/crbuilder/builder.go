@@ -531,7 +531,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						gatewayv1.Hostname(func() string {
 							gatewayHostName := config.GetConfig().GatewayHostName
 							if environment == constants.SANDBOX_TYPE {
-								return fmt.Sprintf("sandbox.%s.%s", bundle.Organization, gatewayHostName)
+								return fmt.Sprintf("%s.%s.%s", bundle.Organization, constants.SANDBOX_TYPE, gatewayHostName)
 							}
 							return fmt.Sprintf("%s.%s", bundle.Organization, gatewayHostName)
 						}()),

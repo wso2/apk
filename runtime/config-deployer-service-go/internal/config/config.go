@@ -37,7 +37,7 @@ type Server struct {
 	ParentGatewaySectionName string `envconfig:"PARENT_GATEWAY_SECTION_NAME" default:"httpslistener"`
 	GatewayHostName          string `envconfig:"GATEWAY_HOST_NAME" default:"gw.wso2.com"`
 	DefaultNamespace         string `envconfig:"DEFAULT_NAMESPACE" default:"default"`
-	DefaultOrganization      string `envconfig:"DEFAULT_ORGANIZATION" default:"carbon.super"`
+	DefaultOrganization      string `envconfig:"DEFAULT_ORGANIZATION" default:"default"`
 	K8sReleaseName           string `envconfig:"K8S_RELEASE_NAME" default:"kgw"`
 	K8sResourcePrefix        string `envconfig:"K8S_RESOURCE_PREFIX" default:"wso2-kgw"`
 	ConfigDSServerPort       string `envconfig:"CONFIG_DS_SERVER_PORT" default:"9443"`

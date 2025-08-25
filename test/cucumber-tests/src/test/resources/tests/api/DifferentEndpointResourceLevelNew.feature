@@ -8,14 +8,14 @@ Feature: API different endpoint resource level
     Then the response status code should be 200
     Then I set headers
       | Authorization | Bearer ${accessToken}         |
-      | Host          | carbon.super.gw.wso2.com      |
+    #   | Host          | carbon.super.gw.wso2.com      |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-different-endpoint-resource-level/3.14/endpoint1" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
-    And the response body should contain "https://carbon.super.gw.wso2.com/anything/base1/endpoint1"
+    And the response body should contain "https://default.gw.wso2.com:9095/anything/base1/endpoint1"
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-different-endpoint-resource-level/endpoint2" with body ""
     Then the response status code should be 200
-    And the response body should contain "https://carbon.super.gw.wso2.com/anything/base2/endpoint2"
+    And the response body should contain "https://default.gw.wso2.com:9095/anything/base2/endpoint2"
 
 
   Scenario Outline: Undeploy API

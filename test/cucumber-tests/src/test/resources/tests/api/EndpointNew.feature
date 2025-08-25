@@ -8,29 +8,22 @@ Feature: Endpoint
     Then the response status code should be 200
     Then I set headers
       | Authorization | Bearer ${accessToken}         |
-      | Host          | carbon.super.gw.wso2.com      |
     And I send "GET" request to "https://default.gw.wso2.com:9095/endpoint/3.14/employee" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
-    And the response body should contain "https://carbon.super.gw.wso2.com/anything/employee"
-    Then I set headers
-      | Host          | sandbox.carbon.super.gw.wso2.com      |
+    And the response body should contain "https://default.gw.wso2.com:9095/anything/employee"
     And I send "GET" request to "https://default.sandbox.gw.wso2.com:9095/endpoint/3.14/employee" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
-    And the response body should contain "https://sandbox.carbon.super.gw.wso2.com/anything/test/employee"
-    Then I set headers
-      | Host          | carbon.super.gw.wso2.com      |
+    And the response body should contain "https://default.sandbox.gw.wso2.com:9095/anything/test/employee"
     And I send "POST" request to "https://default.gw.wso2.com:9095/endpoint/3.14/employee" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
-    And the response body should contain "https://carbon.super.gw.wso2.com/anything/test/employee"
-    Then I set headers
-      | Host          | sandbox.carbon.super.gw.wso2.com      |
+    And the response body should contain "https://default.gw.wso2.com:9095/anything/test/employee"
     And I send "POST" request to "https://default.sandbox.gw.wso2.com:9095/endpoint/3.14/employee" with body ""
     And I eventually receive 200 response code, not accepting
       |429|
-    And the response body should contain "https://sandbox.carbon.super.gw.wso2.com/anything/employee"
+    And the response body should contain "https://default.sandbox.gw.wso2.com:9095/anything/employee"
 
 
   Scenario Outline: Undeploy API
@@ -40,5 +33,5 @@ Feature: Endpoint
     Then the response status code should be <expectedStatusCode>
 
     Examples:
-      | apiID                 | expectedStatusCode  |
+      | apiID                  | expectedStatusCode  |
       | endpoint-test          | 202                 |
