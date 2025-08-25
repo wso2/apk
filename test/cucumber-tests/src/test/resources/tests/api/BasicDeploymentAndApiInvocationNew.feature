@@ -8,7 +8,6 @@ Feature: API Deployment and invocation
     Then the response status code should be 200
     Then I set headers
       | Authorization | Bearer ${accessToken}         |
-      | Host          | carbon.super.gw.wso2.com      |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       | 429 |
@@ -22,7 +21,6 @@ Feature: API Deployment and invocation
     And the response status code should be 200
     Then I set headers
       | Authorization | Bearer invalidToken           |
-      | Host          | carbon.super.gw.wso2.com      |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
     And the response status code should be 401
     And I send "POST" request to "https://default.gw.wso2.com:9095/test/3.14/employee/" with body ""
@@ -45,7 +43,6 @@ Feature: API Deployment and invocation
     Then the response status code should be 200
     Then I set headers
       | Authorization | Bearer ${accessToken}         |
-      | Host          | carbon.super.gw.wso2.com      |
     And I wait for next minute
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-version/1.0/employee/" with body ""
     And I eventually receive 200 response code, not accepting
@@ -63,7 +60,6 @@ Feature: API Deployment and invocation
     Then the response status code should be 200
     Then I set headers
       | Authorization | Bearer ${accessToken}         |
-      | Host          | carbon.super.gw.wso2.com      |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-default/3.14/employee/" with body ""
     And I eventually receive 200 response code, not accepting
       | 429 |
@@ -96,7 +92,6 @@ Feature: API Deployment and invocation
     Then the response status code should be 200
     Then I set headers
       | Authorization | Bearer ${accessToken}         |
-      | Host          | carbon.super.gw.wso2.com      |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-scope/1.0.0/employeewithoutscope/" with body ""
     And I eventually receive 200 response code, not accepting
       | 429 |
@@ -106,7 +101,6 @@ Feature: API Deployment and invocation
       | scope1 |
     Then I set headers
       | Authorization | Bearer ${accessToken}         |
-      | Host          | carbon.super.gw.wso2.com      |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-scope/1.0.0/employeewithoutscope/" with body ""
     And I eventually receive 200 response code, not accepting
       | 429 |
@@ -124,7 +118,6 @@ Feature: API Deployment and invocation
       | scope2 |
     Then I set headers
       | Authorization | Bearer ${accessToken}         |
-      | Host          | carbon.super.gw.wso2.com      |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-scope/1.0.0/employeewithscopes/" with body ""
     And I eventually receive 200 response code, not accepting
       | 429 |
@@ -138,7 +131,7 @@ Feature: API Deployment and invocation
 
     Examples:
       | apiID                                    | expectedStatusCode |
-      | af081022ed421049c5db87e8cbce67d3477d8415 | 202                |
+      | f7996dce4ac15e2af0f8ee14546c4f72988eddae | 202                |
       | default-version-api-test                 | 202                |
       | emp-api-test-scope                       | 202                |
       | version-api-test                         | 202                |
