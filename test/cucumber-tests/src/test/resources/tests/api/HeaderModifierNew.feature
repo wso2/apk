@@ -80,5 +80,3 @@ Feature: Test HTTPRoute Filter Header Modifier functionality
         And I have a valid subscription
         When I undeploy the API whose ID is "api-with-header-modifier-filters"
         Then the response status code should be 202
-    
-        
