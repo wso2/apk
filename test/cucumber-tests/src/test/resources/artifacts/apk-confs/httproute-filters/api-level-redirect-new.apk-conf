@@ -1,0 +1,34 @@
+---
+id: "api-with-request-redirect-filter"
+name: "EmployeeServiceAPI"
+basePath: "/request-redirect-filter"
+version: "3.14"
+type: "REST"
+defaultVersion: false
+endpointConfigurations:
+  production:
+    - endpoint: "https://httpbin.org/anything"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    secured: false
+    scopes: []
+  - target: "/employee"
+    verb: "POST"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    secured: true
+    scopes: []
+apiPolicies:
+  request:
+    - policyName: RequestRedirect
+      policyVersion: v1
+      parameters:
+        url: "https://httpbin.org/anything"
+        statusCode: 301

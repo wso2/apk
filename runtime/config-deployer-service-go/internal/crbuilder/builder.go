@@ -588,64 +588,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					strings.TrimPrefix(*op.Target, "/"),
 				)
 
-				isRegexPath, pattern, substitution := GenerateRegexPath(path, backendBasePath, apiBasePath)
-				hrfName := ""
-				pathMatchType := gatewayv1.PathMatchPathPrefix
-				if isRegexPath {
-					pathMatchType = gatewayv1.PathMatchRegularExpression
-					path = pattern
-
-					sum := sha256.Sum256([]byte(fmt.Sprintf("%s-%s", path, string(*method))))
-					pathIdentifier := fmt.Sprintf("%x", sum[:8])
-					hrfName = fmt.Sprintf("%s-%s", routeName, pathIdentifier)
-					// Create HTTPRouteFilter
-					hrf := eg.HTTPRouteFilter{
-						TypeMeta: metav1.TypeMeta{
-							Kind:       constants.EnvoyGatewayHTTPRouteFilter,
-							APIVersion: constants.EnvoyGatewayHTTPRouteFilterAPIVersion,
-						},
-						ObjectMeta: metav1.ObjectMeta{
-							Name: hrfName,
-						},
-						Spec: eg.HTTPRouteFilterSpec{
-							URLRewrite: &eg.HTTPURLRewriteFilter{
-								Path: &eg.HTTPPathModifier{
-									Type: eg.RegexHTTPPathModifier,
-									ReplaceRegexMatch: &eg.ReplaceRegexMatch{
-										Pattern:      pattern,
-										Substitution: substitution,
-									},
-								},
-							},
-						},
-					}
-					objects = append(objects, &hrf)
-				}
-				ecs := op.EndpointConfigurations.Production
-				if environment == constants.SANDBOX_TYPE {
-					ecs = op.EndpointConfigurations.Sandbox
-				}
-				if len(ecs) == 0 {
-					continue
-				}
-				// Create backend reference
-				httpBackendRefs := createBackendRefs(ecs, backendMap, routeName)
-				rule := gatewayv1.HTTPRouteRule{
-					Matches: []gatewayv1.HTTPRouteMatch{
-						{
-							Path: &gatewayv1.HTTPPathMatch{
-								Type:  ptrTo(pathMatchType),
-								Value: ptrTo(path),
-							},
-							Method: method,
-						},
-					},
-				}
-				if len(httpBackendRefs) > 0 {
-					rule.BackendRefs = httpBackendRefs
-				} else {
-					logger.Sugar().Warnf("No backend references found for operation %s in API %s", *op.Target, bundle.APKConf.Name)
-				}
+				rule := gatewayv1.HTTPRouteRule{}
 				for _, policy := range routePolicies {
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,
@@ -666,12 +609,14 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						},
 					})
 				}
+
+				var requestRedirectFilter *gatewayv1.HTTPRouteFilter
+
 				// Add operation-level policy filters
 				if op.OperationPolicies != nil {
 					// Aggregate filters by type to avoid duplicates
 					var requestHeaderModifier *gatewayv1.HTTPHeaderFilter
 					var requestMirrorFilter *gatewayv1.HTTPRouteFilter
-					var requestRedirectFilter *gatewayv1.HTTPRouteFilter
 					var responseHeaderModifier *gatewayv1.HTTPHeaderFilter
 
 					// Process request policies
@@ -712,11 +657,15 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								//rule.Filters = append(rule.Filters, requestMirrorFilter)
 							case *model.RequestRedirectPolicy:
 								scheme, host, port, err := extractSchemeHostPort(policy.Parameters.URL)
-								path, _ := extractPathFromEndpoint(policy.Parameters.URL)
+								endpointPath, _ := extractPathFromEndpoint(policy.Parameters.URL)
 								redirectPath := fmt.Sprintf("%s/%s",
-									strings.TrimSuffix(path, "/"),
+									strings.TrimSuffix(endpointPath, "/"),
 									strings.TrimPrefix(*op.Target, "/"),
 								)
+								isRegexPath, _, substitution := GenerateRegexPath(path, endpointPath, apiBasePath)
+								if isRegexPath {
+									redirectPath = substitution
+								}
 								if err != nil {
 									logger.Sugar().Errorf("Error extracting scheme, host, and port from URL %s: %v", policy.Parameters.URL, err)
 									continue
@@ -734,7 +683,6 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 										StatusCode: policy.Parameters.StatusCode,
 									},
 								}
-								//rule.Filters = append(rule.Filters, requestRedirectFilter)
 							case *model.ModelBasedRoundRobinPolicy:
 								// TODO - Handle model based routing
 							}
@@ -793,6 +741,70 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					}
 				}
 
+				isRegexPath, pattern, substitution := GenerateRegexPath(path, backendBasePath, apiBasePath)
+				hrfName := ""
+				pathMatchType := gatewayv1.PathMatchPathPrefix
+				if isRegexPath {
+					pathMatchType = gatewayv1.PathMatchRegularExpression
+					path = pattern
+				}
+				ecs := op.EndpointConfigurations.Production
+				if environment == constants.SANDBOX_TYPE {
+					ecs = op.EndpointConfigurations.Sandbox
+				}
+				if len(ecs) == 0 {
+					continue
+				}
+				rule.Matches = []gatewayv1.HTTPRouteMatch{
+					{
+						Path: &gatewayv1.HTTPPathMatch{
+							Type:  ptrTo(pathMatchType),
+							Value: ptrTo(path),
+						},
+						Method: method,
+					},
+				}
+
+				if requestRedirectFilter == nil {
+					// Create backend reference
+					httpBackendRefs := createBackendRefs(ecs, backendMap, routeName)
+					if len(httpBackendRefs) > 0 {
+						rule.BackendRefs = httpBackendRefs
+					} else {
+						logger.Sugar().Warnf("No backend references found for operation %s in API %s", *op.Target, bundle.APKConf.Name)
+					}
+
+					if isRegexPath {
+						pathMatchType = gatewayv1.PathMatchRegularExpression
+						path = pattern
+						// Create HTTPRouteFilter
+						sum := sha256.Sum256([]byte(fmt.Sprintf("%s-%s", path, string(*method))))
+						pathIdentifier := fmt.Sprintf("%x", sum[:8])
+						hrfName = fmt.Sprintf("%s-%s", routeName, pathIdentifier)
+						hrf := eg.HTTPRouteFilter{
+							TypeMeta: metav1.TypeMeta{
+								Kind:       constants.EnvoyGatewayHTTPRouteFilter,
+								APIVersion: constants.EnvoyGatewayHTTPRouteFilterAPIVersion,
+							},
+							ObjectMeta: metav1.ObjectMeta{
+								Name: hrfName,
+							},
+							Spec: eg.HTTPRouteFilterSpec{
+								URLRewrite: &eg.HTTPURLRewriteFilter{
+									Path: &eg.HTTPPathModifier{
+										Type: eg.RegexHTTPPathModifier,
+										ReplaceRegexMatch: &eg.ReplaceRegexMatch{
+											Pattern:      pattern,
+											Substitution: substitution,
+										},
+									},
+								},
+							},
+						}
+						objects = append(objects, &hrf)
+					}
+				}
+
 				if hrfName != "" {
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,
@@ -802,7 +814,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 							Name:  gatewayv1.ObjectName(hrfName),
 						},
 					})
-				} else {
+				} else if requestRedirectFilter == nil {
 					urlRewrite := &gatewayv1.HTTPURLRewriteFilter{
 						Path: &gatewayv1.HTTPPathModifier{
 							ReplaceFullPath: &serviceContractPath,
