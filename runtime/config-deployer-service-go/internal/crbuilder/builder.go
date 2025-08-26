@@ -666,6 +666,133 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						},
 					})
 				}
+				// Add operation-level policy filters
+				if op.OperationPolicies != nil {
+					// Aggregate filters by type to avoid duplicates
+					var requestHeaderModifier *gatewayv1.HTTPHeaderFilter
+					var requestMirrorFilter *gatewayv1.HTTPRouteFilter
+					var requestRedirectFilter *gatewayv1.HTTPRouteFilter
+					var responseHeaderModifier *gatewayv1.HTTPHeaderFilter
+
+					// Process request policies
+					for _, requestPolicy := range op.OperationPolicies.Request {
+						activePolicy := requestPolicy.GetActivePolicy()
+						if activePolicy != nil {
+							switch policy := activePolicy.(type) {
+							case *model.HeaderModifierPolicy:
+								if requestHeaderModifier == nil {
+									requestHeaderModifier = &gatewayv1.HTTPHeaderFilter{}
+								}
+								switch policy.PolicyName {
+								case model.PolicyNameAddHeader:
+									requestHeaderModifier.Add = append(requestHeaderModifier.Add, gatewayv1.HTTPHeader{
+										Name:  gatewayv1.HTTPHeaderName(policy.Parameters.HeaderName),
+										Value: *policy.Parameters.HeaderValue,
+									})
+								case model.PolicyNameSetHeader:
+									requestHeaderModifier.Set = append(requestHeaderModifier.Set, gatewayv1.HTTPHeader{
+										Name:  gatewayv1.HTTPHeaderName(policy.Parameters.HeaderName),
+										Value: *policy.Parameters.HeaderValue,
+									})
+								case model.PolicyNameRemoveHeader:
+									requestHeaderModifier.Remove = append(requestHeaderModifier.Remove, policy.Parameters.HeaderName)
+								}
+							case *model.InterceptorPolicy:
+								// TODO - Handle interceptor policy with request modifications
+							case *model.BackendJWTPolicy:
+								// TODO - Handle backend JWT policy with request modifications
+							case *model.RequestMirrorPolicy:
+								// TODO - Handle request mirroring
+								//requestMirrorFilter := gatewayv1.HTTPRouteFilter{
+								//	Type: gatewayv1.HTTPRouteFilterRequestMirror,
+								//	RequestMirror: &gatewayv1.HTTPRequestMirrorFilter{
+								//
+								//	},
+								//}
+								//rule.Filters = append(rule.Filters, requestMirrorFilter)
+							case *model.RequestRedirectPolicy:
+								scheme, host, port, err := extractSchemeHostPort(policy.Parameters.URL)
+								path, _ := extractPathFromEndpoint(policy.Parameters.URL)
+								redirectPath := fmt.Sprintf("%s/%s",
+									strings.TrimSuffix(path, "/"),
+									strings.TrimPrefix(*op.Target, "/"),
+								)
+								if err != nil {
+									logger.Sugar().Errorf("Error extracting scheme, host, and port from URL %s: %v", policy.Parameters.URL, err)
+									continue
+								}
+								requestRedirectFilter = &gatewayv1.HTTPRouteFilter{
+									Type: gatewayv1.HTTPRouteFilterRequestRedirect,
+									RequestRedirect: &gatewayv1.HTTPRequestRedirectFilter{
+										Scheme:   ptrTo(scheme),
+										Hostname: ptrTo(gatewayv1.PreciseHostname(host)),
+										Path: &gatewayv1.HTTPPathModifier{
+											Type:            gatewayv1.FullPathHTTPPathModifier,
+											ReplaceFullPath: &redirectPath,
+										},
+										Port:       ptrTo(gatewayv1.PortNumber(port)),
+										StatusCode: policy.Parameters.StatusCode,
+									},
+								}
+								//rule.Filters = append(rule.Filters, requestRedirectFilter)
+							case *model.ModelBasedRoundRobinPolicy:
+								// TODO - Handle model based routing
+							}
+						}
+					}
+
+					// Process response policies
+					for _, responsePolicy := range op.OperationPolicies.Response {
+						activePolicy := responsePolicy.GetActivePolicy()
+						if activePolicy != nil {
+							switch policy := activePolicy.(type) {
+							case *model.HeaderModifierPolicy:
+								if responseHeaderModifier == nil {
+									responseHeaderModifier = &gatewayv1.HTTPHeaderFilter{}
+								}
+								switch policy.PolicyName {
+								case model.PolicyNameAddHeader:
+									responseHeaderModifier.Add = append(responseHeaderModifier.Add, gatewayv1.HTTPHeader{
+										Name:  gatewayv1.HTTPHeaderName(policy.Parameters.HeaderName),
+										Value: *policy.Parameters.HeaderValue,
+									})
+								case model.PolicyNameSetHeader:
+									responseHeaderModifier.Set = append(responseHeaderModifier.Set, gatewayv1.HTTPHeader{
+										Name:  gatewayv1.HTTPHeaderName(policy.Parameters.HeaderName),
+										Value: *policy.Parameters.HeaderValue,
+									})
+								case model.PolicyNameRemoveHeader:
+									responseHeaderModifier.Remove = append(responseHeaderModifier.Remove, policy.Parameters.HeaderName)
+								}
+							case *model.InterceptorPolicy:
+								// TODO - Handle interceptor policy with request modifications
+							case *model.BackendJWTPolicy:
+								// TODO - Handle backend JWT policy with request modifications
+							}
+						}
+					}
+
+					// Add aggregated filters to the rule
+					if requestHeaderModifier != nil {
+						rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+							Type:                  gatewayv1.HTTPRouteFilterRequestHeaderModifier,
+							RequestHeaderModifier: requestHeaderModifier,
+						})
+					}
+					if requestMirrorFilter != nil {
+						rule.Filters = append(rule.Filters, *requestMirrorFilter)
+					}
+					if requestRedirectFilter != nil {
+						rule.Filters = append(rule.Filters, *requestRedirectFilter)
+					}
+					if responseHeaderModifier != nil {
+						rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+							Type:                   gatewayv1.HTTPRouteFilterResponseHeaderModifier,
+							ResponseHeaderModifier: responseHeaderModifier,
+						})
+					}
+				}
+
 				if hrfName != "" {
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,

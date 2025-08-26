@@ -17,7 +17,10 @@
 
 package model
 
-import "github.com/wso2/apk/config-deployer-service-go/internal/constants"
+import (
+	"encoding/json"
+	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
+)
 
 // APKConf represents the APK configuration for a given API
 type APKConf struct {
@@ -272,6 +275,27 @@ func NewAPKOperations() *APKOperations {
 	return &APKOperations{}
 }
 
+// PolicyName represents enum for all possible policy types.
+type PolicyName string
+
+const (
+	PolicyNameBackendJWT           PolicyName = "BackendJwt"
+	PolicyNameInterceptor          PolicyName = "Interceptor"
+	PolicyNameAddHeader            PolicyName = "AddHeader"
+	PolicyNameSetHeader            PolicyName = "SetHeader"
+	PolicyNameRemoveHeader         PolicyName = "RemoveHeader"
+	PolicyNameRequestMirror        PolicyName = "RequestMirror"
+	PolicyNameRequestRedirect      PolicyName = "RequestRedirect"
+	PolicyNameModelBasedRoundRobin PolicyName = "ModelBasedRoundRobin"
+)
+
+// BaseOperationPolicy represents common configuration of all policies.
+type BaseOperationPolicy struct {
+	PolicyName    PolicyName `json:"policyName" yaml:"policyName"`
+	PolicyVersion string     `json:"policyVersion" yaml:"policyVersion"`
+	PolicyID      *string    `json:"policyId,omitempty" yaml:"policyId,omitempty"`
+}
+
 // APIOperationPolicies represents configuration of APK Operation Policies
 type APIOperationPolicies struct {
 	Request  []APKRequestOperationPolicy  `json:"request,omitempty" yaml:"request,omitempty"`
@@ -283,11 +307,230 @@ func NewAPIOperationPolicies() *APIOperationPolicies {
 	return &APIOperationPolicies{}
 }
 
-// APKRequestOperationPolicy represents common type for request operation policies
-type APKRequestOperationPolicy interface{}
+// APKOperationPolicy represents a common interface for all operation policies
+type APKOperationPolicy interface {
+	GetPolicyName() PolicyName
+	GetPolicyVersion() string
+	GetPolicyID() *string
+}
 
-// APKResponseOperationPolicy represents common type for response operation policies
-type APKResponseOperationPolicy interface{}
+// APKRequestOperationPolicy represents request operation policies
+type APKRequestOperationPolicy struct {
+	InterceptorPolicy          *InterceptorPolicy          `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
+	BackendJWTPolicy           *BackendJWTPolicy           `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
+	HeaderModifierPolicy       *HeaderModifierPolicy       `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
+	RequestMirrorPolicy        *RequestMirrorPolicy        `json:"requestMirrorPolicy,omitempty" yaml:"requestMirrorPolicy,omitempty"`
+	RequestRedirectPolicy      *RequestRedirectPolicy      `json:"requestRedirectPolicy,omitempty" yaml:"requestRedirectPolicy,omitempty"`
+	ModelBasedRoundRobinPolicy *ModelBasedRoundRobinPolicy `json:"modelBasedRoundRobinPolicy,omitempty" yaml:"modelBasedRoundRobinPolicy,omitempty"`
+}
+
+// APKResponseOperationPolicy represents response operation policies
+type APKResponseOperationPolicy struct {
+	InterceptorPolicy    *InterceptorPolicy    `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
+	BackendJWTPolicy     *BackendJWTPolicy     `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
+	HeaderModifierPolicy *HeaderModifierPolicy `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
+}
+
+// GetPolicyName implements APKOperationPolicy interface
+func (b BaseOperationPolicy) GetPolicyName() PolicyName {
+	return b.PolicyName
+}
+
+// GetPolicyVersion implements APKOperationPolicy interface
+func (b BaseOperationPolicy) GetPolicyVersion() string {
+	return b.PolicyVersion
+}
+
+// GetPolicyID implements APKOperationPolicy interface
+func (b BaseOperationPolicy) GetPolicyID() *string {
+	return b.PolicyID
+}
+
+// HeaderModifierPolicy represents header modification configuration for an operation.
+type HeaderModifierPolicy struct {
+	BaseOperationPolicy
+	Parameters HeaderModifierPolicyParameters `json:"parameters" yaml:"parameters"`
+}
+
+// HeaderModifierPolicyParameters represents configuration for header modifiers as received from the apk-conf file.
+type HeaderModifierPolicyParameters struct {
+	HeaderName  string  `json:"headerName" yaml:"headerName"`
+	HeaderValue *string `json:"headerValue,omitempty" yaml:"headerValue,omitempty"`
+}
+
+// RequestMirrorPolicy represents request mirror configuration for an operation.
+type RequestMirrorPolicy struct {
+	BaseOperationPolicy
+	Parameters RequestMirrorPolicyParameters `json:"parameters" yaml:"parameters"`
+}
+
+// RequestMirrorPolicyParameters represents configuration containing the different headers.
+type RequestMirrorPolicyParameters struct {
+	URLs []string `json:"urls" yaml:"urls"`
+}
+
+// RequestRedirectPolicy represents request redirect configuration for an operation.
+type RequestRedirectPolicy struct {
+	BaseOperationPolicy
+	Parameters RequestRedirectPolicyParameters `json:"parameters" yaml:"parameters"`
+}
+
+// RequestRedirectPolicyParameters represents configuration containing the different headers.
+type RequestRedirectPolicyParameters struct {
+	URL        string `json:"url" yaml:"url"`
+	StatusCode *int   `json:"statusCode,omitempty" yaml:"statusCode,omitempty"`
+}
+
+// InterceptorPolicy represents interceptor policy configuration for an operation.
+type InterceptorPolicy struct {
+	BaseOperationPolicy
+	Parameters *InterceptorPolicyParameters `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+}
+
+// InterceptorPolicyParameters represents configuration for Interceptor Policy parameters.
+type InterceptorPolicyParameters struct {
+	BackendURL      *string `json:"backendUrl,omitempty" yaml:"backendUrl,omitempty"`
+	HeadersEnabled  *bool   `json:"headersEnabled,omitempty" yaml:"headersEnabled,omitempty"`
+	BodyEnabled     *bool   `json:"bodyEnabled,omitempty" yaml:"bodyEnabled,omitempty"`
+	TrailersEnabled *bool   `json:"trailersEnabled,omitempty" yaml:"trailersEnabled,omitempty"`
+	ContextEnabled  *bool   `json:"contextEnabled,omitempty" yaml:"contextEnabled,omitempty"`
+	TLSSecretName   *string `json:"tlsSecretName,omitempty" yaml:"tlsSecretName,omitempty"`
+	TLSSecretKey    *string `json:"tlsSecretKey,omitempty" yaml:"tlsSecretKey,omitempty"`
+}
+
+// BackendJWTPolicy represents configuration for Backend JWT Policy.
+type BackendJWTPolicy struct {
+	BaseOperationPolicy
+	Parameters *BackendJWTPolicyParameters `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+}
+
+// BackendJWTPolicyParameters represents configuration for Backend JWT Policy parameters.
+type BackendJWTPolicyParameters struct {
+	Encoding         *string        `json:"encoding,omitempty" yaml:"encoding,omitempty"`
+	SigningAlgorithm *string        `json:"signingAlgorithm,omitempty" yaml:"signingAlgorithm,omitempty"`
+	Header           *string        `json:"header,omitempty" yaml:"header,omitempty"`
+	TokenTTL         *int           `json:"tokenTTL,omitempty" yaml:"tokenTTL,omitempty"`
+	CustomClaims     []CustomClaims `json:"customClaims,omitempty" yaml:"customClaims,omitempty"`
+}
+
+// ModelBasedRoundRobinPolicy represents model based round robin policy configuration for an operation.
+type ModelBasedRoundRobinPolicy struct {
+	BaseOperationPolicy
+	Parameters ModelBasedRoundRobinPolicyParameters `json:"parameters" yaml:"parameters"`
+}
+
+// ModelBasedRoundRobinPolicyParameters represents configuration for model based round robin policy parameters.
+type ModelBasedRoundRobinPolicyParameters struct {
+	OnQuotaExceedSuspendDuration int            `json:"onQuotaExceedSuspendDuration" yaml:"onQuotaExceedSuspendDuration"`
+	ProductionModels             []ModelRouting `json:"productionModels" yaml:"productionModels"`
+	SandboxModels                []ModelRouting `json:"sandboxModels" yaml:"sandboxModels"`
+}
+
+// ModelRouting represents configuration for model routing.
+type ModelRouting struct {
+	Model    string `json:"model" yaml:"model"`
+	Endpoint string `json:"endpoint" yaml:"endpoint"`
+	Weight   int    `json:"weight" yaml:"weight"`
+}
+
+// CustomClaims represents configuration for Custom Claims.
+type CustomClaims struct {
+	Claim string `json:"claim" yaml:"claim"`
+	Value string `json:"value" yaml:"value"`
+	Type  string `json:"type" yaml:"type"`
+}
+
+// Helper methods for handling union types
+
+// UnmarshalJSON provides custom unmarshaling for APKRequestOperationPolicy
+func (p *APKRequestOperationPolicy) UnmarshalJSON(data []byte) error {
+	var base BaseOperationPolicy
+	if err := json.Unmarshal(data, &base); err != nil {
+		return err
+	}
+
+	switch base.PolicyName {
+	case PolicyNameInterceptor:
+		p.InterceptorPolicy = &InterceptorPolicy{}
+		return json.Unmarshal(data, p.InterceptorPolicy)
+	case PolicyNameBackendJWT:
+		p.BackendJWTPolicy = &BackendJWTPolicy{}
+		return json.Unmarshal(data, p.BackendJWTPolicy)
+	case PolicyNameAddHeader, PolicyNameSetHeader, PolicyNameRemoveHeader:
+		p.HeaderModifierPolicy = &HeaderModifierPolicy{}
+		return json.Unmarshal(data, p.HeaderModifierPolicy)
+	case PolicyNameRequestMirror:
+		p.RequestMirrorPolicy = &RequestMirrorPolicy{}
+		return json.Unmarshal(data, p.RequestMirrorPolicy)
+	case PolicyNameRequestRedirect:
+		p.RequestRedirectPolicy = &RequestRedirectPolicy{}
+		return json.Unmarshal(data, p.RequestRedirectPolicy)
+	case PolicyNameModelBasedRoundRobin:
+		p.ModelBasedRoundRobinPolicy = &ModelBasedRoundRobinPolicy{}
+		return json.Unmarshal(data, p.ModelBasedRoundRobinPolicy)
+	}
+
+	return nil
+}
+
+// UnmarshalJSON provides custom unmarshaling for APKResponseOperationPolicy
+func (p *APKResponseOperationPolicy) UnmarshalJSON(data []byte) error {
+	var base BaseOperationPolicy
+	if err := json.Unmarshal(data, &base); err != nil {
+		return err
+	}
+
+	switch base.PolicyName {
+	case PolicyNameInterceptor:
+		p.InterceptorPolicy = &InterceptorPolicy{}
+		return json.Unmarshal(data, p.InterceptorPolicy)
+	case PolicyNameBackendJWT:
+		p.BackendJWTPolicy = &BackendJWTPolicy{}
+		return json.Unmarshal(data, p.BackendJWTPolicy)
+	case PolicyNameAddHeader, PolicyNameSetHeader, PolicyNameRemoveHeader:
+		p.HeaderModifierPolicy = &HeaderModifierPolicy{}
+		return json.Unmarshal(data, p.HeaderModifierPolicy)
+	}
+
+	return nil
+}
+
+// GetActivePolicy returns the active policy for request operation policy
+func (p *APKRequestOperationPolicy) GetActivePolicy() APKOperationPolicy {
+	if p.InterceptorPolicy != nil {
+		return p.InterceptorPolicy
+	}
+	if p.BackendJWTPolicy != nil {
+		return p.BackendJWTPolicy
+	}
+	if p.HeaderModifierPolicy != nil {
+		return p.HeaderModifierPolicy
+	}
+	if p.RequestMirrorPolicy != nil {
+		return p.RequestMirrorPolicy
+	}
+	if p.RequestRedirectPolicy != nil {
+		return p.RequestRedirectPolicy
+	}
+	if p.ModelBasedRoundRobinPolicy != nil {
+		return p.ModelBasedRoundRobinPolicy
+	}
+	return nil
+}
+
+// GetActivePolicy returns the active policy for response operation policy
+func (p *APKResponseOperationPolicy) GetActivePolicy() APKOperationPolicy {
+	if p.InterceptorPolicy != nil {
+		return p.InterceptorPolicy
+	}
+	if p.BackendJWTPolicy != nil {
+		return p.BackendJWTPolicy
+	}
+	if p.HeaderModifierPolicy != nil {
+		return p.HeaderModifierPolicy
+	}
+	return nil
+}
 
 // RateLimit represents configuration for Rate Limiting
 type RateLimit struct {
