@@ -14,7 +14,24 @@ spec:
     singular: routemetadata
   scope: Namespaced
   versions:
-  - name: v2alpha1
+  - additionalPrinterColumns:
+    - description: Name of the API
+      jsonPath: .spec.api.name
+      name: API NAME
+      type: string
+    - description: Version of the API
+      jsonPath: .spec.api.version
+      name: VERSION
+      type: string
+    - description: Path to the API definition
+      jsonPath: .spec.api.context
+      name: BASEPATH
+      type: string
+    - description: Organization of the API
+      jsonPath: .spec.api.organization
+      name: ORGANIZATION
+      type: string
+    name: v2alpha1
     schema:
       openAPIV3Schema:
         description: RouteMetadata is the Schema for the routemetadata API

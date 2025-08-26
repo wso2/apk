@@ -11,6 +11,8 @@ import (
 const (
 	// MediationAITokenRatelimit holds the name of the AI Token Rate Limit mediation policy.
 	MediationAITokenRatelimit = constantscommon.MediationAITokenRatelimit
+	// MediationBackendAPIKey holds the name of the Backend API Key mediation policy.
+	MediationBackendAPIKey = constantscommon.MediationBackendAPIKey
 	// MediationAIProvider holds the name of the AI Provider mediation policy.
 	MediationAIProvider = constantscommon.MediationAIProvider
 	// MediationSubscriptionRatelimit holds the name of the Subscription Rate Limit mediation policy.
@@ -36,6 +38,7 @@ var MediationAndRequestHeaderProcessing = map[string]bool{
 	MediationAnalytics:              true,
 	MediationBackendJWT:             true,
 	MediationGraphQL:                false,
+	MediationBackendAPIKey:          true,
 }
 
 // MediationAndRequestBodyProcessing defines the mediation and request header processing
@@ -47,6 +50,7 @@ var MediationAndRequestBodyProcessing = map[string]bool{
 	MediationAnalytics:              false,
 	MediationBackendJWT:             false,
 	MediationGraphQL:                true,
+	MediationBackendAPIKey:          false,
 }
 
 // MediationAndResponseHeaderProcessing defines the mediation and request header processing
@@ -59,6 +63,7 @@ var MediationAndResponseHeaderProcessing = map[string]bool{
 	MediationAnalytics:              false,
 	MediationBackendJWT:             false,
 	MediationGraphQL:                false,
+	MediationBackendAPIKey:          false,
 }
 
 // MediationAndResponseBodyProcessing defines the mediation and response body processing
@@ -71,6 +76,7 @@ var MediationAndResponseBodyProcessing = map[string]bool{
 	MediationAnalytics:              false,
 	MediationBackendJWT:             false,
 	MediationGraphQL:                false,
+	MediationBackendAPIKey:          false,
 }
 
 // Result holds the result of mediation processing.

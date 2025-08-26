@@ -170,6 +170,17 @@ func (routePolicyReconciler *RoutePolicyReconciler) Reconcile(ctx context.Contex
 				val, ok := cm.Data[param.Key]
 				if !ok {
 					loggers.LoggerAPKOperator.Warnf("key %s not found in ConfigMap %s", param.Key, namespacedName.String())
+					if len(cm.Data) > 0 {
+						// fallback: just take the first entry
+						for k, v := range cm.Data {
+							value = v
+							loggers.LoggerAPKOperator.Warnf(
+								"key %s not found in ConfigMap %s, falling back to first key %s",
+								param.Key, namespacedName.String(), k,
+							)
+							break
+						}
+					}
 					continue
 				}
 				value = val
@@ -183,6 +194,17 @@ func (routePolicyReconciler *RoutePolicyReconciler) Reconcile(ctx context.Contex
 				val, ok := secret.Data[param.Key]
 				if !ok {
 					loggers.LoggerAPKOperator.Warnf("key %s not found in Secret %s", param.Key, namespacedName.String())
+					if len(secret.Data) > 0 {
+						// fallback: just take the first entry
+						for k, v := range secret.Data {
+							value = string(v)
+							loggers.LoggerAPKOperator.Warnf(
+								"key %s not found in Secret %s, falling back to first key %s",
+								param.Key, namespacedName.String(), k,
+							)
+							break
+						}
+					}
 					continue
 				}
 				value = string(val) // Secret values are []byte
