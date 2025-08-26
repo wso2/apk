@@ -313,7 +313,12 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
 						if mediation.MediationAndRequestHeaderProcessing[policy.PolicyName] {
-							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
+							mediation := mediation.CreateMediation(policy)
+							if mediation == nil {
+								s.log.Sugar().Errorf("Failed to create mediation for policy: %+v", policy)
+								continue
+							}
+							mediationResult := mediation.Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							s.updateRequestConfigBasedOnMediationResults(mediationResult, requestConfigHolder, requestconfig.ProcessingPhaseRequestHeaders)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(

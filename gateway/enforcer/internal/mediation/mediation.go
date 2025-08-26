@@ -144,6 +144,10 @@ func CreateMediation(mediationFromCluster *dpv2alpha1.Mediation) Mediation {
 		mediation := NewGraphQL(mediationFromCluster)
 		MediationMap[mediationFromCluster] = mediation
 		return mediation
+	case MediationBackendAPIKey:
+		mediation := NewBackendAPIKey(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
 	default:
 		return nil
 	}
