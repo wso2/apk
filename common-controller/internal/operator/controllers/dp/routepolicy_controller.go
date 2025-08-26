@@ -158,8 +158,7 @@ func (routePolicyReconciler *RoutePolicyReconciler) Reconcile(ctx context.Contex
 				Namespace: req.Namespace,
 				Name:      string(param.ValueRef.Name),
 			}
-
-			var value string
+			value := param.Value
 			switch param.ValueRef.Kind {
 			case constants.KindConfigMap:
 				var cm corev1.ConfigMap
@@ -167,53 +166,26 @@ func (routePolicyReconciler *RoutePolicyReconciler) Reconcile(ctx context.Contex
 					loggers.LoggerAPKOperator.Errorf("failed to fetch ConfigMap %s: %v", namespacedName.String(), err)
 					continue
 				}
-				val, ok := cm.Data[param.Key]
-				if !ok {
-					loggers.LoggerAPKOperator.Warnf("key %s not found in ConfigMap %s", param.Key, namespacedName.String())
-					if len(cm.Data) > 0 {
-						// fallback: just take the first entry
-						for k, v := range cm.Data {
-							value = v
-							loggers.LoggerAPKOperator.Warnf(
-								"key %s not found in ConfigMap %s, falling back to first key %s",
-								param.Key, namespacedName.String(), k,
-							)
-							break
-						}
-					}
+				if v, ok := getValueFromMap(cm.Data, param.Key, namespacedName.String()); ok {
+					value = v
+				} else {
 					continue
 				}
-				value = val
-
 			case constants.KindSecret:
 				var secret corev1.Secret
 				if err := routePolicyReconciler.client.Get(ctx, namespacedName, &secret); err != nil {
 					loggers.LoggerAPKOperator.Errorf("failed to fetch Secret %s: %v", namespacedName.String(), err)
 					continue
 				}
-				val, ok := secret.Data[param.Key]
-				if !ok {
-					loggers.LoggerAPKOperator.Warnf("key %s not found in Secret %s", param.Key, namespacedName.String())
-					if len(secret.Data) > 0 {
-						// fallback: just take the first entry
-						for k, v := range secret.Data {
-							value = string(v)
-							loggers.LoggerAPKOperator.Warnf(
-								"key %s not found in Secret %s, falling back to first key %s",
-								param.Key, namespacedName.String(), k,
-							)
-							break
-						}
-					}
+				if v, ok := getValueFromSecret(secret.Data, param.Key, namespacedName.String()); ok {
+					value = v
+				} else {
 					continue
 				}
-				value = string(val) // Secret values are []byte
-
 			default:
 				loggers.LoggerAPKOperator.Warnf("unsupported ValueRef Kind: %s", param.ValueRef.Kind)
 				continue
 			}
-
 			// Set the resolved value
 			param.Value = value
 		}
@@ -355,4 +327,28 @@ func (routePolicyReconciler *RoutePolicyReconciler) addRoutePolicyIndexes(ctx co
 	}
 
 	return nil
+}
+
+func getValueFromMap(data map[string]string, key, name string) (string, bool) {
+	if val, ok := data[key]; ok {
+		return val, true
+	}
+	loggers.LoggerAPKOperator.Warnf("key %s not found in ConfigMap %s", key, name)
+	for k, v := range data {
+		loggers.LoggerAPKOperator.Warnf("key %s not found in ConfigMap %s, falling back to first key %s", key, name, k)
+		return v, true
+	}
+	return "", false
+}
+
+func getValueFromSecret(data map[string][]byte, key, name string) (string, bool) {
+	if val, ok := data[key]; ok {
+		return string(val), true
+	}
+	loggers.LoggerAPKOperator.Warnf("key %s not found in Secret %s", key, name)
+	for k, v := range data {
+		loggers.LoggerAPKOperator.Warnf("key %s not found in Secret %s, falling back to first key %s", key, name, k)
+		return string(v), true
+	}
+	return "", false
 }
