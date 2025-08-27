@@ -260,7 +260,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	objects := make([]client.Object, 0)
 	definitionCMName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
 		apiResourceBundle.Organization)
-	routePolicies := make([]*dpv2alpha1.RoutePolicy, 0)
+	routePolicies := make(map[string]*dpv2alpha1.RoutePolicy)
 
 	if apiResourceBundle.Definition != "" {
 		cm := createConfigMapForDefinition(
@@ -311,7 +311,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
 			},
 		}
-		routePolicies = append(routePolicies, aiProviderRoutePolicy)
+		routePolicies[constants.AIProviderRoutePolicy] = aiProviderRoutePolicy
 		// Do not add to objects as it will be added globally by either agent or manually
 	}
 
@@ -349,7 +349,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		cm := createConfigMapForGQlSchema(gqlSchemaConfigMapName, yamlString)
 		objects = append(objects, cm)
 	}
-	routePolicies = append(routePolicies, routePolicy)
+	routePolicies[constants.BaseRoutePolicy] = routePolicy
 	objects = append(objects, routePolicy)
 
 	// Create the HTTPRoute objects
@@ -501,7 +501,7 @@ func chunkOperations(ops []model.APKOperations, size int) [][]model.APKOperation
 }
 
 // GenerateHTTPRoutes generates HTTPRoute objects for the given APIResourceBundle.
-func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string, routePolicies []*dpv2alpha1.RoutePolicy,
+func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string, routePolicies map[string]*dpv2alpha1.RoutePolicy,
 	routeMetadataList []*dpv2alpha1.RouteMetadata) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
 	objects := make([]client.Object, 0)
 	routesMap := make(map[int][]gatewayv1.HTTPRoute)
@@ -589,7 +589,47 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				)
 
 				rule := gatewayv1.HTTPRouteRule{}
-				for _, policy := range routePolicies {
+
+				routePoliciesL := make(map[string]*dpv2alpha1.RoutePolicy)
+				for key, policy := range routePolicies {
+					routePoliciesL[key] = policy.DeepCopy()
+				}
+
+				ecs := op.EndpointConfigurations.Production
+				if environment == constants.SANDBOX_TYPE {
+					ecs = op.EndpointConfigurations.Sandbox
+				}
+				if len(ecs) == 0 {
+					continue
+				}
+				ec := ecs[0] // Pick the first endpoint configuration for the operation
+				if ec.EndpointSecurity != nil && *ec.EndpointSecurity.Enabled {
+					endpointSecurityType, _ := securityType(ec.EndpointSecurity.SecurityType)
+					switch endpointSecurityType {
+					case securityTypeBasic:
+						// Handle Basic endpoint security
+						// Access fields: securityType.UserNameKey, securityType.PasswordKey
+					case securityTypeAPIKey:
+						apiKeySecurity, ok := ec.EndpointSecurity.SecurityType.(*model.APIKeyEndpointSecurity)
+						if !ok {
+							if securityMap, mapOk := ec.EndpointSecurity.SecurityType.(map[string]interface{}); mapOk {
+								apiKeySecurity = convertMapToAPIKeyEndpointSecurity(securityMap)
+							} else {
+								logger.Sugar().Errorf("Failed to convert endpoint security to APIKeyEndpointSecurity for endpoint %v", ec.Endpoint)
+								continue
+							}
+						}
+						uniqueHash := generateAPIKeySecurityHash(apiKeySecurity)
+						if routePoliciesL[uniqueHash] == nil {
+							apiKeyPolicy := createAPIKeyMediationPolicy(uniqueHash, ec.EndpointSecurity, apiKeySecurity)
+							routePoliciesL[uniqueHash] = apiKeyPolicy
+							objects = append(objects, apiKeyPolicy)
+						}
+						delete(routePoliciesL, constants.BaseRoutePolicy)
+					}
+				}
+
+				for _, policy := range routePoliciesL {
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,
 						ExtensionRef: &gatewayv1.LocalObjectReference{
@@ -753,13 +793,6 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				if isRegexPath {
 					pathMatchType = gatewayv1.PathMatchRegularExpression
 					path = pattern
-				}
-				ecs := op.EndpointConfigurations.Production
-				if environment == constants.SANDBOX_TYPE {
-					ecs = op.EndpointConfigurations.Sandbox
-				}
-				if len(ecs) == 0 {
-					continue
 				}
 				rule.Matches = []gatewayv1.HTTPRouteMatch{
 					{
@@ -1521,6 +1554,144 @@ func endpointType(endpoint interface{}) (string, error) {
 		}
 		return "", fmt.Errorf("unsupported endpoint type: %T", endpoint)
 	}
+}
+
+const (
+	securityTypeBasic  = "basic"
+	securityTypeAPIKey = "apikey"
+)
+
+func securityType(securityType interface{}) (string, error) {
+	switch securityType.(type) {
+	case *model.BasicEndpointSecurity:
+		return securityTypeBasic, nil
+	case *model.APIKeyEndpointSecurity:
+		return securityTypeAPIKey, nil
+	default:
+		// Try to cast map[string]interface{} to determine security type
+		if securityMap, ok := securityType.(map[string]interface{}); ok {
+			// Check for Basic security fields
+			if _, hasUserNameKey := securityMap["userNameKey"]; hasUserNameKey {
+				return securityTypeBasic, nil
+			}
+			if _, hasPasswordKey := securityMap["passwordKey"]; hasPasswordKey {
+				return securityTypeBasic, nil
+			}
+			// Check for API Key security fields
+			if _, hasSecretName := securityMap["secretName"]; hasSecretName {
+				return securityTypeAPIKey, nil
+			}
+			if _, hasAPIKeyNameKey := securityMap["apiKeyNameKey"]; hasAPIKeyNameKey {
+				return securityTypeAPIKey, nil
+			}
+			if _, hasAPIKeyValueKey := securityMap["apiKeyValueKey"]; hasAPIKeyValueKey {
+				return securityTypeAPIKey, nil
+			}
+			if _, hasIn := securityMap["in"]; hasIn {
+				return securityTypeAPIKey, nil
+			}
+		}
+		return "", fmt.Errorf("unsupported security type: %T", securityType)
+	}
+}
+
+// convertMapToAPIKeyEndpointSecurity converts a map representation of APIKeyEndpointSecurity to the struct.
+func convertMapToAPIKeyEndpointSecurity(securityMap map[string]interface{}) *model.APIKeyEndpointSecurity {
+	apiKeySecurity := &model.APIKeyEndpointSecurity{}
+
+	if secretName, exists := securityMap["secretName"]; exists {
+		if secretNameStr, ok := secretName.(string); ok {
+			apiKeySecurity.SecretName = secretNameStr
+		}
+	}
+
+	if apiKeyNameKey, exists := securityMap["apiKeyNameKey"]; exists {
+		if apiKeyNameKeyStr, ok := apiKeyNameKey.(string); ok {
+			apiKeySecurity.APIKeyNameKey = apiKeyNameKeyStr
+		}
+	}
+
+	if apiKeyValueKey, exists := securityMap["apiKeyValueKey"]; exists {
+		if apiKeyValueKeyStr, ok := apiKeyValueKey.(string); ok {
+			apiKeySecurity.APIKeyValueKey = apiKeyValueKeyStr
+		}
+	}
+
+	if in, exists := securityMap["in"]; exists {
+		if inStr, ok := in.(string); ok {
+			apiKeySecurity.In = inStr
+		}
+	}
+
+	return apiKeySecurity
+}
+
+// generateAPIKeySecurityHash generates a SHA256 hash for the given APIKeyEndpointSecurity configuration.
+func generateAPIKeySecurityHash(apiKeySecurity *model.APIKeyEndpointSecurity) string {
+	if apiKeySecurity == nil {
+		return ""
+	}
+
+	// Concatenate all fields in a consistent order
+	hashInput := fmt.Sprintf("%s|%s|%s|%s",
+		apiKeySecurity.SecretName,
+		apiKeySecurity.In,
+		apiKeySecurity.APIKeyNameKey,
+		apiKeySecurity.APIKeyValueKey,
+	)
+
+	// Generate SHA256 hash
+	hasher := sha256.New()
+	hasher.Write([]byte(hashInput))
+	hashBytes := hasher.Sum(nil)
+
+	// Return hex encoded hash
+	return hex.EncodeToString(hashBytes)
+}
+
+// createAPIKeyMediationPolicy creates a Mediation policy for API Key security.
+func createAPIKeyMediationPolicy(name string, endpointSecurity *model.EndpointSecurity,
+	apiKeySecurity *model.APIKeyEndpointSecurity) *dpv2alpha1.RoutePolicy {
+	apiKeyMediationPolicy := &dpv2alpha1.Mediation{
+		PolicyName:    constantscommon.MediationBackendAPIKey,
+		PolicyID:      "",
+		PolicyVersion: "",
+		Parameters: []*dpv2alpha1.Parameter{
+			{
+				Key:   "Enabled",
+				Value: strconv.FormatBool(*endpointSecurity.Enabled),
+			},
+			{
+				Key:   "In",
+				Value: apiKeySecurity.In,
+			},
+			{
+				Key:   "InValue",
+				Value: apiKeySecurity.APIKeyNameKey,
+			},
+			{
+				Key: "APIKey",
+				ValueRef: &gwapiv1a2.LocalObjectReference{
+					Name: gwapiv1a2.ObjectName(apiKeySecurity.SecretName),
+					Kind: constantscommon.KindSecret,
+				},
+			},
+		},
+	}
+	routePolicy := &dpv2alpha1.RoutePolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
+			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+		},
+		Spec: dpv2alpha1.RoutePolicySpec{
+			RequestMediation:  []*dpv2alpha1.Mediation{apiKeyMediationPolicy},
+			ResponseMediation: make([]*dpv2alpha1.Mediation, 0),
+		},
+	}
+	return routePolicy
 }
 
 func convertMapToK8sService(endpoint interface{}) (*model.K8sService, error) {

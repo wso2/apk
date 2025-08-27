@@ -157,3 +157,8 @@ const (
 
 	K8sMaxAnnotationLength = 10000
 )
+
+const (
+	BaseRoutePolicy       = "BaseRoutePolicy"
+	AIProviderRoutePolicy = "AIProviderRoutePolicy"
+)
