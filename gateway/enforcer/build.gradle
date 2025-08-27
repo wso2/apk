@@ -39,11 +39,12 @@ allprojects {
 tasks.register('go_test', Exec) {
     group 'go'
     description 'Automates testing the packages named by the import paths.'
+    commandLine 'sh', '-c', "go test -race -coverprofile=coverage.out -covermode=atomic ./..."
 }
 
 tasks.named('go_revive_run').configure { 
     finalizedBy go_tidy
-    // finalizedBy go_test
+    finalizedBy go_test
 }
 
 tasks.named('go_build').configure {

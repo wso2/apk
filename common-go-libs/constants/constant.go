@@ -162,6 +162,8 @@ const (
 	MediationBackendAPIKey = "BackendAPIKey"
 	// MediationWordCountGuardrail holds the name of the Word Count Guardrail mediation policy.
 	MediationWordCountGuardrail = "WordCountGuardrail"
+	// MediationSentenceCountGuardrail holds the name of the Sentence Count Guardrail mediation policy.
+	MediationSentenceCountGuardrail = "SentenceCountGuardrail"
 	// MediationURLGuardrail holds the name of the URL Guardrail mediation policy.
 	MediationURLGuardrail = "URLGuardrail"
 	// MediationRegexGuardrail holds the name of the Regex Guardrail mediation policy.

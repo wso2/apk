@@ -29,6 +29,8 @@ const (
 	MediationGraphQL = constantscommon.MediationGraphQL
 	// MediationWordCountGuardrail holds the name of the Word Count Guardrail mediation policy.
 	MediationWordCountGuardrail = constantscommon.MediationWordCountGuardrail
+	// MediationSentenceCountGuardrail holds the name of the Sentence Count Guardrail mediation policy.
+	MediationSentenceCountGuardrail = constantscommon.MediationSentenceCountGuardrail
 	// MediationURLGuardrail holds the name of the URL Guardrail mediation policy.
 	MediationURLGuardrail = constantscommon.MediationURLGuardrail
 	// MediationRegexGuardrail holds the name of the Regex Guardrail mediation policy.
@@ -46,6 +48,7 @@ var MediationAndRequestHeaderProcessing = map[string]bool{
 	MediationGraphQL:                false,
 	MediationBackendAPIKey:          true,
 	MediationWordCountGuardrail:     false,
+	MediationSentenceCountGuardrail: false,
 	MediationURLGuardrail:           false,
 	MediationRegexGuardrail:         false,
 }
@@ -61,6 +64,7 @@ var MediationAndRequestBodyProcessing = map[string]bool{
 	MediationGraphQL:                true,
 	MediationBackendAPIKey:          false,
 	MediationWordCountGuardrail:     true,
+	MediationSentenceCountGuardrail: true,
 	MediationURLGuardrail:           true,
 	MediationRegexGuardrail:         true,
 }
@@ -77,6 +81,7 @@ var MediationAndResponseHeaderProcessing = map[string]bool{
 	MediationGraphQL:                false,
 	MediationBackendAPIKey:          false,
 	MediationWordCountGuardrail:     false,
+	MediationSentenceCountGuardrail: false,
 	MediationURLGuardrail:           false,
 	MediationRegexGuardrail:         false,
 }
@@ -93,6 +98,7 @@ var MediationAndResponseBodyProcessing = map[string]bool{
 	MediationGraphQL:                false,
 	MediationBackendAPIKey:          false,
 	MediationWordCountGuardrail:     true,
+	MediationSentenceCountGuardrail: true,
 	MediationURLGuardrail:           true,
 	MediationRegexGuardrail:         true,
 }
@@ -168,6 +174,10 @@ func CreateMediation(mediationFromCluster *dpv2alpha1.Mediation) Mediation {
 		return mediation
 	case MediationWordCountGuardrail:
 		mediation := NewWordCountGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationSentenceCountGuardrail:
+		mediation := NewSentenceCountGuardrail(mediationFromCluster)
 		MediationMap[mediationFromCluster] = mediation
 		return mediation
 	case MediationURLGuardrail:
