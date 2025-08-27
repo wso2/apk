@@ -21,6 +21,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/crbuilder"
@@ -28,9 +31,7 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 	"github.com/wso2/apk/config-deployer-service-go/internal/services"
 	"github.com/wso2/apk/config-deployer-service-go/internal/util"
-	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 // APIClient represents the API client
