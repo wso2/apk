@@ -1,0 +1,110 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+apiVersion: dp.wso2.com/v2alpha1
+kind: RouteMetadata
+metadata:
+  name: ai-guardrail-wordcount-inverted
+  namespace: gateway-integration-test-infra
+spec:
+  api:
+    name: API with AI Guardrail WordCount Inverted
+    version: v1.0.0
+    organization: wso2-org
+    type: REST
+    context: /ai-guardrail-wordcount-inverted/v1.0.0
+    envType: production
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: ai-guardrail-wordcount-inverted-httproute
+  namespace: gateway-integration-test-infra
+  labels:
+    kgw-authenticate: "true"
+spec:
+  parentRefs:
+  - name: wso2-kgw-default
+    namespace: apk-integration-test
+    sectionName: httpslistener
+  hostnames:
+    - ai-guardrail-wordcount-inverted.test.gw.wso2.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /ai-guardrail-wordcount-inverted/v1.0.0/v2/echo-full
+      backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: infra-backend-v1
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            replacePrefixMatch: /v2/echo-full
+            type: ReplacePrefixMatch
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: RouteMetadata
+          name: ai-guardrail-wordcount-inverted
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: RoutePolicy
+          name: aiguardrailwordcountinverted
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: infra-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  endpoints:
+  - fqdn:
+      hostname: infra-backend-v1.gateway-integration-test-infra.svc
+      port: 8080
+---
+apiVersion: dp.wso2.com/v2alpha1
+kind: RoutePolicy
+metadata:
+  labels:
+    kgw.wso2.com/name: BackendBasedAIRL
+    kgw.wso2.com/organization: default
+    kgw.wso2.com/uuid: backend-based-airl-inverted
+    kgw.wso2.com/version: 1.0.0
+  name: aiguardrailwordcountinverted
+  namespace: gateway-integration-test-infra
+spec:
+  requestMediation:
+    - parameters:
+        - key: name
+          value: "WordCountGuardrailInverted"
+        - key: min
+          value: "10"
+        - key: max
+          value: "20"
+        - key: jsonPath
+          value: "$.content"
+        - key: invert
+          value: "true"
+        - key: showAssessment
+          value: "true"
+      policyID: ""
+      policyName: WordCountGuardrail
+status:
+  ancestors: null

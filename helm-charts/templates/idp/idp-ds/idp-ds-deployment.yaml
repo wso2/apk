@@ -35,15 +35,15 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/idp/idp-ds/idp-ds-configmap.yaml") . | sha256sum }}
     spec:
       automountServiceAccountToken: false
-      initContainers:
-        - name: init-db
-          image: busybox:1.32
-          command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.idp.database.host }}" {{.Values.idp.database.port }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop: ["ALL"]
-            readOnlyRootFilesystem: true
+      # initContainers:
+      #   - name: init-db
+      #     image: busybox:1.32
+      #     command: ['sh', '-c', 'echo -e "Checking for the availability of DB Server deployment"; while ! nc -z "{{ .Values.idp.database.host }}" {{.Values.idp.database.port }}; do sleep 1; printf "-"; done; echo -e "  >> DB Server has started";']
+      #     securityContext:
+      #       allowPrivilegeEscalation: false
+      #       capabilities:
+      #         drop: ["ALL"]
+      #       readOnlyRootFilesystem: true
       containers:
         - name: idpds
           image: {{ .Values.idp.idpds.deployment.image }}
