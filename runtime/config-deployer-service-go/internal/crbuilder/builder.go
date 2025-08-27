@@ -647,14 +647,20 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 							case *model.BackendJWTPolicy:
 								// TODO - Handle backend JWT policy with request modifications
 							case *model.RequestMirrorPolicy:
-								// TODO - Handle request mirroring
-								//requestMirrorFilter := gatewayv1.HTTPRouteFilter{
-								//	Type: gatewayv1.HTTPRouteFilterRequestMirror,
-								//	RequestMirror: &gatewayv1.HTTPRequestMirrorFilter{
-								//
-								//	},
-								//}
-								//rule.Filters = append(rule.Filters, requestMirrorFilter)
+								mirrorEndpoints := []model.EndpointConfiguration{
+									{
+										Endpoint: policy.Parameters.URLs[0],
+									},
+								}
+								requestMirrorBackendRefs := createBackendRefs(mirrorEndpoints, backendMap, routeName)
+								requestMirrorBackendRef := requestMirrorBackendRefs[0].BackendObjectReference
+								requestMirrorFilter = &gatewayv1.HTTPRouteFilter{
+									Type: gatewayv1.HTTPRouteFilterRequestMirror,
+									RequestMirror: &gatewayv1.HTTPRequestMirrorFilter{
+										BackendRef: requestMirrorBackendRef,
+										Percent:    ptrTo(int32(100)),
+									},
+								}
 							case *model.RequestRedirectPolicy:
 								scheme, host, port, err := extractSchemeHostPort(policy.Parameters.URL)
 								endpointPath, _ := extractPathFromEndpoint(policy.Parameters.URL)
@@ -1457,7 +1463,11 @@ func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]
 			}
 			if backendMap[scheme][backendID] == nil {
 				// Create a new backend object
-				backendName := fmt.Sprintf("%s-%s", routeName, hex.EncodeToString(sha1.New().Sum([]byte(backendID)))[:8])
+				encodedBackendID := hex.EncodeToString(sha1.New().Sum([]byte(backendID)))
+				backendName := fmt.Sprintf("%s-%s", routeName, encodedBackendID)
+				if len(backendName) > 253 {
+					backendName = backendName[:253]
+				}
 				backend, err := generateBackend(backendName, ec)
 				if err != nil {
 					logger.Sugar().Errorf("Failed to generate backend for endpoint %v: %v", ec.Endpoint, err)
