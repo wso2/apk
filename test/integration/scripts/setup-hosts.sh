@@ -42,5 +42,8 @@ sudo echo "$IP gql.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP grpc.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP api-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "$IP resource-level-jwt.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP ai-guardrail-wordcount-jsonpath.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP ai-guardrail-wordcount-inverted.test.gw.wso2.com" | sudo tee -a /etc/hosts
+sudo echo "$IP all-http-methods-for-wildcard-sentencecount.test.gw.wso2.com" | sudo tee -a /etc/hosts
 sudo echo "255.255.255.255 broadcasthost" | sudo tee -a /etc/hosts
 sudo echo "::1 localhost" | sudo tee -a /etc/hosts
