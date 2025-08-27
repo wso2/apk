@@ -95,6 +95,10 @@ type Property struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="API NAME",type="string",JSONPath=".spec.api.name",description="Name of the API"
+// +kubebuilder:printcolumn:name="VERSION",type="string",JSONPath=".spec.api.version",description="Version of the API"
+// +kubebuilder:printcolumn:name="BASEPATH",type="string",JSONPath=".spec.api.context",description="Path to the API definition"
+// +kubebuilder:printcolumn:name="ORGANIZATION",type="string",JSONPath=".spec.api.organization",description="Organization of the API"
 
 // RouteMetadata is the Schema for the routemetadata API
 type RouteMetadata struct {
