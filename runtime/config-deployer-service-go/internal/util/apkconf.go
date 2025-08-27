@@ -111,6 +111,7 @@ func generateCombinedResources(apkConf *model.APKConf) []dto.CombinedResource {
 	operations := apkConf.Operations
 	for _, operation := range operations {
 		populatedOperation := populateEndpointConfigurations(operation, apkConf)
+		populatedOperation = addAPIOperationPolicies(populatedOperation, apkConf)
 		key := generateGroupingKey(populatedOperation)
 		groupMap[key] = append(groupMap[key], populatedOperation)
 	}
@@ -138,6 +139,49 @@ func populateEndpointConfigurations(operation model.APKOperations, apkConf *mode
 		}
 		if len(populatedOperation.EndpointConfigurations.Sandbox) == 0 && len(apkConf.EndpointConfigurations.Sandbox) > 0 {
 			populatedOperation.EndpointConfigurations.Sandbox = apkConf.EndpointConfigurations.Sandbox
+		}
+	}
+
+	return populatedOperation
+}
+
+// addAPIOperationPolicies adds API operation policies from APKConf level to the resource level
+func addAPIOperationPolicies(operation model.APKOperations, conf *model.APKConf) model.APKOperations {
+	populatedOperation := operation
+	// If operation doesn't have APIOperationPolicies but APKConf does
+	if populatedOperation.OperationPolicies == nil {
+		populatedOperation.OperationPolicies = conf.APIPolicies
+	} else if conf.APIPolicies != nil {
+		// Prepend API-level request policies to operation-level request policies
+		if conf.APIPolicies.Request != nil && len(conf.APIPolicies.Request) > 0 {
+			operationRequestLen := 0
+			if populatedOperation.OperationPolicies.Request != nil {
+				operationRequestLen = len(populatedOperation.OperationPolicies.Request)
+			}
+
+			// Create a new slice with API policies first, then operation policies
+			combinedRequestPolicies := make([]model.APKRequestOperationPolicy, 0, len(conf.APIPolicies.Request)+operationRequestLen)
+			combinedRequestPolicies = append(combinedRequestPolicies, conf.APIPolicies.Request...)
+			if populatedOperation.OperationPolicies.Request != nil {
+				combinedRequestPolicies = append(combinedRequestPolicies, populatedOperation.OperationPolicies.Request...)
+			}
+			populatedOperation.OperationPolicies.Request = combinedRequestPolicies
+		}
+
+		// Prepend API-level response policies to operation-level response policies
+		if conf.APIPolicies.Response != nil && len(conf.APIPolicies.Response) > 0 {
+			operationResponseLen := 0
+			if populatedOperation.OperationPolicies.Response != nil {
+				operationResponseLen = len(populatedOperation.OperationPolicies.Response)
+			}
+
+			// Create a new slice with API policies first, then operation policies
+			combinedResponsePolicies := make([]model.APKResponseOperationPolicy, 0, len(conf.APIPolicies.Response)+operationResponseLen)
+			combinedResponsePolicies = append(combinedResponsePolicies, conf.APIPolicies.Response...)
+			if populatedOperation.OperationPolicies.Response != nil {
+				combinedResponsePolicies = append(combinedResponsePolicies, populatedOperation.OperationPolicies.Response...)
+			}
+			populatedOperation.OperationPolicies.Response = combinedResponsePolicies
 		}
 	}
 
