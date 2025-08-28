@@ -1,24 +1,19 @@
----
-name: "32398767b3b64a7ba1c6aabcd042df4fbd42502a"
-basePath: "/grpcapi"
-version: "v1"
-type: "GRPC"
+name: 32398767b3b64a7ba1c6aabcd042df4fbd42502a
+basePath: /grpcapi
+version: v1
+type: GRPC
 defaultVersion: false
 subscriptionValidation: false
 operations:
-- target: "order.OrderService"
-  verb: "CreateOrder"
-  secured: true
-  scopes: []
-- target: "order.OrderService"
-  verb: "ServeOrder"
-  secured: true
-  scopes: []
-- target: "payment.PaymentService"
-  verb: "ProcessPayment"
-  secured: true
-  scopes: []
-- target: "user.UserService"
-  verb: "GetUser"
-  secured: true
-  scopes: []
+  - target: order.OrderService
+    verb: CreateOrder
+    secured: true
+  - target: order.OrderService
+    verb: ServeOrder
+    secured: true
+  - target: payment.PaymentService
+    verb: ProcessPayment
+    secured: true
+  - target: user.UserService
+    verb: GetUser
+    secured: true

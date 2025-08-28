@@ -594,7 +594,7 @@ func chunkOperations(ops []model.APKOperations, size int) [][]model.APKOperation
 
 // GenerateGRPCRoutes generates GRPCRoute objects for the give APIResourceBundle.
 func GenerateGRPCRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string,
-	routePolicies []*dpv2alpha1.RoutePolicy, routeMetadataList []*dpv2alpha1.RouteMetadata) (
+	routePolicies map[string]*dpv2alpha1.RoutePolicy, routeMetadataList []*dpv2alpha1.RouteMetadata) (
 	map[int][]gatewayv1.GRPCRoute, []client.Object) {
 	objects := make([]client.Object, 0)
 	routesMap := make(map[int][]gatewayv1.GRPCRoute)

@@ -6,7 +6,7 @@ type: "GRPC"
 id: "grpc-scopes"
 endpointConfigurations:
   production:
-    - endpoint: "http://grpc-backend:6565"
+    - endpoint: "http://grpc-backend.apk-integration-test.svc.cluster.local:6565"
 defaultVersion: false
 subscriptionValidation: false
 operations:
