@@ -362,6 +362,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	routePolicies[constants.BaseRoutePolicy] = routePolicy
 	objects = append(objects, routePolicy)
 	routes := make(map[int][]client.Object)
+	btpByName := make(map[string]*eg.BackendTrafficPolicy)
 
 	if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRPC {
 		// Create the GRPCRoute objects
@@ -424,7 +425,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
 			apiResourceBundle.Organization)
 		backendTrafficPolicy := generateBackendTrafficPolicyForGRPC(btpName, targetRefs)
-		objects = append(objects, backendTrafficPolicy)
+		if existing, ok := btpByName[btpName]; ok {
+			mergeBTP(existing, backendTrafficPolicy)
+		} else {
+			btpByName[btpName] = backendTrafficPolicy.DeepCopy()
+		}
 	}
 
 	kindType := constants.K8sKindHTTPRoute
@@ -455,7 +460,12 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
 			apiResourceBundle.Organization)
 		backendTrafficPolicy := generateBackendTrafficPolicyForAIRatelimit(btpName, targetRefs, aiRatelimit)
-		objects = append(objects, backendTrafficPolicy)
+		if existing, ok := btpByName[btpName]; ok {
+			mergeBTP(existing, backendTrafficPolicy) // see helpers below
+		} else {
+			// store a deep-copy if your generator returns a pointer that might be reused
+			btpByName[btpName] = backendTrafficPolicy.DeepCopy()
+		}
 	}
 
 	// Ratelimit
@@ -480,7 +490,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
 			apiResourceBundle.Organization)
 		backendTrafficPolicy := generateBackendTrafficPolicyForRatelimit(btpName, targetRefs, apiResourceBundle.APKConf.RateLimit)
-		objects = append(objects, backendTrafficPolicy)
+		if existing, ok := btpByName[btpName]; ok {
+			mergeBTP(existing, backendTrafficPolicy)
+		} else {
+			btpByName[btpName] = backendTrafficPolicy.DeepCopy()
+		}
 	}
 
 	// Operation level ratelimit
@@ -522,7 +536,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				Unit:            unit,
 				RequestsPerUnit: requestsPerUnit,
 			})
-			objects = append(objects, backendTrafficPolicy)
+			if existing, ok := btpByName[btpName]; ok {
+				mergeBTP(existing, backendTrafficPolicy)
+			} else {
+				btpByName[btpName] = backendTrafficPolicy.DeepCopy()
+			}
 		}
 	}
 
@@ -555,6 +573,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			apiResourceBundle.APKConf.Authentication, apiResourceBundle.Namespace)
 		objects = append(objects, sp)
 
+	}
+
+	// Append all BackendTrafficPolicy objects
+	for _, b := range btpByName {
+		objects = append(objects, b)
 	}
 
 	return objects, nil
@@ -691,6 +714,94 @@ func GenerateGRPCRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 		}
 	}
 	return routesMap, objects
+}
+
+// mergeBTP merges two BackendTrafficPolicy objects.
+func mergeBTP(dst, src *eg.BackendTrafficPolicy) {
+	// Labels/annotations (dst wins unless src adds new)
+	if dst.Labels == nil {
+		dst.Labels = map[string]string{}
+	}
+	for k, v := range src.Labels {
+		dst.Labels[k] = v
+	}
+	if dst.Annotations == nil {
+		dst.Annotations = map[string]string{}
+	}
+	for k, v := range src.Annotations {
+		dst.Annotations[k] = v
+	}
+
+	// Merge target refs uniquely
+	dst.Spec.TargetRefs = mergeUniqueTargetRefs(dst.Spec.TargetRefs, src.Spec.TargetRefs)
+
+	// Merge RateLimits
+	if src.Spec.RateLimit != nil {
+		if dst.Spec.RateLimit == nil {
+			dst.Spec.RateLimit = src.Spec.RateLimit.DeepCopy()
+		} else {
+			mergeRateLimit(dst.Spec.RateLimit, src.Spec.RateLimit)
+		}
+	}
+
+	// Merge Cluster Settings
+	if src.Spec.ClusterSettings != (eg.ClusterSettings{}) {
+		if dst.Spec.ClusterSettings == (eg.ClusterSettings{}) {
+			dst.Spec.ClusterSettings = *src.Spec.ClusterSettings.DeepCopy()
+		} else {
+			mergeClusterSettings(dst.Spec.ClusterSettings, src.Spec.ClusterSettings)
+		}
+	}
+
+	// merge any other spec fields here
+}
+
+// mergeUniqueTargetRefs merges two slices of LocalPolicyTargetReferenceWithSectionName, ensuring that the result contains unique entries.
+func mergeUniqueTargetRefs(a, b []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName) []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName {
+	type key struct{ group, kind, ns, name string }
+	seen := make(map[key]struct{}, len(a))
+	out := make([]gwapiv1a2.LocalPolicyTargetReferenceWithSectionName, 0, len(a)+len(b))
+
+	add := func(tr gwapiv1a2.LocalPolicyTargetReferenceWithSectionName) {
+		k := key{group: string(tr.Group), kind: string(tr.Kind), name: string(tr.Name)}
+		if _, ok := seen[k]; !ok {
+			seen[k] = struct{}{}
+			out = append(out, tr)
+		}
+	}
+	for _, tr := range a {
+		add(tr)
+	}
+	for _, tr := range b {
+		add(tr)
+	}
+	return out
+}
+
+// mergeRateLimit merges two RateLimitSpec objects.
+func mergeRateLimit(dst, src *eg.RateLimitSpec) {
+	if src.Type != "" {
+		dst.Type = src.Type
+	}
+	if src.Global != nil {
+		dst.Global = src.Global
+	}
+	if src.Local != nil {
+		dst.Local = src.Local
+	}
+}
+
+// mergeClusterSettings merges two ClusterSettings objects.
+func mergeClusterSettings(dst, src eg.ClusterSettings) {
+	if src.DNS != nil {
+		dst.DNS = src.DNS.DeepCopy()
+	}
+	if src.LoadBalancer != nil {
+		dst.LoadBalancer = src.LoadBalancer.DeepCopy()
+	}
+	if src.Timeout != nil {
+		dst.Timeout = src.Timeout.DeepCopy()
+	}
 }
 
 // GenerateHTTPRoutes generates HTTPRoute objects for the given APIResourceBundle.
