@@ -1,7 +1,7 @@
 ### Kubernetes YAML files - Local
 
 ```sh
-helm template apk-eg ./helm-charts -n apk-egress-gateway --create-namespace -f helm-charts/values-local.yaml > local-test-v2.yaml
+helm template apk-eg ./helm-charts -n apk-egress-gateway --create-namespace -f helm-charts/values-local.yaml > local.yaml
 ```
 
 ### Install Helm Chart
