@@ -31,6 +31,10 @@ const (
 	MediationWordCountGuardrail = constantscommon.MediationWordCountGuardrail
 	// MediationSentenceCountGuardrail holds the name of the Sentence Count Guardrail mediation policy.
 	MediationSentenceCountGuardrail = constantscommon.MediationSentenceCountGuardrail
+	// MediationContentLengthGuardrail holds the name of the Content Length Guardrail mediation policy.
+	MediationContentLengthGuardrail = constantscommon.MediationContentLengthGuardrail
+	// MediationPIIMaskingGuardrail holds the name of the PII Masking Guardrail mediation policy.
+	MediationPIIMaskingGuardrail = constantscommon.MediationPIIMaskingGuardrail
 	// MediationURLGuardrail holds the name of the URL Guardrail mediation policy.
 	MediationURLGuardrail = constantscommon.MediationURLGuardrail
 	// MediationRegexGuardrail holds the name of the Regex Guardrail mediation policy.
@@ -49,6 +53,8 @@ var MediationAndRequestHeaderProcessing = map[string]bool{
 	MediationBackendAPIKey:          true,
 	MediationWordCountGuardrail:     false,
 	MediationSentenceCountGuardrail: false,
+	MediationContentLengthGuardrail: false,
+	MediationPIIMaskingGuardrail:    false,
 	MediationURLGuardrail:           false,
 	MediationRegexGuardrail:         false,
 }
@@ -65,6 +71,8 @@ var MediationAndRequestBodyProcessing = map[string]bool{
 	MediationBackendAPIKey:          false,
 	MediationWordCountGuardrail:     true,
 	MediationSentenceCountGuardrail: true,
+	MediationContentLengthGuardrail: true,
+	MediationPIIMaskingGuardrail:    true,
 	MediationURLGuardrail:           true,
 	MediationRegexGuardrail:         true,
 }
@@ -82,6 +90,8 @@ var MediationAndResponseHeaderProcessing = map[string]bool{
 	MediationBackendAPIKey:          false,
 	MediationWordCountGuardrail:     false,
 	MediationSentenceCountGuardrail: false,
+	MediationContentLengthGuardrail: false,
+	MediationPIIMaskingGuardrail:    false,
 	MediationURLGuardrail:           false,
 	MediationRegexGuardrail:         false,
 }
@@ -99,6 +109,8 @@ var MediationAndResponseBodyProcessing = map[string]bool{
 	MediationBackendAPIKey:          false,
 	MediationWordCountGuardrail:     true,
 	MediationSentenceCountGuardrail: true,
+	MediationContentLengthGuardrail: true,
+	MediationPIIMaskingGuardrail:    true,
 	MediationURLGuardrail:           true,
 	MediationRegexGuardrail:         true,
 }
@@ -178,6 +190,14 @@ func CreateMediation(mediationFromCluster *dpv2alpha1.Mediation) Mediation {
 		return mediation
 	case MediationSentenceCountGuardrail:
 		mediation := NewSentenceCountGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationContentLengthGuardrail:
+		mediation := NewContentLengthGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationPIIMaskingGuardrail:
+		mediation := NewPIIMaskingGuardrail(mediationFromCluster)
 		MediationMap[mediationFromCluster] = mediation
 		return mediation
 	case MediationURLGuardrail:

@@ -82,6 +82,16 @@ func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *R
 			break
 		}
 	}
+	if requestConfig.RouteMetadata == nil {
+		s.cfg.Logger.Sugar().Errorf("RouteMetadata is nil in the requestConfig")
+		result.StopFurtherProcessing = true
+		result.ImmediateResponse = true
+		result.ImmediateResponseCode = 403
+		result.ImmediateResponseBody = forbiddenJSONMessage
+		result.ImmediateResponseDetail = "User is NOT authorized to access the Resource. API Subscription validation failed."
+
+		return result
+	}
 	subAppDataStore := datastore.GetSubAppDataStore(s.cfg)
 	if clientID != "" {
 		appID := s.getAppIDUsingConsumerKey(clientID, requestConfig.EnvType, requestConfig.RouteMetadata.Spec.API.Environment, requestConfig.RouteMetadata.Spec.API.Organization, "OAuth2")
@@ -138,7 +148,7 @@ func (s *SubscriptionValidation) Process(requestConfig *requestconfig.Holder) *R
 
 	result.StopFurtherProcessing = true
 	result.ImmediateResponse = true
-	result.ImmediateResponseCode = 401
+	result.ImmediateResponseCode = 403
 	result.ImmediateResponseBody = forbiddenJSONMessage
 	result.ImmediateResponseDetail = "User is NOT authorized to access the Resource. API Subscription validation failed."
 

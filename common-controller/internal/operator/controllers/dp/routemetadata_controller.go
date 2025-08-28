@@ -157,7 +157,7 @@ func (routeMetadataReconciler *RouteMetadataReconciler) Reconcile(ctx context.Co
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if routeMetadata.Spec.API.DefinitionFileRef == nil {
+	if routeMetadata.Spec.API.DefinitionFileRef != nil {
 		namespacedName := types.NamespacedName{
 			Namespace: req.Namespace,
 			Name:      string(routeMetadata.Spec.API.DefinitionFileRef.Name),
@@ -175,73 +175,75 @@ func (routeMetadataReconciler *RouteMetadataReconciler) Reconcile(ctx context.Co
 
 	// Add or update the RouteMetadata in the store
 	routeMetadataReconciler.Store.AddOrUpdateRouteMetadata(routeMetadata)
-
-	if val, ok := routeMetadata.Labels["initiatedfromCP"]; !ok || val == "false" {
-		loggers.LoggerAPKOperator.Infof("Processing RouteMetadata %s as it's initiated from DP", req.NamespacedName)
-		// your processing logic here
-		state := synchronizer.APIState{
-			APIDefinition: &dpV2alpha1.RouteMetadata{
-				Spec: dpV2alpha1.RouteMetadataSpec{
-					API: dpV2alpha1.API{}, // assuming API is a value type, not a pointer
+	conf := config.ReadConfigs()
+	if conf.CommonController.ControlPlane.EnableAPIPropagation {
+		
+		if val, ok := routeMetadata.Labels["initiatedfromCP"]; !ok || val == "false" {
+			loggers.LoggerAPKOperator.Infof("Processing RouteMetadata %s as it's initiated from DP", req.NamespacedName)
+			// your processing logic here
+			state := synchronizer.APIState{
+				APIDefinition: &dpV2alpha1.RouteMetadata{
+					Spec: dpV2alpha1.RouteMetadataSpec{
+						API: dpV2alpha1.API{}, // assuming API is a value type, not a pointer
+					},
 				},
-			},
-		}
-		state.APIDefinition.Name = routeMetadata.ObjectMeta.Name
-		state.APIDefinition.Namespace = routeMetadata.ObjectMeta.Namespace
-		state.APIDefinition.Spec.API.Name = routeMetadata.Spec.API.Name
-		state.APIDefinition.Spec.API.Version = routeMetadata.Spec.API.Version
-		state.APIDefinition.Spec.API.Type = routeMetadata.Spec.API.Type
-		state.APIDefinition.Spec.API.Context = routeMetadata.Spec.API.Context
-		state.APIDefinition.Spec.API.Organization = routeMetadata.Spec.API.Organization
-		state.APIDefinition.Spec.API.Environment = routeMetadata.Spec.API.Environment
-		state.APIDefinition.Spec.API.DefinitionFileRef = routeMetadata.Spec.API.DefinitionFileRef
-		loggers.LoggerAPKOperator.Info("Sending API Creation event to agent")
-		routes, err := CollectHTTPRoutes(ctx, routeMetadataReconciler.client, &routeMetadata)
-		if err != nil {
-			return ctrl.Result{}, err
-		}
-
-		// 3) classify + build states
-		var prodState, sandState *syncronizer.HTTPRouteState
-
-		for _, hr := range routes {
-			env := strings.ToLower(hr.GetAnnotations()["gateway.envoyproxy.io/kgw-envtype"]) // "prod" or "sand"
-			st, err := buildHTTPRouteStateFromObj(ctx, routeMetadataReconciler.client, hr)
+			}
+			state.APIDefinition.Name = routeMetadata.ObjectMeta.Name
+			state.APIDefinition.Namespace = routeMetadata.ObjectMeta.Namespace
+			state.APIDefinition.Spec.API.Name = routeMetadata.Spec.API.Name
+			state.APIDefinition.Spec.API.Version = routeMetadata.Spec.API.Version
+			state.APIDefinition.Spec.API.Type = routeMetadata.Spec.API.Type
+			state.APIDefinition.Spec.API.Context = routeMetadata.Spec.API.Context
+			state.APIDefinition.Spec.API.Organization = routeMetadata.Spec.API.Organization
+			state.APIDefinition.Spec.API.Environment = routeMetadata.Spec.API.Environment
+			state.APIDefinition.Spec.API.DefinitionFileRef = routeMetadata.Spec.API.DefinitionFileRef
+			loggers.LoggerAPKOperator.Info("Sending API Creation event to agent")
+			routes, err := CollectHTTPRoutes(ctx, routeMetadataReconciler.client, &routeMetadata)
 			if err != nil {
-				loggers.LoggerAPI.Error(err, "buildHTTPRouteStateFromObj failed", "route", hr.Name)
 				return ctrl.Result{}, err
 			}
 
-			switch env {
-			case "production":
-				// If multiple prod routes exist, you can choose a policy (first wins, last wins, merge, etc.)
-				if prodState == nil {
-					prodState = st
-				} else {
-					// merge strategy if needed; for now keep the first
-					loggers.LoggerAPI.Info("multiple prod HTTPRoutes detected; keeping the first", "existing", prodState.HTTPRouteCombined.Name, "ignored", hr.Name)
+			// 3) classify + build states
+			var prodState, sandState *syncronizer.HTTPRouteState
+
+			for _, hr := range routes {
+				env := strings.ToLower(hr.GetAnnotations()["gateway.envoyproxy.io/kgw-envtype"]) // "prod" or "sand"
+				st, err := buildHTTPRouteStateFromObj(ctx, routeMetadataReconciler.client, hr)
+				if err != nil {
+					loggers.LoggerAPI.Error(err, "buildHTTPRouteStateFromObj failed", "route", hr.Name)
+					return ctrl.Result{}, err
 				}
-			case "sandbox":
-				if sandState == nil {
-					sandState = st
-				} else {
-					loggers.LoggerAPI.Info("multiple sandbox HTTPRoutes detected; keeping the first", "existing", sandState.HTTPRouteCombined.Name, "ignored", hr.Name)
+
+				switch env {
+				case "production":
+					// If multiple prod routes exist, you can choose a policy (first wins, last wins, merge, etc.)
+					if prodState == nil {
+						prodState = st
+					} else {
+						// merge strategy if needed; for now keep the first
+						loggers.LoggerAPI.Info("multiple prod HTTPRoutes detected; keeping the first", "existing", prodState.HTTPRouteCombined.Name, "ignored", hr.Name)
+					}
+				case "sandbox":
+					if sandState == nil {
+						sandState = st
+					} else {
+						loggers.LoggerAPI.Info("multiple sandbox HTTPRoutes detected; keeping the first", "existing", sandState.HTTPRouteCombined.Name, "ignored", hr.Name)
+					}
+				default:
+					// If missing/unknown, default to prod unless you prefer to skip
+					if prodState == nil {
+						loggers.LoggerAPI.Info("HTTPRoute without gateway.envoyproxy.io/kgw-envtype (prod|sand) — defaulting to prod", "route", hr.Name)
+						prodState = st
+					} else {
+						loggers.LoggerAPI.Info("extra HTTPRoute without env annotation ignored", "route", hr.Name)
+					}
 				}
-			default:
-				// If missing/unknown, default to prod unless you prefer to skip
-				if prodState == nil {
-					loggers.LoggerAPI.Info("HTTPRoute without gateway.envoyproxy.io/kgw-envtype (prod|sand) — defaulting to prod", "route", hr.Name)
-					prodState = st
-				} else {
-					loggers.LoggerAPI.Info("extra HTTPRoute without env annotation ignored", "route", hr.Name)
-				}
+				state.ProdHTTPRoute = prodState
+				state.SandHTTPRoute = sandState
 			}
-			state.ProdHTTPRoute = prodState
-			state.SandHTTPRoute = sandState
-		}
-		apiCpData := routeMetadataReconciler.convertAPIStateToAPICp(ctx, state)
-		apiCpData.Event = controlplane.EventTypeCreate
-		controlplane.AddToEventQueue(apiCpData)
+			apiCpData := routeMetadataReconciler.convertAPIStateToAPICp(ctx, state)
+			apiCpData.Event = controlplane.EventTypeCreate
+			controlplane.AddToEventQueue(apiCpData)
 	}
 
 	routePolicyString, err := utils.ToJSONString(routeMetadata)
@@ -428,7 +430,6 @@ func (routeMetadataReconciler *RouteMetadataReconciler) convertAPIStateToAPICp(c
 		ProdEndpoint: SelectProdEndpointString(apiState.ProdHTTPRoute),
 	}
 	apiCPEvent.API = api
-	fmt.Println(api)
 	apiCPEvent.CRName = apiState.APIDefinition.ObjectMeta.Name
 	apiCPEvent.CRNamespace = apiState.APIDefinition.ObjectMeta.Namespace
 	return apiCPEvent
