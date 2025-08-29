@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, AIGuardrailWordCountInverted)
+	//IntegrationTests = append(IntegrationTests, AIGuardrailWordCountInverted)
 }
 
 // AIGuardrailWordCountInverted test

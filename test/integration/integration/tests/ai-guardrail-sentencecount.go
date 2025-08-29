@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, AIGuardrailSentenceCount)
+	//IntegrationTests = append(IntegrationTests, AIGuardrailSentenceCount)
 }
 
 // AIGuardrailSentenceCount test

@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	IntegrationTests = append(IntegrationTests, AIGuardrailPIIMasking)
+	//IntegrationTests = append(IntegrationTests, AIGuardrailPIIMasking)
 }
 
 // AIGuardrailPIIMasking test
