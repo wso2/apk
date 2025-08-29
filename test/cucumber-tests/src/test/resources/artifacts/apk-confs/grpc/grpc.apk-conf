@@ -1,28 +1,23 @@
----
-name: "6a254687f3229c35dd0189aac7f7fc4b6228e97a"
-basePath: "/org.apk"
-version: "v1"
-type: "GRPC"
 id: "grpc-basic-api"
-endpointConfigurations:
-  production:
-    - endpoint: "http://grpc-backend:6565"
+name: 6a254687f3229c35dd0189aac7f7fc4b6228e97a
+basePath: /org.apk
+version: v1
+type: GRPC
 defaultVersion: false
 subscriptionValidation: false
+endpointConfigurations:
+    production:
+        - endpoint: "http://grpc-backend.apk-integration-test.svc.cluster.local:6565"
 operations:
-  - target: "student_service.StudentService"
-    verb: "GetStudent"
+  - target: student_service.StudentService
+    verb: GetStudent
     secured: true
-    scopes: []
-  - target: "student_service.StudentService"
-    verb: "GetStudentStream"
+  - target: student_service.StudentService
+    verb: GetStudentStream
     secured: true
-    scopes: []
-  - target: "student_service.StudentService"
-    verb: "SendStudentStream"
+  - target: student_service.StudentService
+    verb: SendStudentStream
     secured: true
-    scopes: []
-  - target: "student_service.StudentService"
-    verb: "SendAndGetStudentStream"
+  - target: student_service.StudentService
+    verb: SendAndGetStudentStream
     secured: true
-    scopes: []

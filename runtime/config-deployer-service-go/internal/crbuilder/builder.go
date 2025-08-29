@@ -124,6 +124,16 @@ func safeHTTPMethod(verb *string) *gatewayv1.HTTPMethod {
 	return &fallback
 }
 
+func safeGRPCMethod(verb *string, service *string) *gatewayv1.GRPCMethodMatch {
+	if verb == nil {
+		return nil
+	}
+	return &gatewayv1.GRPCMethodMatch{
+		Method:  verb,
+		Service: service,
+	}
+}
+
 // CreateResources creates Kubernetes resources based on the provided APIResourceBundle.
 func CreateResources(apiResourceBundle *dto.APIResourceBundle) ([]client.Object, error) {
 	if apiResourceBundle == nil || apiResourceBundle.APKConf == nil || apiResourceBundle.APKConf.EndpointConfigurations == nil {
@@ -351,20 +361,80 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	}
 	routePolicies[constants.BaseRoutePolicy] = routePolicy
 	objects = append(objects, routePolicy)
+	routes := make(map[int][]client.Object)
+	btpByName := make(map[string]*eg.BackendTrafficPolicy)
 
-	// Create the HTTPRoute objects
-	routes, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment, routePolicies, routeMetadataList)
-	for _, obj := range objectsForWithVersion {
-		objects = append(objects, obj)
-	}
-	if apiResourceBundle.APKConf.DefaultVersion {
-		routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment, routePolicies, routeMetadataList)
-		for _, obj := range objectsForWithoutVersion {
+	if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRPC {
+		// Create the GRPCRoute objects
+		routesGRPC, objectsForWithVersion := GenerateGRPCRoutes(apiResourceBundle, true, environment, routePolicies, routeMetadataList)
+		for _, obj := range objectsForWithVersion {
 			objects = append(objects, obj)
 		}
-		for key, value := range routesL {
-			routes[key] = append(value, routes[key]...)
+		if apiResourceBundle.APKConf.DefaultVersion {
+			routesL, objectsForWithoutVersion := GenerateGRPCRoutes(apiResourceBundle, false, environment, routePolicies, routeMetadataList)
+			for _, obj := range objectsForWithoutVersion {
+				objects = append(objects, obj)
+			}
+			for key, value := range routesL {
+				routesGRPC[key] = append(value, routesGRPC[key]...)
+			}
 		}
+		// Convert map[int][]gatewayv1.GRPCRoute to map[int][]client.Object
+		for key, grpcRoutes := range routesGRPC {
+			for _, grpcRoute := range grpcRoutes {
+				routes[key] = append(routes[key], client.Object(&grpcRoute))
+			}
+		}
+	} else {
+		// Create the HTTPRoute objects
+		routesHTTP, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment, routePolicies, routeMetadataList)
+		for _, obj := range objectsForWithVersion {
+			objects = append(objects, obj)
+		}
+		if apiResourceBundle.APKConf.DefaultVersion {
+			routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment, routePolicies, routeMetadataList)
+			for _, obj := range objectsForWithoutVersion {
+				objects = append(objects, obj)
+			}
+			for key, value := range routesL {
+				routesHTTP[key] = append(value, routesHTTP[key]...)
+			}
+		}
+		// Convert map[int][]gatewayv1.HTTPRoute to map[int][]client.Object
+		for key, httpRoutes := range routesHTTP {
+			for _, httpRoute := range httpRoutes {
+				routes[key] = append(routes[key], client.Object(&httpRoute))
+			}
+		}
+	}
+
+	if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRPC {
+		var targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName
+		for _, grpcRoutes := range routes {
+			for _, grpcRoute := range grpcRoutes {
+				targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
+					LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
+						Name:  gwapiv1a2.ObjectName(grpcRoute.GetName()),
+						Kind:  constants.K8sKindGRPCRoute,
+						Group: constants.K8sGroupNetworking,
+					},
+				})
+			}
+		}
+		// Generate BackendTrafficPolicy for GRPC
+		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
+			apiResourceBundle.Organization)
+		backendTrafficPolicy := generateBackendTrafficPolicyForGRPC(btpName, targetRefs)
+		if existing, ok := btpByName[btpName]; ok {
+			mergeBTP(existing, backendTrafficPolicy)
+		} else {
+			btpByName[btpName] = backendTrafficPolicy.DeepCopy()
+		}
+	}
+
+	kindType := constants.K8sKindHTTPRoute
+	if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRPC {
+		kindType = constants.K8sKindGRPCRoute
 	}
 
 	// AI ratelimit
@@ -379,7 +449,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 			for _, httpRoute := range httpRoutes {
 				targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 					LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
-						Name:  gwapiv1a2.ObjectName(httpRoute.Name),
+						Name:  gwapiv1a2.ObjectName(httpRoute.GetName()),
 						Kind:  constants.K8sKindHTTPRoute,
 						Group: constants.K8sGroupNetworking,
 					},
@@ -390,18 +460,27 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
 			apiResourceBundle.Organization)
 		backendTrafficPolicy := generateBackendTrafficPolicyForAIRatelimit(btpName, targetRefs, aiRatelimit)
-		objects = append(objects, backendTrafficPolicy)
+		if existing, ok := btpByName[btpName]; ok {
+			mergeBTP(existing, backendTrafficPolicy) // see helpers below
+		} else {
+			// store a deep-copy if your generator returns a pointer that might be reused
+			btpByName[btpName] = backendTrafficPolicy.DeepCopy()
+		}
 	}
 
 	// Ratelimit
 	if apiResourceBundle.APKConf.RateLimit != nil {
 		var targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName
+		kindType := constants.K8sKindHTTPRoute
+		if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRPC {
+			kindType = constants.K8sKindGRPCRoute
+		}
 		for _, httpRoutes := range routes {
 			for _, httpRoute := range httpRoutes {
 				targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 					LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
-						Name:  gwapiv1a2.ObjectName(httpRoute.Name),
-						Kind:  constants.K8sKindHTTPRoute,
+						Name:  gwapiv1a2.ObjectName(httpRoute.GetName()),
+						Kind:  gwapiv1a2.Kind(kindType),
 						Group: constants.K8sGroupNetworking,
 					},
 				})
@@ -411,7 +490,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		btpName := util.GenerateCRName(apiResourceBundle.APKConf.Name, environment, apiResourceBundle.APKConf.Version,
 			apiResourceBundle.Organization)
 		backendTrafficPolicy := generateBackendTrafficPolicyForRatelimit(btpName, targetRefs, apiResourceBundle.APKConf.RateLimit)
-		objects = append(objects, backendTrafficPolicy)
+		if existing, ok := btpByName[btpName]; ok {
+			mergeBTP(existing, backendTrafficPolicy)
+		} else {
+			btpByName[btpName] = backendTrafficPolicy.DeepCopy()
+		}
 	}
 
 	// Operation level ratelimit
@@ -438,8 +521,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				for _, httpRoute := range routes[index] {
 					targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 						LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
-							Name:  gwapiv1a2.ObjectName(httpRoute.Name),
-							Kind:  constants.K8sKindHTTPRoute,
+							Name:  gwapiv1a2.ObjectName(httpRoute.GetName()),
+							Kind:  gwapiv1a2.Kind(kindType),
 							Group: constants.K8sGroupNetworking,
 						},
 					})
@@ -453,7 +536,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				Unit:            unit,
 				RequestsPerUnit: requestsPerUnit,
 			})
-			objects = append(objects, backendTrafficPolicy)
+			if existing, ok := btpByName[btpName]; ok {
+				mergeBTP(existing, backendTrafficPolicy)
+			} else {
+				btpByName[btpName] = backendTrafficPolicy.DeepCopy()
+			}
 		}
 	}
 
@@ -473,8 +560,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		for _, httpRoute := range routes[i] {
 			targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 				LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
-					Name:  gwapiv1a2.ObjectName(httpRoute.Name),
-					Kind:  constants.K8sKindHTTPRoute,
+					Name:  gwapiv1a2.ObjectName(httpRoute.GetName()),
+					Kind:  gwapiv1a2.Kind(kindType),
 					Group: constants.K8sGroupNetworking,
 				},
 			})
@@ -488,6 +575,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 
 	}
 
+	// Append all BackendTrafficPolicy objects
+	for _, b := range btpByName {
+		objects = append(objects, b)
+	}
+
 	return objects, nil
 }
 
@@ -498,6 +590,218 @@ func chunkOperations(ops []model.APKOperations, size int) [][]model.APKOperation
 	}
 	chunks = append(chunks, ops)
 	return chunks
+}
+
+// GenerateGRPCRoutes generates GRPCRoute objects for the give APIResourceBundle.
+func GenerateGRPCRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string,
+	routePolicies map[string]*dpv2alpha1.RoutePolicy, routeMetadataList []*dpv2alpha1.RouteMetadata) (
+	map[int][]gatewayv1.GRPCRoute, []client.Object) {
+	objects := make([]client.Object, 0)
+	routesMap := make(map[int][]gatewayv1.GRPCRoute)
+	backendMap := make(map[string]map[string]*eg.Backend)
+	crName := util.GenerateCRName(bundle.APKConf.Name, environment, bundle.APKConf.Version, bundle.Organization)
+	// Generate the GRPCRoute objects
+	for i, combined := range bundle.CombinedResources {
+		batches := chunkOperations(combined.APKOperations, 16)
+		for j, batch := range batches {
+			parentName := config.GetConfig().ParentGatewayName
+			parentNamespace := bundle.Namespace
+			parentSectionName := config.GetConfig().ParentGatewaySectionName
+			routeName := getHTTPRouteCRName(crName, i, j, withVersion)
+			route := gatewayv1.GRPCRoute{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: "gateway.networking.k8s.io/v1",
+					Kind:       "GRPCRoute",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name: routeName,
+					Annotations: map[string]string{
+						constants.K8sHTTPRouteEnvTypeAnnotation: strings.ToUpper(environment),
+					},
+				},
+				Spec: gatewayv1.GRPCRouteSpec{
+					Hostnames: []gatewayv1.Hostname{
+						gatewayv1.Hostname(func() string {
+							gatewayHostName := config.GetConfig().GatewayHostName
+							if environment == constants.SANDBOX_TYPE {
+								return fmt.Sprintf("%s.%s.%s", bundle.Organization, constants.SANDBOX_TYPE, gatewayHostName)
+							}
+							return fmt.Sprintf("%s.%s", bundle.Organization, gatewayHostName)
+						}()),
+					},
+					CommonRouteSpec: gatewayv1.CommonRouteSpec{
+						ParentRefs: []gatewayv1.ParentReference{
+							{
+								Name:        gatewayv1.ObjectName(parentName),
+								Group:       ptrTo(gatewayv1.Group(constants.K8sGroupNetworking)),
+								Kind:        ptrTo(gatewayv1.Kind(constants.K8sKindGateway)),
+								Namespace:   ptrTo(gatewayv1.Namespace(parentNamespace)),
+								SectionName: ptrTo(gatewayv1.SectionName(parentSectionName)),
+							},
+						},
+					},
+					Rules: []gatewayv1.GRPCRouteRule{},
+				},
+			}
+
+			for _, op := range batch {
+				if op.Verb == nil {
+					getMethod := string(gatewayv1.HTTPMethodGet)
+					op.Verb = &getMethod
+				}
+				if op.Target == nil {
+					continue
+				}
+
+				apiBasePath := strings.TrimPrefix(bundle.APKConf.BasePath, "/")
+				if withVersion {
+					version := bundle.APKConf.Version
+					apiBasePath = fmt.Sprintf("%s.%s",
+						strings.TrimSuffix(apiBasePath, "/"),
+						strings.TrimPrefix(version, "/"),
+					)
+				}
+				path := fmt.Sprintf("%s.%s",
+					strings.TrimSuffix(apiBasePath, "/"),
+					strings.TrimPrefix(*op.Target, "/"),
+				)
+				method := safeGRPCMethod(op.Verb, &path)
+
+				ecs := op.EndpointConfigurations.Production
+				if environment == constants.SANDBOX_TYPE {
+					ecs = op.EndpointConfigurations.Sandbox
+				}
+				if len(ecs) == 0 {
+					continue
+				}
+				// Create backend reference
+				grpcBackendRefs := createGRPCBackendRefs(ecs, backendMap, routeName)
+				rule := gatewayv1.GRPCRouteRule{
+					Matches: []gatewayv1.GRPCRouteMatch{
+						{
+							Method: method,
+						},
+					},
+				}
+				if len(grpcBackendRefs) > 0 {
+					rule.BackendRefs = grpcBackendRefs
+				} else {
+					logger.Sugar().Warnf("No backend references found for operation %s in API %s", *op.Target, bundle.APKConf.Name)
+				}
+				route.Spec.Rules = append(route.Spec.Rules, rule)
+			}
+			routesMap[i] = append(routesMap[i], route)
+			objects = append(objects, &route)
+		}
+	}
+	for scheme, backendMapL := range backendMap {
+		for _, backend := range backendMapL {
+			objects = append(objects, backend)
+			// Create BackendTLSPolicy if TLS is enabled
+			if scheme == "https" {
+				backendTLSPolicy := generateBackendTLSPolicyWithWellKnownCerts(backend.Name, backend.Spec.Endpoints[0].FQDN.Hostname,
+					[]gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
+						{
+							LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
+								Name:  gwapiv1a2.ObjectName(backend.Name),
+								Kind:  constants.K8sKindBackend,
+								Group: constants.K8sGroupEnvoyGateway,
+							},
+						},
+					})
+				objects = append(objects, backendTLSPolicy)
+			}
+		}
+	}
+	return routesMap, objects
+}
+
+// mergeBTP merges two BackendTrafficPolicy objects.
+func mergeBTP(dst, src *eg.BackendTrafficPolicy) {
+	// Labels/annotations (dst wins unless src adds new)
+	if dst.Labels == nil {
+		dst.Labels = map[string]string{}
+	}
+	for k, v := range src.Labels {
+		dst.Labels[k] = v
+	}
+	if dst.Annotations == nil {
+		dst.Annotations = map[string]string{}
+	}
+	for k, v := range src.Annotations {
+		dst.Annotations[k] = v
+	}
+
+	// Merge target refs uniquely
+	dst.Spec.TargetRefs = mergeUniqueTargetRefs(dst.Spec.TargetRefs, src.Spec.TargetRefs)
+
+	// Merge RateLimits
+	if src.Spec.RateLimit != nil {
+		if dst.Spec.RateLimit == nil {
+			dst.Spec.RateLimit = src.Spec.RateLimit.DeepCopy()
+		} else {
+			mergeRateLimit(dst.Spec.RateLimit, src.Spec.RateLimit)
+		}
+	}
+
+	// Merge Cluster Settings
+	if src.Spec.ClusterSettings != (eg.ClusterSettings{}) {
+		if dst.Spec.ClusterSettings == (eg.ClusterSettings{}) {
+			dst.Spec.ClusterSettings = *src.Spec.ClusterSettings.DeepCopy()
+		} else {
+			mergeClusterSettings(dst.Spec.ClusterSettings, src.Spec.ClusterSettings)
+		}
+	}
+
+	// merge any other spec fields here
+}
+
+// mergeUniqueTargetRefs merges two slices of LocalPolicyTargetReferenceWithSectionName, ensuring that the result contains unique entries.
+func mergeUniqueTargetRefs(a, b []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName) []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName {
+	type key struct{ group, kind, ns, name string }
+	seen := make(map[key]struct{}, len(a))
+	out := make([]gwapiv1a2.LocalPolicyTargetReferenceWithSectionName, 0, len(a)+len(b))
+
+	add := func(tr gwapiv1a2.LocalPolicyTargetReferenceWithSectionName) {
+		k := key{group: string(tr.Group), kind: string(tr.Kind), name: string(tr.Name)}
+		if _, ok := seen[k]; !ok {
+			seen[k] = struct{}{}
+			out = append(out, tr)
+		}
+	}
+	for _, tr := range a {
+		add(tr)
+	}
+	for _, tr := range b {
+		add(tr)
+	}
+	return out
+}
+
+// mergeRateLimit merges two RateLimitSpec objects.
+func mergeRateLimit(dst, src *eg.RateLimitSpec) {
+	if src.Type != "" {
+		dst.Type = src.Type
+	}
+	if src.Global != nil {
+		dst.Global = src.Global
+	}
+	if src.Local != nil {
+		dst.Local = src.Local
+	}
+}
+
+// mergeClusterSettings merges two ClusterSettings objects.
+func mergeClusterSettings(dst, src eg.ClusterSettings) {
+	if src.DNS != nil {
+		dst.DNS = src.DNS.DeepCopy()
+	}
+	if src.LoadBalancer != nil {
+		dst.LoadBalancer = src.LoadBalancer.DeepCopy()
+	}
+	if src.Timeout != nil {
+		dst.Timeout = src.Timeout.DeepCopy()
+	}
 }
 
 // GenerateHTTPRoutes generates HTTPRoute objects for the given APIResourceBundle.
@@ -1011,6 +1315,32 @@ func generateBackendTrafficPolicyForRatelimit(name string, targetRefs []gwapiv1a
 	}
 }
 
+// Generate BackendTrafficPolicy for GRPC
+func generateBackendTrafficPolicyForGRPC(name string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName) *eg.BackendTrafficPolicy {
+	return &eg.BackendTrafficPolicy{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       constants.EnvoyGatewayBackendTrafficPolicy,
+			APIVersion: constants.EnvoyGatewayBackendTrafficPolicyAPIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: eg.BackendTrafficPolicySpec{
+			PolicyTargetReferences: eg.PolicyTargetReferences{
+				TargetRefs: targetRefs,
+			},
+			MergeType: ptrTo(eg.StrategicMerge),
+			ClusterSettings: eg.ClusterSettings{
+				Timeout: &eg.Timeout{
+					HTTP: &eg.HTTPTimeout{
+						RequestTimeout: ptrTo(gatewayv1.Duration("0s")),
+					},
+				},
+			},
+		},
+	}
+}
+
 // generateRatelimitRules generates the rate limit rules based on the RatelimitConfiguration.
 func generateRatelimitRules(rlConf *model.RateLimit) []eg.RateLimitRule {
 	var ratelimitRules []eg.RateLimitRule
@@ -1518,6 +1848,86 @@ func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]
 				},
 			}
 			backendRefs = append(backendRefs, httpBackendRef)
+
+		}
+	}
+	return backendRefs
+}
+
+func createGRPCBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]map[string]*eg.Backend,
+	routeName string) []gatewayv1.GRPCBackendRef {
+	backendRefs := make([]gatewayv1.GRPCBackendRef, 0, len(ecs))
+	for _, ec := range ecs {
+		if ec.Endpoint == nil {
+			continue
+		}
+		endpointType, err := endpointType(ec.Endpoint)
+		if err != nil {
+			logger.Sugar().Errorf("Failed to determine endpoint type for %v: %v", ec.Endpoint, err)
+			continue
+		}
+
+		if endpointType == endpointTypeK8sService {
+			endpoint, err := convertMapToK8sService(ec.Endpoint)
+			if err != nil {
+				logger.Sugar().Errorf("Failed to convert endpoint %v to K8sService: %v", ec.Endpoint, err)
+				continue
+			}
+			if endpoint.Name == nil {
+				continue
+			}
+			serviceObjectName := gatewayv1.ObjectName(*endpoint.Name)
+			grpcBackendRef := gatewayv1.GRPCBackendRef{
+				BackendRef: gatewayv1.BackendRef{
+					BackendObjectReference: gatewayv1.BackendObjectReference{
+						Name: serviceObjectName,
+						Port: ptrTo(gatewayv1.PortNumber(*endpoint.Port)),
+					},
+				},
+			}
+			if ec.Weight != nil {
+				weight32 := int32(*ec.Weight)
+				grpcBackendRef.Weight = &weight32
+			}
+			backendRefs = append(backendRefs, grpcBackendRef)
+		}
+		if endpointType == endpointTypeString {
+			scheme, _, _, err := extractSchemeHostPort(ec.Endpoint)
+			if err != nil {
+				logger.Sugar().Errorf("Failed to extract scheme, host and port from endpoint %v: %v", ec.Endpoint, err)
+				continue
+			}
+
+			if backendMap[scheme] == nil {
+				backendMap[scheme] = make(map[string]*eg.Backend)
+			}
+
+			// Generate a unique ID for the backend
+			backendID, err := endpointCRName(ec.Endpoint)
+			if err != nil {
+				logger.Sugar().Errorf("Failed to generate CR name for endpoint %v: %v", ec.Endpoint, err)
+				continue
+			}
+			if backendMap[scheme][backendID] == nil {
+				// Create a new backend object
+				backendName := fmt.Sprintf("%s-%s", routeName, hex.EncodeToString(sha1.New().Sum([]byte(backendID)))[:8])
+				backend, err := generateBackend(backendName, ec)
+				if err != nil {
+					logger.Sugar().Errorf("Failed to generate backend for endpoint %v: %v", ec.Endpoint, err)
+					continue
+				}
+				backendMap[scheme][backendID] = backend
+			}
+			grpcBackendRef := gatewayv1.GRPCBackendRef{
+				BackendRef: gatewayv1.BackendRef{
+					BackendObjectReference: gatewayv1.BackendObjectReference{
+						Group: ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
+						Kind:  ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
+						Name:  gatewayv1.ObjectName(backendMap[scheme][backendID].Name),
+					},
+				},
+			}
+			backendRefs = append(backendRefs, grpcBackendRef)
 
 		}
 	}
