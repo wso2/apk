@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	//IntegrationTests = append(IntegrationTests, AIGuardrailWordCountJSONPath)
+	IntegrationTests = append(IntegrationTests, AIGuardrailWordCountJSONPath)
 }
 
 // AIGuardrailWordCountJSONPath test

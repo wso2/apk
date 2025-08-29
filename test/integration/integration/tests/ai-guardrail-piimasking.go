@@ -25,7 +25,7 @@ import (
 )
 
 func init() {
-	//IntegrationTests = append(IntegrationTests, AIGuardrailPIIMasking)
+	IntegrationTests = append(IntegrationTests, AIGuardrailPIIMasking)
 }
 
 // AIGuardrailPIIMasking test
@@ -51,6 +51,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 						"Content-Type": "application/json",
 					},
 				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Please contact John Doe at john.doe@example.com for further information."}`,
+					},
+				},
 				Response: http.Response{
 					StatusCode: 200,
 				},
@@ -67,6 +74,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 					Body:   `{"content": "Call me at 555-123-4567 or (555) 987-6543 for assistance."}`,
 					Headers: map[string]string{
 						"Content-Type": "application/json",
+					},
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Call me at 555-123-4567 or (555) 987-6543 for assistance."}`,
 					},
 				},
 				Response: http.Response{
@@ -87,6 +101,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 						"Content-Type": "application/json",
 					},
 				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Social Security Number: 123-45-6789 for verification."}`,
+					},
+				},
 				Response: http.Response{
 					StatusCode: 200,
 				},
@@ -105,6 +126,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 						"Content-Type": "application/json",
 					},
 				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Credit card: 4111 1111 1111 1111 expires next month."}`,
+					},
+				},
 				Response: http.Response{
 					StatusCode: 200,
 				},
@@ -121,6 +149,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 					Body:   `{"content": "Contact: jane.smith@company.org, Phone: 555-987-6543, SSN: 987-65-4321, Card: 5555-5555-5555-4444"}`,
 					Headers: map[string]string{
 						"Content-Type": "application/json",
+					},
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Contact: jane.smith@company.org, Phone: 555-987-6543, SSN: 987-65-4321, Card: 5555-5555-5555-4444"}`,
 					},
 				},
 				Response: http.Response{
@@ -216,6 +251,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 						"Content-Type": "application/json",
 					},
 				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Emails: test.email+tag@example.co.uk, user_name@subdomain.domain.org"}`,
+					},
+				},
 				Response: http.Response{
 					StatusCode: 200,
 				},
@@ -232,6 +274,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 					Body:   `{"content": "Cards: 4111111111111111 (no spaces), 4111-1111-1111-1111 (dashes), 4111 1111 1111 1111 (spaces)"}`,
 					Headers: map[string]string{
 						"Content-Type": "application/json",
+					},
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Cards: 4111111111111111 (no spaces), 4111-1111-1111-1111 (dashes), 4111 1111 1111 1111 (spaces)"}`,
 					},
 				},
 				Response: http.Response{
@@ -314,6 +363,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 						"Content-Type": "application/json",
 					},
 				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Hello, this is a normal message. Please contact support@company.com or call 1-800-555-0123. Reference ID: REF123456."}`,
+					},
+				},
 				Response: http.Response{
 					StatusCode: 200,
 				},
@@ -330,6 +386,13 @@ var AIGuardrailPIIMasking = suite.IntegrationTest{
 					Body:   `{"content": "Special chars: !@#$%^&*() Email: user@test.com Phone: (555) 123-4567 End."}`,
 					Headers: map[string]string{
 						"Content-Type": "application/json",
+					},
+				},
+				ExpectedRequest: &http.ExpectedRequest{
+					Request: http.Request{
+						Path:   "/v2/echo-full",
+						Method: "POST",
+						Body:   `{"content": "Special chars: !@#$%^&*() Email: user@test.com Phone: (555) 123-4567 End."}`,
 					},
 				},
 				Response: http.Response{
