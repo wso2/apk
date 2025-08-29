@@ -385,6 +385,7 @@
             "RemoveHeader",
             "SetHeader",
             "Interceptor",
+            "LuaInterceptor",
             "BackendJwt",
             "RequestMirror",
             "RequestRedirect",
@@ -405,6 +406,9 @@
           "oneOf": [
             {
               "$ref": "#/schemas/InterceptorProperties"
+            },
+            {
+              "$ref": "#/schemas/LuaInterceptorProperties"
             },
             {
               "$ref": "#/schemas/BackendJWTProperties"
@@ -441,6 +445,7 @@
             "RemoveHeader",
             "SetHeader",
             "Interceptor",
+            "LuaInterceptor",
             "BackendJwt"
           ]
         },
@@ -458,6 +463,9 @@
           "oneOf": [
             {
               "$ref": "#/schemas/InterceptorProperties"
+            },
+            {
+              "$ref": "#/schemas/LuaInterceptorProperties"
             },
             {
               "$ref": "#/schemas/BackendJWTProperties"
@@ -907,6 +915,32 @@
       },
       "required": [
         "backendUrl"
+      ],
+      "additionalProperties": false
+    },
+    "LuaInterceptorProperties": {
+      "title": "Lua Interceptor Parameters",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "sourceCode": {
+          "type": "string"
+        },
+        "sourceCodeRef": {
+          "type": "string"
+        },
+        "mountInConfigMap": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "anyOf": [
+        { "required": ["sourceCode"] },
+        { "required": ["sourceCodeRef"] }
       ],
       "additionalProperties": false
     },

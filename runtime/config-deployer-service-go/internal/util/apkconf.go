@@ -217,5 +217,42 @@ func generateGroupingKey(operation model.APKOperations) string {
 		keyParts = append(keyParts, "scopes:empty")
 	}
 
+	// handle operation.OperationPolicies.request and response LuaInterceptorPolicy differently
+	if operation.OperationPolicies != nil {
+		if len(operation.OperationPolicies.Request) > 0 {
+			var requestLuaInterceptorPolicyNames []string
+			for _, policy := range operation.OperationPolicies.Request {
+				if policy.LuaInterceptorPolicy != nil {
+					requestLuaInterceptorPolicyNames = append(requestLuaInterceptorPolicyNames,
+						policy.LuaInterceptorPolicy.Parameters.Name)
+				}
+			}
+			sort.Strings(requestLuaInterceptorPolicyNames)
+			if len(requestLuaInterceptorPolicyNames) > 0 {
+				keyParts = append(keyParts, fmt.Sprintf("requestLuaInterceptorPolicyNames:%s",
+					strings.Join(requestLuaInterceptorPolicyNames, ",")))
+			} else {
+				keyParts = append(keyParts, "requestLuaInterceptorPolicyNames:empty")
+			}
+		}
+
+		if len(operation.OperationPolicies.Response) > 0 {
+			var responseLuaInterceptorPolicyNames []string
+			for _, policy := range operation.OperationPolicies.Response {
+				if policy.LuaInterceptorPolicy != nil {
+					responseLuaInterceptorPolicyNames = append(responseLuaInterceptorPolicyNames,
+						policy.LuaInterceptorPolicy.Parameters.Name)
+				}
+			}
+			sort.Strings(responseLuaInterceptorPolicyNames)
+			if len(responseLuaInterceptorPolicyNames) > 0 {
+				keyParts = append(keyParts, fmt.Sprintf("responseLuaInterceptorPolicyNames:%s",
+					strings.Join(responseLuaInterceptorPolicyNames, ",")))
+			} else {
+				keyParts = append(keyParts, "responseLuaInterceptorPolicyNames:empty")
+			}
+		}
+	}
+
 	return strings.Join(keyParts, "|")
 }
