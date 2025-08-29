@@ -9,7 +9,7 @@ endpointConfigurations:
   production:
     - endpoint: "https://httpbin.org/anything"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: false
     scopes: []
@@ -20,7 +20,7 @@ operations:
           parameters:
             url: "https://httpbin.org/anything"
             statusCode: 301
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []

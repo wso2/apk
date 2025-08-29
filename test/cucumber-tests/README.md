@@ -24,7 +24,7 @@ To create a new feature, follow these steps:
 
 3. Step definitions are written in Java and can be found under the `src/test/java/org/wso2/apk/integration` directory. You may need to add new step definitions to support your new scenarios.
 
-4. Add the new feature file to the `apk/test/cucumber-tests/src/resources/testng.xml` file to run the tests.
+4. Add the new feature file to the `apk/test/cucumber-tests/src/test/resources/testng.xml` file to run the tests.
 
 ## Run or Debug the Integration Tests Locally
 
@@ -64,8 +64,42 @@ To create a new feature, follow these steps:
    - Run following command from `apk/test/cucumber-tests` directory to run the integration tests.
 
        ```bash
-       gradle runTests
+             ./gradlew runTests
        ```
-   - To run a single test, update the `apk/test/cucumber-tests/src/resources/testng.xml` file with the required feature file and run the above command.
+    - To run a single test, update the `apk/test/cucumber-tests/src/test/resources/testng.xml` file with the required feature file and run the above command.
 
-   - Run the `gradle runTests --debug-jvm` command and attach the debugger in the IDE to debug the integration tests.
+     - Run the `./gradlew runTests --debug-jvm` command and attach the debugger in the IDE to debug the integration tests.
+
+### Advanced run options
+
+- Run a single feature file:
+
+    ```bash
+    ./gradlew runTests -Dcucumber.features=src/test/resources/tests/api/BackendAPIKeyAuthNew.feature
+    ```
+
+- Run multiple feature paths (comma-separated):
+
+    ```bash
+    ./gradlew runTests -Dcucumber.features=src/test/resources/tests/api/EndpointNew.feature,src/test/resources/tests/api/HeaderModifierNew.feature
+    ```
+
+- Filter by scenario name (regex):
+
+    ```bash
+    ./gradlew runTests -Dcucumber.filter.name='^Testing API level and resource.*'
+    ```
+
+- Filter by tags (Cucumber v7 AND/OR syntax):
+
+    ```bash
+    ./gradlew runTests -Dcucumber.filter.tags='@smoke'
+    ./gradlew runTests -Dcucumber.filter.tags='@smoke and not @wip'
+    ./gradlew runTests -Dcucumber.filter.tags='@smoke or @regression'
+    ```
+
+- Rerun only failed scenarios from the last run (failures are written to `build/cucumber-rerun.txt`):
+
+    ```bash
+    ./gradlew runTests -Dcucumber.features=@build/cucumber-rerun.txt
+    ```

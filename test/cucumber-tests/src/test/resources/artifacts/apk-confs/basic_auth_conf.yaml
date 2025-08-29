@@ -15,7 +15,7 @@ endpointConfigurations:
           userNameKey: "username"
           passwordKey: "password"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: true
     scopes: []
@@ -49,7 +49,7 @@ operations:
               secretName: "backend-creds"
               userNameKey: "username"
               passwordKey: "password"
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []

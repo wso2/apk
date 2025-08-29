@@ -889,11 +889,11 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 
 				path := fmt.Sprintf("%s/%s",
 					strings.TrimSuffix(apiBasePath, "/"),
-					strings.TrimPrefix(*op.Target, "/"),
+					strings.TrimSuffix(strings.TrimPrefix(*op.Target, "/"), "*"),
 				)
 				serviceContractPath := fmt.Sprintf("%s/%s",
 					strings.TrimSuffix(backendBasePath, "/"),
-					strings.TrimPrefix(*op.Target, "/"),
+					strings.TrimSuffix(strings.TrimPrefix(*op.Target, "/"), "*"),
 				)
 
 				rule := gatewayv1.HTTPRouteRule{}
@@ -1016,7 +1016,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								endpointPath, _ := extractPathFromEndpoint(policy.Parameters.URL)
 								redirectPath := fmt.Sprintf("%s/%s",
 									strings.TrimSuffix(endpointPath, "/"),
-									strings.TrimPrefix(*op.Target, "/"),
+									strings.TrimSuffix(strings.TrimPrefix(*op.Target, "/"), "*"),
 								)
 								isRegexPath, _, substitution := GenerateRegexPath(path, endpointPath, apiBasePath)
 								if isRegexPath {
@@ -1101,7 +1101,11 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 
 				isRegexPath, pattern, substitution := GenerateRegexPath(path, backendBasePath, apiBasePath)
 				hrfName := ""
-				pathMatchType := gatewayv1.PathMatchPathPrefix
+				pathMatchType := gatewayv1.PathMatchExact
+				if strings.HasSuffix(*op.Target, "*") {
+					pathMatchType = gatewayv1.PathMatchPathPrefix
+				}
+				
 				if isRegexPath {
 					pathMatchType = gatewayv1.PathMatchRegularExpression
 					path = pattern
@@ -1171,6 +1175,10 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 							ReplaceFullPath: &serviceContractPath,
 							Type:            gatewayv1.FullPathHTTPPathModifier,
 						},
+					}
+					if strings.HasSuffix(*op.Target, "*") {
+						urlRewrite.Path.ReplacePrefixMatch = &serviceContractPath
+						urlRewrite.Path.Type = gatewayv1.PrefixMatchHTTPPathModifier
 					}
 					if backendHostname != "" {
 						urlRewrite.Hostname = ptrTo(gatewayv1.PreciseHostname(backendHostname))

@@ -10,11 +10,11 @@ endpointConfigurations:
   production:
     - endpoint: "http://dynamic-backend-service:8080/sem-api/v1.0"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: true
     scopes: []
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []

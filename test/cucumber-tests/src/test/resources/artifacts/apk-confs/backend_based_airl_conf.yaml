@@ -23,11 +23,11 @@ endpointConfigurations:
           requestLimit: 6000
           unit: Minute
 operations:
-- target: "/employee"
+- target: "/employee/"
   verb: "GET"
   secured: true
   scopes: []
-- target: "/employee"
+- target: "/employee/"
   verb: "POST"
   secured: true
   scopes: []

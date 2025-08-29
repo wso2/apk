@@ -9,7 +9,7 @@ endpointConfigurations:
   production:
     - endpoint: "https://httpbin.org/anything"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: false
     scopes: []
@@ -44,7 +44,7 @@ operations:
           policyVersion: v1
           parameters:
             headerName: "content-type"
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []

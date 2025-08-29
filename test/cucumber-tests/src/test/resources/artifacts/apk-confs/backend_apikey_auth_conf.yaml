@@ -16,7 +16,7 @@ endpointConfigurations:
           apiKeyNameKey: "api-key"
           apiKeyValueKey: "apiKey"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: true
     scopes: []
@@ -28,7 +28,7 @@ operations:
     verb: "POST"
     secured: true
     scopes: []
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []
