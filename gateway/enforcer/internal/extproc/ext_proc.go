@@ -629,8 +629,12 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 			if requestBodyResp.RequestBody.Response == nil {
 				requestBodyResp.RequestBody.Response = &envoy_service_proc_v3.CommonResponse{}
 			}
-			requestBodyResp.RequestBody.Response.BodyMutation = bodyMutation
-			requestBodyResp.RequestBody.Response.HeaderMutation = headerMutation
+			if mediationResult.ModifyBody {
+				requestBodyResp.RequestBody.Response.BodyMutation = bodyMutation
+			}
+			if len(mediationResult.AddHeaders) > 0  || len(mediationResult.RemoveHeaders) > 0 {
+				requestBodyResp.RequestBody.Response.HeaderMutation = headerMutation
+			}
 		}
 	} else if processingPhase == requestconfig.ProcessingPhaseResponseHeaders {
 		if resp.Response == nil {
@@ -664,8 +668,12 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 			if responseBodyResp.ResponseBody.Response == nil {
 				responseBodyResp.ResponseBody.Response = &envoy_service_proc_v3.CommonResponse{}
 			}
-			responseBodyResp.ResponseBody.Response.BodyMutation = bodyMutation
-			responseBodyResp.ResponseBody.Response.HeaderMutation = headerMutation
+			if mediationResult.ModifyBody {
+				responseBodyResp.ResponseBody.Response.BodyMutation = bodyMutation
+			}
+			if len(mediationResult.AddHeaders) > 0  || len(mediationResult.RemoveHeaders) > 0 {
+				responseBodyResp.ResponseBody.Response.HeaderMutation = headerMutation
+			}
 		}
 	} else {
 		s.log.Sugar().Debugf("Unknown processing phase: %s", processingPhase)

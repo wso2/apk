@@ -101,6 +101,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for GET",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
@@ -115,6 +116,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for GET without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
@@ -129,6 +131,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test nested subpath with query for GET",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test1/test2/test3?foo=foo1&bar=bar1",
@@ -143,6 +146,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test nested subpath with query for GET without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test1/test2/test3?foo=foo1&bar=bar1",
@@ -158,6 +162,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			},
 			// test path with trailing slash for POST
 			{
+				TestCaseName: "test path with trailing slash for POST",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/",
@@ -173,6 +178,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path with trailing slash for POST without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
@@ -188,6 +194,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path without trailing slash for POST",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
@@ -203,6 +210,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path without trailing slash for POST without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
@@ -218,6 +226,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for POST",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
@@ -233,6 +242,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for POST without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
@@ -249,6 +259,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			},
 			// test path with trailing slash for PUT
 			{
+				TestCaseName: "test path with trailing slash for PUT",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/",
@@ -264,6 +275,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path with trailing slash for PUT without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
@@ -279,6 +291,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path without trailing slash for PUT",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
@@ -294,6 +307,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path without trailing slash for PUT without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
@@ -309,6 +323,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for PUT",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
@@ -324,6 +339,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for PUT without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
@@ -340,6 +356,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			},
 			// test path with trailing slash for PATCH
 			{
+				TestCaseName: "test path with trailing slash for PATCH",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/",
@@ -355,6 +372,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path with trailing slash for PATCH without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
@@ -370,6 +388,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path without trailing slash for PATCH",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
@@ -385,6 +404,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path without trailing slash for PATCH without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
@@ -400,6 +420,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for PATCH",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
@@ -415,6 +436,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for PATCH without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
@@ -431,6 +453,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 			},
 			// test path with trailing slash for DELETE
 			{
+				TestCaseName: "test path with trailing slash for DELETE",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/",
@@ -446,6 +469,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path with trailing slash for DELETE without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/",
@@ -461,6 +485,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path without trailing slash for DELETE",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full",
@@ -476,6 +501,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test path without trailing slash for DELETE without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full",
@@ -491,6 +517,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for DELETE",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v1.0.0/v2/echo-full/test",
@@ -506,6 +533,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 				Namespace: ns,
 			},
 			{
+				TestCaseName: "test subpath for DELETE without version",
 				Request: http.Request{
 					Host:   "all-http-methods-for-wildcard.test.gw.wso2.com",
 					Path:   "/all-http-methods-for-wildcard/v2/echo-full/test",
