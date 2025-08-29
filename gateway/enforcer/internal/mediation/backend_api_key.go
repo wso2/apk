@@ -4,6 +4,8 @@ import (
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
+
+	"strings"
 )
 
 // BackendAPIKey represents the configuration for Backend API Key policy in the API Gateway.
@@ -72,7 +74,7 @@ func (b *BackendAPIKey) Process(requestConfig *requestconfig.Holder) *Result {
 		b.cfg.Logger.Sugar().Debugf("Backend API Key policy is disabled. Skipping processing.")
 		return result
 	}
-	if b.In == "header" {
+	if strings.ToLower(b.In) == "header" {
 		result.AddHeaders[b.InValue] = b.APIKey
 	}
 	return result
