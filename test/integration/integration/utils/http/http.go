@@ -21,6 +21,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -478,3 +479,120 @@ type AccessTokenResponse struct {
 	Expiry      int    `json:"expires_in"`
 	Scopes      string `json:"scope"`
 }
+
+// GetClientCredentialsToken fetches an access token using client_credentials grant
+func GetClientCredentialsToken(t *testing.T, clientID string, scopes ...string) string {
+	t.Helper()
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	client := &http.Client{Transport: transport}
+
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+	form.Set("client_id", clientID)
+	if len(scopes) > 0 {
+		form.Set("scope", strings.Join(scopes, " "))
+	}
+
+	req, err := http.NewRequest("POST",
+		"https://idp.am.wso2.com:9095/oauth2/1.0.0/token",
+		strings.NewReader(form.Encode()))
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Authorization", "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Host = "idp.am.wso2.com"
+
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Logf("failed to get token: %v retrying after 100s ...", err)
+		time.Sleep(100 * time.Second)
+		resp, err = client.Do(req)
+		if err != nil {
+			t.Fatalf("failed to get token: %v", err)
+		}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Logf("Status is: %v, failed to get token: %v retrying after 100s ...", resp.StatusCode, err)
+		time.Sleep(100 * time.Second)
+		resp, err = client.Do(req)
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("Status is: %v, failed to get token: %v", resp.StatusCode, err)
+		}
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("failed to read token response: %v", err)
+	}
+	var accessTokenResponse AccessTokenResponse
+	if err := json.Unmarshal(body, &accessTokenResponse); err != nil {
+		t.Fatalf("failed to unmarshal token response: %v", err)
+	}
+	return accessTokenResponse.AccessToken
+}
+
+// GetAppClientCredentialsToken fetches an access token using client_credentials grant with app_uuid
+func GetAppClientCredentialsToken(t *testing.T, appUUID string, scopes ...string) string {
+	t.Helper()
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	client := &http.Client{Transport: transport}
+
+	form := url.Values{}
+	form.Set("grant_type", "client_credentials")
+	form.Set("app_uuid", appUUID)
+	if len(scopes) > 0 {
+		form.Set("scope", strings.Join(scopes, " "))
+	}
+
+	req, err := http.NewRequest("POST",
+		"https://idp.am.wso2.com:9095/oauth2/1.0.0/token",
+		strings.NewReader(form.Encode()))
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+
+	req.Header.Set("Authorization", "Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Host = "idp.am.wso2.com"
+
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Logf("failed to get token: %v retrying after 100s ...", err)
+		time.Sleep(100 * time.Second)
+		resp, err = client.Do(req)
+		if err != nil {
+			t.Fatalf("failed to get token: %v", err)
+		}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		t.Logf("Status is: %v, failed to get token: %v retrying after 100s ...", resp.StatusCode, err)
+		time.Sleep(100 * time.Second)
+		resp, err = client.Do(req)
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("Status is: %v, failed to get token: %v", resp.StatusCode, err)
+		}
+	}
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("failed to read token response: %v", err)
+	}
+	var accessTokenResponse AccessTokenResponse
+	if err := json.Unmarshal(body, &accessTokenResponse); err != nil {
+		t.Fatalf("failed to unmarshal token response: %v", err)
+	}
+	return accessTokenResponse.AccessToken
+}
+

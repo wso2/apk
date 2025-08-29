@@ -356,13 +356,18 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.RequestMediation {
 						if mediation.MediationAndRequestBodyProcessing[policy.PolicyName] {
-							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
+							mediation := mediation.CreateMediation(policy)
+							if mediation == nil {
+								s.log.Sugar().Errorf("Failed to create mediation for policy: %+v", policy)
+								continue
+							}
+							mediationResult := mediation.Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							s.updateRequestConfigBasedOnMediationResults(mediationResult, requestConfigHolder, requestconfig.ProcessingPhaseRequestBody)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
 								resp,
-								requestconfig.ProcessingPhaseRequestHeaders,
+								requestconfig.ProcessingPhaseRequestBody,
 								metadata)
 							if stopProcessingMediations {
 								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
@@ -394,13 +399,18 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.ResponseMediation {
 						if mediation.MediationAndResponseHeaderProcessing[policy.PolicyName] {
-							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
+							mediation := mediation.CreateMediation(policy)
+							if mediation == nil {
+								s.log.Sugar().Errorf("Failed to create mediation for policy: %+v", policy)
+								continue
+							}
+							mediationResult := mediation.Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							s.updateRequestConfigBasedOnMediationResults(mediationResult, requestConfigHolder, requestconfig.ProcessingPhaseResponseHeaders)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
 								resp,
-								requestconfig.ProcessingPhaseRequestHeaders,
+								requestconfig.ProcessingPhaseResponseHeaders,
 								metadata)
 							if stopProcessingMediations {
 								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")
@@ -432,13 +442,18 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 					s.log.Sugar().Debugf("Request Mediation Policies: %+v", requestConfigHolder.RoutePolicy.Spec.RequestMediation)
 					for _, policy := range requestConfigHolder.RoutePolicy.Spec.ResponseMediation {
 						if mediation.MediationAndResponseBodyProcessing[policy.PolicyName] {
-							mediationResult := mediation.CreateMediation(policy).Process(requestConfigHolder)
+							mediation := mediation.CreateMediation(policy)
+							if mediation == nil {
+								s.log.Sugar().Errorf("Failed to create mediation for policy: %+v", policy)
+								continue
+							}
+							mediationResult := mediation.Process(requestConfigHolder)
 							s.log.Sugar().Debugf("Mediation Result: %+v", mediationResult)
 							s.updateRequestConfigBasedOnMediationResults(mediationResult, requestConfigHolder, requestconfig.ProcessingPhaseResponseBody)
 							stopProcessingMediations := s.processMediationResultAndPrepareResponse(
 								mediationResult,
 								resp,
-								requestconfig.ProcessingPhaseRequestHeaders,
+								requestconfig.ProcessingPhaseResponseBody,
 								metadata)
 							if stopProcessingMediations {
 								s.log.Sugar().Debug("Stopping further processing of request headers due to immediate response")

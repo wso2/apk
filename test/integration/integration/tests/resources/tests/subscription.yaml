@@ -1,0 +1,194 @@
+# Copyright (c) 2023, WSO2 LLC. (https://www.wso2.com) All Rights Reserved.
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+---
+apiVersion: cp.wso2.com/v1alpha3
+kind: Subscription
+metadata:
+  name: llm-subs
+  namespace: apk-integration-test
+spec:
+  organization: "default"
+  subscriptionStatus: "ACTIVE"
+  api:
+    name: "subsapi"
+    version: "v1.0.0"
+  ratelimitRef:
+    name : llm-backend-rl-subs
+    level: application
+---
+apiVersion: cp.wso2.com/v1alpha2
+kind: ApplicationMapping
+metadata:
+  name: llm-app-map
+  namespace: apk-integration-test
+spec:
+  applicationRef: llm-app
+  subscriptionRef: llm-subs
+---
+kind: Application
+apiVersion: cp.wso2.com/v1alpha2
+metadata:
+  name: llm-app
+  namespace: apk-integration-test
+spec:
+  name: sample-llm-app
+  owner: admin
+  organization: default
+  securitySchemes:
+    oauth2:
+      environments:
+        - envId: Default
+          appId: 45f1c5c8-a92e-11ed-afa1-0242ac120065
+          keyType: PRODUCTION
+---
+apiVersion: dp.wso2.com/v2alpha1
+kind: RouteMetadata
+metadata:
+  name: all-http-methods-for-wildcard
+  namespace: gateway-integration-test-infra
+spec:
+  api:
+    name: subsapi
+    version: v1.0.0
+    organization: default
+    type: REST
+    context: /all-http-methods-for-wildcard/v1.0.0
+    envType: production
+    environment: Default
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: all-http-methods-for-wildcard-httproute
+  namespace: gateway-integration-test-infra
+  annotations:
+    gateway.envoyproxy.io/kgw-envtype: PRODUCTION
+  labels:
+    kgw-authenticate: "true"
+spec:
+  parentRefs:
+  - name: wso2-kgw-default
+    namespace: apk-integration-test
+    sectionName: httpslistener
+  hostnames:
+    - all-http-methods-for-wildcard.test.gw.wso2.com
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /all-http-methods-for-wildcard/v1.0.0/v2/echo-full
+      backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: infra-backend-v1
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            replacePrefixMatch: /v2/echo-full
+            type: ReplacePrefixMatch
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: RouteMetadata
+          name: all-http-methods-for-wildcard
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: RoutePolicy
+          name: subs
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /all-http-methods-for-wildcard/v2/echo-full
+      backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: infra-backend-v1
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            replacePrefixMatch: /v2/echo-full
+            type: ReplacePrefixMatch
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: RouteMetadata
+          name: all-http-methods-for-wildcard
+      - type: ExtensionRef
+        extensionRef:
+          group: dp.wso2.com
+          kind: RoutePolicy
+          name: subs
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: infra-backend-v1
+  namespace: gateway-integration-test-infra
+spec:
+  endpoints:
+  - fqdn:
+      hostname: infra-backend-v1.gateway-integration-test-infra.svc
+      port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: jwt-authn-policy
+  namespace: gateway-integration-test-infra
+spec:
+  jwt:
+    providers:
+    - name: example
+      remoteJWKS:
+        uri: https://apk-test-setup-wso2-kgw-idp-ds-service.apk-integration-test.svc:9443/oauth2/jwks
+        backendRefs:
+          - group: gateway.envoyproxy.io
+            kind: Backend
+            name: apk-test-setup-wso2-kgw-oauth-ds-backend
+            namespace: apk-integration-test
+            port: 9443
+      claimToHeaders:
+        - claim: scope
+          header: wso2-scope
+  targetSelectors:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      matchLabels:
+        kgw-authenticate: "true"
+---
+apiVersion: dp.wso2.com/v2alpha1
+kind: RoutePolicy
+metadata:
+  labels:
+    kgw.wso2.com/name: BackendBasedAIRL
+    kgw.wso2.com/organization: default
+    kgw.wso2.com/uuid: backend-based-airl-contentlength
+    kgw.wso2.com/version: 1.0.0
+  name: subs
+  namespace: gateway-integration-test-infra
+spec:
+  requestMediation:
+    - parameters:
+        - key: Enabled
+          value: "true"
+      policyID: ""
+      policyName: SubscriptionValidation
+status:
+  ancestors: null

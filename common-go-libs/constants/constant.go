@@ -158,7 +158,20 @@ const (
 	MediationAITokenRatelimit = "AITokenRatelimit"
 	// MediationAIProvider holds the name of the AI Provider mediation policy.
 	MediationAIProvider = "AIProvider"
+	// MediationBackendAPIKey holds the name of the Backend API Key mediation policy.
 	MediationBackendAPIKey = "BackendAPIKey"
+	// MediationWordCountGuardrail holds the name of the Word Count Guardrail mediation policy.
+	MediationWordCountGuardrail = "WordCountGuardrail"
+	// MediationSentenceCountGuardrail holds the name of the Sentence Count Guardrail mediation policy.
+	MediationSentenceCountGuardrail = "SentenceCountGuardrail"
+	// MediationContentLengthGuardrail holds the name of the Content Length Guardrail mediation policy.
+	MediationContentLengthGuardrail = "ContentLengthGuardrail"
+	// MediationPIIMaskingGuardrail holds the name of the PII Masking Guardrail mediation policy.
+	MediationPIIMaskingGuardrail = "PIIMaskingGuardrail"
+	// MediationURLGuardrail holds the name of the URL Guardrail mediation policy.
+	MediationURLGuardrail = "URLGuardrail"
+	// MediationRegexGuardrail holds the name of the Regex Guardrail mediation policy.
+	MediationRegexGuardrail = "RegexGuardrail"
 
 	// MediationSubscriptionRatelimit holds the name of the Subscription Rate Limit mediation policy.
 	MediationSubscriptionRatelimit = "SubscriptionRatelimit"

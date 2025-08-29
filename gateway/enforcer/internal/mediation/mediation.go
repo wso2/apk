@@ -27,6 +27,18 @@ const (
 	MediationBackendJWT = constantscommon.MediationBackendJWT
 	// MediationGraphQL holds the name of the GraphQL mediation policy.
 	MediationGraphQL = constantscommon.MediationGraphQL
+	// MediationWordCountGuardrail holds the name of the Word Count Guardrail mediation policy.
+	MediationWordCountGuardrail = constantscommon.MediationWordCountGuardrail
+	// MediationSentenceCountGuardrail holds the name of the Sentence Count Guardrail mediation policy.
+	MediationSentenceCountGuardrail = constantscommon.MediationSentenceCountGuardrail
+	// MediationContentLengthGuardrail holds the name of the Content Length Guardrail mediation policy.
+	MediationContentLengthGuardrail = constantscommon.MediationContentLengthGuardrail
+	// MediationPIIMaskingGuardrail holds the name of the PII Masking Guardrail mediation policy.
+	MediationPIIMaskingGuardrail = constantscommon.MediationPIIMaskingGuardrail
+	// MediationURLGuardrail holds the name of the URL Guardrail mediation policy.
+	MediationURLGuardrail = constantscommon.MediationURLGuardrail
+	// MediationRegexGuardrail holds the name of the Regex Guardrail mediation policy.
+	MediationRegexGuardrail = constantscommon.MediationRegexGuardrail
 )
 
 // MediationAndRequestHeaderProcessing defines the mediation and request header processing
@@ -39,6 +51,12 @@ var MediationAndRequestHeaderProcessing = map[string]bool{
 	MediationBackendJWT:             true,
 	MediationGraphQL:                false,
 	MediationBackendAPIKey:          true,
+	MediationWordCountGuardrail:     false,
+	MediationSentenceCountGuardrail: false,
+	MediationContentLengthGuardrail: false,
+	MediationPIIMaskingGuardrail:    false,
+	MediationURLGuardrail:           false,
+	MediationRegexGuardrail:         false,
 }
 
 // MediationAndRequestBodyProcessing defines the mediation and request header processing
@@ -51,6 +69,12 @@ var MediationAndRequestBodyProcessing = map[string]bool{
 	MediationBackendJWT:             false,
 	MediationGraphQL:                true,
 	MediationBackendAPIKey:          false,
+	MediationWordCountGuardrail:     true,
+	MediationSentenceCountGuardrail: true,
+	MediationContentLengthGuardrail: true,
+	MediationPIIMaskingGuardrail:    true,
+	MediationURLGuardrail:           true,
+	MediationRegexGuardrail:         true,
 }
 
 // MediationAndResponseHeaderProcessing defines the mediation and request header processing
@@ -64,6 +88,12 @@ var MediationAndResponseHeaderProcessing = map[string]bool{
 	MediationBackendJWT:             false,
 	MediationGraphQL:                false,
 	MediationBackendAPIKey:          false,
+	MediationWordCountGuardrail:     false,
+	MediationSentenceCountGuardrail: false,
+	MediationContentLengthGuardrail: false,
+	MediationPIIMaskingGuardrail:    false,
+	MediationURLGuardrail:           false,
+	MediationRegexGuardrail:         false,
 }
 
 // MediationAndResponseBodyProcessing defines the mediation and response body processing
@@ -77,6 +107,12 @@ var MediationAndResponseBodyProcessing = map[string]bool{
 	MediationBackendJWT:             false,
 	MediationGraphQL:                false,
 	MediationBackendAPIKey:          false,
+	MediationWordCountGuardrail:     true,
+	MediationSentenceCountGuardrail: true,
+	MediationContentLengthGuardrail: true,
+	MediationPIIMaskingGuardrail:    true,
+	MediationURLGuardrail:           true,
+	MediationRegexGuardrail:         true,
 }
 
 // Result holds the result of mediation processing.
@@ -146,6 +182,30 @@ func CreateMediation(mediationFromCluster *dpv2alpha1.Mediation) Mediation {
 		return mediation
 	case MediationBackendAPIKey:
 		mediation := NewBackendAPIKey(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationWordCountGuardrail:
+		mediation := NewWordCountGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationSentenceCountGuardrail:
+		mediation := NewSentenceCountGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationContentLengthGuardrail:
+		mediation := NewContentLengthGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationPIIMaskingGuardrail:
+		mediation := NewPIIMaskingGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationURLGuardrail:
+		mediation := NewURLGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationRegexGuardrail:
+		mediation := NewRegexGuardrail(mediationFromCluster)
 		MediationMap[mediationFromCluster] = mediation
 		return mediation
 	default:

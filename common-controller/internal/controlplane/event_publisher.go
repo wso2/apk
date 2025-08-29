@@ -307,7 +307,9 @@ func sendData() {
 
 // AddToEventQueue adds the api event to queue
 func AddToEventQueue(data APICPEvent) {
-	eventQueue <- data
+	if eventQueue != nil {
+		eventQueue <- data
+	}
 }
 
 // GetLabelQueue adds the label change to queue
