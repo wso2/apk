@@ -244,6 +244,7 @@ func (routeMetadataReconciler *RouteMetadataReconciler) Reconcile(ctx context.Co
 			apiCpData := routeMetadataReconciler.convertAPIStateToAPICp(ctx, state)
 			apiCpData.Event = controlplane.EventTypeCreate
 			controlplane.AddToEventQueue(apiCpData)
+		}
 	}
 
 	routePolicyString, err := utils.ToJSONString(routeMetadata)
