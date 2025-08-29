@@ -95,7 +95,7 @@ metadata:
 spec:
   endpoints:
   - fqdn:
-      hostname: echo-server-v1.gateway-integration-test-infra.svc
+      hostname: infra-backend-v1.gateway-integration-test-infra.svc
       port: 8080
 ---
 apiVersion: dp.wso2.com/v2alpha1
