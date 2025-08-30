@@ -281,6 +281,7 @@ type PolicyName string
 const (
 	PolicyNameBackendJWT           PolicyName = "BackendJwt"
 	PolicyNameInterceptor          PolicyName = "Interceptor"
+	PolicyLuaInterceptor           PolicyName = "LuaInterceptor"
 	PolicyNameAddHeader            PolicyName = "AddHeader"
 	PolicyNameSetHeader            PolicyName = "SetHeader"
 	PolicyNameRemoveHeader         PolicyName = "RemoveHeader"
@@ -316,6 +317,7 @@ type APKOperationPolicy interface {
 
 // APKRequestOperationPolicy represents request operation policies
 type APKRequestOperationPolicy struct {
+	LuaInterceptorPolicy       *LuaInterceptorPolicy       `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
 	InterceptorPolicy          *InterceptorPolicy          `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
 	BackendJWTPolicy           *BackendJWTPolicy           `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
 	HeaderModifierPolicy       *HeaderModifierPolicy       `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
@@ -326,6 +328,7 @@ type APKRequestOperationPolicy struct {
 
 // APKResponseOperationPolicy represents response operation policies
 type APKResponseOperationPolicy struct {
+	LuaInterceptorPolicy *LuaInterceptorPolicy `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
 	InterceptorPolicy    *InterceptorPolicy    `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
 	BackendJWTPolicy     *BackendJWTPolicy     `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
 	HeaderModifierPolicy *HeaderModifierPolicy `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
@@ -398,6 +401,20 @@ type InterceptorPolicyParameters struct {
 	TLSSecretKey    *string `json:"tlsSecretKey,omitempty" yaml:"tlsSecretKey,omitempty"`
 }
 
+// LuaInterceptorPolicy represents Lua interceptor policy configuration for an operation.
+type LuaInterceptorPolicy struct {
+	BaseOperationPolicy
+	Parameters *LuaInterceptorPolicyParameters `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+}
+
+// LuaInterceptorPolicyParameters represents configuration for Lua Interceptor Policy parameters.
+type LuaInterceptorPolicyParameters struct {
+	Name             string  `json:"name" yaml:"name"`
+	SourceCode       *string `json:"sourceCode,omitempty" yaml:"sourceCode,omitempty"`
+	SourceCodeRef    *string `json:"sourceCodeRef,omitempty" yaml:"sourceCodeRef,omitempty"`
+	MountInConfigMap *bool   `json:"mountInConfigMap,omitempty" yaml:"mountInConfigMap,omitempty"`
+}
+
 // BackendJWTPolicy represents configuration for Backend JWT Policy.
 type BackendJWTPolicy struct {
 	BaseOperationPolicy
@@ -450,6 +467,9 @@ func (p *APKRequestOperationPolicy) UnmarshalJSON(data []byte) error {
 	}
 
 	switch base.PolicyName {
+	case PolicyLuaInterceptor:
+		p.LuaInterceptorPolicy = &LuaInterceptorPolicy{}
+		return json.Unmarshal(data, p.LuaInterceptorPolicy)
 	case PolicyNameInterceptor:
 		p.InterceptorPolicy = &InterceptorPolicy{}
 		return json.Unmarshal(data, p.InterceptorPolicy)
@@ -481,6 +501,9 @@ func (p *APKResponseOperationPolicy) UnmarshalJSON(data []byte) error {
 	}
 
 	switch base.PolicyName {
+	case PolicyLuaInterceptor:
+		p.LuaInterceptorPolicy = &LuaInterceptorPolicy{}
+		return json.Unmarshal(data, p.LuaInterceptorPolicy)
 	case PolicyNameInterceptor:
 		p.InterceptorPolicy = &InterceptorPolicy{}
 		return json.Unmarshal(data, p.InterceptorPolicy)
@@ -497,6 +520,9 @@ func (p *APKResponseOperationPolicy) UnmarshalJSON(data []byte) error {
 
 // GetActivePolicy returns the active policy for request operation policy
 func (p *APKRequestOperationPolicy) GetActivePolicy() APKOperationPolicy {
+	if p.LuaInterceptorPolicy != nil {
+		return p.LuaInterceptorPolicy
+	}
 	if p.InterceptorPolicy != nil {
 		return p.InterceptorPolicy
 	}
@@ -520,6 +546,9 @@ func (p *APKRequestOperationPolicy) GetActivePolicy() APKOperationPolicy {
 
 // GetActivePolicy returns the active policy for response operation policy
 func (p *APKResponseOperationPolicy) GetActivePolicy() APKOperationPolicy {
+	if p.LuaInterceptorPolicy != nil {
+		return p.LuaInterceptorPolicy
+	}
 	if p.InterceptorPolicy != nil {
 		return p.InterceptorPolicy
 	}
