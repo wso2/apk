@@ -384,7 +384,6 @@
             "AddHeader",
             "RemoveHeader",
             "SetHeader",
-            "Interceptor",
             "LuaInterceptor",
             "WASMInterceptor",
             "BackendJwt",
@@ -405,9 +404,6 @@
         "parameters": {
           "type": "object",
           "oneOf": [
-            {
-              "$ref": "#/schemas/InterceptorProperties"
-            },
             {
               "$ref": "#/schemas/LuaInterceptorProperties"
             },
@@ -448,7 +444,6 @@
             "AddHeader",
             "RemoveHeader",
             "SetHeader",
-            "Interceptor",
             "LuaInterceptor",
             "WASMInterceptor",
             "BackendJwt"
@@ -466,9 +461,6 @@
         "parameters": {
           "type": "object",
           "oneOf": [
-            {
-              "$ref": "#/schemas/InterceptorProperties"
-            },
             {
               "$ref": "#/schemas/LuaInterceptorProperties"
             },
@@ -893,37 +885,6 @@
           "example": "http"
         }
       },
-      "additionalProperties": false
-    },
-    "InterceptorProperties": {
-      "title": "Interceptor Parameters",
-      "type": "object",
-      "properties": {
-        "backendUrl": {
-          "type": "string"
-        },
-        "headersEnabled": {
-          "type": "boolean"
-        },
-        "bodyEnabled": {
-          "type": "boolean"
-        },
-        "trailersEnabled": {
-          "type": "boolean"
-        },
-        "contextEnabled": {
-          "type": "boolean"
-        },
-        "tlsSecretName": {
-          "type": "string"
-        },
-        "tlsSecretKey": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "backendUrl"
-      ],
       "additionalProperties": false
     },
     "LuaInterceptorProperties": {
