@@ -217,39 +217,63 @@ func generateGroupingKey(operation model.APKOperations) string {
 		keyParts = append(keyParts, "scopes:empty")
 	}
 
-	// handle operation.OperationPolicies.request and response LuaInterceptorPolicy differently
+	// handle operation.OperationPolicies.request and response Lua and WASM InterceptorPolicy
 	if operation.OperationPolicies != nil {
 		if len(operation.OperationPolicies.Request) > 0 {
 			var requestLuaInterceptorPolicyNames []string
+			var requestWASMInterceptorPolicyNames []string
 			for _, policy := range operation.OperationPolicies.Request {
 				if policy.LuaInterceptorPolicy != nil {
 					requestLuaInterceptorPolicyNames = append(requestLuaInterceptorPolicyNames,
 						policy.LuaInterceptorPolicy.Parameters.Name)
 				}
+				if policy.WASMInterceptorPolicy != nil {
+					requestWASMInterceptorPolicyNames = append(requestWASMInterceptorPolicyNames,
+						policy.WASMInterceptorPolicy.Parameters.Name)
+				}
 			}
 			sort.Strings(requestLuaInterceptorPolicyNames)
+			sort.Strings(requestWASMInterceptorPolicyNames)
 			if len(requestLuaInterceptorPolicyNames) > 0 {
 				keyParts = append(keyParts, fmt.Sprintf("requestLuaInterceptorPolicyNames:%s",
 					strings.Join(requestLuaInterceptorPolicyNames, ",")))
 			} else {
 				keyParts = append(keyParts, "requestLuaInterceptorPolicyNames:empty")
 			}
+			if len(requestWASMInterceptorPolicyNames) > 0 {
+				keyParts = append(keyParts, fmt.Sprintf("requestWASMInterceptorPolicyNames:%s",
+					strings.Join(requestWASMInterceptorPolicyNames, ",")))
+			} else {
+				keyParts = append(keyParts, "requestWASMInterceptorPolicyNames:empty")
+			}
 		}
 
 		if len(operation.OperationPolicies.Response) > 0 {
 			var responseLuaInterceptorPolicyNames []string
+			var responseWASMInterceptorPolicyNames []string
 			for _, policy := range operation.OperationPolicies.Response {
 				if policy.LuaInterceptorPolicy != nil {
 					responseLuaInterceptorPolicyNames = append(responseLuaInterceptorPolicyNames,
 						policy.LuaInterceptorPolicy.Parameters.Name)
 				}
+				if policy.WASMInterceptorPolicy != nil {
+					responseWASMInterceptorPolicyNames = append(responseWASMInterceptorPolicyNames,
+						policy.WASMInterceptorPolicy.Parameters.Name)
+				}
 			}
 			sort.Strings(responseLuaInterceptorPolicyNames)
+			sort.Strings(responseWASMInterceptorPolicyNames)
 			if len(responseLuaInterceptorPolicyNames) > 0 {
 				keyParts = append(keyParts, fmt.Sprintf("responseLuaInterceptorPolicyNames:%s",
 					strings.Join(responseLuaInterceptorPolicyNames, ",")))
 			} else {
 				keyParts = append(keyParts, "responseLuaInterceptorPolicyNames:empty")
+			}
+			if len(responseWASMInterceptorPolicyNames) > 0 {
+				keyParts = append(keyParts, fmt.Sprintf("responseWASMInterceptorPolicyNames:%s",
+					strings.Join(responseWASMInterceptorPolicyNames, ",")))
+			} else {
+				keyParts = append(keyParts, "responseWASMInterceptorPolicyNames:empty")
 			}
 		}
 	}

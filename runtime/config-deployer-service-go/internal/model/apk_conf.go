@@ -282,6 +282,7 @@ const (
 	PolicyNameBackendJWT           PolicyName = "BackendJwt"
 	PolicyNameInterceptor          PolicyName = "Interceptor"
 	PolicyLuaInterceptor           PolicyName = "LuaInterceptor"
+	PolicyWASMInterceptor          PolicyName = "WASMInterceptor"
 	PolicyNameAddHeader            PolicyName = "AddHeader"
 	PolicyNameSetHeader            PolicyName = "SetHeader"
 	PolicyNameRemoveHeader         PolicyName = "RemoveHeader"
@@ -318,6 +319,7 @@ type APKOperationPolicy interface {
 // APKRequestOperationPolicy represents request operation policies
 type APKRequestOperationPolicy struct {
 	LuaInterceptorPolicy       *LuaInterceptorPolicy       `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
+	WASMInterceptorPolicy      *WASMInterceptorPolicy      `json:"wasmInterceptorPolicy,omitempty" yaml:"wasmInterceptorPolicy,omitempty"`
 	InterceptorPolicy          *InterceptorPolicy          `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
 	BackendJWTPolicy           *BackendJWTPolicy           `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
 	HeaderModifierPolicy       *HeaderModifierPolicy       `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
@@ -328,10 +330,11 @@ type APKRequestOperationPolicy struct {
 
 // APKResponseOperationPolicy represents response operation policies
 type APKResponseOperationPolicy struct {
-	LuaInterceptorPolicy *LuaInterceptorPolicy `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
-	InterceptorPolicy    *InterceptorPolicy    `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
-	BackendJWTPolicy     *BackendJWTPolicy     `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
-	HeaderModifierPolicy *HeaderModifierPolicy `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
+	LuaInterceptorPolicy  *LuaInterceptorPolicy  `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
+	WASMInterceptorPolicy *WASMInterceptorPolicy `json:"wasmInterceptorPolicy,omitempty" yaml:"wasmInterceptorPolicy,omitempty"`
+	InterceptorPolicy     *InterceptorPolicy     `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
+	BackendJWTPolicy      *BackendJWTPolicy      `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
+	HeaderModifierPolicy  *HeaderModifierPolicy  `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
 }
 
 // GetPolicyName implements APKOperationPolicy interface
@@ -415,6 +418,24 @@ type LuaInterceptorPolicyParameters struct {
 	MountInConfigMap *bool   `json:"mountInConfigMap,omitempty" yaml:"mountInConfigMap,omitempty"`
 }
 
+// WASMInterceptorPolicy represents Lua interceptor policy configuration for an operation.
+type WASMInterceptorPolicy struct {
+	BaseOperationPolicy
+	Parameters *WASMInterceptorPolicyParameters `json:"parameters,omitempty" yaml:"parameters,omitempty"`
+}
+
+// WASMInterceptorPolicyParameters represents configuration for Lua Interceptor Policy parameters.
+type WASMInterceptorPolicyParameters struct {
+	Name            string   `json:"name" yaml:"name"`
+	RootID          string   `json:"rootId" yaml:"rootId"`
+	URL             *string  `json:"url,omitempty" yaml:"url,omitempty"`
+	Image           *string  `json:"image,omitempty" yaml:"image,omitempty"`
+	ImagePullPolicy *string  `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
+	Config          *string  `json:"config,omitempty" yaml:"config,omitempty"`
+	FailOpen        *bool    `json:"failOpen,omitempty" yaml:"failOpen,omitempty"`
+	HostKeys        []string `json:"hostKeys,omitempty" yaml:"hostKeys,omitempty"`
+}
+
 // BackendJWTPolicy represents configuration for Backend JWT Policy.
 type BackendJWTPolicy struct {
 	BaseOperationPolicy
@@ -470,6 +491,9 @@ func (p *APKRequestOperationPolicy) UnmarshalJSON(data []byte) error {
 	case PolicyLuaInterceptor:
 		p.LuaInterceptorPolicy = &LuaInterceptorPolicy{}
 		return json.Unmarshal(data, p.LuaInterceptorPolicy)
+	case PolicyWASMInterceptor:
+		p.WASMInterceptorPolicy = &WASMInterceptorPolicy{}
+		return json.Unmarshal(data, p.WASMInterceptorPolicy)
 	case PolicyNameInterceptor:
 		p.InterceptorPolicy = &InterceptorPolicy{}
 		return json.Unmarshal(data, p.InterceptorPolicy)
@@ -504,6 +528,9 @@ func (p *APKResponseOperationPolicy) UnmarshalJSON(data []byte) error {
 	case PolicyLuaInterceptor:
 		p.LuaInterceptorPolicy = &LuaInterceptorPolicy{}
 		return json.Unmarshal(data, p.LuaInterceptorPolicy)
+	case PolicyWASMInterceptor:
+		p.WASMInterceptorPolicy = &WASMInterceptorPolicy{}
+		return json.Unmarshal(data, p.WASMInterceptorPolicy)
 	case PolicyNameInterceptor:
 		p.InterceptorPolicy = &InterceptorPolicy{}
 		return json.Unmarshal(data, p.InterceptorPolicy)
@@ -522,6 +549,9 @@ func (p *APKResponseOperationPolicy) UnmarshalJSON(data []byte) error {
 func (p *APKRequestOperationPolicy) GetActivePolicy() APKOperationPolicy {
 	if p.LuaInterceptorPolicy != nil {
 		return p.LuaInterceptorPolicy
+	}
+	if p.WASMInterceptorPolicy != nil {
+		return p.WASMInterceptorPolicy
 	}
 	if p.InterceptorPolicy != nil {
 		return p.InterceptorPolicy
@@ -548,6 +578,9 @@ func (p *APKRequestOperationPolicy) GetActivePolicy() APKOperationPolicy {
 func (p *APKResponseOperationPolicy) GetActivePolicy() APKOperationPolicy {
 	if p.LuaInterceptorPolicy != nil {
 		return p.LuaInterceptorPolicy
+	}
+	if p.WASMInterceptorPolicy != nil {
+		return p.WASMInterceptorPolicy
 	}
 	if p.InterceptorPolicy != nil {
 		return p.InterceptorPolicy

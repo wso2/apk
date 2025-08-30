@@ -291,6 +291,7 @@ schemas:
           - SetHeader
           - Interceptor
           - LuaInterceptor
+          - WASMInterceptor
           - BackendJwt
           - RequestMirror
           - RequestRedirect
@@ -307,6 +308,7 @@ schemas:
         oneOf:
           - "$ref": "#/schemas/InterceptorProperties"
           - "$ref": "#/schemas/LuaInterceptorProperties"
+          - "$ref": "#/schemas/WASMInterceptorProperties"
           - "$ref": "#/schemas/BackendJWTProperties"
           - "$ref": "#/schemas/HeaderModifierProperties"
           - "$ref": "#/schemas/RequestMirrorProperties"
@@ -328,6 +330,7 @@ schemas:
           - SetHeader
           - Interceptor
           - LuaInterceptor
+          - WASMInterceptor
           - BackendJwt
       policyVersion:
         type: string
@@ -341,6 +344,7 @@ schemas:
         oneOf:
           - "$ref": "#/schemas/InterceptorProperties"
           - "$ref": "#/schemas/LuaInterceptorProperties"
+          - "$ref": "#/schemas/WASMInterceptorProperties"
           - "$ref": "#/schemas/BackendJWTProperties"
           - "$ref": "#/schemas/HeaderModifierProperties"
     additionalProperties: false
@@ -693,6 +697,40 @@ schemas:
         type: boolean
     required:
       - name
+    additionalProperties: false
+  WASMInterceptorProperties:
+    title: WASM Interceptor Parameters
+    type: object
+    properties:
+      name:
+        type: string
+      rootId:
+        type: string
+      url:
+        type: string
+      image:
+        type: string
+      imagePullPolicy:
+        type: string
+        enum:
+          - IfNotPresent
+          - Always
+      config:
+        type: string
+      failOpen:
+        type: boolean
+      hostKeys:
+        type: array
+        items:
+          type: string
+    required:
+      - name
+      - rootId
+    anyOf:
+      - required:
+          - url
+      - required:
+          - image
     additionalProperties: false
   ModelBasedRoundRobinProperties:
     title: "Model Based Round Robin Policy Parameters"

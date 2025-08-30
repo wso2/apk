@@ -25,6 +25,7 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/util"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gatewayv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -811,7 +812,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 	objects := make([]client.Object, 0)
 	routesMap := make(map[int][]gatewayv1.HTTPRoute)
 	backendMap := make(map[string]map[string]*eg.Backend)
-	luaEnvoyExtensionPolicyMap := make(map[string]*eg.EnvoyExtensionPolicy)
+	envoyExtensionPolicyMap := make(map[string]*eg.EnvoyExtensionPolicy)
 	mapOfLuaSourceCodeConfigMap := make(map[string]*corev1.ConfigMap)
 	crName := util.GenerateCRName(bundle.APKConf.Name, environment, bundle.APKConf.Version, bundle.Organization)
 	for i, combined := range bundle.CombinedResources {
@@ -857,7 +858,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					Rules: []gatewayv1.HTTPRouteRule{},
 				},
 			}
-			luaInterceptorPolicyList := make([]*model.LuaInterceptorPolicy, 0)
+			interceptorPolicyList := make([]*model.APKOperationPolicy, 0)
 
 			for _, op := range batch {
 				backendBasePath, err := extractBackendBasePath(op, environment)
@@ -992,8 +993,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								}
 							case *model.InterceptorPolicy:
 								// TODO - Handle interceptor policy with request modifications
-							case *model.LuaInterceptorPolicy:
-								luaInterceptorPolicyList = append(luaInterceptorPolicyList, policy)
+							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
+								interceptorPolicyList = append(interceptorPolicyList, &policy)
 							case *model.BackendJWTPolicy:
 								// TODO - Handle backend JWT policy with request modifications
 							case *model.RequestMirrorPolicy:
@@ -1070,8 +1071,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								}
 							case *model.InterceptorPolicy:
 								// TODO - Handle interceptor policy with response modifications
-							case *model.LuaInterceptorPolicy:
-								luaInterceptorPolicyList = append(luaInterceptorPolicyList, policy)
+							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
+								interceptorPolicyList = append(interceptorPolicyList, &policy)
 							case *model.BackendJWTPolicy:
 								// TODO - Handle backend JWT policy with response modifications
 							}
@@ -1183,16 +1184,18 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				route.Spec.Rules = append(route.Spec.Rules, rule)
 			}
 
-			for _, luaInterceptorPolicy := range luaInterceptorPolicyList {
-				luaEnvoyExtensionPolicy, err := generateLuaEnvoyExtensionPolicy(luaInterceptorPolicyList, routeName)
+			for _, interceptorPolicy := range interceptorPolicyList {
+				envoyExtensionPolicy, err := generateEnvoyExtensionPolicy(interceptorPolicyList, routeName)
 				if err != nil {
 					logger.Sugar().Errorf("Error generating Lua EnvoyExtensionPolicy: %v", err)
 					continue
 				}
-				luaEnvoyExtensionPolicyMap[luaEnvoyExtensionPolicy.Name] = luaEnvoyExtensionPolicy
-				if luaInterceptorPolicy.Parameters.MountInConfigMap != nil && *luaInterceptorPolicy.Parameters.MountInConfigMap {
-					luaSourceCodeConfigMap := createConfigMapForLuaSourceCode(luaInterceptorPolicy.Parameters)
-					mapOfLuaSourceCodeConfigMap[luaSourceCodeConfigMap.Name] = luaSourceCodeConfigMap
+				envoyExtensionPolicyMap[envoyExtensionPolicy.Name] = envoyExtensionPolicy
+				if luaPolicy, ok := (*interceptorPolicy).(*model.LuaInterceptorPolicy); ok {
+					if luaPolicy.Parameters.MountInConfigMap != nil && *luaPolicy.Parameters.MountInConfigMap {
+						luaSourceCodeConfigMap := createConfigMapForLuaSourceCode(luaPolicy.Parameters)
+						mapOfLuaSourceCodeConfigMap[luaSourceCodeConfigMap.Name] = luaSourceCodeConfigMap
+					}
 				}
 			}
 
@@ -1200,8 +1203,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 			objects = append(objects, &route)
 		}
 	}
-	for _, luaEnvoyExtensionPolicy := range luaEnvoyExtensionPolicyMap {
-		objects = append(objects, luaEnvoyExtensionPolicy)
+	for _, envoyExtensionPolicy := range envoyExtensionPolicyMap {
+		objects = append(objects, envoyExtensionPolicy)
 	}
 	for _, luaSourceCodeConfigMap := range mapOfLuaSourceCodeConfigMap {
 		objects = append(objects, luaSourceCodeConfigMap)
@@ -1228,27 +1231,33 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 	return routesMap, objects
 }
 
-// generateLuaEnvoyExtensionPolicy generates an EnvoyExtensionPolicy for a given LuaInterceptorPolicy
-func generateLuaEnvoyExtensionPolicy(luaInterceptorPolicyList []*model.LuaInterceptorPolicy, routeName string) (*eg.EnvoyExtensionPolicy, error) {
+// generateEnvoyExtensionPolicy generates an EnvoyExtensionPolicy for a given LuaInterceptorPolicy or WASMInterceptorPolicy
+func generateEnvoyExtensionPolicy(interceptorPolicyList []*model.APKOperationPolicy, routeName string) (*eg.EnvoyExtensionPolicy, error) {
 	luaFilterList := make([]eg.Lua, 0)
-	luaFilterNameList := make([]string, 0)
-	for _, policy := range luaInterceptorPolicyList {
-		if !slices.Contains(luaFilterNameList, policy.Parameters.Name) {
-			luaFilter, err := createLuaFilter(policy.Parameters)
-			if err != nil {
-				return nil, err
+	wasmFilterList := make([]eg.Wasm, 0)
+	filterNameList := make([]string, 0)
+	for _, interceptorPolicy := range interceptorPolicyList {
+		if luaPolicy, ok := (*interceptorPolicy).(*model.LuaInterceptorPolicy); ok {
+			if !slices.Contains(filterNameList, luaPolicy.Parameters.Name) {
+				luaFilter, err := createLuaFilter(luaPolicy.Parameters)
+				if err != nil {
+					return nil, err
+				}
+				luaFilterList = append(luaFilterList, *luaFilter)
+				filterNameList = append(filterNameList, luaPolicy.Parameters.Name)
 			}
-			luaFilterNameList = append(luaFilterNameList, policy.Parameters.Name)
-			luaFilterList = append(luaFilterList, *luaFilter)
+		} else if wasmPolicy, ok := (*interceptorPolicy).(*model.WASMInterceptorPolicy); ok {
+			if !slices.Contains(filterNameList, wasmPolicy.Parameters.Name) {
+				wasmFilter, err := createWASMFilter(wasmPolicy.Parameters)
+				if err != nil {
+					return nil, err
+				}
+				wasmFilterList = append(wasmFilterList, *wasmFilter)
+				filterNameList = append(filterNameList, wasmPolicy.Parameters.Name)
+			}
 		}
 	}
-	var names []string
-	for _, policy := range luaInterceptorPolicyList {
-		if policy.Parameters != nil {
-			names = append(names, policy.Parameters.Name)
-		}
-	}
-	policyName := util.SanitizeOrHashName(strings.Join(names, "-"))
+	policyName := util.SanitizeOrHashName(strings.Join(filterNameList, "-"))
 	luaEnvoyExtensionPolicy := &eg.EnvoyExtensionPolicy{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       constants.EnvoyGatewayExtensionPolicy,
@@ -1258,7 +1267,8 @@ func generateLuaEnvoyExtensionPolicy(luaInterceptorPolicyList []*model.LuaInterc
 			Name: policyName,
 		},
 		Spec: eg.EnvoyExtensionPolicySpec{
-			Lua: luaFilterList,
+			Lua:  luaFilterList,
+			Wasm: wasmFilterList,
 			PolicyTargetReferences: eg.PolicyTargetReferences{
 				TargetRefs: []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 					{
@@ -1273,24 +1283,6 @@ func generateLuaEnvoyExtensionPolicy(luaInterceptorPolicyList []*model.LuaInterc
 		},
 	}
 	return luaEnvoyExtensionPolicy, nil
-}
-
-// getLuaValueType determines the Lua value type based on the provided parameters
-func getLuaValueType(parameters *model.LuaInterceptorPolicyParameters) (eg.LuaValueType, error) {
-	if parameters.MountInConfigMap != nil && *parameters.MountInConfigMap {
-		if parameters.SourceCodeRef == nil || *parameters.SourceCodeRef == "" ||
-			parameters.SourceCode == nil || *parameters.SourceCode == "" {
-			return "", fmt.Errorf("both SourceCodeRef and SourceCode must be set when MountInConfigMap is true")
-		}
-		return eg.LuaValueTypeValueRef, nil
-	}
-	if parameters.SourceCodeRef != nil && *parameters.SourceCodeRef != "" {
-		return eg.LuaValueTypeValueRef, nil
-	}
-	if parameters.SourceCode != nil && *parameters.SourceCode != "" {
-		return eg.LuaValueTypeInline, nil
-	}
-	return "", fmt.Errorf("either SourceCode or SourceCodeRef must be set")
 }
 
 // createLuaFilter creates a Lua filter configuration based on the parameters
@@ -1313,6 +1305,79 @@ func createLuaFilter(parameters *model.LuaInterceptorPolicyParameters) (*eg.Lua,
 			Name: gatewayv1.ObjectName(*parameters.SourceCodeRef),
 		},
 	}, nil
+}
+
+// getLuaValueType determines the Lua value type based on the provided parameters
+func getLuaValueType(parameters *model.LuaInterceptorPolicyParameters) (eg.LuaValueType, error) {
+	if parameters.MountInConfigMap != nil && *parameters.MountInConfigMap {
+		if parameters.SourceCodeRef == nil || *parameters.SourceCodeRef == "" ||
+			parameters.SourceCode == nil || *parameters.SourceCode == "" {
+			return "", fmt.Errorf("both SourceCodeRef and SourceCode must be set when MountInConfigMap is true")
+		}
+		return eg.LuaValueTypeValueRef, nil
+	}
+	if parameters.SourceCodeRef != nil && *parameters.SourceCodeRef != "" {
+		return eg.LuaValueTypeValueRef, nil
+	}
+	if parameters.SourceCode != nil && *parameters.SourceCode != "" {
+		return eg.LuaValueTypeInline, nil
+	}
+	return "", fmt.Errorf("either SourceCode or SourceCodeRef must be set")
+}
+
+// createWASMFilter creates a WASM filter configuration based on the parameters
+func createWASMFilter(parameters *model.WASMInterceptorPolicyParameters) (*eg.Wasm, error) {
+	wasmFilter := &eg.Wasm{
+		Name:     &parameters.Name,
+		RootID:   &parameters.RootID,
+		FailOpen: parameters.FailOpen,
+		Env: &eg.WasmEnv{
+			HostKeys: parameters.HostKeys,
+		},
+	}
+	if parameters.Config != nil && *parameters.Config != "" {
+		configJSON := &apiextensionsv1.JSON{
+			Raw: []byte(*parameters.Config),
+		}
+		wasmFilter.Config = configJSON
+	}
+	var imagePullPolicy eg.ImagePullPolicy
+	if parameters.ImagePullPolicy != nil && *parameters.ImagePullPolicy != "" {
+		imagePullPolicy = eg.ImagePullPolicy(*parameters.ImagePullPolicy)
+	}
+	wasmSourceCodeType, err := getWASMSourceCodeType(parameters)
+	if err != nil {
+		return nil, err
+	}
+	if wasmSourceCodeType == eg.HTTPWasmCodeSourceType {
+		wasmFilter.Code = eg.WasmCodeSource{
+			Type: wasmSourceCodeType,
+			HTTP: &eg.HTTPWasmCodeSource{
+				URL: *parameters.URL,
+			},
+			PullPolicy: &imagePullPolicy,
+		}
+	} else if wasmSourceCodeType == eg.ImageWasmCodeSourceType {
+		wasmFilter.Code = eg.WasmCodeSource{
+			Type: wasmSourceCodeType,
+			Image: &eg.ImageWasmCodeSource{
+				URL: *parameters.Image,
+			},
+			PullPolicy: &imagePullPolicy,
+		}
+	}
+	return wasmFilter, nil
+}
+
+// getLuaValueType determines the Lua value type based on the provided parameters
+func getWASMSourceCodeType(parameters *model.WASMInterceptorPolicyParameters) (eg.WasmCodeSourceType, error) {
+	if parameters.URL != nil && *parameters.URL != "" {
+		return eg.HTTPWasmCodeSourceType, nil
+	}
+	if parameters.Image != nil && *parameters.Image != "" {
+		return eg.ImageWasmCodeSourceType, nil
+	}
+	return "", fmt.Errorf("either URL or Image must be set")
 }
 
 // createConfigMapForLuaSourceCode creates a ConfigMap to hold the Lua source code for a given LuaInterceptorPolicy
