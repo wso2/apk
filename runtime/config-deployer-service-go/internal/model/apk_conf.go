@@ -280,7 +280,6 @@ type PolicyName string
 
 const (
 	PolicyNameBackendJWT           PolicyName = "BackendJwt"
-	PolicyNameInterceptor          PolicyName = "Interceptor"
 	PolicyLuaInterceptor           PolicyName = "LuaInterceptor"
 	PolicyWASMInterceptor          PolicyName = "WASMInterceptor"
 	PolicyNameAddHeader            PolicyName = "AddHeader"
@@ -320,7 +319,6 @@ type APKOperationPolicy interface {
 type APKRequestOperationPolicy struct {
 	LuaInterceptorPolicy       *LuaInterceptorPolicy       `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
 	WASMInterceptorPolicy      *WASMInterceptorPolicy      `json:"wasmInterceptorPolicy,omitempty" yaml:"wasmInterceptorPolicy,omitempty"`
-	InterceptorPolicy          *InterceptorPolicy          `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
 	BackendJWTPolicy           *BackendJWTPolicy           `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
 	HeaderModifierPolicy       *HeaderModifierPolicy       `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
 	RequestMirrorPolicy        *RequestMirrorPolicy        `json:"requestMirrorPolicy,omitempty" yaml:"requestMirrorPolicy,omitempty"`
@@ -332,7 +330,6 @@ type APKRequestOperationPolicy struct {
 type APKResponseOperationPolicy struct {
 	LuaInterceptorPolicy  *LuaInterceptorPolicy  `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
 	WASMInterceptorPolicy *WASMInterceptorPolicy `json:"wasmInterceptorPolicy,omitempty" yaml:"wasmInterceptorPolicy,omitempty"`
-	InterceptorPolicy     *InterceptorPolicy     `json:"interceptorPolicy,omitempty" yaml:"interceptorPolicy,omitempty"`
 	BackendJWTPolicy      *BackendJWTPolicy      `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
 	HeaderModifierPolicy  *HeaderModifierPolicy  `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
 }
@@ -385,23 +382,6 @@ type RequestRedirectPolicy struct {
 type RequestRedirectPolicyParameters struct {
 	URL        string `json:"url" yaml:"url"`
 	StatusCode *int   `json:"statusCode,omitempty" yaml:"statusCode,omitempty"`
-}
-
-// InterceptorPolicy represents interceptor policy configuration for an operation.
-type InterceptorPolicy struct {
-	BaseOperationPolicy
-	Parameters *InterceptorPolicyParameters `json:"parameters,omitempty" yaml:"parameters,omitempty"`
-}
-
-// InterceptorPolicyParameters represents configuration for Interceptor Policy parameters.
-type InterceptorPolicyParameters struct {
-	BackendURL      *string `json:"backendUrl,omitempty" yaml:"backendUrl,omitempty"`
-	HeadersEnabled  *bool   `json:"headersEnabled,omitempty" yaml:"headersEnabled,omitempty"`
-	BodyEnabled     *bool   `json:"bodyEnabled,omitempty" yaml:"bodyEnabled,omitempty"`
-	TrailersEnabled *bool   `json:"trailersEnabled,omitempty" yaml:"trailersEnabled,omitempty"`
-	ContextEnabled  *bool   `json:"contextEnabled,omitempty" yaml:"contextEnabled,omitempty"`
-	TLSSecretName   *string `json:"tlsSecretName,omitempty" yaml:"tlsSecretName,omitempty"`
-	TLSSecretKey    *string `json:"tlsSecretKey,omitempty" yaml:"tlsSecretKey,omitempty"`
 }
 
 // LuaInterceptorPolicy represents Lua interceptor policy configuration for an operation.
@@ -494,9 +474,6 @@ func (p *APKRequestOperationPolicy) UnmarshalJSON(data []byte) error {
 	case PolicyWASMInterceptor:
 		p.WASMInterceptorPolicy = &WASMInterceptorPolicy{}
 		return json.Unmarshal(data, p.WASMInterceptorPolicy)
-	case PolicyNameInterceptor:
-		p.InterceptorPolicy = &InterceptorPolicy{}
-		return json.Unmarshal(data, p.InterceptorPolicy)
 	case PolicyNameBackendJWT:
 		p.BackendJWTPolicy = &BackendJWTPolicy{}
 		return json.Unmarshal(data, p.BackendJWTPolicy)
@@ -531,9 +508,6 @@ func (p *APKResponseOperationPolicy) UnmarshalJSON(data []byte) error {
 	case PolicyWASMInterceptor:
 		p.WASMInterceptorPolicy = &WASMInterceptorPolicy{}
 		return json.Unmarshal(data, p.WASMInterceptorPolicy)
-	case PolicyNameInterceptor:
-		p.InterceptorPolicy = &InterceptorPolicy{}
-		return json.Unmarshal(data, p.InterceptorPolicy)
 	case PolicyNameBackendJWT:
 		p.BackendJWTPolicy = &BackendJWTPolicy{}
 		return json.Unmarshal(data, p.BackendJWTPolicy)
@@ -552,9 +526,6 @@ func (p *APKRequestOperationPolicy) GetActivePolicy() APKOperationPolicy {
 	}
 	if p.WASMInterceptorPolicy != nil {
 		return p.WASMInterceptorPolicy
-	}
-	if p.InterceptorPolicy != nil {
-		return p.InterceptorPolicy
 	}
 	if p.BackendJWTPolicy != nil {
 		return p.BackendJWTPolicy
@@ -581,9 +552,6 @@ func (p *APKResponseOperationPolicy) GetActivePolicy() APKOperationPolicy {
 	}
 	if p.WASMInterceptorPolicy != nil {
 		return p.WASMInterceptorPolicy
-	}
-	if p.InterceptorPolicy != nil {
-		return p.InterceptorPolicy
 	}
 	if p.BackendJWTPolicy != nil {
 		return p.BackendJWTPolicy

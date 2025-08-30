@@ -991,8 +991,6 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								case model.PolicyNameRemoveHeader:
 									requestHeaderModifier.Remove = append(requestHeaderModifier.Remove, policy.Parameters.HeaderName)
 								}
-							case *model.InterceptorPolicy:
-								// TODO - Handle interceptor policy with request modifications
 							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
 								interceptorPolicyList = append(interceptorPolicyList, &policy)
 							case *model.BackendJWTPolicy:
@@ -1069,8 +1067,6 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								case model.PolicyNameRemoveHeader:
 									responseHeaderModifier.Remove = append(responseHeaderModifier.Remove, policy.Parameters.HeaderName)
 								}
-							case *model.InterceptorPolicy:
-								// TODO - Handle interceptor policy with response modifications
 							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
 								interceptorPolicyList = append(interceptorPolicyList, &policy)
 							case *model.BackendJWTPolicy:

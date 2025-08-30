@@ -289,7 +289,6 @@ schemas:
           - AddHeader
           - RemoveHeader
           - SetHeader
-          - Interceptor
           - LuaInterceptor
           - WASMInterceptor
           - BackendJwt
@@ -306,7 +305,6 @@ schemas:
       parameters:
         type: object
         oneOf:
-          - "$ref": "#/schemas/InterceptorProperties"
           - "$ref": "#/schemas/LuaInterceptorProperties"
           - "$ref": "#/schemas/WASMInterceptorProperties"
           - "$ref": "#/schemas/BackendJWTProperties"
@@ -328,7 +326,6 @@ schemas:
           - AddHeader
           - RemoveHeader
           - SetHeader
-          - Interceptor
           - LuaInterceptor
           - WASMInterceptor
           - BackendJwt
@@ -342,7 +339,6 @@ schemas:
       parameters:
         type: object
         oneOf:
-          - "$ref": "#/schemas/InterceptorProperties"
           - "$ref": "#/schemas/LuaInterceptorProperties"
           - "$ref": "#/schemas/WASMInterceptorProperties"
           - "$ref": "#/schemas/BackendJWTProperties"
@@ -661,27 +657,6 @@ schemas:
       protocol:
         type: string
         example: http
-    additionalProperties: false
-  InterceptorProperties:
-    title: Interceptor Parameters
-    type: object
-    properties:
-      backendUrl:
-        type: string
-      headersEnabled:
-        type: boolean
-      bodyEnabled:
-        type: boolean
-      trailersEnabled:
-        type: boolean
-      contextEnabled:
-        type: boolean
-      tlsSecretName:
-        type: string
-      tlsSecretKey:
-        type: string
-    required:
-      - backendUrl
     additionalProperties: false
   LuaInterceptorProperties:
     title: Lua Interceptor Parameters
