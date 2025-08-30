@@ -9,11 +9,11 @@ endpointConfigurations:
   sandbox:
     - endpoint: "http://backend:80/anything/sand"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: true
     scopes: []
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []

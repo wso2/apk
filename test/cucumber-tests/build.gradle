@@ -69,8 +69,14 @@ task runTests(type: JavaExec, dependsOn: 'classes') {
             project.sourceSets.test.compileClasspath,
             project.sourceSets.main.runtimeClasspath,
             project.sourceSets.test.runtimeClasspath)
-    systemProperty 'cucumber.features', "$APKConfigTestFeatures,$APKTestFeatures"
-    systemProperty 'http.client.setup', 'apk'
+    systemProperty 'cucumber.features', System.getProperty('cucumber.features', "$APKConfigTestFeatures,$APKTestFeatures")
+    systemProperty 'http.client.setup', System.getProperty('http.client.setup', 'apk')
+    if (System.getProperty('cucumber.filter.tags') != null) {
+        systemProperty 'cucumber.filter.tags', System.getProperty('cucumber.filter.tags')
+    }
+    if (System.getProperty('cucumber.filter.name') != null) {
+        systemProperty 'cucumber.filter.name', System.getProperty('cucumber.filter.name')
+    }
     args = ["-d", "./build/test-output", "./src/test/resources/testng.xml"]
 }
 
@@ -82,8 +88,14 @@ task runCpToDpTests(type: JavaExec, dependsOn: 'classes') {
             project.sourceSets.test.compileClasspath,
             project.sourceSets.main.runtimeClasspath,
             project.sourceSets.test.runtimeClasspath)
-    systemProperty 'cucumber.features', AgentCpToDpTestFeatures
-    systemProperty 'http.client.setup', 'apim-apk'
+    systemProperty 'cucumber.features', System.getProperty('cucumber.features', AgentCpToDpTestFeatures)
+    systemProperty 'http.client.setup', System.getProperty('http.client.setup', 'apim-apk')
+    if (System.getProperty('cucumber.filter.tags') != null) {
+        systemProperty 'cucumber.filter.tags', System.getProperty('cucumber.filter.tags')
+    }
+    if (System.getProperty('cucumber.filter.name') != null) {
+        systemProperty 'cucumber.filter.name', System.getProperty('cucumber.filter.name')
+    }
     args = ["-d", "./build/test-output", "./src/test/resources/testng.xml"]
 }
 
@@ -94,7 +106,13 @@ task runDpToCpTests(type: JavaExec, dependsOn: 'classes') {
             project.sourceSets.test.compileClasspath,
             project.sourceSets.main.runtimeClasspath,
             project.sourceSets.test.runtimeClasspath)
-    systemProperty 'cucumber.features', AgentDpToCpTestFeatures
-    systemProperty 'http.client.setup', 'apim-apk'
+    systemProperty 'cucumber.features', System.getProperty('cucumber.features', AgentDpToCpTestFeatures)
+    systemProperty 'http.client.setup', System.getProperty('http.client.setup', 'apim-apk')
+    if (System.getProperty('cucumber.filter.tags') != null) {
+        systemProperty 'cucumber.filter.tags', System.getProperty('cucumber.filter.tags')
+    }
+    if (System.getProperty('cucumber.filter.name') != null) {
+        systemProperty 'cucumber.filter.name', System.getProperty('cucumber.filter.name')
+    }
     args = ["-d", "./build/test-output", "./src/test/resources/testng.xml"]
 }

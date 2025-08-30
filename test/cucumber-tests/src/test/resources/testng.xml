@@ -21,7 +21,7 @@
     <test name="APK Tests" preserve-order="true">
         <!-- <parameter name="cucumber.features" value="src/test/resources/tests/config"/> -->
         <parameter name="cucumber.glue" value="org.wso2.apk.integration.api"/>
-        <parameter name="cucumber.plugin" value="pretty"/>
+    <parameter name="cucumber.plugin" value="pretty, org.wso2.apk.integration.reporting.ConsoleSummaryTablePlugin, rerun:build/cucumber-rerun.txt"/>
         <classes>
             <class name="org.wso2.apk.integration.APKIntegrationTestSuite"/>
         </classes>

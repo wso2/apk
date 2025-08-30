@@ -6,14 +6,14 @@ version: "3.14"
 type: "REST"
 defaultVersion: false
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: true
     scopes: []
     endpointConfigurations:
       production:
       - endpoint: "http://backend:80/anything"
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []

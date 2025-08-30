@@ -9,7 +9,7 @@ endpointConfigurations:
   production:
     - endpoint: "http://backend:80/anything"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: false
     scopes: []
@@ -20,7 +20,7 @@ operations:
           parameters:
             url: "http://backend:80/anything"
             statusCode: 301
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []

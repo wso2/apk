@@ -9,21 +9,21 @@ endpointConfigurations:
   production:
     - endpoint: "https://httpbin.org/anything"
 operations:
-  - target: "/employeewithoutscope"
+  - target: "/employeewithoutscope/"
     verb: "GET"
     secured: true
     scopes: []
-  - target: "/employeewithscope1"
+  - target: "/employeewithscope1/"
     verb: "GET"
     secured: true
     scopes:
       - "scope1"
-  - target: "/employeewithscope2"
+  - target: "/employeewithscope2/"
     verb: "GET"
     secured: true
     scopes:
       - "scope2"
-  - target: "/employeewithscopes"
+  - target: "/employeewithscopes/"
     verb: "GET"
     secured: true
     scopes: ["scope1", "scope2"]

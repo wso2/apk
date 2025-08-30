@@ -8,11 +8,11 @@ endpointConfigurations:
   production:
     - endpoint: "http://backend:80/anything"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: true
     scopes: []
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []

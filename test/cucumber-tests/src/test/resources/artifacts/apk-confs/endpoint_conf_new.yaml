@@ -11,11 +11,11 @@ endpointConfigurations:
   sandbox:
   - endpoint: "https://httpbin.org/anything/test"
 operations:
-  - target: "/employee"
+  - target: "/employee/"
     verb: "GET"
     secured: true
     scopes: []
-  - target: "/employee"
+  - target: "/employee/"
     verb: "POST"
     secured: true
     scopes: []
