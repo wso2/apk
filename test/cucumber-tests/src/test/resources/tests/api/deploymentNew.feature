@@ -6,7 +6,7 @@ Feature: API Deployment
     And the definition file "artifacts/definitions/cors_api.yaml"
     And make the API deployment request
     Then the response status code should be 403
-    
+
   Scenario: Deploying an API
     Given The system is ready
     And I have a valid subscription
@@ -24,8 +24,8 @@ Feature: API Deployment
     And make the API deployment request
     Then the response status code should be 400
     And the response body should contain
-      |APK configuration is not valid: invalid_type: Invalid type. Expected: boolean, given: string|
-  
+      | APK configuration is not valid: invalid_type: Invalid type. Expected: boolean, given: string |
+
   Scenario Outline: Undeploy an API without api create scope
     Given The system is ready
     And I have a valid subscription without api deploy permission
@@ -39,6 +39,6 @@ Feature: API Deployment
     Then the response status code should be <expectedStatusCode>
 
     Examples:
-      | apiID | expectedStatusCode |
-      | cors-api-adff3dbc-2787-11ee-be56-0242ac120002  | 202         |
-      | abcdeadsxzads | 404        |
+      | apiID                                         | expectedStatusCode |
+      | cors-api-adff3dbc-2787-11ee-be56-0242ac120002 | 202                |
+      | abcdeadsxzads                                 | 404                |

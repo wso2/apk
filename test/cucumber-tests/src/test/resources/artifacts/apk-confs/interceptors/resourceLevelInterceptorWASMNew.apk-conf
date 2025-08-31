@@ -1,0 +1,30 @@
+id: "547961eeaafed989119c45ffc13f8b87bfda821e"
+name: "WASMInterceptorAPI"
+basePath: "/wasm-interceptor"
+version: "1.0.0"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+  - endpoint: "https://httpbin.org/anything"
+operations:
+  - target: "/get"
+    verb: "GET"
+    secured: true
+    scopes: []
+  - target: "/headers"
+    verb: "GET"
+    secured: true
+    operationPolicies:
+      response:
+        - policyName: "WASMInterceptor"
+          parameters:
+            name: "Response-WASM-Interceptor"
+            rootId: "my_root_id"
+            image: zhaohuabing/testwasm:v0.0.1
+            imagePullPolicy: Always
+additionalProperties:
+  - name: "APIGroup"
+    value: "Gold"
+  - name: "APITier"
+    value: "Unlimited"

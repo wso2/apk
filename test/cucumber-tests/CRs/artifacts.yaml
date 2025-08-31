@@ -2133,3 +2133,25 @@ spec:
             requests:
               memory: "64Mi"
               cpu: "100m"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: response-lua-interceptor
+  namespace: apk-integration-test
+data:
+  lua: |
+    function envoy_on_response(response_handle)
+      response_handle:headers():add("lua-interceptor-response-header", "Lua-Interceptor-Response-header-value")
+    end
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: request-lua-interceptor-global
+  namespace: apk-integration-test
+data:
+  lua: |
+    function envoy_on_request(request_handle)
+      request_handle:headers():add("Lua-Interceptor-Request-Global", "Lua-Interceptor-Request-global-header-value")
+    end

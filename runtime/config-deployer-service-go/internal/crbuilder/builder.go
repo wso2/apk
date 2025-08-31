@@ -1261,6 +1261,7 @@ func generateEnvoyExtensionPolicy(interceptorPolicyList []*model.APKOperationPol
 			}
 		}
 	}
+	filterNameList = append(filterNameList, routeName)
 	policyName := util.SanitizeOrHashName(strings.Join(filterNameList, "-"))
 	luaEnvoyExtensionPolicy := &eg.EnvoyExtensionPolicy{
 		TypeMeta: metav1.TypeMeta{
