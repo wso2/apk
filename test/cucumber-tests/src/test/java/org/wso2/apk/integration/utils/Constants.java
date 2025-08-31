@@ -23,8 +23,8 @@ public class Constants {
     public static final String DEFAULT_API_HOST = "api.am.wso2.com";
     public static final String DEFAULT_GW_PORT = "9095";
     public static final String DEFAULT_TOKEN_EP = "oauth2/1.0.0/token";
-    public static final String DEFAULT_API_CONFIGURATOR = "api/configurator/1.3.0/";
-    public static final String DEFAULT_API_DEPLOYER = "api/deployer/1.3.0/";
+    public static final String DEFAULT_API_CONFIGURATOR = "api/configurator/2.0.0/";
+    public static final String DEFAULT_API_DEPLOYER = "api/deployer/2.0.0/";
     public static final String ACCESS_TOKEN = "accessToken";
     public static final String EMPTY_STRING = "";
     public static final String API_CREATE_SCOPE = "apk:api_create";
@@ -37,7 +37,7 @@ public class Constants {
     public static final String DEFAULT_APIM_GW_PORT = "";
     public static final String DEFAULT_APIM_TOKEN_EP = "oauth2/token";
     public static final String DEFAULT_DCR_EP = "client-registration/v0.17/register";
-    public static final String DEFAULT_APIM_API_CONFIGURATOR = "api/configurator/1.3.0/";
+    public static final String DEFAULT_APIM_API_CONFIGURATOR = "api/configurator/2.0.0/";
     public static final String DEFAULT_APIM_API_DEPLOYER = "api/am/publisher/v4/";
     public static final String DEFAULT_DEVPORTAL = "api/am/devportal/v3/";
     public static final String DEFAULT_ADMINPORTAL = "api/am/admin/v4/";

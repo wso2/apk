@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # API deployment details
-API_URL="https://api.am.wso2.com:9095/api/deployer/1.3.0/apis/deploy"
+API_URL="https://api.am.wso2.com:9095/api/deployer/2.0.0/apis/deploy"
 HOST_HEADER="api.am.wso2.com"
 
 # Token generation details

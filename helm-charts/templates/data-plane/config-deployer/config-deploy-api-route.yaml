@@ -30,7 +30,7 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/deployer/1.3.0/apis/deploy"
+        value: "/api/deployer/2.0.0/apis/deploy"
       method: "POST"
     filters:
     - type: URLRewrite
@@ -45,7 +45,7 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/deployer/1.3.0/apis/undeploy"
+        value: "/api/deployer/2.0.0/apis/undeploy"
       method: "POST"
     filters:
     - type: URLRewrite

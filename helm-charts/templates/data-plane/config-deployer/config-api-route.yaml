@@ -30,7 +30,7 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/configurator/1.3.0/apis/generate-configuration"
+        value: "/api/configurator/2.0.0/apis/generate-configuration"
       method: "POST"
     filters:
     - type: URLRewrite
@@ -45,7 +45,7 @@ spec:
   - matches:
     - path:
         type: "RegularExpression"
-        value: "/api/configurator/1.3.0/apis/generate-k8s-resources"
+        value: "/api/configurator/2.0.0/apis/generate-k8s-resources"
       method: "POST"
     filters:
     - type: URLRewrite
