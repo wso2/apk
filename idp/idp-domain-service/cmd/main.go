@@ -156,6 +156,7 @@ func handleClientCredentialsGrant(w http.ResponseWriter, req TokenRequest) {
 		"iat":   time.Now().Unix(),
 		"exp":   time.Now().Add(time.Hour).Unix(),
 		"iss":   "https://your-idp-host",
+		"jti":   newJTI(),
 	}
 	if req.ClientID != nil {
 		claims["client_id"] = *req.ClientID
@@ -197,6 +198,7 @@ func handlePasswordGrant(w http.ResponseWriter, req TokenRequest) {
 		"iat":   time.Now().Unix(),
 		"exp":   time.Now().Add(time.Hour).Unix(),
 		"iss":   "https://your-idp-host",
+		"jti":   newJTI(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = keyID
@@ -227,6 +229,7 @@ func handleAuthorizationCodeGrant(w http.ResponseWriter, req TokenRequest) {
 		"iat":   time.Now().Unix(),
 		"exp":   time.Now().Add(time.Hour).Unix(),
 		"iss":   "https://your-idp-host",
+		"jti":   newJTI(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = keyID
@@ -259,6 +262,7 @@ func handleRefreshTokenGrant(w http.ResponseWriter, req TokenRequest) {
 		"iat":   time.Now().Unix(),
 		"exp":   time.Now().Add(time.Hour).Unix(),
 		"iss":   "https://your-idp-host",
+		"jti":   newJTI(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = keyID
@@ -319,6 +323,15 @@ func (r *DeterministicReader) Read(p []byte) (int, error) {
 		r.pos = (r.pos + 1) % len(r.data) // cycle through seed repeatedly
 	}
 	return n, nil
+}
+
+// newJTI returns a random, URL-safe identifier for the JWT ID claim
+func newJTI() string {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	return base64.RawURLEncoding.EncodeToString(b)
 }
 
 // SavePrivateKeyToFile saves RSA private key to a file in PEM format
