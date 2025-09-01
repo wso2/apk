@@ -7,7 +7,7 @@ type: "REST"
 defaultVersion: false
 endpointConfigurations:
   production:
-    - endpoint: "https://httpbin.org/anything"
+    - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
 operations:
   - target: "/employee/"
     verb: "GET"
@@ -30,5 +30,5 @@ apiPolicies:
     - policyName: RequestRedirect
       policyVersion: v1
       parameters:
-        url: "https://httpbin.org/anything"
+        url: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
         statusCode: 301
