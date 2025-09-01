@@ -569,10 +569,7 @@ var ALLHTTPMethodsForWildCard = suite.IntegrationTest{
 					StatusCode: 401,
 				},
 			},
-		}	
-
-
-
+		}
 
 		for i := range testCases {
 			tc := testCases[i]

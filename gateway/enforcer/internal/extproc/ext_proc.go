@@ -44,6 +44,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	types "k8s.io/apimachinery/pkg/types"
 
+	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health"
@@ -52,7 +53,6 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/prototext"
 	structpb "google.golang.org/protobuf/types/known/structpb"
-	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 )
 
 // ExternalProcessingServer represents a server for handling external processing requests.
@@ -249,6 +249,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			requestConfigHolder.ProcessingPhase = requestconfig.ProcessingPhaseRequestHeaders
 			requestConfigHolder.RequestHeaders = req.GetRequestHeaders()
 			requestConfigHolder.JWTAuthnPayloaClaims = s.extractJWTAuthnNamespaceData(req.GetMetadataContext())
+
 			rhq := &envoy_service_proc_v3.HeadersResponse{
 				Response: &envoy_service_proc_v3.CommonResponse{
 					ClearRouteCache: true,
@@ -257,6 +258,32 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 			resp.Response = &envoy_service_proc_v3.ProcessingResponse_RequestHeaders{
 				RequestHeaders: rhq,
 			}
+
+			// Token revocation
+			if s.revokedJTIStore != nil {
+				if jti, ok := requestConfigHolder.JWTAuthnPayloaClaims["jti"]; ok && jti != nil {
+					if jtiStr, ok := jti.(string); ok {
+						if s.revokedJTIStore.IsJTIRevoked(jtiStr) {
+							s.log.Sugar().Debug("Token is revoked")
+							resp.Response = &envoy_service_proc_v3.ProcessingResponse_ImmediateResponse{
+								ImmediateResponse: &envoy_service_proc_v3.ImmediateResponse{
+									Status: &v32.HttpStatus{
+										Code: v32.StatusCode_Unauthorized,
+									},
+									Body:    []byte("Unauthorized: Token is revoked"),
+									Details: "revoked_token",
+								},
+							}
+							return srv.Send(resp)
+						}
+					} else {
+						s.log.Sugar().Debug("JTI claim is not a string")
+					}
+				} else {
+					s.log.Sugar().Debug("JTI claim not found")
+				}
+			}
+
 			for key, value := range requestConfigHolder.RequestHeaders.Headers.Headers {
 				s.log.Sugar().Debugf("Request Header: %s: %s", key, value)
 			}
@@ -291,7 +318,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 						if respBodyProcessing, ok := mediation.MediationAndResponseBodyProcessing[policy.PolicyName]; ok && respBodyProcessing {
 							responseBodyMode = v31.ProcessingMode_BUFFERED
 						}
-						
+
 						s.log.Sugar().Debugf("Processing Mode for Policy %s: ResponseHeaderMode: %s, ResponseBodyMode: %s",
 							policy.PolicyName,
 							responseHeaderMode.String(),
@@ -485,7 +512,7 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 func (s *ExternalProcessingServer) updateRequestConfigBasedOnMediationResults(mediationResult *mediation.Result, requestConfigHolder *requestconfig.Holder, processingPhase requestconfig.ProcessingPhase) {
 	if len(mediationResult.RemoveHeaders) > 0 {
 		s.log.Sugar().Debugf("Removing headers: %v", mediationResult.RemoveHeaders)
-		var headerValues []*corev3.HeaderValue 
+		var headerValues []*corev3.HeaderValue
 		if processingPhase == requestconfig.ProcessingPhaseRequestHeaders {
 			for _, header := range requestConfigHolder.RequestHeaders.Headers.Headers {
 				if !util.Contains(mediationResult.RemoveHeaders, header.Key) {
@@ -632,7 +659,7 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 			if mediationResult.ModifyBody {
 				requestBodyResp.RequestBody.Response.BodyMutation = bodyMutation
 			}
-			if len(mediationResult.AddHeaders) > 0  || len(mediationResult.RemoveHeaders) > 0 {
+			if len(mediationResult.AddHeaders) > 0 || len(mediationResult.RemoveHeaders) > 0 {
 				requestBodyResp.RequestBody.Response.HeaderMutation = headerMutation
 			}
 		}
@@ -671,7 +698,7 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 			if mediationResult.ModifyBody {
 				responseBodyResp.ResponseBody.Response.BodyMutation = bodyMutation
 			}
-			if len(mediationResult.AddHeaders) > 0  || len(mediationResult.RemoveHeaders) > 0 {
+			if len(mediationResult.AddHeaders) > 0 || len(mediationResult.RemoveHeaders) > 0 {
 				responseBodyResp.ResponseBody.Response.HeaderMutation = headerMutation
 			}
 		}
@@ -813,7 +840,7 @@ func (s *ExternalProcessingServer) extractExtensionRefsAndRouteAttributes(data m
 		s.cfg.Logger.Sugar().Debugf("Attributes: %+v", data)
 		return extensionRefs, &requestconfig.Attributes{}, envType
 	}
-	
+
 	// Check if `xds.route_metadata` is a stringified proto and extract the nested `filter_metadata`
 	if rawTextStruct, ok := extProcData.Fields["xds.route_metadata"]; ok {
 		rawText := rawTextStruct.GetStringValue()
