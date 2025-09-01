@@ -219,64 +219,100 @@ func generateGroupingKey(operation model.APKOperations) string {
 
 	// handle operation.OperationPolicies.request and response Lua and WASM InterceptorPolicy
 	if operation.OperationPolicies != nil {
-		if len(operation.OperationPolicies.Request) > 0 {
-			var requestLuaInterceptorPolicyNames []string
-			var requestWASMInterceptorPolicyNames []string
-			for _, policy := range operation.OperationPolicies.Request {
-				if policy.LuaInterceptorPolicy != nil {
-					requestLuaInterceptorPolicyNames = append(requestLuaInterceptorPolicyNames,
-						policy.LuaInterceptorPolicy.Parameters.Name)
-				}
-				if policy.WASMInterceptorPolicy != nil {
-					requestWASMInterceptorPolicyNames = append(requestWASMInterceptorPolicyNames,
-						policy.WASMInterceptorPolicy.Parameters.Name)
-				}
-			}
-			sort.Strings(requestLuaInterceptorPolicyNames)
-			sort.Strings(requestWASMInterceptorPolicyNames)
-			if len(requestLuaInterceptorPolicyNames) > 0 {
-				keyParts = append(keyParts, fmt.Sprintf("requestLuaInterceptorPolicyNames:%s",
-					strings.Join(requestLuaInterceptorPolicyNames, ",")))
-			} else {
-				keyParts = append(keyParts, "requestLuaInterceptorPolicyNames:empty")
-			}
-			if len(requestWASMInterceptorPolicyNames) > 0 {
-				keyParts = append(keyParts, fmt.Sprintf("requestWASMInterceptorPolicyNames:%s",
-					strings.Join(requestWASMInterceptorPolicyNames, ",")))
-			} else {
-				keyParts = append(keyParts, "requestWASMInterceptorPolicyNames:empty")
-			}
-		}
-
-		if len(operation.OperationPolicies.Response) > 0 {
-			var responseLuaInterceptorPolicyNames []string
-			var responseWASMInterceptorPolicyNames []string
-			for _, policy := range operation.OperationPolicies.Response {
-				if policy.LuaInterceptorPolicy != nil {
-					responseLuaInterceptorPolicyNames = append(responseLuaInterceptorPolicyNames,
-						policy.LuaInterceptorPolicy.Parameters.Name)
-				}
-				if policy.WASMInterceptorPolicy != nil {
-					responseWASMInterceptorPolicyNames = append(responseWASMInterceptorPolicyNames,
-						policy.WASMInterceptorPolicy.Parameters.Name)
-				}
-			}
-			sort.Strings(responseLuaInterceptorPolicyNames)
-			sort.Strings(responseWASMInterceptorPolicyNames)
-			if len(responseLuaInterceptorPolicyNames) > 0 {
-				keyParts = append(keyParts, fmt.Sprintf("responseLuaInterceptorPolicyNames:%s",
-					strings.Join(responseLuaInterceptorPolicyNames, ",")))
-			} else {
-				keyParts = append(keyParts, "responseLuaInterceptorPolicyNames:empty")
-			}
-			if len(responseWASMInterceptorPolicyNames) > 0 {
-				keyParts = append(keyParts, fmt.Sprintf("responseWASMInterceptorPolicyNames:%s",
-					strings.Join(responseWASMInterceptorPolicyNames, ",")))
-			} else {
-				keyParts = append(keyParts, "responseWASMInterceptorPolicyNames:empty")
-			}
-		}
+		keyParts = ProcessOperationPolicies(&operation)
 	}
 
 	return strings.Join(keyParts, "|")
+}
+
+// ProcessOperationPolicies processes both request and response policies for an operation
+func ProcessOperationPolicies(operation *model.APKOperations) []string {
+	var allKeyParts []string
+
+	if len(operation.OperationPolicies.Request) > 0 {
+		requestPolicyNames := extractRequestPolicyNames(operation.OperationPolicies.Request)
+		requestKeyParts := buildKeyParts(requestPolicyNames, "request")
+		allKeyParts = append(allKeyParts, requestKeyParts...)
+	}
+
+	if len(operation.OperationPolicies.Response) > 0 {
+		responsePolicyNames := extractResponsePolicyNames(operation.OperationPolicies.Response)
+		responseKeyParts := buildKeyParts(responsePolicyNames, "response")
+		allKeyParts = append(allKeyParts, responseKeyParts...)
+	}
+
+	return allKeyParts
+}
+
+// extractRequestPolicyNames extracts and sorts policy names by type from a list of policies
+func extractRequestPolicyNames(policies []model.APKRequestOperationPolicy) map[string][]string {
+	policyNames := make(map[string][]string)
+
+	for _, policy := range policies {
+		if luaPolicy := policy.LuaInterceptorPolicy; luaPolicy != nil {
+			addPolicyName(policyNames, "luaInterceptor", luaPolicy.Parameters.Name)
+		}
+		if wasmPolicy := policy.WASMInterceptorPolicy; wasmPolicy != nil {
+			addPolicyName(policyNames, "wasmInterceptor", wasmPolicy.Parameters.Name)
+		}
+		if roundRobinPolicy := policy.ModelBasedRoundRobinPolicy; roundRobinPolicy != nil {
+			policyHash := GenerateModelBasedRoundRobinPolicyHash(roundRobinPolicy)
+			addPolicyName(policyNames, "modelBasedRoundRobin", policyHash)
+		}
+	}
+
+	// Sort all policy name slices
+	for policyType := range policyNames {
+		sort.Strings(policyNames[policyType])
+	}
+
+	return policyNames
+}
+
+// extractResponsePolicyNames extracts and sorts policy names by type from a list of policies
+func extractResponsePolicyNames(policies []model.APKResponseOperationPolicy) map[string][]string {
+	policyNames := make(map[string][]string)
+
+	for _, policy := range policies {
+		if luaPolicy := policy.LuaInterceptorPolicy; luaPolicy != nil {
+			addPolicyName(policyNames, "luaInterceptor", luaPolicy.Parameters.Name)
+		}
+		if wasmPolicy := policy.WASMInterceptorPolicy; wasmPolicy != nil {
+			addPolicyName(policyNames, "wasmInterceptor", wasmPolicy.Parameters.Name)
+		}
+	}
+
+	// Sort all policy name slices
+	for policyType := range policyNames {
+		sort.Strings(policyNames[policyType])
+	}
+
+	return policyNames
+}
+
+// addPolicyName adds a policy name to the appropriate slice
+func addPolicyName(policyNames map[string][]string, policyType, name string) {
+	if policyNames[policyType] == nil {
+		policyNames[policyType] = make([]string, 0)
+	}
+	policyNames[policyType] = append(policyNames[policyType], name)
+}
+
+// BuildKeyParts builds key parts from extracted policy names
+func buildKeyParts(policyNames map[string][]string, direction string) []string {
+	var keyParts []string
+
+	policyTypes := []string{"luaInterceptor", "wasmInterceptor", "modelBasedRoundRobin"}
+
+	for _, policyType := range policyTypes {
+		keyName := fmt.Sprintf("%s%sPolicyNames", direction, strings.Title(policyType))
+
+		if names := policyNames[policyType]; len(names) > 0 {
+			keyParts = append(keyParts, fmt.Sprintf("%s:%s", keyName, strings.Join(names, ",")))
+		} else {
+			keyParts = append(keyParts, fmt.Sprintf("%s:empty", keyName))
+		}
+	}
+
+	return keyParts
 }

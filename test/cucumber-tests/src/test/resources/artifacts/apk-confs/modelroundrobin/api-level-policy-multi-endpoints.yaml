@@ -10,11 +10,11 @@ aiProvider:
   apiVersion: "v1"
 endpointConfigurations:
   production:
-    - endpoint: "http://chat-backend-1:80"
-    - endpoint: "http://chat-backend-2:80"
+    - endpoint: "http://chat-backend-1.apk-integration-test.svc.cluster.local:80"
+    - endpoint: "http://chat-backend-2.apk-integration-test.svc.cluster.local:80"
   sandbox:
-    - endpoint: "http://chat-backend-1:80"
-    - endpoint: "http://chat-backend-2:80"
+    - endpoint: "http://chat-backend-1.apk-integration-test.svc.cluster.local:80"
+    - endpoint: "http://chat-backend-2.apk-integration-test.svc.cluster.local:80"
 operations:
 - target: "/get"
   verb: "GET"
@@ -32,21 +32,21 @@ apiPolicies:
         onQuotaExceedSuspendDuration: 60
         productionModels:
           - model: "gpt-4o"
-            endpoint: "http://chat-backend-1:80"
+            endpoint: "http://chat-backend-1.apk-integration-test.svc.cluster.local:80"
             weight: 1
           - model: "gpt-3.5"
-            endpoint: "http://chat-backend-2:80"
+            endpoint: "http://chat-backend-2.apk-integration-test.svc.cluster.local:80"
             weight: 1
           - model: "gpt-4.5"
-            endpoint: "http://chat-backend-1:80"
+            endpoint: "http://chat-backend-1.apk-integration-test.svc.cluster.local:80"
             weight: 1
         sandboxModels:
           - model: "gpt-4o"
-            endpoint: "http://chat-backend-2:80"
+            endpoint: "http://chat-backend-2.apk-integration-test.svc.cluster.local:80"
             weight: 1
           - model: "gpt-3.5"
-            endpoint: "http://chat-backend-1:80"
+            endpoint: "http://chat-backend-1.apk-integration-test.svc.cluster.local:80"
             weight: 1
           - model: "gpt-4.5"
-            endpoint: "http://chat-backend-2:80"
+            endpoint: "http://chat-backend-2.apk-integration-test.svc.cluster.local:80"
             weight: 1

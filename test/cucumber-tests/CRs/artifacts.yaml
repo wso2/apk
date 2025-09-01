@@ -2155,3 +2155,12 @@ data:
     function envoy_on_request(request_handle)
       request_handle:headers():add("Lua-Interceptor-Request-Global", "Lua-Interceptor-Request-global-header-value")
     end
+---
+apiVersion: dp.wso2.com/v2alpha1
+kind: RoutePolicy
+metadata:
+  name: ai-provider-e5d29edaed0abb251742f2e72a4de8d9a8dde09d
+  namespace: apk-integration-test
+spec: {}
+status:
+  ancestors: null

@@ -19,6 +19,8 @@ package util
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
@@ -26,6 +28,7 @@ import (
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
+	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -207,4 +210,20 @@ func getCurrentNamespace() (string, error) {
 	}
 
 	return namespace, nil
+}
+
+// GenerateModelBasedRoundRobinPolicyHash generates a SHA256 hash for the given ModelBasedRoundRobinPolicy configuration.
+func GenerateModelBasedRoundRobinPolicyHash(policy *model.ModelBasedRoundRobinPolicy) string {
+	if policy == nil {
+		return ""
+	}
+	// Concatenate policy parameters in a consistent order
+	hashInput := fmt.Sprintf("%s|%v",
+		policy.PolicyName,
+		policy.Parameters,
+	)
+	hasher := sha256.New()
+	hasher.Write([]byte(hashInput))
+	hashBytes := hasher.Sum(nil)
+	return hex.EncodeToString(hashBytes)[:16]
 }
