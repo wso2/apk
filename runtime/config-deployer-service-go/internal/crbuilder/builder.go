@@ -1169,13 +1169,14 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				} else if requestRedirectFilter == nil {
 					urlRewrite := &gatewayv1.HTTPURLRewriteFilter{
 						Path: &gatewayv1.HTTPPathModifier{
-							ReplaceFullPath: &serviceContractPath,
 							Type:            gatewayv1.FullPathHTTPPathModifier,
 						},
 					}
 					if strings.HasSuffix(*op.Target, "*") {
 						urlRewrite.Path.ReplacePrefixMatch = &serviceContractPath
 						urlRewrite.Path.Type = gatewayv1.PrefixMatchHTTPPathModifier
+					} else {
+						urlRewrite.Path.ReplaceFullPath = &serviceContractPath
 					}
 					if backendHostname != "" {
 						urlRewrite.Hostname = ptrTo(gatewayv1.PreciseHostname(backendHostname))
