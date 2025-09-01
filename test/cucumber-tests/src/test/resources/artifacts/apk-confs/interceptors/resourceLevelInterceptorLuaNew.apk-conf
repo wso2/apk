@@ -1,0 +1,36 @@
+id: "547961eeaafed989119c45ffc13f8b87bfda821d"
+name: "LuaInterceptorAPI"
+basePath: "/lua-interceptor"
+version: "1.0.0"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+  - endpoint: "https://httpbin.org/anything"
+operations:
+  - target: "/get"
+    verb: "GET"
+    secured: true
+    scopes: []
+  - target: "/headers"
+    verb: "GET"
+    secured: true
+    operationPolicies:
+      request:
+        - policyName: "LuaInterceptor"
+          parameters:
+            name: "Request-Lua-Interceptor"
+            sourceCode: |
+              function envoy_on_request(request_handle)
+                request_handle:headers():add("Lua-Interceptor-Header", "Lua-Interceptor-header-value")
+              end
+      response:
+        - policyName: "LuaInterceptor"
+          parameters:
+            name: "Response-Lua-Interceptor"
+            sourceCodeRef: "response-lua-interceptor"
+additionalProperties:
+  - name: "APIGroup"
+    value: "Gold"
+  - name: "APITier"
+    value: "Unlimited"

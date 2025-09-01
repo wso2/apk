@@ -1,0 +1,69 @@
+id: "547961eeaafed989119c45ffc13f8b87bfda821d"
+name: "InterceptorAPI"
+basePath: "/interceptor"
+version: "1.0.0"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    - endpoint: https://httpbin.org/anything
+operations:
+  - target: /uuid
+    verb: GET
+    secured: true
+    operationPolicies:
+      request:
+        - policyName: "LuaInterceptor"
+          parameters:
+            name: "Request-Lua-Interceptor"
+            sourceCode: |
+              function envoy_on_request(request_handle)
+                request_handle:headers():add("Lua-Request-Interceptor-Header", "Lua-Request-Interceptor-header-value")
+              end
+            mountInConfigMap: false
+  - target: /ai/spelling
+    verb: GET
+    secured: true
+    operationPolicies:
+      response:
+        - policyName: "WASMInterceptor"
+          parameters:
+            name: "Response-WASM-Interceptor"
+            rootId: "my_root_id"
+            image: zhaohuabing/testwasm:v0.0.1
+            imagePullPolicy: Always
+  - target: /base64/decode/{value}
+    verb: POST
+    secured: true
+  - target: /base64/encode/{value}
+    verb: POST
+    secured: true
+  - target: /ip
+    verb: GET
+    secured: true
+    operationPolicies:
+      request:
+        - policyName: "LuaInterceptor"
+          parameters:
+            name: "Request-Lua-Interceptor-1"
+            sourceCode: |
+              function envoy_on_request(request_handle)
+                request_handle:headers():add("Lua-Request-Interceptor-Header-1", "Lua-Request-Interceptor-header-value-1")
+              end
+            sourceCodeRef: "request-lua-interceptor-1"
+            mountInConfigMap: true
+  - target: /user-agent
+    verb: GET
+    secured: true
+    operationPolicies:
+      response:
+        - policyName: "LuaInterceptor"
+          parameters:
+            name: "Response-Lua-Interceptor"
+            sourceCodeRef: "response-lua-interceptor"
+apiPolicies:
+  request:
+    - policyName: "LuaInterceptor"
+      parameters:
+        name: "Lua-Request-Interceptor-Global"
+        sourceCodeRef: "request-lua-interceptor-global"
