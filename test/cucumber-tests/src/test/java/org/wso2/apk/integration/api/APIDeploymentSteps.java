@@ -586,7 +586,7 @@ public class APIDeploymentSteps {
     
         sharedContext.setResponse(appSearchResponse);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
-        sharedContext.setApiUUID(Utils.extractAPIUUID(sharedContext.getResponseBody()));
+        sharedContext.setApiUUID(Utils.extractAPIUUID(sharedContext.getResponseBody(), apiName));
         Thread.sleep(3000);
     }
 
