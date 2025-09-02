@@ -217,7 +217,7 @@ public class Utils {
 
     public static String getAPISearchEndpoint(String queryValue) {
         return "https://" + Constants.DEFAULT_APIM_API_HOST + ":" + Constants.DEFAULT_APIM_GW_PORT + "/"
-                + Constants.DEFAULT_APIM_API_DEPLOYER + "search?query=content:" + queryValue;
+                + Constants.DEFAULT_APIM_API_DEPLOYER + "apis";
     }
 
     public static String getAPINewVersionCreationURL() {
@@ -399,17 +399,25 @@ public class Utils {
         return null; // Return null if count is not 1
     }
 
-    public static String extractAPIUUID(String payload) throws IOException {
+    public static String extractAPIUUID(String payload, String apiName) throws IOException {
         JSONParser parser = new JSONParser();
         try {
             JSONObject jsonObject = (JSONObject) parser.parse(payload);
             long count = (long) jsonObject.get("count");
+            JSONArray list = (JSONArray) jsonObject.get("list");
             if (count == 1) {
-                JSONArray list = (JSONArray) jsonObject.get("list");
                 JSONObject apiObj = (JSONObject) list.get(0);
                 String apiId = (String) apiObj.get("id");
                 return apiId;
-            }
+            } else if (count > 1) {
+                for (Object obj : list) {
+                    JSONObject apiObj = (JSONObject) obj;
+                    String name = (String) apiObj.get("name");
+                    if (apiName.equals(name)) {
+                        return (String) apiObj.get("id");
+                    }
+                }
+             }
         } catch (ParseException e) {
             throw new IOException("Error while parsing the JSON payload: " + e.getMessage());
         }
