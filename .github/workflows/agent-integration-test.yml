@@ -58,7 +58,7 @@ jobs:
       run: |
         helm repo add wso2apim https://github.com/wso2/helm-apim/releases/download/acp-4.5.0
         helm repo update
-        helm install apim wso2apim/wso2am-acp --version 4.5.0-1 -f https://raw.githubusercontent.com/O-sura/JunkYard/refs/heads/main/apim-4.6.0-alpha-values.yaml -n apk --debug --wait --timeout 5m0s
+        helm install apim wso2apim/wso2am-acp --version 4.5.0-1 -f https://raw.githubusercontent.com/O-sura/JunkYard/refs/heads/main/apim-4.6.0-alpha-values.yaml -n apk --debug --wait --timeout 10m0s
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.13.1/deploy/static/provider/cloud/deploy.yaml -n apk
         kubectl get pods -n apk
         kubectl get svc -n apk
@@ -95,7 +95,7 @@ jobs:
       run: |
         cd apim-gw-connectors/common-agent/helm
         helm dependency build
-        helm install apim-apk-agent -n apk . -f ../../apk/helm/values.yaml --debug --wait --timeout 2m0s \
+        helm install apim-apk-agent -n apk . -f ../../apk/helm/values.yaml --debug --wait --timeout 5m0s \
         --set image.repository=wso2/apim-k8s-gw-connector \
         --set image.tag=latest \
         --set controlPlane.serviceURL=https://apim-wso2am-acp-1-service.apk.svc.cluster.local:9443/ \
@@ -168,7 +168,7 @@ jobs:
       run: |
         helm repo add wso2apim https://github.com/wso2/helm-apim/releases/download/acp-4.5.0
         helm repo update
-        helm install apim wso2apim/wso2am-acp --version 4.5.0-1 -f https://raw.githubusercontent.com/O-sura/JunkYard/refs/heads/main/apim-4.6.0-alpha-dptocp-values.yaml -n apk --debug --wait --timeout 5m0s
+        helm install apim wso2apim/wso2am-acp --version 4.5.0-1 -f https://raw.githubusercontent.com/O-sura/JunkYard/refs/heads/main/apim-4.6.0-alpha-dptocp-values.yaml -n apk --debug --wait --timeout 10m0s
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.13.1/deploy/static/provider/cloud/deploy.yaml -n apk
         kubectl get pods -n apk
         kubectl get svc -n apk
@@ -181,7 +181,7 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
-        helm install apk -n apk . \
+        helm install apk -n apk . --debug --wait --timeout 15m0s\
         --set wso2.kgw.cp.enabledSubscription=true \
         --set wso2.kgw.cp.enableApiPropagation=true \
         --set wso2.kgw.cp.host="apim-common-agent-service.apk.svc.cluster.local" \
@@ -199,7 +199,7 @@ jobs:
       run: |
         cd apim-gw-connectors/common-agent/helm
         helm dependency build
-        helm install apim-apk-agent -n apk . -f ../../apk/helm/values.yaml --debug --wait --timeout 2m0s \
+        helm install apim-apk-agent -n apk . -f ../../apk/helm/values.yaml --debug --wait --timeout 5m0s \
         --set image.repository=wso2/apim-k8s-gw-connector \
         --set image.tag=latest \
         --set controlPlane.serviceURL=https://apim-wso2am-acp-1-service.apk.svc.cluster.local:9443/ \
