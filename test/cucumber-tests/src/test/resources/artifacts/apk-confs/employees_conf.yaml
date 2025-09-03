@@ -2,11 +2,12 @@
 name: "EmployeeServiceAPI"
 basePath: "/test"
 version: "3.14"
+id: f7996dce4ac15e2af0f8ee14546c4f72988eddae
 type: "REST"
 defaultVersion: false
 endpointConfigurations:
   production:
-    - endpoint: "http://backend:80/anything"
+    - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
 operations:
   - target: "/employee/"
     verb: "GET"

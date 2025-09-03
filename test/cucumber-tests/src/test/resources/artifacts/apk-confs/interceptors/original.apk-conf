@@ -1,3 +1,4 @@
+id: "547961eeaafed989119c45ffc13f8b87bfda821d"
 name: "InterceptorAPI"
 basePath: "/interceptor"
 version: "1.0.0"
@@ -5,7 +6,7 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-  - endpoint: "http://backend.apk-integration-test.svc.cluster.local"
+  - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
 operations:
   - target: "/get"
     verb: "GET"

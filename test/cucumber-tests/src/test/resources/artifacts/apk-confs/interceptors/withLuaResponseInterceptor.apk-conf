@@ -6,19 +6,15 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-  - endpoint: "https://httpbin.org/anything"
+  - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
 operations:
   - target: "/get"
     verb: "GET"
     secured: true
     scopes: []
 apiPolicies:
-  request:
+  response:
     - policyName: "LuaInterceptor"
       parameters:
-        name: "Request-Lua-Interceptor"
-        sourceCode: |
-          function envoy_on_request(request_handle)
-            request_handle:headers():add("Lua-Interceptor-Header", "Lua-Interceptor-header-value")
-          end
-          
+        name: "Response-Lua-Interceptor"
+        sourceCodeRef: "response-lua-interceptor"

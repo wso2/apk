@@ -7,7 +7,7 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-    - endpoint: "http://backend:80/anything"
+    - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
 operations:
   - target: "/endpoint1"
     verb: "GET"
@@ -15,11 +15,11 @@ operations:
     scopes: []
     endpointConfigurations:
       production:
-        - endpoint: "http://backend:80/anything/base1"
+        - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything/base1"
   - target: "/endpoint2"
     verb: "GET"
     secured: true
     scopes: []
     endpointConfigurations:
       production:
-        - endpoint: "http://backend:80/anything/base2"
+        - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything/base2"

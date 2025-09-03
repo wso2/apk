@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/url"
@@ -938,27 +939,6 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					}
 				}
 
-				for _, policy := range routePoliciesL {
-					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
-						Type: gatewayv1.HTTPRouteFilterExtensionRef,
-						ExtensionRef: &gatewayv1.LocalObjectReference{
-							Group: constants.WSO2KubernetesGatewayRoutePolicyGroup,
-							Kind:  constants.WSO2KubernetesGatewayRoutePolicyKind,
-							Name:  gatewayv1.ObjectName(policy.Name),
-						},
-					})
-				}
-				for _, metadata := range routeMetadataList {
-					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
-						Type: gatewayv1.HTTPRouteFilterExtensionRef,
-						ExtensionRef: &gatewayv1.LocalObjectReference{
-							Group: constants.WSO2KubernetesGatewayRouteMetadataGroup,
-							Kind:  constants.WSO2KubernetesGatewayRouteMetadataKind,
-							Name:  gatewayv1.ObjectName(metadata.Name),
-						},
-					})
-				}
-
 				var requestRedirectFilter *gatewayv1.HTTPRouteFilter
 
 				// Add operation-level policy filters
@@ -1039,7 +1019,13 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 									},
 								}
 							case *model.ModelBasedRoundRobinPolicy:
-								// TODO - Handle model based routing
+								modelBasedRoundRobinPolicy, err := generateModelBasedRoundRobinPolicy(policy, environment)
+								if err != nil {
+									logger.Sugar().Errorf("Error generating ModelBasedRoundRobinPolicy: %v", err)
+									continue
+								}
+								routePoliciesL[modelBasedRoundRobinPolicy.Name] = modelBasedRoundRobinPolicy
+								objects = append(objects, modelBasedRoundRobinPolicy)
 							}
 						}
 					}
@@ -1096,13 +1082,34 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					}
 				}
 
+				for _, policy := range routePoliciesL {
+					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+						Type: gatewayv1.HTTPRouteFilterExtensionRef,
+						ExtensionRef: &gatewayv1.LocalObjectReference{
+							Group: constants.WSO2KubernetesGatewayRoutePolicyGroup,
+							Kind:  constants.WSO2KubernetesGatewayRoutePolicyKind,
+							Name:  gatewayv1.ObjectName(policy.Name),
+						},
+					})
+				}
+				for _, metadata := range routeMetadataList {
+					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+						Type: gatewayv1.HTTPRouteFilterExtensionRef,
+						ExtensionRef: &gatewayv1.LocalObjectReference{
+							Group: constants.WSO2KubernetesGatewayRouteMetadataGroup,
+							Kind:  constants.WSO2KubernetesGatewayRouteMetadataKind,
+							Name:  gatewayv1.ObjectName(metadata.Name),
+						},
+					})
+				}
+
 				isRegexPath, pattern, substitution := GenerateRegexPath(path, backendBasePath, apiBasePath)
 				hrfName := ""
 				pathMatchType := gatewayv1.PathMatchExact
 				if strings.HasSuffix(*op.Target, "*") {
 					pathMatchType = gatewayv1.PathMatchPathPrefix
 				}
-				
+
 				if isRegexPath {
 					pathMatchType = gatewayv1.PathMatchRegularExpression
 					path = pattern
@@ -1169,7 +1176,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				} else if requestRedirectFilter == nil {
 					urlRewrite := &gatewayv1.HTTPURLRewriteFilter{
 						Path: &gatewayv1.HTTPPathModifier{
-							Type:            gatewayv1.FullPathHTTPPathModifier,
+							Type: gatewayv1.FullPathHTTPPathModifier,
 						},
 					}
 					if strings.HasSuffix(*op.Target, "*") {
@@ -1253,7 +1260,7 @@ func generateEnvoyExtensionPolicy(interceptorPolicyList []*model.APKOperationPol
 			}
 		} else if wasmPolicy, ok := (*interceptorPolicy).(*model.WASMInterceptorPolicy); ok {
 			if !slices.Contains(filterNameList, wasmPolicy.Parameters.Name) {
-				wasmFilter, err := createWASMFilter(wasmPolicy.Parameters)
+				wasmFilter, err := createWASMFilter(wasmPolicy.Parameters, routeName)
 				if err != nil {
 					return nil, err
 				}
@@ -1332,9 +1339,14 @@ func getLuaValueType(parameters *model.LuaInterceptorPolicyParameters) (eg.LuaVa
 }
 
 // createWASMFilter creates a WASM filter configuration based on the parameters
-func createWASMFilter(parameters *model.WASMInterceptorPolicyParameters) (*eg.Wasm, error) {
+func createWASMFilter(parameters *model.WASMInterceptorPolicyParameters, routeName string) (*eg.Wasm, error) {
+	// make the name unique by appending a hash of the route name
+	routeNameBytes := []byte(routeName)
+	hash := sha256.Sum256(routeNameBytes)
+	wasmFilterName := fmt.Sprintf("%s-%x", parameters.Name, hash[:16])
+
 	wasmFilter := &eg.Wasm{
-		Name:     &parameters.Name,
+		Name:     &wasmFilterName,
 		RootID:   &parameters.RootID,
 		FailOpen: parameters.FailOpen,
 		Env: &eg.WasmEnv{
@@ -2305,6 +2317,81 @@ func createAPIKeyMediationPolicy(name string, endpointSecurity *model.EndpointSe
 		},
 	}
 	return routePolicy
+}
+
+// generateModelBasedRoundRobinPolicy generates a RoutePolicy for model-based round-robin load balancing.
+func generateModelBasedRoundRobinPolicy(policy *model.ModelBasedRoundRobinPolicy, environment string) (*dpv2alpha1.RoutePolicy, error) {
+	var modelRouting []model.ModelRouting
+	if environment == constants.PRODUCTION_TYPE {
+		modelRouting = policy.Parameters.ProductionModels
+	} else {
+		modelRouting = policy.Parameters.SandboxModels
+	}
+	modelClusterPairs, err := generateModelClusterPairs(modelRouting)
+	if err != nil {
+		logger.Sugar().Errorf("Failed to generate model-cluster pairs: %v", err)
+		return nil, err
+	}
+	modelBasedRoundRobinPolicy := &dpv2alpha1.Mediation{
+		PolicyName:    constantscommon.MediationAIModelBasedRoundRobin,
+		PolicyID:      "",
+		PolicyVersion: "",
+		Parameters: []*dpv2alpha1.Parameter{
+			{
+				Key:   "Enabled",
+				Value: "true",
+			},
+			{
+				Key:   "OnQuotaExceedSuspendDuration",
+				Value: strconv.Itoa(policy.Parameters.OnQuotaExceedSuspendDuration),
+			},
+			{
+				Key:   "ModelsClusterPair",
+				Value: modelClusterPairs,
+			},
+		},
+	}
+	name := util.GenerateModelBasedRoundRobinPolicyHash(policy)
+	routePolicy := &dpv2alpha1.RoutePolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
+			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+		},
+		Spec: dpv2alpha1.RoutePolicySpec{
+			RequestMediation:  []*dpv2alpha1.Mediation{modelBasedRoundRobinPolicy},
+			ResponseMediation: make([]*dpv2alpha1.Mediation, 0),
+		},
+	}
+	return routePolicy, nil
+}
+
+// generateModelClusterPairs generates an array of model-cluster pairs.
+func generateModelClusterPairs(routing []model.ModelRouting) (string, error) {
+	type ModelClusterPair struct {
+		ModelName   string `json:"modelName"`
+		ClusterName string `json:"clusterName"`
+		Weight      int    `json:"weight"`
+	}
+
+	pairs := make([]ModelClusterPair, 0, len(routing))
+	for _, route := range routing {
+		pair := ModelClusterPair{
+			ModelName:   route.Model,
+			ClusterName: route.Endpoint,
+			Weight:      route.Weight,
+		}
+		pairs = append(pairs, pair)
+	}
+
+	jsonBytes, err := json.Marshal(pairs)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal model-cluster pairs to JSON: %w", err)
+	}
+
+	return string(jsonBytes), nil
 }
 
 func convertMapToK8sService(endpoint interface{}) (*model.K8sService, error) {

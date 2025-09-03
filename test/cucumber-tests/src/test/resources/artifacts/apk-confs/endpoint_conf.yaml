@@ -7,9 +7,9 @@ type: "REST"
 defaultVersion: false
 endpointConfigurations:
   production:
-  - endpoint: "http://backend:80/anything"
+  - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
   sandbox:
-  - endpoint: "http://backend:80/anything/test"
+  - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything/test"
 operations:
   - target: "/employee/"
     verb: "GET"
@@ -21,9 +21,9 @@ operations:
     scopes: []
     endpointConfigurations:
       production:
-      - endpoint: "http://backend:80/anything/test"
+      - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything/test"
       sandbox:
-      - endpoint: "http://backend:80/anything"
+      - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
   - target: "/employee/{employeeId}"
     verb: "PUT"
     secured: true
