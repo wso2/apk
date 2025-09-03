@@ -11,13 +11,16 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	v32 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	dpv2alpha1 "github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	commonmediation "github.com/wso2/apk/common-go-libs/pkg/mediation"
+	"github.com/wso2/apk/gateway/enforcer/internal/config"
 	"github.com/wso2/apk/gateway/enforcer/internal/requestconfig"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -26,29 +29,30 @@ import (
 type ExternalCustom struct {
 	policy *dpv2alpha1.Mediation
 	// configuration derived from parameters
-	pluginPath string
-	pluginURL  string
-	symbol     string
-	runnerPath string
-	runnerURL  string
-	timeout    time.Duration
+	pluginPath      string
+	pluginURL       string
+	symbol          string
+	runnerPath      string
+	runnerURL       string
+	timeout         time.Duration
 	downloadTimeout time.Duration
+	cfg             *config.Server
 }
 
 const (
-	paramPluginPath = "pluginPath" // required: path to .so (or desired destination path if pluginURL provided)
-	paramPluginURL  = "pluginURL"  // optional: URL to download the .so if pluginPath is missing
-	paramSymbol     = "symbol"     // optional: function symbol, defaults to ProcessJSON
-	paramRunnerPath = "runnerPath" // optional: path to runner binary, defaults to APK_PLUGIN_RUNNER or "apk-plugin-runner" in PATH
-	paramRunnerURL  = "runnerURL"  // optional: URL to download the runner binary if not present
-	paramTimeoutMs  = "timeoutMs"  // optional: int milliseconds
+	paramPluginPath        = "pluginPath"        // required: path to .so (or desired destination path if pluginURL provided)
+	paramPluginURL         = "pluginURL"         // optional: URL to download the .so if pluginPath is missing
+	paramSymbol            = "symbol"            // optional: function symbol, defaults to ProcessJSON
+	paramRunnerPath        = "runnerPath"        // optional: path to runner binary, defaults to APK_PLUGIN_RUNNER or "apk-plugin-runner" in PATH
+	paramRunnerURL         = "runnerURL"         // optional: URL to download the runner binary if not present
+	paramTimeoutMs         = "timeoutMs"         // optional: int milliseconds
 	paramDownloadTimeoutMs = "downloadTimeoutMs" // optional: int milliseconds for downloading pluginURL
 )
 
 // NewExternalCustom constructs an ExternalCustom mediation from the cluster policy.
 func NewExternalCustom(m *dpv2alpha1.Mediation) *ExternalCustom {
 	ec := &ExternalCustom{policy: m}
-
+	ec.cfg = config.GetConfig()
 	if v, ok := extractPolicyValue(m.Parameters, paramPluginPath); ok {
 		ec.pluginPath = v
 	}
@@ -107,12 +111,14 @@ func (e *ExternalCustom) Process(h *requestconfig.Holder) *Result {
 	in := e.buildInput(h)
 	payload, err := json.Marshal(in)
 	if err != nil {
+		e.cfg.Logger.Sugar().Errorf("ExternalCustom JSON marshal error: %v", err)
 		// On marshalling error, fail open (no change) to avoid breaking traffic.
 		return NewResult()
 	}
 
 	outPayload, err := e.invokeRunner(payload)
 	if err != nil {
+		e.cfg.Logger.Sugar().Errorf("ExternalCustom runner invocation error: %v", err)
 		// On runner errors, fail open.
 		return NewResult()
 	}
@@ -229,20 +235,24 @@ func (e *ExternalCustom) invokeRunner(input []byte) ([]byte, error) {
 
 	if err := cmd.Run(); err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
-			return nil, fmt.Errorf("runner timeout: %w", err)
+			return nil, fmt.Errorf("runner timeout after %s: %w, runner=%s, GOOS=%s, GOARCH=%s, stderr: %s", e.timeout, err, localRunner, runtime.GOOS, runtime.GOARCH, truncate(stderr.String(), 2048))
 		}
-		return nil, fmt.Errorf("runner error: %v, stderr: %s", err, stderr.String())
+		// Provide helpful context for exec format errors.
+		if errors.Is(err, syscall.ENOEXEC) || strings.Contains(err.Error(), "exec format error") {
+			return nil, fmt.Errorf("runner binary is not executable for this platform: %v (runner=%s, GOOS=%s, GOARCH=%s). Ensure the runner matches the container host architecture. Stderr: %s", err, localRunner, runtime.GOOS, runtime.GOARCH, truncate(stderr.String(), 2048))
+		}
+		return nil, fmt.Errorf("runner error: %v (runner=%s, GOOS=%s, GOARCH=%s), stderr: %s", err, localRunner, runtime.GOOS, runtime.GOARCH, stderr.String())
 	}
 	return stdout.Bytes(), nil
 }
 
 // ensurePluginLocal ensures there's a readable local file for the plugin and
 // returns the path to use with the runner. Behaviors:
-// - If pluginPath is an existing file, return it.
-// - If pluginURL is provided and pluginPath does not exist but is non-empty,
-//   download pluginURL to pluginPath (creating parent dirs) and return pluginPath.
-// - If pluginPath itself is an HTTP/HTTPS URL, download it into a cache dir and
-//   return the cached file path.
+//   - If pluginPath is an existing file, return it.
+//   - If pluginURL is provided and pluginPath does not exist but is non-empty,
+//     download pluginURL to pluginPath (creating parent dirs) and return pluginPath.
+//   - If pluginPath itself is an HTTP/HTTPS URL, download it into a cache dir and
+//     return the cached file path.
 func (e *ExternalCustom) ensurePluginLocal() (string, error) {
 	// Case 1: pluginPath points to existing local file
 	if e.pluginPath != "" {
@@ -253,6 +263,10 @@ func (e *ExternalCustom) ensurePluginLocal() (string, error) {
 
 	// Case 2: pluginURL provided + pluginPath provided as destination
 	if e.pluginURL != "" && e.pluginPath != "" {
+		// If already present, reuse to avoid replacing an in-use file (ETXTBUSY).
+		if fi, err := os.Stat(e.pluginPath); err == nil && !fi.IsDir() {
+			return e.pluginPath, nil
+		}
 		if err := downloadToFile(e.pluginURL, e.pluginPath, e.downloadTimeout); err != nil {
 			return "", fmt.Errorf("failed to download plugin to %s: %w", e.pluginPath, err)
 		}
@@ -270,6 +284,9 @@ func (e *ExternalCustom) ensurePluginLocal() (string, error) {
 			base = "plugin.so"
 		}
 		dest := filepath.Join(destDir, base)
+		if fi, err := os.Stat(dest); err == nil && !fi.IsDir() {
+			return dest, nil
+		}
 		if err := downloadToFile(e.pluginPath, dest, e.downloadTimeout); err != nil {
 			return "", fmt.Errorf("failed to download plugin: %w", err)
 		}
@@ -287,17 +304,31 @@ func (e *ExternalCustom) ensurePluginLocal() (string, error) {
 			base = "plugin.so"
 		}
 		dest := filepath.Join(destDir, base)
+		if fi, err := os.Stat(dest); err == nil && !fi.IsDir() {
+			return dest, nil
+		}
 		if err := downloadToFile(e.pluginURL, dest, e.downloadTimeout); err != nil {
 			return "", fmt.Errorf("failed to download plugin: %w", err)
 		}
 		return dest, nil
 	}
 
-	return "", errors.New("plugin file not found and no valid URL to download")
+	return "", nil
 }
 
 func isHTTPURL(s string) bool {
 	return strings.HasPrefix(s, "http://") || strings.HasPrefix(s, "https://")
+}
+
+// truncate returns s limited to limit bytes, appending "..." if truncated.
+func truncate(s string, limit int) string {
+	if limit <= 0 || len(s) <= limit {
+		return s
+	}
+	if limit <= 3 {
+		return s[:limit]
+	}
+	return s[:limit-3] + "..."
 }
 
 func downloadToFile(url, dest string, timeout time.Duration) error {
@@ -317,15 +348,29 @@ func downloadToFile(url, dest string, timeout time.Duration) error {
 	if err := os.MkdirAll(filepath.Dir(dest), 0o755); err != nil {
 		return err
 	}
-	f, err := os.Create(dest)
+	// Download to a temporary file in the same directory, then atomically rename.
+	tmpFile, err := os.CreateTemp(filepath.Dir(dest), ".download-*")
 	if err != nil {
 		return err
 	}
-	defer func() { _ = f.Close() }()
-	if _, err := io.Copy(f, resp.Body); err != nil {
+	tmpName := tmpFile.Name()
+	defer func() { _ = os.Remove(tmpName) }()
+	// Ensure close on all paths
+	defer func() { _ = tmpFile.Close() }()
+	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
 		return err
 	}
-	return nil
+	// Flush contents
+	if err := tmpFile.Sync(); err != nil {
+		return err
+	}
+	if err := tmpFile.Close(); err != nil {
+		return err
+	}
+	// Make it readable by others by default; callers can chmod further if needed.
+	_ = os.Chmod(tmpName, 0o644)
+	// Atomic replace
+	return os.Rename(tmpName, dest)
 }
 
 // ensureRunnerLocal ensures there's a runnable local binary for the runner and
@@ -368,6 +413,12 @@ func (e *ExternalCustom) ensureRunnerLocal() (string, error) {
 			base = "apk-plugin-runner"
 		}
 		dest := filepath.Join(destDir, base)
+		if fi, err := os.Stat(dest); err == nil && !fi.IsDir() {
+			_ = os.Chmod(dest, 0o755)
+			// Quick sanity: try invoking with --version to catch exec format errors early.
+			_ = quickCheckRunner(dest, e.timeout/4)
+			return dest, nil
+		}
 		if err := downloadToFile(rp, dest, e.downloadTimeout); err != nil {
 			return "", fmt.Errorf("failed to download runner: %w", err)
 		}
@@ -386,6 +437,12 @@ func (e *ExternalCustom) ensureRunnerLocal() (string, error) {
 			base = "apk-plugin-runner"
 		}
 		dest := filepath.Join(destDir, base)
+		if fi, err := os.Stat(dest); err == nil && !fi.IsDir() {
+			_ = os.Chmod(dest, 0o755)
+			// Quick sanity: try invoking with --version to catch exec format errors early.
+			_ = quickCheckRunner(dest, e.timeout/4)
+			return dest, nil
+		}
 		if err := downloadToFile(e.runnerURL, dest, e.downloadTimeout); err != nil {
 			return "", fmt.Errorf("failed to download runner: %w", err)
 		}
@@ -395,9 +452,26 @@ func (e *ExternalCustom) ensureRunnerLocal() (string, error) {
 
 	// Last resort: try PATH again for default name
 	if abs, err := exec.LookPath("apk-plugin-runner"); err == nil {
+		_ = quickCheckRunner(abs, e.timeout/4)
 		return abs, nil
 	}
 	return "", errors.New("runner binary not found and no valid URL to download")
+}
+
+// quickCheckRunner tries to run the runner with --version within a short timeout.
+// It's best-effort; errors are ignored but help surface format/permission issues earlier.
+func quickCheckRunner(path string, d time.Duration) error {
+	if d <= 0 {
+		d = 500 * time.Millisecond
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), d)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, path, "--version")
+	var b bytes.Buffer
+	cmd.Stdout = &b
+	cmd.Stderr = &b
+	err := cmd.Run()
+	return err
 }
 
 func mapExternalOutputToResult(o *commonmediation.ExternalOutput) *Result {
