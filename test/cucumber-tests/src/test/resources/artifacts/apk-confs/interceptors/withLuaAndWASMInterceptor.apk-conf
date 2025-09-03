@@ -6,7 +6,7 @@ type: "REST"
 defaultVersion: true
 endpointConfigurations:
   production:
-    - endpoint: https://httpbin.org/anything
+    - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
 operations:
   - target: /uuid
     verb: GET

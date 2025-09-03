@@ -3,7 +3,7 @@ Feature: AI Model Based Round Robin
     Given The system is ready
     And I have a valid subscription
     When I use the APK Conf file "artifacts/apk-confs/modelroundrobin/api-level-policy-multi-endpoints.yaml"
-    And the definition file "artifacts/definitions/backend_apikey_auth_api_new.json"
+    And the definition file "artifacts/definitions/backend_apikey_auth_api.json"
     And make the API deployment request
     Then the response status code should be 200
     Then I clear all stored responses
@@ -56,7 +56,7 @@ Feature: AI Model Based Round Robin
     Given The system is ready
     And I have a valid subscription
     When I use the APK Conf file "artifacts/apk-confs/modelroundrobin/resource-level-policy-multi-endpoints.yaml"
-    And the definition file "artifacts/definitions/backend_apikey_auth_api_new.json"
+    And the definition file "artifacts/definitions/backend_apikey_auth_api.json"
     And make the API deployment request
     Then the response status code should be 200
     Then I clear all stored responses

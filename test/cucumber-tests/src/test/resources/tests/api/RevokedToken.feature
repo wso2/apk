@@ -2,8 +2,8 @@ Feature: Token revocation
  Scenario: Testing token revocation
     Given The system is ready
     And I have a valid subscription
-    When I use the APK Conf file "artifacts/apk-confs/employees_conf_new.yaml"
-    And the definition file "artifacts/definitions/employees_api_new.json"
+    When I use the APK Conf file "artifacts/apk-confs/employees_conf.yaml"
+    And the definition file "artifacts/definitions/employees_api.json"
     And make the API deployment request
     Then the response status code should be 200
     Then I set headers

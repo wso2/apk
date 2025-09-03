@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://backend:80/anything",
+      "url": "http://backend.apk-integration-test.svc.cluster.local:80/anything",
       "description": "Server URL",
       "variables": {}
     }
