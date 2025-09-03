@@ -1176,7 +1176,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 				} else if requestRedirectFilter == nil {
 					urlRewrite := &gatewayv1.HTTPURLRewriteFilter{
 						Path: &gatewayv1.HTTPPathModifier{
-							Type:            gatewayv1.FullPathHTTPPathModifier,
+							Type: gatewayv1.FullPathHTTPPathModifier,
 						},
 					}
 					if strings.HasSuffix(*op.Target, "*") {
@@ -1260,7 +1260,7 @@ func generateEnvoyExtensionPolicy(interceptorPolicyList []*model.APKOperationPol
 			}
 		} else if wasmPolicy, ok := (*interceptorPolicy).(*model.WASMInterceptorPolicy); ok {
 			if !slices.Contains(filterNameList, wasmPolicy.Parameters.Name) {
-				wasmFilter, err := createWASMFilter(wasmPolicy.Parameters)
+				wasmFilter, err := createWASMFilter(wasmPolicy.Parameters, routeName)
 				if err != nil {
 					return nil, err
 				}
@@ -1339,9 +1339,14 @@ func getLuaValueType(parameters *model.LuaInterceptorPolicyParameters) (eg.LuaVa
 }
 
 // createWASMFilter creates a WASM filter configuration based on the parameters
-func createWASMFilter(parameters *model.WASMInterceptorPolicyParameters) (*eg.Wasm, error) {
+func createWASMFilter(parameters *model.WASMInterceptorPolicyParameters, routeName string) (*eg.Wasm, error) {
+	// make the name unique by appending a hash of the route name
+	routeNameBytes := []byte(routeName)
+	hash := sha256.Sum256(routeNameBytes)
+	wasmFilterName := fmt.Sprintf("%s-%x", parameters.Name, hash[:16])
+
 	wasmFilter := &eg.Wasm{
-		Name:     &parameters.Name,
+		Name:     &wasmFilterName,
 		RootID:   &parameters.RootID,
 		FailOpen: parameters.FailOpen,
 		Env: &eg.WasmEnv{

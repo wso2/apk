@@ -16,7 +16,7 @@ apiPolicies:
   response:
     - policyName: "WASMInterceptor"
       parameters:
-        name: "Response-WASM-Interceptor-1"
+        name: "Response-WASM-Interceptor"
         rootId: "my_root_id"
         image: zhaohuabing/testwasm:v0.0.1
         imagePullPolicy: IfNotPresent
