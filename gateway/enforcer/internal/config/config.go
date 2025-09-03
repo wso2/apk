@@ -73,7 +73,8 @@ type Server struct {
 	JWTGeneratorPublicKeyPath        string `envconfig:"JWT_GENERATOR_PUBLIC_CERTIFICATE_PATH" default:"/home/wso2/security/keystore/mg.pem"`
 	JWTGeneratorPrivateKeyPath       string `envconfig:"JWT_GENERATOR_PRIVATE_KEY_PATH" default:"/home/wso2/security/keystore/mg.key"`
 	EventhubPublishInterval          int    `envconfig:"EVENTHUB_PUBLISH_INTERVAL" default:"5"` // seconds
-	MoesifPublishInterval			int    `envconfig:"MOESIF_PUBLISH_INTERVAL" default:"5"` // seconds
+	MoesifPublishInterval            int    `envconfig:"MOESIF_PUBLISH_INTERVAL" default:"5"`   // seconds
+	ExternalCustomMediationEnabled   bool   `envconfig:"EXTERNAL_CUSTOM_MEDIATION_ENABLED" default:"true"`
 }
 
 type metrics struct {

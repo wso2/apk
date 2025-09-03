@@ -29,8 +29,6 @@ import (
 type ExternalCustom struct {
 	policy *dpv2alpha1.Mediation
 	// configuration derived from parameters
-	pluginPath      string
-	pluginURL       string
 	symbol          string
 	runnerPath      string
 	runnerURL       string
@@ -53,12 +51,6 @@ const (
 func NewExternalCustom(m *dpv2alpha1.Mediation) *ExternalCustom {
 	ec := &ExternalCustom{policy: m}
 	ec.cfg = config.GetConfig()
-	if v, ok := extractPolicyValue(m.Parameters, paramPluginPath); ok {
-		ec.pluginPath = v
-	}
-	if v, ok := extractPolicyValue(m.Parameters, paramPluginURL); ok {
-		ec.pluginURL = v
-	}
 	if v, ok := extractPolicyValue(m.Parameters, paramSymbol); ok && v != "" {
 		ec.symbol = v
 	} else {
@@ -91,30 +83,38 @@ func NewExternalCustom(m *dpv2alpha1.Mediation) *ExternalCustom {
 		ec.downloadTimeout = 15 * time.Second
 	}
 
-	// Best-effort: ensure the plugin is available locally at construction time
-	// to avoid repeated downloads/checks on every request. We intentionally
-	// ignore errors here and fall back to runtime ensure in invokeRunner.
-	if localPath, err := ec.ensurePluginLocal(); err == nil && localPath != "" {
-		ec.pluginPath = localPath
-	}
-
 	// Best-effort: ensure runner binary is available locally as well.
 	if localRunner, err := ec.ensureRunnerLocal(); err == nil && localRunner != "" {
 		ec.runnerPath = localRunner
 	}
+	// Debug summary of constructed mediation
+	ec.dbg("ExternalCustom initialized: policy=%s(id=%s,ver=%s), symbol=%s, runnerPath=%s, runnerURL=%s, timeout=%s, downloadTimeout=%s, GOOS=%s, GOARCH=%s",
+		safeStr(ec.policy.PolicyName), safeStr(ec.policy.PolicyID), safeStr(ec.policy.PolicyVersion),
+		safeStr(ec.symbol), safeStr(ec.runnerPath), safeStr(ec.runnerURL), ec.timeout, ec.downloadTimeout, runtime.GOOS, runtime.GOARCH)
 	return ec
 }
 
 // Process implements the Mediation interface by delegating to the external runner.
 func (e *ExternalCustom) Process(h *requestconfig.Holder) *Result {
+	start := time.Now()
+	if !e.cfg.ExternalCustomMediationEnabled {
+		return NewResult()
+	}
+	// Log high-level context only (avoid sensitive data)
+	e.dbg("Process start: policy=%s(id=%s,ver=%s), phase=%s, symbol=%s, runner=%s",
+		safeStr(e.policy.PolicyName), safeStr(e.policy.PolicyID), safeStr(e.policy.PolicyVersion),
+		string(h.ProcessingPhase), safeStr(e.symbol), safeStr(e.runnerPath))
 	// Build minimal, stable JSON input for the plugin.
 	in := e.buildInput(h)
+	e.dbg("Built input: params=%d, attrs=%d, reqHdrs=%d, respHdrs=%d, reqBodyLen=%d, respBodyLen=%d",
+		len(in.Parameters), len(in.Attributes), lenOrZero(in.RequestHeaders), lenOrZero(in.ResponseHeaders), len(in.RequestBody), len(in.ResponseBody))
 	payload, err := json.Marshal(in)
 	if err != nil {
 		e.cfg.Logger.Sugar().Errorf("ExternalCustom JSON marshal error: %v", err)
 		// On marshalling error, fail open (no change) to avoid breaking traffic.
 		return NewResult()
 	}
+	e.dbg("Input JSON size=%d bytes, sample=%q", len(payload), truncate(string(payload), 256))
 
 	outPayload, err := e.invokeRunner(payload)
 	if err != nil {
@@ -128,6 +128,11 @@ func (e *ExternalCustom) Process(h *requestconfig.Holder) *Result {
 	if err := json.Unmarshal(outPayload, &extOut); err != nil {
 		return NewResult()
 	}
+	e.dbg("Runner output size=%d bytes, flags: modifyBody=%t, immediate=%t(code=%d, hdrs=%d, bodyLen=%d), addHdrs=%d, rmHdrs=%d, stopFurther=%t, metadata=%d",
+		len(outPayload), extOut.ModifyBody, extOut.ImmediateResponse, extOut.ImmediateResponseCode,
+		len(extOut.ImmediateResponseHeaders), len(extOut.ImmediateResponseBody),
+		len(extOut.AddHeaders), len(extOut.RemoveHeaders), extOut.StopFurtherProcessing, len(extOut.Metadata))
+	e.dbg("Process end in %s", time.Since(start))
 	return mapExternalOutputToResult(&extOut)
 }
 
@@ -197,6 +202,10 @@ func (e *ExternalCustom) buildInput(h *requestconfig.Holder) *commonmediation.Ex
 		RequestBody:     reqBody,
 		ResponseBody:    respBody,
 	}
+	// Debug summary for input (with redactions)
+	e.dbg("buildInput: phase=%s, params=%d, attrs=%d, reqHdrs=%v, respHdrs=%v, reqBody=%q, respBody=%q",
+		phase, len(params), len(attrs), redactAndSampleHeaders(reqHeaders, 5), redactAndSampleHeaders(respHeaders, 5),
+		truncate(reqBody, 128), truncate(respBody, 128))
 	return in
 }
 
@@ -208,16 +217,6 @@ func nilIfEmptyMap(m map[string]string) map[string]string {
 }
 
 func (e *ExternalCustom) invokeRunner(input []byte) ([]byte, error) {
-	if e.pluginPath == "" && e.pluginURL == "" {
-		return nil, errors.New("pluginPath parameter is required (or provide pluginURL)")
-	}
-
-	// Ensure the plugin .so is available locally; if not, try to download.
-	localPath, err := e.ensurePluginLocal()
-	if err != nil {
-		return nil, err
-	}
-
 	// Ensure the runner binary is available locally; if not, try to download/resolve.
 	localRunner, err := e.ensureRunnerLocal()
 	if err != nil {
@@ -227,12 +226,13 @@ func (e *ExternalCustom) invokeRunner(input []byte) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), e.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, localRunner, "--so", localPath, "--symbol", e.symbol)
+	cmd := exec.CommandContext(ctx, localRunner)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdin = bytes.NewReader(input)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-
+	e.dbg("Invoking runner: %s (GOOS=%s, GOARCH=%s, timeout=%s, input=%d bytes)", localRunner, runtime.GOOS, runtime.GOARCH, e.timeout, len(input))
+	t0 := time.Now()
 	if err := cmd.Run(); err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
 			return nil, fmt.Errorf("runner timeout after %s: %w, runner=%s, GOOS=%s, GOARCH=%s, stderr: %s", e.timeout, err, localRunner, runtime.GOOS, runtime.GOARCH, truncate(stderr.String(), 2048))
@@ -243,77 +243,8 @@ func (e *ExternalCustom) invokeRunner(input []byte) ([]byte, error) {
 		}
 		return nil, fmt.Errorf("runner error: %v (runner=%s, GOOS=%s, GOARCH=%s), stderr: %s", err, localRunner, runtime.GOOS, runtime.GOARCH, stderr.String())
 	}
+	e.dbg("Runner finished in %s, stdout=%d bytes, sample=%q, stderrSample=%q", time.Since(t0), stdout.Len(), truncate(stdout.String(), 256), truncate(stderr.String(), 256))
 	return stdout.Bytes(), nil
-}
-
-// ensurePluginLocal ensures there's a readable local file for the plugin and
-// returns the path to use with the runner. Behaviors:
-//   - If pluginPath is an existing file, return it.
-//   - If pluginURL is provided and pluginPath does not exist but is non-empty,
-//     download pluginURL to pluginPath (creating parent dirs) and return pluginPath.
-//   - If pluginPath itself is an HTTP/HTTPS URL, download it into a cache dir and
-//     return the cached file path.
-func (e *ExternalCustom) ensurePluginLocal() (string, error) {
-	// Case 1: pluginPath points to existing local file
-	if e.pluginPath != "" {
-		if fi, err := os.Stat(e.pluginPath); err == nil && !fi.IsDir() {
-			return e.pluginPath, nil
-		}
-	}
-
-	// Case 2: pluginURL provided + pluginPath provided as destination
-	if e.pluginURL != "" && e.pluginPath != "" {
-		// If already present, reuse to avoid replacing an in-use file (ETXTBUSY).
-		if fi, err := os.Stat(e.pluginPath); err == nil && !fi.IsDir() {
-			return e.pluginPath, nil
-		}
-		if err := downloadToFile(e.pluginURL, e.pluginPath, e.downloadTimeout); err != nil {
-			return "", fmt.Errorf("failed to download plugin to %s: %w", e.pluginPath, err)
-		}
-		return e.pluginPath, nil
-	}
-
-	// Case 3: pluginPath is a URL; download to cache directory
-	if isHTTPURL(e.pluginPath) {
-		destDir := filepath.Join(os.TempDir(), "apk-plugins-cache")
-		if err := os.MkdirAll(destDir, 0o755); err != nil {
-			return "", fmt.Errorf("failed to create cache dir: %w", err)
-		}
-		base := filepath.Base(e.pluginPath)
-		if base == "." || base == "/" || base == "" {
-			base = "plugin.so"
-		}
-		dest := filepath.Join(destDir, base)
-		if fi, err := os.Stat(dest); err == nil && !fi.IsDir() {
-			return dest, nil
-		}
-		if err := downloadToFile(e.pluginPath, dest, e.downloadTimeout); err != nil {
-			return "", fmt.Errorf("failed to download plugin: %w", err)
-		}
-		return dest, nil
-	}
-
-	// Case 4: Only pluginURL provided; download to cache using URL basename
-	if e.pluginURL != "" {
-		destDir := filepath.Join(os.TempDir(), "apk-plugins-cache")
-		if err := os.MkdirAll(destDir, 0o755); err != nil {
-			return "", fmt.Errorf("failed to create cache dir: %w", err)
-		}
-		base := filepath.Base(e.pluginURL)
-		if base == "." || base == "/" || base == "" {
-			base = "plugin.so"
-		}
-		dest := filepath.Join(destDir, base)
-		if fi, err := os.Stat(dest); err == nil && !fi.IsDir() {
-			return dest, nil
-		}
-		if err := downloadToFile(e.pluginURL, dest, e.downloadTimeout); err != nil {
-			return "", fmt.Errorf("failed to download plugin: %w", err)
-		}
-		return dest, nil
-	}
-
-	return "", nil
 }
 
 func isHTTPURL(s string) bool {
@@ -335,6 +266,19 @@ func downloadToFile(url, dest string, timeout time.Duration) error {
 	if timeout <= 0 {
 		timeout = 15 * time.Second
 	}
+	// Debug: begin download
+	// (No auth headers used; safe to log URL and destination path)
+	// Destination directory will be created if needed.
+	// The file will be atomically moved to final path after download completes.
+	// Truncate long paths for logs.
+	// Note: this function might run during hot path only on first use or cache miss.
+	// Keep debug level to avoid noisy logs in normal operations.
+	//nolint:staticcheck // debug-only logs
+	//
+	// Log start
+	// Use a lightweight call to print
+	// The actual logger is on ExternalCustom, not available here – print via fmt only if needed.
+	// We'll avoid printing; rely on caller-side logs.
 	client := &http.Client{Timeout: timeout}
 	resp, err := client.Get(url)
 	if err != nil {
@@ -357,7 +301,8 @@ func downloadToFile(url, dest string, timeout time.Duration) error {
 	defer func() { _ = os.Remove(tmpName) }()
 	// Ensure close on all paths
 	defer func() { _ = tmpFile.Close() }()
-	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+	_, err = io.Copy(tmpFile, resp.Body)
+	if err != nil {
 		return err
 	}
 	// Flush contents
@@ -370,7 +315,12 @@ func downloadToFile(url, dest string, timeout time.Duration) error {
 	// Make it readable by others by default; callers can chmod further if needed.
 	_ = os.Chmod(tmpName, 0o644)
 	// Atomic replace
-	return os.Rename(tmpName, dest)
+	if err := os.Rename(tmpName, dest); err != nil {
+		return err
+	}
+	// Best-effort chmod +x if looks like a binary name
+	_ = os.Chmod(dest, 0o755)
+	return nil
 }
 
 // ensureRunnerLocal ensures there's a runnable local binary for the runner and
@@ -381,24 +331,29 @@ func downloadToFile(url, dest string, timeout time.Duration) error {
 // - If only runnerURL is provided, download to cache and chmod +x.
 func (e *ExternalCustom) ensureRunnerLocal() (string, error) {
 	rp := e.runnerPath
+	e.dbg("ensureRunnerLocal: start, runnerPath=%s, runnerURL=%s", safeStr(rp), safeStr(e.runnerURL))
 	// Try PATH resolution first for convenience (handles bare names like "apk-plugin-runner").
 	if rp != "" && !isHTTPURL(rp) {
 		if abs, err := exec.LookPath(rp); err == nil {
+			e.dbg("ensureRunnerLocal: found in PATH => %s", abs)
 			return abs, nil
 		}
 		// If file exists at the given path, use it.
 		if fi, err := os.Stat(rp); err == nil && !fi.IsDir() {
+			e.dbg("ensureRunnerLocal: using existing file => %s", rp)
 			return rp, nil
 		}
 	}
 
 	// Download to a specified destination if both URL and path are provided.
 	if e.runnerURL != "" && rp != "" && !isHTTPURL(rp) {
+		e.dbg("ensureRunnerLocal: downloading runnerURL to specified path => url=%s dest=%s", e.runnerURL, rp)
 		if err := downloadToFile(e.runnerURL, rp, e.downloadTimeout); err != nil {
 			return "", fmt.Errorf("failed to download runner to %s: %w", rp, err)
 		}
 		// Ensure executable
 		_ = os.Chmod(rp, 0o755)
+		e.dbg("ensureRunnerLocal: download complete => %s", rp)
 		return rp, nil
 	}
 
@@ -417,12 +372,15 @@ func (e *ExternalCustom) ensureRunnerLocal() (string, error) {
 			_ = os.Chmod(dest, 0o755)
 			// Quick sanity: try invoking with --version to catch exec format errors early.
 			_ = quickCheckRunner(dest, e.timeout/4)
+			e.dbg("ensureRunnerLocal: cached runner found => %s", dest)
 			return dest, nil
 		}
+		e.dbg("ensureRunnerLocal: downloading runner from path-URL => %s to %s", rp, dest)
 		if err := downloadToFile(rp, dest, e.downloadTimeout); err != nil {
 			return "", fmt.Errorf("failed to download runner: %w", err)
 		}
 		_ = os.Chmod(dest, 0o755)
+		e.dbg("ensureRunnerLocal: download complete => %s", dest)
 		return dest, nil
 	}
 
@@ -441,20 +399,25 @@ func (e *ExternalCustom) ensureRunnerLocal() (string, error) {
 			_ = os.Chmod(dest, 0o755)
 			// Quick sanity: try invoking with --version to catch exec format errors early.
 			_ = quickCheckRunner(dest, e.timeout/4)
+			e.dbg("ensureRunnerLocal: cached runner (from runnerURL) found => %s", dest)
 			return dest, nil
 		}
+		e.dbg("ensureRunnerLocal: downloading runner from runnerURL => %s to %s", e.runnerURL, dest)
 		if err := downloadToFile(e.runnerURL, dest, e.downloadTimeout); err != nil {
 			return "", fmt.Errorf("failed to download runner: %w", err)
 		}
 		_ = os.Chmod(dest, 0o755)
+		e.dbg("ensureRunnerLocal: download complete => %s", dest)
 		return dest, nil
 	}
 
 	// Last resort: try PATH again for default name
 	if abs, err := exec.LookPath("apk-plugin-runner"); err == nil {
 		_ = quickCheckRunner(abs, e.timeout/4)
+		e.dbg("ensureRunnerLocal: fallback PATH found => %s", abs)
 		return abs, nil
 	}
+	e.dbg("ensureRunnerLocal: runner not found")
 	return "", errors.New("runner binary not found and no valid URL to download")
 }
 
@@ -505,4 +468,55 @@ func mapExternalOutputToResult(o *commonmediation.ExternalOutput) *Result {
 		}
 	}
 	return r
+}
+
+// -----------------
+// Logging helpers
+// -----------------
+
+// dbg logs at debug level if a logger is available.
+func (e *ExternalCustom) dbg(format string, args ...any) {
+	if e == nil || e.cfg == nil {
+		return
+	}
+	e.cfg.Logger.Sugar().Debugf(format, args...)
+}
+
+func safeStr(s string) string {
+	if s == "" {
+		return "-"
+	}
+	return s
+}
+
+func lenOrZero(m map[string]string) int {
+	if m == nil {
+		return 0
+	}
+	return len(m)
+}
+
+// redactAndSampleHeaders returns a small, redacted subset of headers for debug logs.
+// It redacts Authorization and Cookie values and returns up to maxKeys entries.
+func redactAndSampleHeaders(h map[string]string, maxKeys int) map[string]string {
+	if h == nil || maxKeys <= 0 {
+		return nil
+	}
+	out := make(map[string]string, 0)
+	n := 0
+	for k, v := range h {
+		kk := strings.ToLower(k)
+		vv := v
+		if kk == "authorization" || kk == "proxy-authorization" || kk == "cookie" || kk == "set-cookie" {
+			vv = "<redacted>"
+		} else {
+			vv = truncate(v, 64)
+		}
+		out[k] = vv
+		n++
+		if n >= maxKeys {
+			break
+		}
+	}
+	return out
 }
