@@ -1472,6 +1472,37 @@ kind: RoutePolicy
 metadata:
   name: ai-provider-e5d29edaed0abb251742f2e72a4de8d9a8dde09d
   namespace: apk-integration-test
-spec: {}
-status:
-  ancestors: null
+spec:
+  requestMediation:
+    - policyName: AIProvider
+      policyID: ""
+      policyVersion: v1.0.0
+      parameters:
+        - key: Enabled
+          value: "true"
+        - key: PromptTokenPath
+          value: "$.usage.prompt"
+        - key: CompletionTokenPath
+          value: "$.usage.completion"
+        - key: TotalTokenPath
+          value: "$.usage.total"
+---
+apiVersion: dp.wso2.com/v2alpha1
+kind: RoutePolicy
+metadata:
+  name: ai-provider-eb2629753ab1890442c7dc75d5922355a7c269ba
+  namespace: apk-integration-test
+spec:
+  requestMediation:
+    - policyName: AIProvider
+      policyID: ""
+      policyVersion: v1.0.0
+      parameters:
+        - key: Enabled
+          value: "true"
+        - key: PromptTokenPath
+          value: "$.usage.prompt"
+        - key: CompletionTokenPath
+          value: "$.usage.completion"
+        - key: TotalTokenPath
+          value: "$.usage.total"
