@@ -28,10 +28,10 @@ operations:
       response:
         - policyName: "WASMInterceptor"
           parameters:
-            name: "Response-WASM-Interceptor"
+            name: "Response-WASM-Interceptor-2"
             rootId: "my_root_id"
             image: zhaohuabing/testwasm:v0.0.1
-            imagePullPolicy: Always
+            imagePullPolicy: IfNotPresent
   - target: /base64/decode/{value}
     verb: POST
     secured: true

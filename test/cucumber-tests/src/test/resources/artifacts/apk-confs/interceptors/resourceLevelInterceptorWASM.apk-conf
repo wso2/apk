@@ -22,7 +22,7 @@ operations:
             name: "Response-WASM-Interceptor"
             rootId: "my_root_id"
             image: zhaohuabing/testwasm:v0.0.1
-            imagePullPolicy: Always
+            imagePullPolicy: IfNotPresent
 additionalProperties:
   - name: "APIGroup"
     value: "Gold"
