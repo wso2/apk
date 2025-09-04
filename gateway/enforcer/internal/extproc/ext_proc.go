@@ -638,8 +638,12 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 			if requestHeaderResp.RequestHeaders.Response == nil {
 				requestHeaderResp.RequestHeaders.Response = &envoy_service_proc_v3.CommonResponse{}
 			}
-			requestHeaderResp.RequestHeaders.Response.HeaderMutation = headerMutation
-
+			if requestHeaderResp.RequestHeaders.Response.HeaderMutation != nil {
+				requestHeaderResp.RequestHeaders.Response.HeaderMutation.SetHeaders = append(requestHeaderResp.RequestHeaders.Response.HeaderMutation.SetHeaders, headerMutation.SetHeaders...)
+				requestHeaderResp.RequestHeaders.Response.HeaderMutation.RemoveHeaders = append(requestHeaderResp.RequestHeaders.Response.HeaderMutation.RemoveHeaders, headerMutation.RemoveHeaders...)
+			} else {
+				requestHeaderResp.RequestHeaders.Response.HeaderMutation = headerMutation
+			}
 		}
 	} else if processingPhase == requestconfig.ProcessingPhaseRequestBody {
 		if resp.Response == nil {
@@ -660,7 +664,12 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 				requestBodyResp.RequestBody.Response.BodyMutation = bodyMutation
 			}
 			if len(mediationResult.AddHeaders) > 0 || len(mediationResult.RemoveHeaders) > 0 {
-				requestBodyResp.RequestBody.Response.HeaderMutation = headerMutation
+				if requestBodyResp.RequestBody.Response.HeaderMutation != nil {
+					requestBodyResp.RequestBody.Response.HeaderMutation.SetHeaders = append(requestBodyResp.RequestBody.Response.HeaderMutation.SetHeaders, headerMutation.SetHeaders...)
+					requestBodyResp.RequestBody.Response.HeaderMutation.RemoveHeaders = append(requestBodyResp.RequestBody.Response.HeaderMutation.RemoveHeaders, headerMutation.RemoveHeaders...)
+				} else {
+					requestBodyResp.RequestBody.Response.HeaderMutation = headerMutation
+				}
 			}
 		}
 	} else if processingPhase == requestconfig.ProcessingPhaseResponseHeaders {
@@ -678,7 +687,12 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 			if responseHeaderResp.ResponseHeaders.Response == nil {
 				responseHeaderResp.ResponseHeaders.Response = &envoy_service_proc_v3.CommonResponse{}
 			}
-			responseHeaderResp.ResponseHeaders.Response.HeaderMutation = headerMutation
+			if responseHeaderResp.ResponseHeaders.Response.HeaderMutation != nil {
+				responseHeaderResp.ResponseHeaders.Response.HeaderMutation.SetHeaders = append(responseHeaderResp.ResponseHeaders.Response.HeaderMutation.SetHeaders, headerMutation.SetHeaders...)
+				responseHeaderResp.ResponseHeaders.Response.HeaderMutation.RemoveHeaders = append(responseHeaderResp.ResponseHeaders.Response.HeaderMutation.RemoveHeaders, headerMutation.RemoveHeaders...)
+			} else {
+				responseHeaderResp.ResponseHeaders.Response.HeaderMutation = headerMutation
+			}
 		}
 	} else if processingPhase == requestconfig.ProcessingPhaseResponseBody {
 		if resp.Response == nil {
@@ -699,7 +713,12 @@ func (s *ExternalProcessingServer) processMediationResultAndPrepareResponse(
 				responseBodyResp.ResponseBody.Response.BodyMutation = bodyMutation
 			}
 			if len(mediationResult.AddHeaders) > 0 || len(mediationResult.RemoveHeaders) > 0 {
-				responseBodyResp.ResponseBody.Response.HeaderMutation = headerMutation
+				if responseBodyResp.ResponseBody.Response.HeaderMutation != nil {
+					responseBodyResp.ResponseBody.Response.HeaderMutation.SetHeaders = append(responseBodyResp.ResponseBody.Response.HeaderMutation.SetHeaders, headerMutation.SetHeaders...)
+					responseBodyResp.ResponseBody.Response.HeaderMutation.RemoveHeaders = append(responseBodyResp.ResponseBody.Response.HeaderMutation.RemoveHeaders, headerMutation.RemoveHeaders...)
+				} else {
+					responseBodyResp.ResponseBody.Response.HeaderMutation = headerMutation
+				}
 			}
 		}
 	} else {

@@ -328,7 +328,6 @@ schemas:
           - SetHeader
           - LuaInterceptor
           - WASMInterceptor
-          - BackendJwt
       policyVersion:
         type: string
         default: v1
@@ -341,7 +340,6 @@ schemas:
         oneOf:
           - "$ref": "#/schemas/LuaInterceptorProperties"
           - "$ref": "#/schemas/WASMInterceptorProperties"
-          - "$ref": "#/schemas/BackendJWTProperties"
           - "$ref": "#/schemas/HeaderModifierProperties"
     additionalProperties: false
   HeaderModifierProperties:

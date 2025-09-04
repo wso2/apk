@@ -445,8 +445,7 @@
             "RemoveHeader",
             "SetHeader",
             "LuaInterceptor",
-            "WASMInterceptor",
-            "BackendJwt"
+            "WASMInterceptor"
           ]
         },
         "policyVersion": {
@@ -466,9 +465,6 @@
             },
             {
               "$ref": "#/schemas/WASMInterceptorProperties"
-            },
-            {
-              "$ref": "#/schemas/BackendJWTProperties"
             },
             {
               "$ref": "#/schemas/HeaderModifierProperties"

@@ -21,6 +21,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
@@ -33,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"os"
+	"reflect"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 )
@@ -212,18 +214,27 @@ func getCurrentNamespace() (string, error) {
 	return namespace, nil
 }
 
-// GenerateModelBasedRoundRobinPolicyHash generates a SHA256 hash for the given ModelBasedRoundRobinPolicy configuration.
-func GenerateModelBasedRoundRobinPolicyHash(policy *model.ModelBasedRoundRobinPolicy) string {
-	if policy == nil {
+// GeneratePolicyHash generates a SHA256 hash for any policy that implements APKOperationPolicy interface.
+func GeneratePolicyHash[T model.APKOperationPolicy](policy T) string {
+	// Use reflection to get the actual policy struct for consistent serialization
+	policyValue := reflect.ValueOf(policy)
+	if policyValue.Kind() == reflect.Ptr && policyValue.IsNil() {
 		return ""
 	}
-	// Concatenate policy parameters in a consistent order
-	hashInput := fmt.Sprintf("%s|%v",
-		policy.PolicyName,
-		policy.Parameters,
-	)
+
+	// Serialize the entire policy to JSON for consistent hashing
+	jsonBytes, err := json.Marshal(policy)
+	if err != nil {
+		// Fallback to string representation if JSON marshaling fails
+		hashInput := fmt.Sprintf("%s|%v", policy.GetPolicyName(), policy)
+		hasher := sha256.New()
+		hasher.Write([]byte(hashInput))
+		hashBytes := hasher.Sum(nil)
+		return hex.EncodeToString(hashBytes)[:16]
+	}
+
 	hasher := sha256.New()
-	hasher.Write([]byte(hashInput))
+	hasher.Write(jsonBytes)
 	hashBytes := hasher.Sum(nil)
 	return hex.EncodeToString(hashBytes)[:16]
 }
