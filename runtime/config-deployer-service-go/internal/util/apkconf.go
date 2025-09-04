@@ -256,8 +256,12 @@ func extractRequestPolicyNames(policies []model.APKRequestOperationPolicy) map[s
 			addPolicyName(policyNames, "wasmInterceptor", wasmPolicy.Parameters.Name)
 		}
 		if roundRobinPolicy := policy.ModelBasedRoundRobinPolicy; roundRobinPolicy != nil {
-			policyHash := GenerateModelBasedRoundRobinPolicyHash(roundRobinPolicy)
+			policyHash := GeneratePolicyHash(roundRobinPolicy)
 			addPolicyName(policyNames, "modelBasedRoundRobin", policyHash)
+		}
+		if backendJWTPolicy := policy.BackendJWTPolicy; backendJWTPolicy != nil {
+			policyHash := GeneratePolicyHash(backendJWTPolicy)
+			addPolicyName(policyNames, "backendJwt", policyHash)
 		}
 	}
 
@@ -302,7 +306,7 @@ func addPolicyName(policyNames map[string][]string, policyType, name string) {
 func buildKeyParts(policyNames map[string][]string, direction string) []string {
 	var keyParts []string
 
-	policyTypes := []string{"luaInterceptor", "wasmInterceptor", "modelBasedRoundRobin"}
+	policyTypes := []string{"luaInterceptor", "wasmInterceptor", "modelBasedRoundRobin", "backendJwt"}
 
 	for _, policyType := range policyTypes {
 		keyName := fmt.Sprintf("%s%sPolicyNames", direction, strings.Title(policyType))

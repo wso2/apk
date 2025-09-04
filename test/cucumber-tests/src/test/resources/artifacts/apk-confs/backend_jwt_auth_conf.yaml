@@ -1,0 +1,48 @@
+---
+name: "BackendJWTSecurity"
+basePath: "/backend-jwt-security"
+version: "3.14"
+id: "backend-jwt-test"
+type: "REST"
+defaultVersion: true
+endpointConfigurations:
+  production:
+    - endpoint: "http://backend.apk-integration-test.svc.cluster.local:80/anything"
+operations:
+  - target: "/employee"
+    verb: "GET"
+    secured: true
+    scopes: []
+    operationPolicies:
+      request:
+      - policyName: "BackendJwt"
+        parameters:
+          encoding: "Base64"
+          signingAlgorithm: "SHA256withRSA"
+          header: "X-Jwt-Assertion"
+          tokenTTL: 3600
+          customClaims:
+            - claim: "env"
+              value: "prod"
+            - claim: "team"
+              value: "integration"
+  - target: "/get"
+    verb: "GET"
+    secured: true
+    scopes: []
+  - target: "/post"
+    verb: "POST"
+    secured: true
+    scopes: []
+  - target: "/employee/"
+    verb: "POST"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "PUT"
+    secured: true
+    scopes: []
+  - target: "/employee/{employeeId}"
+    verb: "DELETE"
+    secured: true
+    scopes: []

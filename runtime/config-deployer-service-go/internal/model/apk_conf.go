@@ -330,7 +330,6 @@ type APKRequestOperationPolicy struct {
 type APKResponseOperationPolicy struct {
 	LuaInterceptorPolicy  *LuaInterceptorPolicy  `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
 	WASMInterceptorPolicy *WASMInterceptorPolicy `json:"wasmInterceptorPolicy,omitempty" yaml:"wasmInterceptorPolicy,omitempty"`
-	BackendJWTPolicy      *BackendJWTPolicy      `json:"backendJWTPolicy,omitempty" yaml:"backendJWTPolicy,omitempty"`
 	HeaderModifierPolicy  *HeaderModifierPolicy  `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
 }
 
@@ -508,9 +507,6 @@ func (p *APKResponseOperationPolicy) UnmarshalJSON(data []byte) error {
 	case PolicyWASMInterceptor:
 		p.WASMInterceptorPolicy = &WASMInterceptorPolicy{}
 		return json.Unmarshal(data, p.WASMInterceptorPolicy)
-	case PolicyNameBackendJWT:
-		p.BackendJWTPolicy = &BackendJWTPolicy{}
-		return json.Unmarshal(data, p.BackendJWTPolicy)
 	case PolicyNameAddHeader, PolicyNameSetHeader, PolicyNameRemoveHeader:
 		p.HeaderModifierPolicy = &HeaderModifierPolicy{}
 		return json.Unmarshal(data, p.HeaderModifierPolicy)
@@ -552,9 +548,6 @@ func (p *APKResponseOperationPolicy) GetActivePolicy() APKOperationPolicy {
 	}
 	if p.WASMInterceptorPolicy != nil {
 		return p.WASMInterceptorPolicy
-	}
-	if p.BackendJWTPolicy != nil {
-		return p.BackendJWTPolicy
 	}
 	if p.HeaderModifierPolicy != nil {
 		return p.HeaderModifierPolicy

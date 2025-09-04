@@ -19,17 +19,17 @@ var restrictedClaims = []string{"iss", "sub", "aud", "exp", "nbf", "iat", "jti",
 
 // BackendJWT represents the configuration for Backend JWT policy in the API Gateway.
 type BackendJWT struct {
-	PolicyName       string            `json:"policyName"`
-	PolicyVersion    string            `json:"policyVersion"`
-	PolicyID         string            `json:"policyID"`
-	Enabled          bool              `json:"enabled"`
-	Encoding         string            `json:"encoding"`
-	Header           string            `json:"header"`
-	SigningAlgorithm string            `json:"signingAlgorithm"`
-	TokenTTL         int               `json:"tokenTTL"`
-	CustomClaims     map[string]string `json:"customClaims"`
-	ClaimMapping     map[string]string `json:"claimMapping"`
-	UseKid           bool              `json:"useKid"`
+	PolicyName       string                 `json:"policyName"`
+	PolicyVersion    string                 `json:"policyVersion"`
+	PolicyID         string                 `json:"policyID"`
+	Enabled          bool                   `json:"enabled"`
+	Encoding         string                 `json:"encoding"`
+	Header           string                 `json:"header"`
+	SigningAlgorithm string                 `json:"signingAlgorithm"`
+	TokenTTL         int                    `json:"tokenTTL"`
+	CustomClaims     map[string]interface{} `json:"customClaims"`
+	ClaimMapping     map[string]string      `json:"claimMapping"`
+	UseKid           bool                   `json:"useKid"`
 	PrivateKey       *rsa.PrivateKey
 	cfg              *config.Server
 }
@@ -82,7 +82,7 @@ func NewBackendJWT(mediation *dpv2alpha1.Mediation) *BackendJWT {
 			logger.Errorf("Invalid TokenTTL value: %s, using default value of 3600 seconds", val)
 		}
 	}
-	customClaims := make(map[string]string)
+	customClaims := make(map[string]interface{})
 	if val, ok := extractPolicyValue(mediation.Parameters, BackendJWTPolicyKeyCustomClaims); ok {
 		// Assuming val is a JSON string representing a map of custom claims
 		if err := json.Unmarshal([]byte(val), &customClaims); err != nil {

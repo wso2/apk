@@ -390,12 +390,14 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		}
 	} else {
 		// Create the HTTPRoute objects
-		routesHTTP, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment, routePolicies, routeMetadataList)
+		routesHTTP, objectsForWithVersion := GenerateHTTPRoutes(apiResourceBundle, true, environment,
+			routePolicies, routeMetadataList, apiResourceBundle.APKConf.KeyManagers)
 		for _, obj := range objectsForWithVersion {
 			objects = append(objects, obj)
 		}
 		if apiResourceBundle.APKConf.DefaultVersion {
-			routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment, routePolicies, routeMetadataList)
+			routesL, objectsForWithoutVersion := GenerateHTTPRoutes(apiResourceBundle, false, environment,
+				routePolicies, routeMetadataList, apiResourceBundle.APKConf.KeyManagers)
 			for _, obj := range objectsForWithoutVersion {
 				objects = append(objects, obj)
 			}
@@ -809,7 +811,7 @@ func mergeClusterSettings(dst, src eg.ClusterSettings) {
 
 // GenerateHTTPRoutes generates HTTPRoute objects for the given APIResourceBundle.
 func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environment string, routePolicies map[string]*dpv2alpha1.RoutePolicy,
-	routeMetadataList []*dpv2alpha1.RouteMetadata) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
+	routeMetadataList []*dpv2alpha1.RouteMetadata, kms []model.KeyManager) (map[int][]gatewayv1.HTTPRoute, []client.Object) {
 	objects := make([]client.Object, 0)
 	routesMap := make(map[int][]gatewayv1.HTTPRoute)
 	backendMap := make(map[string]map[string]*eg.Backend)
@@ -974,7 +976,9 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
 								interceptorPolicyList = append(interceptorPolicyList, &policy)
 							case *model.BackendJWTPolicy:
-								// TODO - Handle backend JWT policy with request modifications
+								backendJWTPolicy := createBackendJWTMediationPolicy(policy, kms)
+								routePoliciesL[backendJWTPolicy.Name] = backendJWTPolicy
+								objects = append(objects, backendJWTPolicy)
 							case *model.RequestMirrorPolicy:
 								mirrorEndpoints := []model.EndpointConfiguration{
 									{
@@ -1055,8 +1059,6 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								}
 							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
 								interceptorPolicyList = append(interceptorPolicyList, &policy)
-							case *model.BackendJWTPolicy:
-								// TODO - Handle backend JWT policy with response modifications
 							}
 						}
 					}
@@ -2319,6 +2321,121 @@ func createAPIKeyMediationPolicy(name string, endpointSecurity *model.EndpointSe
 	return routePolicy
 }
 
+// createBackendJWTMediationPolicy creates a Mediation policy for API Key security.
+func createBackendJWTMediationPolicy(jwtSecurityPolicy *model.BackendJWTPolicy, kms []model.KeyManager) *dpv2alpha1.RoutePolicy {
+	customClaimsJSON := convertCustomClaimsToJSON(jwtSecurityPolicy.Parameters.CustomClaims)
+	claimMappingsJSON := convertClaimMappingsToJSON(kms)
+	apiKeyMediationPolicy := &dpv2alpha1.Mediation{
+		PolicyName:    constantscommon.MediationBackendJWT,
+		PolicyID:      "",
+		PolicyVersion: "",
+		Parameters: []*dpv2alpha1.Parameter{
+			{
+				Key:   "Enabled",
+				Value: "true",
+			},
+			{
+				Key:   "Encoding",
+				Value: *jwtSecurityPolicy.Parameters.Encoding,
+			},
+			{
+				Key:   "Header",
+				Value: *jwtSecurityPolicy.Parameters.Header,
+			},
+			{
+				Key:   "SigningAlgorithm",
+				Value: *jwtSecurityPolicy.Parameters.SigningAlgorithm,
+			},
+			{
+				Key:   "TokenTTL",
+				Value: strconv.Itoa(*jwtSecurityPolicy.Parameters.TokenTTL),
+			},
+			{
+				Key:   "UseKid",
+				Value: "false",
+			},
+			{
+				Key:   "CustomClaims",
+				Value: customClaimsJSON,
+			},
+			{
+				Key:   "ClaimMapping",
+				Value: claimMappingsJSON,
+			},
+		},
+	}
+	name := util.GeneratePolicyHash(jwtSecurityPolicy)
+	routePolicy := &dpv2alpha1.RoutePolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
+			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+		},
+		Spec: dpv2alpha1.RoutePolicySpec{
+			RequestMediation:  []*dpv2alpha1.Mediation{apiKeyMediationPolicy},
+			ResponseMediation: make([]*dpv2alpha1.Mediation, 0),
+		},
+	}
+	return routePolicy
+}
+
+// convertCustomClaimsToJSON converts a slice of CustomClaims to a JSON string representation
+func convertCustomClaimsToJSON(customClaims []model.CustomClaims) string {
+	claimsMap := make(map[string]interface{})
+	if customClaims != nil && len(customClaims) > 0 {
+		for _, customClaim := range customClaims {
+			claimValueType := strings.ToLower(customClaim.Type)
+			claimValue := customClaim.Value
+			claimsMap[customClaim.Claim] = customClaim.Value
+			switch claimValueType {
+			case "string":
+				claimsMap[customClaim.Claim] = claimValue
+			case "int":
+				intValue, err := strconv.Atoi(claimValue)
+				if err == nil {
+					claimsMap[customClaim.Claim] = intValue
+				}
+			case "boolean":
+				boolValue, err := strconv.ParseBool(claimValue)
+				if err == nil {
+					claimsMap[customClaim.Claim] = boolValue
+				}
+			case "float":
+				floatValue, err := strconv.ParseFloat(claimValue, 64)
+				if err == nil {
+					claimsMap[customClaim.Claim] = floatValue
+				}
+			}
+		}
+	}
+	customClaimsJSON, err := json.Marshal(claimsMap)
+	if err != nil {
+		return "{}"
+	}
+	return string(customClaimsJSON)
+}
+
+// convertClaimMappingsToJSON converts a slice of CustomClaims to a map for claim mappings
+func convertClaimMappingsToJSON(kms []model.KeyManager) string {
+	claimMappings := make(map[string]string)
+	if kms != nil && len(kms) > 0 {
+		for _, km := range kms {
+			if km.ClaimMapping != nil && len(km.ClaimMapping) > 0 {
+				for _, claimMapping := range km.ClaimMapping {
+					claimMappings[claimMapping.LocalClaim] = claimMapping.RemoteClaim
+				}
+			}
+		}
+	}
+	claimMappingsJSON, err := json.Marshal(claimMappings)
+	if err != nil {
+		return "{}"
+	}
+	return string(claimMappingsJSON)
+}
+
 // generateModelBasedRoundRobinPolicy generates a RoutePolicy for model-based round-robin load balancing.
 func generateModelBasedRoundRobinPolicy(policy *model.ModelBasedRoundRobinPolicy, environment string) (*dpv2alpha1.RoutePolicy, error) {
 	var modelRouting []model.ModelRouting
@@ -2351,7 +2468,7 @@ func generateModelBasedRoundRobinPolicy(policy *model.ModelBasedRoundRobinPolicy
 			},
 		},
 	}
-	name := util.GenerateModelBasedRoundRobinPolicyHash(policy)
+	name := util.GeneratePolicyHash(policy)
 	routePolicy := &dpv2alpha1.RoutePolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
