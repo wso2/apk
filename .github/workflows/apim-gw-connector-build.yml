@@ -1,0 +1,70 @@
+name: Build GW Connector
+on:
+  workflow_call:
+    inputs:
+      aks_deployment:
+        required: true
+        type: boolean
+        description: "Deploy to AKS"
+    secrets:
+      APK_BOT_TOKEN:
+        required: true
+      APK_BOT_USER:
+        required: true
+      APK_BOT_EMAIL:
+        required: true
+      DOCKER_ORGANIZATION:
+        required: true
+      AZURE_ACR_NAME:
+        required: true
+      AZURE_CREDENTIALS:
+        required: true
+
+env:
+  GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+concurrency:
+  group: gw-connector-${{ github.event.number || github.run_id }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.24"
+      - name: Install Revive
+        shell: sh
+        run: |
+          go install github.com/mgechev/revive@v1.3.4
+      - name: Checkout APIM GW Connectors repo
+        uses: actions/checkout@v3
+        with:
+          repository: wso2-extensions/apim-gw-connectors
+          ref: main
+          path: apim-gw-connectors
+          token: ${{ secrets.APK_BOT_TOKEN }}
+      - name: Set release username and email
+        shell: sh
+        run: |
+          git config --global user.name ${{ secrets.APK_BOT_USER }}
+          git config --global user.email ${{ secrets.APK_BOT_EMAIL }}
+      - name: Run Gradle Build
+        run: |
+          cd apim-gw-connectors/common-agent
+          ./gradlew build
+      - name: Login to Azure ACR
+        if: ${{inputs.aks_deployment}}
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Push Docker images to ACR
+        if: ${{inputs.aks_deployment}}
+        run: |
+          az acr login -n ${{ secrets.AZURE_ACR_NAME }}
+          cd apim-gw-connectors/common-agent
+          ./gradlew docker_push \
+            -Pfile=main.go \
+            -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} \
+            -Pimage_version=${{ github.sha }} \
+            -PmultiArch=true
