@@ -9,8 +9,71 @@ concurrency:
 env:
   GH_TOKEN: ${{ secrets.APK_BOT_TOKEN }}  
 jobs:
+  # --- Building the components ------
+  build_envoy_gateway_extension_server:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/envoy-gateway-extension-server-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_common_controller:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/common-controller-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_enforcer:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/enforcer-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  build_config:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/config-deployer-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}      
+  build_idpds:
+    if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    uses: ./.github/workflows/idp-domain-service-release.yml
+    with:
+      aks_deployment: true
+    secrets:
+      APK_BOT_TOKEN: ${{ secrets.APK_BOT_TOKEN }}
+      APK_BOT_USER: ${{ secrets.APK_BOT_USER }}
+      APK_BOT_EMAIL: ${{ secrets.APK_BOT_EMAIL }}
+      DOCKER_ORGANIZATION: ${{ secrets.AZURE_ACR_NAME }}.azurecr.io
+      AZURE_ACR_NAME: ${{ secrets.AZURE_ACR_NAME }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  # --- Starting the test cases ------
   runs_agent_cucumber_integration_tests_on_pull_request:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+    needs: [build_common_controller, build_enforcer, build_config, build_idpds, build_envoy_gateway_extension_server]
     runs-on: ubuntu-latest
     steps:
     - uses: azure/login@v1
@@ -31,6 +94,10 @@ jobs:
       run: |
         kubectl create namespace apk
         kubectl get ns
+    - name: Create Image pull secret
+      shell: sh
+      run: |
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.APK_BOT_EMAIL }} -n apk
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
@@ -72,6 +139,12 @@ jobs:
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
         helm install apk -n apk . --debug --wait --timeout 15m0s \
+        --set wso2.subscription.imagePullSecrets=azure-registry \
+        --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
+        --set wso2.kgw.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-common-controller:${{ github.sha }} \
+        --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-idp-domain-service:${{ github.sha }} \
+        --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-idp-ui:${{ github.sha }} \
+        --set wso2.kgw.dp.ratelimiter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-ratelimiter:${{ github.sha }} \
         --set wso2.kgw.cp.enabledSubscription=true \
         --set wso2.kgw.cp.host="apim-common-agent-service.apk.svc.cluster.local" \
         --set wso2.kgw.cp.skipSSLVerification=true \
@@ -81,13 +154,17 @@ jobs:
         kubectl get svc -n apk
 
     - name: Checkout APIM GW Connectors repo
-      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-      uses: actions/checkout@v3
-      with:
-        repository: wso2-extensions/apim-gw-connectors
-        ref: main
-        path: apim-gw-connectors
-        token: ${{ secrets.APK_BOT_TOKEN }}
+      shell: sh
+      run: |
+        git clone https://github.com/wso2-extensions/apim-gw-connectors.git
+        cd apim-gw-connectors/common-agent
+        ./gradlew docker_push \
+          -Pfile=main.go \
+          -Pdocker_organization=${{ secrets.AZURE_ACR_NAME }}.azurecr.io \
+          -Pimage_version=${{ github.sha }} \
+          -PmultiArch=true \
+          -Pdocker_username=${{ secrets.AZURE_ACR_USER }} \
+          -Pdocker_password=${{ secrets.AZURE_ACR_PASSWORD }}
     
     - name: Helm release deploy APIM Common Agent for KGW
       if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
@@ -96,8 +173,8 @@ jobs:
         cd apim-gw-connectors/common-agent/helm
         helm dependency build
         helm install apim-apk-agent -n apk . -f ../../apk/helm/values.yaml --debug --wait --timeout 5m0s \
-        --set image.repository=wso2/apim-k8s-gw-connector \
-        --set image.tag=latest \
+        --set image.repository=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apim-k8s-gw-connector \
+        --set image.tag=${{ github.sha }} \
         --set controlPlane.serviceURL=https://apim-wso2am-acp-1-service.apk.svc.cluster.local:9443/ \
         --set controlPlane.eventListeningEndpoints="amqp://admin:admin@apim-wso2am-acp-1-service.apk.svc.cluster.local:5672?retries='10'&connectdelay='30'" \
         --set dataPlane.k8ResourceEndpoint=https://apk-wso2-kgw-config-ds-service.apk.svc.cluster.local:9443/api/configurator/apis/generate-k8s-resources
@@ -136,11 +213,15 @@ jobs:
       with:
        report_paths: 'apk-repo/test/cucumber-tests/build/test-output/junitreports/*.xml'
        fail_on_test_failures: true
-    - name: Create Namespace apk #Starts the DP to CP Flow
+    - name: Create Namespace apk #---Starts the DP to CP Flow
       shell: sh
       run: |
         kubectl create namespace apk
         kubectl get ns
+    - name: Create Image pull secret
+      shell: sh
+      run: |
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.APK_BOT_EMAIL }} -n apk
     - name: Checkout apk-repo.
       uses: actions/checkout@v3
       with:
@@ -181,7 +262,13 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
-        helm install apk -n apk . --debug --wait --timeout 15m0s\
+        helm install apk -n apk . --debug --wait --timeout 15m0s \
+        --set wso2.subscription.imagePullSecrets=azure-registry \
+        --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
+        --set wso2.kgw.dp.commonController.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-common-controller:${{ github.sha }} \
+        --set idp.idpds.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-idp-domain-service:${{ github.sha }} \
+        --set idp.idpui.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-idp-ui:${{ github.sha }} \
+        --set wso2.kgw.dp.ratelimiter.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-ratelimiter:${{ github.sha }} \
         --set wso2.kgw.cp.enabledSubscription=true \
         --set wso2.kgw.cp.enableApiPropagation=true \
         --set wso2.kgw.cp.host="apim-common-agent-service.apk.svc.cluster.local" \
@@ -200,8 +287,8 @@ jobs:
         cd apim-gw-connectors/common-agent/helm
         helm dependency build
         helm install apim-apk-agent -n apk . -f ../../apk/helm/values.yaml --debug --wait --timeout 5m0s \
-        --set image.repository=wso2/apim-k8s-gw-connector \
-        --set image.tag=latest \
+        --set image.repository=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apim-k8s-gw-connector \
+        --set image.tag=${{ github.sha }} \
         --set controlPlane.serviceURL=https://apim-wso2am-acp-1-service.apk.svc.cluster.local:9443/ \
         --set controlPlane.eventListeningEndpoints="amqp://admin:admin@apim-wso2am-acp-1-service.apk.svc.cluster.local:5672?retries='10'&connectdelay='30'"
         --set dataPlane.namespace=apk 
@@ -224,7 +311,7 @@ jobs:
         kubectl get routemetadata -n apk
         kubectl get applications -n apk
         kubectl get subscriptions -n apk
-        kubectl get routepolicy -n apk
+        kubectl get routepolicies -n apk
         kubectl get httproutes -n apk
         kubectl get securitypolicies -n apk
         kubectl get ing -n apk
