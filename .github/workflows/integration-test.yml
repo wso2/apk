@@ -447,6 +447,7 @@ jobs:
         cd apim-gw-connectors/common-agent/helm
         helm dependency build
         helm install apim-apk-agent -n apk . -f ../../apk/helm/values.yaml --debug --wait --timeout 5m0s \
+        --set wso2.subscription.imagePullSecrets=azure-registry \
         --set image.repository=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apim-k8s-gw-connector \
         --set image.tag=${{ github.sha }} \
         --set controlPlane.serviceURL=https://apim-wso2am-acp-1-service.apk.svc.cluster.local:9443/ \
@@ -569,6 +570,7 @@ jobs:
     #     cd apim-gw-connectors/common-agent/helm
     #     helm dependency build
     #     helm install apim-apk-agent -n apk . -f ../../apk/helm/values.yaml --debug --wait --timeout 5m0s \
+    #     --set wso2.subscription.imagePullSecrets=azure-registry \     
     #     --set image.repository=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/apim-k8s-gw-connector \
     #     --set image.tag=${{ github.sha }} \
     #     --set controlPlane.serviceURL=https://apim-wso2am-acp-1-service.apk.svc.cluster.local:9443/ \
@@ -615,11 +617,11 @@ jobs:
         azcliversion: 2.72.0
         inlineScript: |
           az logout
-    - name: Publish Test Report(DP to CP Flow)
-      if: always()
-      uses: malinthaprasan/action-surefire-report@v1
-      with:
-       report_paths: 'apk-repo/test/cucumber-tests/build/test-output/junitreports/*.xml'
-       fail_on_test_failures: true
+    # - name: Publish Test Report(DP to CP Flow)
+    #   if: always()
+    #   uses: malinthaprasan/action-surefire-report@v1
+    #   with:
+    #    report_paths: 'apk-repo/test/cucumber-tests/build/test-output/junitreports/*.xml'
+    #    fail_on_test_failures: true
 
  
