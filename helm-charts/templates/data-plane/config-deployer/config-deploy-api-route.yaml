@@ -20,6 +20,8 @@ metadata:
   name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deploy-api-route"
   namespace: {{ .Release.Namespace }}
   labels:
+    api-name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deploy-api"
+    api-version: "2.0.0"
     managed-by: "kgw"
   annotations:
     "helm.sh/hook": post-install,post-upgrade
@@ -33,6 +35,16 @@ spec:
         value: "/api/deployer/2.0.0/apis/deploy"
       method: "POST"
     filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RouteMetadata
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deploy-api-routemetadata
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RoutePolicy
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deploy-api-routepolicy
     - type: URLRewrite
       urlRewrite:
         path:
@@ -48,6 +60,16 @@ spec:
         value: "/api/deployer/2.0.0/apis/undeploy"
       method: "POST"
     filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RouteMetadata
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deploy-api-routemetadata
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RoutePolicy
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deploy-api-routepolicy
     - type: URLRewrite
       urlRewrite:
         path:

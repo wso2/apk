@@ -15,6 +15,32 @@
 # under the License.
 
 {{- if and .Values.wso2.kgw.dp.enabled .Values.wso2.kgw.dp.commonController }}
+apiVersion: "dp.wso2.com/v2alpha1"
+kind: "RouteMetadata"
+metadata:
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-routemetadata
+  namespace: {{ .Release.Namespace }}
+  labels:
+    api-name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api"
+    api-version: "1.0.0"
+    managed-by: "kgw"
+spec:
+  api:
+    name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api
+    version: 1.0.0
+    context: /api/notification
+---
+apiVersion: "dp.wso2.com/v2alpha1"
+kind: "RoutePolicy"
+metadata:
+  name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-routepolicy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    api-name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api"
+    api-version: "1.0.0"
+    managed-by: "kgw"
+spec: {}
+---
 kind: "Backend"
 apiVersion: "gateway.envoyproxy.io/v1alpha1"
 metadata:
@@ -34,6 +60,8 @@ metadata:
   name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-route"
   namespace: {{ .Release.Namespace }}
   labels:
+    api-name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api"
+    api-version: "1.0.0"
     managed-by: "kgw"
   annotations:
     "helm.sh/hook": post-install,post-upgrade
@@ -47,6 +75,16 @@ spec:
         value: "/api/notification/1.0.0/notify"
       method: "POST"
     filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RouteMetadata
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-routemetadata
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RoutePolicy
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api-routepolicy
     - type: URLRewrite
       urlRewrite:
         path:

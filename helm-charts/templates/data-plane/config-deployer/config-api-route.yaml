@@ -20,6 +20,8 @@ metadata:
   name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-api-route"
   namespace: {{ .Release.Namespace }}
   labels:
+    api-name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-api"
+    api-version: "2.0.0"
     managed-by: "kgw"
   annotations:
     "helm.sh/hook": post-install,post-upgrade
@@ -33,6 +35,16 @@ spec:
         value: "/api/configurator/2.0.0/apis/generate-configuration"
       method: "POST"
     filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RouteMetadata
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-api-routemetadata
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RoutePolicy
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-api-routepolicy
     - type: URLRewrite
       urlRewrite:
         path:
@@ -48,6 +60,16 @@ spec:
         value: "/api/configurator/2.0.0/apis/generate-k8s-resources"
       method: "POST"
     filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RouteMetadata
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-api-routemetadata
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RoutePolicy
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-api-routepolicy
     - type: URLRewrite
       urlRewrite:
         path:

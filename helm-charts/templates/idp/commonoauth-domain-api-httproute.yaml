@@ -22,6 +22,7 @@ metadata:
   labels:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
+    managed-by: "kgw"
 spec:
   hostnames:
   - "{{ .Values.idp.listener.hostname | default "idp.am.wso2.com"}}"
@@ -31,6 +32,16 @@ spec:
         type: "PathPrefix"
         value: "/commonoauth/1.0.0"
     filters:
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RouteMetadata
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-commonoauth-ds-routemetadata
+    - type: ExtensionRef
+      extensionRef:
+        group: dp.wso2.com
+        kind: RoutePolicy
+        name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-commonoauth-ds-routepolicy
     - type: URLRewrite
       urlRewrite:
         path:
