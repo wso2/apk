@@ -279,15 +279,21 @@ func NewAPKOperations() *APKOperations {
 type PolicyName string
 
 const (
-	PolicyNameBackendJWT           PolicyName = "BackendJwt"
-	PolicyLuaInterceptor           PolicyName = "LuaInterceptor"
-	PolicyWASMInterceptor          PolicyName = "WASMInterceptor"
-	PolicyNameAddHeader            PolicyName = "AddHeader"
-	PolicyNameSetHeader            PolicyName = "SetHeader"
-	PolicyNameRemoveHeader         PolicyName = "RemoveHeader"
-	PolicyNameRequestMirror        PolicyName = "RequestMirror"
-	PolicyNameRequestRedirect      PolicyName = "RequestRedirect"
-	PolicyNameModelBasedRoundRobin PolicyName = "ModelBasedRoundRobin"
+	PolicyNameBackendJWT             PolicyName = "BackendJwt"
+	PolicyLuaInterceptor             PolicyName = "LuaInterceptor"
+	PolicyWASMInterceptor            PolicyName = "WASMInterceptor"
+	PolicyNameAddHeader              PolicyName = "AddHeader"
+	PolicyNameSetHeader              PolicyName = "SetHeader"
+	PolicyNameRemoveHeader           PolicyName = "RemoveHeader"
+	PolicyNameRequestMirror          PolicyName = "RequestMirror"
+	PolicyNameRequestRedirect        PolicyName = "RequestRedirect"
+	PolicyNameModelBasedRoundRobin   PolicyName = "ModelBasedRoundRobin"
+	PolicyNameWordCountGuardrail     PolicyName = "WordCountGuardrail"
+	PolicyNameSentenceCountGuardrail PolicyName = "SentenceCountGuardrail"
+	PolicyNameContentLengthGuardrail PolicyName = "ContentLengthGuardrail"
+	PolicyNamePIIMaskingGuardrail    PolicyName = "PIIMaskingGuardrail"
+	PolicyNameURLGuardrail           PolicyName = "URLGuardrail"
+	PolicyNameRegexGuardrail         PolicyName = "RegexGuardrail"
 )
 
 // BaseOperationPolicy represents common configuration of all policies.
@@ -324,6 +330,7 @@ type APKRequestOperationPolicy struct {
 	RequestMirrorPolicy        *RequestMirrorPolicy        `json:"requestMirrorPolicy,omitempty" yaml:"requestMirrorPolicy,omitempty"`
 	RequestRedirectPolicy      *RequestRedirectPolicy      `json:"requestRedirectPolicy,omitempty" yaml:"requestRedirectPolicy,omitempty"`
 	ModelBasedRoundRobinPolicy *ModelBasedRoundRobinPolicy `json:"modelBasedRoundRobinPolicy,omitempty" yaml:"modelBasedRoundRobinPolicy,omitempty"`
+	AIGuardrailPolicy          *CommonPolicy               `json:"aiGuardrailPolicy,omitempty" yaml:"aiGuardrailPolicy,omitempty"`
 }
 
 // APKResponseOperationPolicy represents response operation policies
@@ -331,6 +338,7 @@ type APKResponseOperationPolicy struct {
 	LuaInterceptorPolicy  *LuaInterceptorPolicy  `json:"luaInterceptorPolicy,omitempty" yaml:"luaInterceptorPolicy,omitempty"`
 	WASMInterceptorPolicy *WASMInterceptorPolicy `json:"wasmInterceptorPolicy,omitempty" yaml:"wasmInterceptorPolicy,omitempty"`
 	HeaderModifierPolicy  *HeaderModifierPolicy  `json:"headerModifierPolicy,omitempty" yaml:"headerModifierPolicy,omitempty"`
+	AIGuardrailPolicy     *CommonPolicy          `json:"aiGuardrailPolicy,omitempty" yaml:"aiGuardrailPolicy,omitempty"`
 }
 
 // GetPolicyName implements APKOperationPolicy interface
@@ -430,6 +438,13 @@ type BackendJWTPolicyParameters struct {
 	CustomClaims     []CustomClaims `json:"customClaims,omitempty" yaml:"customClaims,omitempty"`
 }
 
+// CustomClaims represents configuration for Custom Claims.
+type CustomClaims struct {
+	Claim string `json:"claim" yaml:"claim"`
+	Value string `json:"value" yaml:"value"`
+	Type  string `json:"type" yaml:"type"`
+}
+
 // ModelBasedRoundRobinPolicy represents model based round robin policy configuration for an operation.
 type ModelBasedRoundRobinPolicy struct {
 	BaseOperationPolicy
@@ -450,11 +465,16 @@ type ModelRouting struct {
 	Weight   int    `json:"weight" yaml:"weight"`
 }
 
-// CustomClaims represents configuration for Custom Claims.
-type CustomClaims struct {
-	Claim string `json:"claim" yaml:"claim"`
+// CommonPolicy represents AI Guardrail policy configuration for an operation.
+type CommonPolicy struct {
+	BaseOperationPolicy
+	Parameters []CommonPolicyParameters `json:"parameters" yaml:"parameters"`
+}
+
+// CommonPolicyParameters represents configuration for AI Guardrail policy parameters.
+type CommonPolicyParameters struct {
+	Key   string `json:"key" yaml:"key"`
 	Value string `json:"value" yaml:"value"`
-	Type  string `json:"type" yaml:"type"`
 }
 
 // Helper methods for handling union types
@@ -488,6 +508,10 @@ func (p *APKRequestOperationPolicy) UnmarshalJSON(data []byte) error {
 	case PolicyNameModelBasedRoundRobin:
 		p.ModelBasedRoundRobinPolicy = &ModelBasedRoundRobinPolicy{}
 		return json.Unmarshal(data, p.ModelBasedRoundRobinPolicy)
+	case PolicyNameWordCountGuardrail, PolicyNameSentenceCountGuardrail, PolicyNameContentLengthGuardrail,
+		PolicyNamePIIMaskingGuardrail, PolicyNameURLGuardrail, PolicyNameRegexGuardrail:
+		p.AIGuardrailPolicy = &CommonPolicy{}
+		return json.Unmarshal(data, p.AIGuardrailPolicy)
 	}
 
 	return nil
@@ -510,6 +534,10 @@ func (p *APKResponseOperationPolicy) UnmarshalJSON(data []byte) error {
 	case PolicyNameAddHeader, PolicyNameSetHeader, PolicyNameRemoveHeader:
 		p.HeaderModifierPolicy = &HeaderModifierPolicy{}
 		return json.Unmarshal(data, p.HeaderModifierPolicy)
+	case PolicyNameWordCountGuardrail, PolicyNameSentenceCountGuardrail, PolicyNameContentLengthGuardrail,
+		PolicyNamePIIMaskingGuardrail, PolicyNameURLGuardrail, PolicyNameRegexGuardrail:
+		p.AIGuardrailPolicy = &CommonPolicy{}
+		return json.Unmarshal(data, p.AIGuardrailPolicy)
 	}
 
 	return nil
@@ -538,6 +566,9 @@ func (p *APKRequestOperationPolicy) GetActivePolicy() APKOperationPolicy {
 	if p.ModelBasedRoundRobinPolicy != nil {
 		return p.ModelBasedRoundRobinPolicy
 	}
+	if p.AIGuardrailPolicy != nil {
+		return p.AIGuardrailPolicy
+	}
 	return nil
 }
 
@@ -551,6 +582,9 @@ func (p *APKResponseOperationPolicy) GetActivePolicy() APKOperationPolicy {
 	}
 	if p.HeaderModifierPolicy != nil {
 		return p.HeaderModifierPolicy
+	}
+	if p.AIGuardrailPolicy != nil {
+		return p.AIGuardrailPolicy
 	}
 	return nil
 }

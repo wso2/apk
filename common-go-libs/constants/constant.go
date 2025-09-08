@@ -204,3 +204,8 @@ const (
 	// LabelKGWCPInitiated is the label key for indicating if the KGW was initiated by the control plane.
 	LabelKGWCPInitiated = "kgw.wso2.com/cpInitiated"
 )
+
+const (
+	DIRECTION_REQUEST  = "Request"
+	DIRECTION_RESPONSE = "Response"
+)

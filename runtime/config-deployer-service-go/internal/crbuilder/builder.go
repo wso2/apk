@@ -1030,6 +1030,10 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								}
 								routePoliciesL[modelBasedRoundRobinPolicy.Name] = modelBasedRoundRobinPolicy
 								objects = append(objects, modelBasedRoundRobinPolicy)
+							case *model.CommonPolicy:
+								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.DIRECTION_REQUEST)
+								routePoliciesL[aiGuardrailPolicy.Name] = aiGuardrailPolicy
+								objects = append(objects, aiGuardrailPolicy)
 							}
 						}
 					}
@@ -1059,6 +1063,10 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								}
 							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
 								interceptorPolicyList = append(interceptorPolicyList, &policy)
+							case *model.CommonPolicy:
+								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.DIRECTION_RESPONSE)
+								routePoliciesL[aiGuardrailPolicy.Name] = aiGuardrailPolicy
+								objects = append(objects, aiGuardrailPolicy)
 							}
 						}
 					}
@@ -2509,6 +2517,67 @@ func generateModelClusterPairs(routing []model.ModelRouting) (string, error) {
 	}
 
 	return string(jsonBytes), nil
+}
+
+// generateAIGuardrailPolicy generates a RoutePolicy for AI Guardrail.
+func generateAIGuardrailPolicy(policy *model.CommonPolicy, direction string) *dpv2alpha1.RoutePolicy {
+	mediationPolicyName := getAIGuardrailPolicyName(policy.PolicyName)
+	parameterList := make([]*dpv2alpha1.Parameter, 0, len(policy.Parameters))
+	for _, param := range policy.Parameters {
+		parameterList = append(parameterList, &dpv2alpha1.Parameter{
+			Key:   param.Key,
+			Value: param.Value,
+		})
+	}
+	aiGuardrailPolicy := &dpv2alpha1.Mediation{
+		PolicyName:    mediationPolicyName,
+		PolicyID:      "",
+		PolicyVersion: "",
+		Parameters:    parameterList,
+	}
+	name := util.GeneratePolicyHash(policy)
+	var requestMediation, responseMediation []*dpv2alpha1.Mediation
+	if direction == constantscommon.DIRECTION_REQUEST {
+		requestMediation = []*dpv2alpha1.Mediation{aiGuardrailPolicy}
+		responseMediation = make([]*dpv2alpha1.Mediation, 0)
+	} else {
+		requestMediation = make([]*dpv2alpha1.Mediation, 0)
+		responseMediation = []*dpv2alpha1.Mediation{aiGuardrailPolicy}
+	}
+	routePolicy := &dpv2alpha1.RoutePolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
+			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+		},
+		Spec: dpv2alpha1.RoutePolicySpec{
+			RequestMediation:  requestMediation,
+			ResponseMediation: responseMediation,
+		},
+	}
+	return routePolicy
+}
+
+// getAIGuardrailPolicyName maps the policy name to the corresponding mediation constant
+func getAIGuardrailPolicyName(policyName model.PolicyName) string {
+	switch policyName {
+	case model.PolicyNameWordCountGuardrail:
+		return constantscommon.MediationWordCountGuardrail
+	case model.PolicyNameSentenceCountGuardrail:
+		return constantscommon.MediationSentenceCountGuardrail
+	case model.PolicyNameContentLengthGuardrail:
+		return constantscommon.MediationContentLengthGuardrail
+	case model.PolicyNamePIIMaskingGuardrail:
+		return constantscommon.MediationPIIMaskingGuardrail
+	case model.PolicyNameURLGuardrail:
+		return constantscommon.MediationURLGuardrail
+	case model.PolicyNameRegexGuardrail:
+		return constantscommon.MediationRegexGuardrail
+	default:
+		return string(policyName)
+	}
 }
 
 func convertMapToK8sService(endpoint interface{}) (*model.K8sService, error) {
