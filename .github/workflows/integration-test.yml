@@ -460,6 +460,7 @@ jobs:
         --set image.tag=${{ github.sha }} \
         --set controlPlane.serviceURL=https://apim-wso2am-acp-1-service.apk.svc.cluster.local:9443/ \
         --set controlPlane.eventListeningEndpoints="amqp://admin:admin@apim-wso2am-acp-1-service.apk.svc.cluster.local:5672?retries='10'&connectdelay='30'" \
+        --set controlPlane.certificates.caCertSecretName=kgw-apim-connector-test-cert \
         --set dataPlane.k8ResourceEndpoint=https://apk-wso2-kgw-config-ds-service.apk.svc.cluster.local:9443/api/configurator/apis/generate-k8s-resources \
         --set dataPlane.namespace=apk
         kubectl get pods -n apk
