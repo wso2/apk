@@ -208,6 +208,6 @@ const (
 )
 
 const (
-	DIRECTION_REQUEST  = "Request"
-	DIRECTION_RESPONSE = "Response"
+	REQUEST_FLOW  = "Request"
+	RESPONSE_FLOW = "Response"
 )

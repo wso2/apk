@@ -234,13 +234,13 @@ func ProcessOperationPolicies(operation *model.APKOperations) []string {
 
 	if len(operation.OperationPolicies.Request) > 0 {
 		requestPolicyNames := extractRequestPolicyNames(operation.OperationPolicies.Request)
-		requestKeyParts := buildKeyParts(requestPolicyNames, constantscommon.DIRECTION_REQUEST)
+		requestKeyParts := buildKeyParts(requestPolicyNames, constantscommon.REQUEST_FLOW)
 		allKeyParts = append(allKeyParts, requestKeyParts...)
 	}
 
 	if len(operation.OperationPolicies.Response) > 0 {
 		responsePolicyNames := extractResponsePolicyNames(operation.OperationPolicies.Response)
-		responseKeyParts := buildKeyParts(responsePolicyNames, constantscommon.DIRECTION_RESPONSE)
+		responseKeyParts := buildKeyParts(responsePolicyNames, constantscommon.RESPONSE_FLOW)
 		allKeyParts = append(allKeyParts, responseKeyParts...)
 	}
 

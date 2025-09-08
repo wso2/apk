@@ -1045,7 +1045,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								routePoliciesL[modelBasedRoundRobinPolicy.Name] = modelBasedRoundRobinPolicy
 								objects = append(objects, modelBasedRoundRobinPolicy)
 							case *model.CommonPolicy:
-								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.DIRECTION_REQUEST)
+								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.REQUEST_FLOW)
 								routePoliciesL[aiGuardrailPolicy.Name] = aiGuardrailPolicy
 								objects = append(objects, aiGuardrailPolicy)
 							}
@@ -1078,7 +1078,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
 								interceptorPolicyList = append(interceptorPolicyList, &policy)
 							case *model.CommonPolicy:
-								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.DIRECTION_RESPONSE)
+								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.RESPONSE_FLOW)
 								routePoliciesL[aiGuardrailPolicy.Name] = aiGuardrailPolicy
 								objects = append(objects, aiGuardrailPolicy)
 							}
@@ -2643,7 +2643,7 @@ func generateAIGuardrailPolicy(policy *model.CommonPolicy, direction string) *dp
 	}
 	name := util.GeneratePolicyHash(policy)
 	var requestMediation, responseMediation []*dpv2alpha1.Mediation
-	if direction == constantscommon.DIRECTION_REQUEST {
+	if direction == constantscommon.REQUEST_FLOW {
 		requestMediation = []*dpv2alpha1.Mediation{aiGuardrailPolicy}
 		responseMediation = make([]*dpv2alpha1.Mediation, 0)
 	} else {
