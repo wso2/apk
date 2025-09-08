@@ -22,9 +22,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"github.com/wso2/apk/config-deployer-service-go/internal/model"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"sort"
 	"strings"
 )
@@ -231,13 +234,13 @@ func ProcessOperationPolicies(operation *model.APKOperations) []string {
 
 	if len(operation.OperationPolicies.Request) > 0 {
 		requestPolicyNames := extractRequestPolicyNames(operation.OperationPolicies.Request)
-		requestKeyParts := buildKeyParts(requestPolicyNames, "request")
+		requestKeyParts := buildKeyParts(requestPolicyNames, constantscommon.DIRECTION_REQUEST)
 		allKeyParts = append(allKeyParts, requestKeyParts...)
 	}
 
 	if len(operation.OperationPolicies.Response) > 0 {
 		responsePolicyNames := extractResponsePolicyNames(operation.OperationPolicies.Response)
-		responseKeyParts := buildKeyParts(responsePolicyNames, "response")
+		responseKeyParts := buildKeyParts(responsePolicyNames, constantscommon.DIRECTION_RESPONSE)
 		allKeyParts = append(allKeyParts, responseKeyParts...)
 	}
 
@@ -263,6 +266,10 @@ func extractRequestPolicyNames(policies []model.APKRequestOperationPolicy) map[s
 			policyHash := GeneratePolicyHash(backendJWTPolicy)
 			addPolicyName(policyNames, "backendJwt", policyHash)
 		}
+		if aiGuardrailPolicy := policy.AIGuardrailPolicy; aiGuardrailPolicy != nil {
+			policyHash := GeneratePolicyHash(aiGuardrailPolicy)
+			addPolicyName(policyNames, "aiGuardrail", policyHash)
+		}
 	}
 
 	// Sort all policy name slices
@@ -283,6 +290,10 @@ func extractResponsePolicyNames(policies []model.APKResponseOperationPolicy) map
 		}
 		if wasmPolicy := policy.WASMInterceptorPolicy; wasmPolicy != nil {
 			addPolicyName(policyNames, "wasmInterceptor", wasmPolicy.Parameters.Name)
+		}
+		if aiGuardrailPolicy := policy.AIGuardrailPolicy; aiGuardrailPolicy != nil {
+			policyHash := GeneratePolicyHash(aiGuardrailPolicy)
+			addPolicyName(policyNames, "aiGuardrail", policyHash)
 		}
 	}
 
@@ -306,10 +317,10 @@ func addPolicyName(policyNames map[string][]string, policyType, name string) {
 func buildKeyParts(policyNames map[string][]string, direction string) []string {
 	var keyParts []string
 
-	policyTypes := []string{"luaInterceptor", "wasmInterceptor", "modelBasedRoundRobin", "backendJwt"}
+	policyTypes := []string{"luaInterceptor", "wasmInterceptor", "modelBasedRoundRobin", "backendJwt", "aiGuardrail"}
 
 	for _, policyType := range policyTypes {
-		keyName := fmt.Sprintf("%s%sPolicyNames", direction, strings.Title(policyType))
+		keyName := fmt.Sprintf("%s%sPolicyNames", direction, cases.Title(language.Und).String(policyType))
 
 		if names := policyNames[policyType]; len(names) > 0 {
 			keyParts = append(keyParts, fmt.Sprintf("%s:%s", keyName, strings.Join(names, ",")))

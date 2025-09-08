@@ -389,7 +389,13 @@
             "BackendJwt",
             "RequestMirror",
             "RequestRedirect",
-            "ModelBasedRoundRobin"
+            "ModelBasedRoundRobin",
+            "WordCountGuardrail",
+            "SentenceCountGuardrail",
+            "ContentLengthGuardrail",
+            "PIIMaskingGuardrail",
+            "URLGuardrail",
+            "RegexGuardrail"
           ]
         },
         "policyVersion": {
@@ -402,7 +408,6 @@
           "description": "The ID of the operation policy."
         },
         "parameters": {
-          "type": "object",
           "oneOf": [
             {
               "$ref": "#/schemas/LuaInterceptorProperties"
@@ -424,6 +429,9 @@
             },
             {
               "$ref": "#/schemas/ModelBasedRoundRobinProperties"
+            },
+            {
+              "$ref": "#/schemas/CommonPolicyProperties"
             }
           ]
         }
@@ -445,7 +453,13 @@
             "RemoveHeader",
             "SetHeader",
             "LuaInterceptor",
-            "WASMInterceptor"
+            "WASMInterceptor",
+            "WordCountGuardrail",
+            "SentenceCountGuardrail",
+            "ContentLengthGuardrail",
+            "PIIMaskingGuardrail",
+            "URLGuardrail",
+            "RegexGuardrail"
           ]
         },
         "policyVersion": {
@@ -458,7 +472,6 @@
           "description": "The ID of the operation policy."
         },
         "parameters": {
-          "type": "object",
           "oneOf": [
             {
               "$ref": "#/schemas/LuaInterceptorProperties"
@@ -468,6 +481,9 @@
             },
             {
               "$ref": "#/schemas/HeaderModifierProperties"
+            },
+            {
+              "$ref": "#/schemas/CommonPolicyProperties"
             }
           ]
         }
@@ -1095,6 +1111,32 @@
           "type": "string"
         }
       },
+      "additionalProperties": false
+    },
+    "CommonPolicyProperties": {
+      "title": "Common Policy Parameters",
+      "type": "array",
+      "items": {
+        "$ref": "#/schemas/CommonPolicy_parameter"
+      }
+    },
+    "CommonPolicy_parameter": {
+      "title": "Common Policy Parameter",
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "description": "The key of the parameter."
+        },
+        "value": {
+          "type": "string",
+          "description": "The value of the parameter."
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
       "additionalProperties": false
     },
     "KeyManager": {
