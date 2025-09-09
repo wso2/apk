@@ -234,8 +234,8 @@ func createRouteMetadataList(apiResourceBundle *dto.APIResourceBundle, environme
 				apiResourceBundle.Organization),
 		},
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.WSO2KubernetesGatewayRouteMetadataKind,
-			APIVersion: constants.WSO2KubernetesGatewayRouteMetadataAPIVersion,
+			Kind:       constantscommon.KindRouteMetadata,
+			APIVersion: constantscommon.WSO2KubernetesGatewayV2Alpha1,
 		},
 		Spec: dpv2alpha1.RouteMetadataSpec{
 			API: dpv2alpha1.API{
@@ -258,7 +258,7 @@ func createRouteMetadataList(apiResourceBundle *dto.APIResourceBundle, environme
 				UUID: apiResourceBundle.APKConf.ID,
 				DefinitionFileRef: &gwapiv1a2.LocalObjectReference{
 					Name: gatewayv1.ObjectName(definitionCMName),
-					Kind: gatewayv1.Kind(constants.K8sKindConfigMap),
+					Kind: gatewayv1.Kind(constantscommon.KindConfigMap),
 				},
 			},
 		},
@@ -290,8 +290,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				apiResourceBundle.Organization),
 		},
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
-			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+			Kind:       constantscommon.KindRoutePolicy,
+			APIVersion: constantscommon.WSO2KubernetesGatewayV2Alpha1,
 		},
 		Spec: dpv2alpha1.RoutePolicySpec{
 			RequestMediation:  make([]*dpv2alpha1.Mediation, 0),
@@ -320,8 +320,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				Name: utilscommon.CreateAIProviderName(apiResourceBundle.APKConf.AIProvider.Name, apiResourceBundle.APKConf.AIProvider.APIVersion),
 			},
 			TypeMeta: metav1.TypeMeta{
-				Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
-				APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+				Kind:       constantscommon.KindRoutePolicy,
+				APIVersion: constantscommon.WSO2KubernetesGatewayV2Alpha1,
 			},
 		}
 		routePolicies[constants.AIProviderRoutePolicy] = aiProviderRoutePolicy
@@ -341,7 +341,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 					Key: constantscommon.GraphQLPolicyKeySchema,
 					ValueRef: &gwapiv1a2.LocalObjectReference{
 						Name: gwapiv1a2.ObjectName(gqlSchemaConfigMapName),
-						Kind: constants.K8sKindConfigMap,
+						Kind: constantscommon.KindConfigMap,
 					},
 				},
 			},
@@ -420,8 +420,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 					LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 						Name:  gwapiv1a2.ObjectName(grpcRoute.GetName()),
-						Kind:  constants.K8sKindGRPCRoute,
-						Group: constants.K8sGroupNetworking,
+						Kind:  constantscommon.KindGRPCRoute,
+						Group: constantscommon.K8sGroupNetworking,
 					},
 				})
 			}
@@ -437,9 +437,9 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		}
 	}
 
-	kindType := constants.K8sKindHTTPRoute
+	kindType := constantscommon.KindHTTPRoute
 	if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRPC {
-		kindType = constants.K8sKindGRPCRoute
+		kindType = constantscommon.KindGRPCRoute
 	}
 
 	// AI ratelimit
@@ -455,8 +455,8 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				targetRefs = append(targetRefs, gwapiv1a2.LocalPolicyTargetReferenceWithSectionName{
 					LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 						Name:  gwapiv1a2.ObjectName(httpRoute.GetName()),
-						Kind:  constants.K8sKindHTTPRoute,
-						Group: constants.K8sGroupNetworking,
+						Kind:  constantscommon.KindHTTPRoute,
+						Group: constantscommon.K8sGroupNetworking,
 					},
 				})
 			}
@@ -476,9 +476,9 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	// Ratelimit
 	if apiResourceBundle.APKConf.RateLimit != nil {
 		var targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName
-		kindType := constants.K8sKindHTTPRoute
+		kindType := constantscommon.KindHTTPRoute
 		if apiResourceBundle.APKConf.Type == constants.API_TYPE_GRPC {
-			kindType = constants.K8sKindGRPCRoute
+			kindType = constantscommon.KindGRPCRoute
 		}
 		for _, httpRoutes := range routes {
 			for _, httpRoute := range httpRoutes {
@@ -486,7 +486,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 					LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 						Name:  gwapiv1a2.ObjectName(httpRoute.GetName()),
 						Kind:  gwapiv1a2.Kind(kindType),
-						Group: constants.K8sGroupNetworking,
+						Group: constantscommon.K8sGroupNetworking,
 					},
 				})
 			}
@@ -528,7 +528,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 						LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 							Name:  gwapiv1a2.ObjectName(httpRoute.GetName()),
 							Kind:  gwapiv1a2.Kind(kindType),
-							Group: constants.K8sGroupNetworking,
+							Group: constantscommon.K8sGroupNetworking,
 						},
 					})
 				}
@@ -553,6 +553,9 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	cors := apiResourceBundle.APKConf.CorsConfiguration
 	if cors != nil && !cors.CorsConfigurationEnabled {
 		cors = nil
+	} else if cors != nil && cors.CorsConfigurationEnabled {
+		optionsHttpRoute := GenerateOptionsHTTPRoute(apiResourceBundle, environment, routePolicies, routeMetadataList)
+		objects = append(objects, optionsHttpRoute)
 	}
 
 	// Operation level security
@@ -567,7 +570,7 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 				LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 					Name:  gwapiv1a2.ObjectName(httpRoute.GetName()),
 					Kind:  gwapiv1a2.Kind(kindType),
-					Group: constants.K8sGroupNetworking,
+					Group: constantscommon.K8sGroupNetworking,
 				},
 			})
 		}
@@ -615,8 +618,8 @@ func GenerateGRPCRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 			routeName := getHTTPRouteCRName(crName, i, j, withVersion)
 			route := gatewayv1.GRPCRoute{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "gateway.networking.k8s.io/v1",
-					Kind:       "GRPCRoute",
+					APIVersion: constantscommon.K8sGatewayAPIV1,
+					Kind:       constantscommon.KindGRPCRoute,
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: routeName,
@@ -638,8 +641,8 @@ func GenerateGRPCRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						ParentRefs: []gatewayv1.ParentReference{
 							{
 								Name:        gatewayv1.ObjectName(parentName),
-								Group:       ptrTo(gatewayv1.Group(constants.K8sGroupNetworking)),
-								Kind:        ptrTo(gatewayv1.Kind(constants.K8sKindGateway)),
+								Group:       ptrTo(gatewayv1.Group(constantscommon.K8sGroupNetworking)),
+								Kind:        ptrTo(gatewayv1.Kind(constantscommon.KindGateway)),
 								Namespace:   ptrTo(gatewayv1.Namespace(parentNamespace)),
 								SectionName: ptrTo(gatewayv1.SectionName(parentSectionName)),
 							},
@@ -709,8 +712,8 @@ func GenerateGRPCRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						{
 							LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 								Name:  gwapiv1a2.ObjectName(backend.Name),
-								Kind:  constants.K8sKindBackend,
-								Group: constants.K8sGroupEnvoyGateway,
+								Kind:  constantscommon.KindBackend,
+								Group: constantscommon.EnvoyGateway,
 							},
 						},
 					})
@@ -828,8 +831,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 			routeName := getHTTPRouteCRName(crName, i, j, withVersion)
 			route := gatewayv1.HTTPRoute{
 				TypeMeta: metav1.TypeMeta{
-					APIVersion: "gateway.networking.k8s.io/v1",
-					Kind:       "HTTPRoute",
+					APIVersion: constantscommon.K8sGatewayAPIV1,
+					Kind:       constantscommon.KindHTTPRoute,
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name: routeName,
@@ -851,8 +854,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						ParentRefs: []gatewayv1.ParentReference{
 							{
 								Name:        gatewayv1.ObjectName(parentName),
-								Group:       ptrTo(gatewayv1.Group(constants.K8sGroupNetworking)),
-								Kind:        ptrTo(gatewayv1.Kind(constants.K8sKindGateway)),
+								Group:       ptrTo(gatewayv1.Group(constantscommon.K8sGroupNetworking)),
+								Kind:        ptrTo(gatewayv1.Kind(constantscommon.KindGateway)),
 								Namespace:   ptrTo(gatewayv1.Namespace(parentNamespace)),
 								SectionName: ptrTo(gatewayv1.SectionName(parentSectionName)),
 							},
@@ -1110,8 +1113,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,
 						ExtensionRef: &gatewayv1.LocalObjectReference{
-							Group: constants.WSO2KubernetesGatewayRoutePolicyGroup,
-							Kind:  constants.WSO2KubernetesGatewayRoutePolicyKind,
+							Group: constantscommon.WSO2KubernetesGateway,
+							Kind:  constantscommon.KindRoutePolicy,
 							Name:  gatewayv1.ObjectName(policy.Name),
 						},
 					})
@@ -1120,8 +1123,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,
 						ExtensionRef: &gatewayv1.LocalObjectReference{
-							Group: constants.WSO2KubernetesGatewayRouteMetadataGroup,
-							Kind:  constants.WSO2KubernetesGatewayRouteMetadataKind,
+							Group: constantscommon.WSO2KubernetesGateway,
+							Kind:  constantscommon.KindRouteMetadata,
 							Name:  gatewayv1.ObjectName(metadata.Name),
 						},
 					})
@@ -1166,8 +1169,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						hrfName = fmt.Sprintf("%s-%s", routeName, pathIdentifier)
 						hrf := eg.HTTPRouteFilter{
 							TypeMeta: metav1.TypeMeta{
-								Kind:       constants.EnvoyGatewayHTTPRouteFilter,
-								APIVersion: constants.EnvoyGatewayHTTPRouteFilterAPIVersion,
+								Kind:       constantscommon.KindHTTPRouteFilter,
+								APIVersion: constantscommon.EnvoyGatewayV1Alpha1,
 							},
 							ObjectMeta: metav1.ObjectMeta{
 								Name: hrfName,
@@ -1192,8 +1195,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
 						Type: gatewayv1.HTTPRouteFilterExtensionRef,
 						ExtensionRef: &gatewayv1.LocalObjectReference{
-							Group: constants.K8sGroupEnvoyGateway,
-							Kind:  constants.EnvoyGatewayHTTPRouteFilter,
+							Group: constantscommon.EnvoyGateway,
+							Kind:  constantscommon.KindHTTPRouteFilter,
 							Name:  gatewayv1.ObjectName(hrfName),
 						},
 					})
@@ -1255,8 +1258,8 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						{
 							LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 								Name:  gwapiv1a2.ObjectName(backend.Name),
-								Kind:  constants.K8sKindBackend,
-								Group: constants.K8sGroupEnvoyGateway,
+								Kind:  constantscommon.KindBackend,
+								Group: constantscommon.EnvoyGateway,
 							},
 						},
 					})
@@ -1265,6 +1268,142 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 		}
 	}
 	return routesMap, objects
+}
+
+// GenerateOptionsHTTPRoute generates an HTTPRoute object for handling OPTIONS requests for CORS preflight.
+func GenerateOptionsHTTPRoute(bundle *dto.APIResourceBundle, environment string, routePolicies map[string]*dpv2alpha1.RoutePolicy,
+	routeMetadataList []*dpv2alpha1.RouteMetadata) client.Object {
+	crName := util.GenerateCRName(bundle.APKConf.Name, environment, bundle.APKConf.Version, bundle.Organization)
+	parentName := config.GetConfig().ParentGatewayName
+	parentNamespace := bundle.Namespace
+	parentSectionName := config.GetConfig().ParentGatewaySectionName
+	isDefaultVersioned := bundle.APKConf.DefaultVersion
+	baseRouteName := getHTTPRouteCRName(crName, 0, 0, !isDefaultVersioned)
+	optionsRouteName := baseRouteName + "-options"
+	route := gatewayv1.HTTPRoute{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: constantscommon.K8sGatewayAPIV1,
+			Kind:       constantscommon.KindHTTPRoute,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: optionsRouteName,
+			Annotations: map[string]string{
+				constants.K8sHTTPRouteEnvTypeAnnotation: strings.ToUpper(environment),
+			},
+		},
+		Spec: gatewayv1.HTTPRouteSpec{
+			Hostnames: func() []gatewayv1.Hostname {
+				var hostnames []gatewayv1.Hostname
+				gatewayHostName := config.GetConfig().GatewayHostName
+				if bundle.APKConf.EndpointConfigurations.Production != nil && len(bundle.APKConf.EndpointConfigurations.Production) > 0 {
+					productionHostname := fmt.Sprintf("%s.%s", bundle.Organization, gatewayHostName)
+					hostnames = append(hostnames, gatewayv1.Hostname(productionHostname))
+				}
+				if bundle.APKConf.EndpointConfigurations.Sandbox != nil && len(bundle.APKConf.EndpointConfigurations.Sandbox) > 0 {
+					sandboxHostname := fmt.Sprintf("%s.%s.%s", bundle.Organization, constants.SANDBOX_TYPE, gatewayHostName)
+					hostnames = append(hostnames, gatewayv1.Hostname(sandboxHostname))
+				}
+				return hostnames
+			}(),
+			CommonRouteSpec: gatewayv1.CommonRouteSpec{
+				ParentRefs: []gatewayv1.ParentReference{
+					{
+						Name:        gatewayv1.ObjectName(parentName),
+						Group:       ptrTo(gatewayv1.Group(constantscommon.K8sGroupNetworking)),
+						Kind:        ptrTo(gatewayv1.Kind(constantscommon.KindGateway)),
+						Namespace:   ptrTo(gatewayv1.Namespace(parentNamespace)),
+						SectionName: ptrTo(gatewayv1.SectionName(parentSectionName)),
+					},
+				},
+			},
+			Rules: []gatewayv1.HTTPRouteRule{},
+		},
+	}
+	ruleWithVersion := gatewayv1.HTTPRouteRule{}
+	var optionsRouteRules []gatewayv1.HTTPRouteRule
+	apiBasePath := fmt.Sprintf("%s/%s",
+		strings.TrimSuffix(bundle.APKConf.BasePath, "/"),
+		strings.TrimPrefix(bundle.APKConf.Version, "/"),
+	)
+	ruleWithVersion.Matches = []gatewayv1.HTTPRouteMatch{
+		{
+			Path: &gatewayv1.HTTPPathMatch{
+				Type:  ptrTo(gatewayv1.PathMatchPathPrefix),
+				Value: ptrTo(apiBasePath),
+			},
+			Method: ptrTo(gatewayv1.HTTPMethodOptions),
+		},
+	}
+	optionsRouteRules = append(optionsRouteRules, ruleWithVersion)
+	if isDefaultVersioned {
+		ruleWithoutVersion := gatewayv1.HTTPRouteRule{}
+		apiBasePath = strings.TrimSuffix(bundle.APKConf.BasePath, "/")
+		ruleWithoutVersion.Matches = []gatewayv1.HTTPRouteMatch{
+			{
+				Path: &gatewayv1.HTTPPathMatch{
+					Type:  ptrTo(gatewayv1.PathMatchPathPrefix),
+					Value: ptrTo(apiBasePath),
+				},
+				Method: ptrTo(gatewayv1.HTTPMethodOptions),
+			},
+		}
+		optionsRouteRules = append(optionsRouteRules, ruleWithoutVersion)
+	}
+	for _, rule := range optionsRouteRules {
+		op := bundle.CombinedResources[0].APKOperations[0]
+		var ecs []model.EndpointConfiguration
+		if op.EndpointConfigurations.Sandbox != nil && len(op.EndpointConfigurations.Sandbox) > 0 {
+			ecs = op.EndpointConfigurations.Sandbox
+		}
+		if op.EndpointConfigurations.Production != nil && len(op.EndpointConfigurations.Production) > 0 {
+			ecs = op.EndpointConfigurations.Production
+		}
+		backendHostname, err := extractBackendHostname(op, environment)
+		if err != nil {
+			logger.Sugar().Errorf("Error extracting backend hostname for operation %s: %v", *op.Target, err)
+			continue
+		}
+		backendMap := make(map[string]map[string]*eg.Backend)
+		httpBackendRefs := createBackendRefs(ecs, backendMap, baseRouteName)
+		if len(httpBackendRefs) > 0 {
+			rule.BackendRefs = httpBackendRefs
+		}
+		for _, policy := range routePolicies {
+			rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+				Type: gatewayv1.HTTPRouteFilterExtensionRef,
+				ExtensionRef: &gatewayv1.LocalObjectReference{
+					Group: constantscommon.WSO2KubernetesGateway,
+					Kind:  constantscommon.KindRoutePolicy,
+					Name:  gatewayv1.ObjectName(policy.Name),
+				},
+			})
+		}
+		for _, metadata := range routeMetadataList {
+			rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+				Type: gatewayv1.HTTPRouteFilterExtensionRef,
+				ExtensionRef: &gatewayv1.LocalObjectReference{
+					Group: constantscommon.WSO2KubernetesGateway,
+					Kind:  constantscommon.KindRouteMetadata,
+					Name:  gatewayv1.ObjectName(metadata.Name),
+				},
+			})
+		}
+		urlRewrite := &gatewayv1.HTTPURLRewriteFilter{
+			Path: &gatewayv1.HTTPPathModifier{
+				Type:               gatewayv1.PrefixMatchHTTPPathModifier,
+				ReplacePrefixMatch: ptrTo("/"),
+			},
+		}
+		if backendHostname != "" {
+			urlRewrite.Hostname = ptrTo(gatewayv1.PreciseHostname(backendHostname))
+		}
+		rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
+			Type:       gatewayv1.HTTPRouteFilterURLRewrite,
+			URLRewrite: urlRewrite,
+		})
+		route.Spec.Rules = append(route.Spec.Rules, rule)
+	}
+	return &route
 }
 
 // generateEnvoyExtensionPolicy generates an EnvoyExtensionPolicy for a given LuaInterceptorPolicy or WASMInterceptorPolicy
@@ -1297,8 +1436,8 @@ func generateEnvoyExtensionPolicy(interceptorPolicyList []*model.APKOperationPol
 	policyName := util.SanitizeOrHashName(strings.Join(filterNameList, "-"))
 	luaEnvoyExtensionPolicy := &eg.EnvoyExtensionPolicy{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.EnvoyGatewayExtensionPolicy,
-			APIVersion: constants.EnvoyGatewayExtensionPolicyAPIVersion,
+			Kind:       constantscommon.KindEnvoyExtensionPolicy,
+			APIVersion: constantscommon.EnvoyGatewayV1Alpha1,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: policyName,
@@ -1311,8 +1450,8 @@ func generateEnvoyExtensionPolicy(interceptorPolicyList []*model.APKOperationPol
 					{
 						LocalPolicyTargetReference: gwapiv1a2.LocalPolicyTargetReference{
 							Name:  gwapiv1a2.ObjectName(routeName),
-							Kind:  constants.K8sKindHTTPRoute,
-							Group: constants.K8sGroupNetworking,
+							Kind:  constantscommon.KindHTTPRoute,
+							Group: constantscommon.K8sGroupNetworking,
 						},
 					},
 				},
@@ -1338,7 +1477,7 @@ func createLuaFilter(parameters *model.LuaInterceptorPolicyParameters) (*eg.Lua,
 	return &eg.Lua{
 		Type: luaValueType,
 		ValueRef: &gatewayv1.LocalObjectReference{
-			Kind: constants.K8sKindConfigMap,
+			Kind: constantscommon.KindConfigMap,
 			Name: gatewayv1.ObjectName(*parameters.SourceCodeRef),
 		},
 	}, nil
@@ -1428,7 +1567,7 @@ func createConfigMapForLuaSourceCode(parameters *model.LuaInterceptorPolicyParam
 	return &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
-			Kind:       constants.K8sKindConfigMap,
+			Kind:       constantscommon.KindConfigMap,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: cmName,
@@ -1506,8 +1645,8 @@ func generateBackendTrafficPolicyForAIRatelimit(name string, targetRefs []gwapiv
 	rlConf *model.AIRatelimit) *eg.BackendTrafficPolicy {
 	return &eg.BackendTrafficPolicy{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.EnvoyGatewayBackendTrafficPolicy,
-			APIVersion: constants.EnvoyGatewayBackendTrafficPolicyAPIVersion,
+			Kind:       constantscommon.KindBackendTrafficPolicy,
+			APIVersion: constantscommon.EnvoyGatewayV1Alpha1,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -1531,8 +1670,8 @@ func generateBackendTrafficPolicyForRatelimit(name string, targetRefs []gwapiv1a
 	rlConf *model.RateLimit) *eg.BackendTrafficPolicy {
 	return &eg.BackendTrafficPolicy{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.EnvoyGatewayBackendTrafficPolicy,
-			APIVersion: constants.EnvoyGatewayBackendTrafficPolicyAPIVersion,
+			Kind:       constantscommon.KindBackendTrafficPolicy,
+			APIVersion: constantscommon.EnvoyGatewayV1Alpha1,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -1557,8 +1696,8 @@ func generateBackendTrafficPolicyForRatelimit(name string, targetRefs []gwapiv1a
 func generateBackendTrafficPolicyForGRPC(name string, targetRefs []gwapiv1a2.LocalPolicyTargetReferenceWithSectionName) *eg.BackendTrafficPolicy {
 	return &eg.BackendTrafficPolicy{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.EnvoyGatewayBackendTrafficPolicy,
-			APIVersion: constants.EnvoyGatewayBackendTrafficPolicyAPIVersion,
+			Kind:       constantscommon.KindBackendTrafficPolicy,
+			APIVersion: constantscommon.EnvoyGatewayV1Alpha1,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -1683,8 +1822,8 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 	cors *model.CORSConfiguration, kms []model.KeyManager, auths []model.AuthenticationRequest, namespace string) *eg.SecurityPolicy {
 	sp := &eg.SecurityPolicy{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.K8sKindSecurityPolicy,
-			APIVersion: constants.K8sAPIVersionEnvoyGateway,
+			Kind:       constantscommon.KindSecurityPolicy,
+			APIVersion: constantscommon.EnvoyGatewayV1Alpha1,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -1737,8 +1876,8 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 				provider.RemoteJWKS.BackendRefs = []eg.BackendRef{
 					{
 						BackendObjectReference: gatewayv1.BackendObjectReference{
-							Group:     ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
-							Kind:      ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
+							Group:     ptrTo(gatewayv1.Group(constantscommon.EnvoyGateway)),
+							Kind:      ptrTo(gatewayv1.Kind(constantscommon.KindBackend)),
 							Name:      gatewayv1.ObjectName(*km.K8sBackend.Name),
 							Namespace: ptrTo(gatewayv1.Namespace(*km.K8sBackend.Namespace)),
 							Port:      ptrTo(gatewayv1.PortNumber(*km.K8sBackend.Port)),
@@ -1868,8 +2007,8 @@ func generateBackend(name string, backendEndpoint model.EndpointConfiguration) (
 	}
 	backend := &eg.Backend{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.K8sKindBackend,
-			APIVersion: constants.K8sAPIVersionEnvoyGateway,
+			Kind:       constantscommon.KindBackend,
+			APIVersion: constantscommon.EnvoyGatewayV1Alpha1,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -1943,8 +2082,8 @@ func generateBackendTLSPolicyWithWellKnownCerts(name, host string,
 	wellKnownCerts := gwapiv1a3.WellKnownCACertificatesSystem
 	return &gwapiv1a3.BackendTLSPolicy{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.K8sKindBackendTLSPolicy,
-			APIVersion: constants.K8sAPIVersionBackendTLSPolicy,
+			Kind:       constantscommon.KindBackendTLSPolicy,
+			APIVersion: constantscommon.K8sGroupNetworkingv1Alpha3,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -2080,8 +2219,8 @@ func createBackendRefs(ecs []model.EndpointConfiguration, backendMap map[string]
 			httpBackendRef := gatewayv1.HTTPBackendRef{
 				BackendRef: gatewayv1.BackendRef{
 					BackendObjectReference: gatewayv1.BackendObjectReference{
-						Group: ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
-						Kind:  ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
+						Group: ptrTo(gatewayv1.Group(constantscommon.EnvoyGateway)),
+						Kind:  ptrTo(gatewayv1.Kind(constantscommon.KindBackend)),
 						Name:  gatewayv1.ObjectName(backendMap[scheme][backendID].Name),
 					},
 				},
@@ -2160,8 +2299,8 @@ func createGRPCBackendRefs(ecs []model.EndpointConfiguration, backendMap map[str
 			grpcBackendRef := gatewayv1.GRPCBackendRef{
 				BackendRef: gatewayv1.BackendRef{
 					BackendObjectReference: gatewayv1.BackendObjectReference{
-						Group: ptrTo(gatewayv1.Group(constants.K8sGroupEnvoyGateway)),
-						Kind:  ptrTo(gatewayv1.Kind(constants.K8sKindBackend)),
+						Group: ptrTo(gatewayv1.Group(constantscommon.EnvoyGateway)),
+						Kind:  ptrTo(gatewayv1.Kind(constantscommon.KindBackend)),
 						Name:  gatewayv1.ObjectName(backendMap[scheme][backendID].Name),
 					},
 				},
@@ -2325,8 +2464,8 @@ func createBasicEndpointSecurityMediationPolicy(name string, endpointSecurity *m
 			Name: name,
 		},
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
-			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+			Kind:       constantscommon.KindRoutePolicy,
+			APIVersion: constantscommon.WSO2KubernetesGatewayV2Alpha1,
 		},
 		Spec: dpv2alpha1.RoutePolicySpec{
 			RequestMediation:  []*dpv2alpha1.Mediation{basicAuthMediationPolicy},
@@ -2424,8 +2563,8 @@ func createAPIKeyMediationPolicy(name string, endpointSecurity *model.EndpointSe
 			Name: name,
 		},
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
-			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+			Kind:       constantscommon.KindRoutePolicy,
+			APIVersion: constantscommon.WSO2KubernetesGatewayV2Alpha1,
 		},
 		Spec: dpv2alpha1.RoutePolicySpec{
 			RequestMediation:  []*dpv2alpha1.Mediation{apiKeyMediationPolicy},
@@ -2484,8 +2623,8 @@ func createBackendJWTMediationPolicy(jwtSecurityPolicy *model.BackendJWTPolicy, 
 			Name: name,
 		},
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
-			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+			Kind:       constantscommon.KindRoutePolicy,
+			APIVersion: constantscommon.WSO2KubernetesGatewayV2Alpha1,
 		},
 		Spec: dpv2alpha1.RoutePolicySpec{
 			RequestMediation:  []*dpv2alpha1.Mediation{apiKeyMediationPolicy},
@@ -2588,8 +2727,8 @@ func generateModelBasedRoundRobinPolicy(policy *model.ModelBasedRoundRobinPolicy
 			Name: name,
 		},
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
-			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+			Kind:       constantscommon.KindRoutePolicy,
+			APIVersion: constantscommon.WSO2KubernetesGatewayV2Alpha1,
 		},
 		Spec: dpv2alpha1.RoutePolicySpec{
 			RequestMediation:  []*dpv2alpha1.Mediation{modelBasedRoundRobinPolicy},
@@ -2655,8 +2794,8 @@ func generateAIGuardrailPolicy(policy *model.CommonPolicy, direction string) *dp
 			Name: name,
 		},
 		TypeMeta: metav1.TypeMeta{
-			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
-			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+			Kind:       constantscommon.KindRoutePolicy,
+			APIVersion: constantscommon.WSO2KubernetesGatewayV2Alpha1,
 		},
 		Spec: dpv2alpha1.RoutePolicySpec{
 			RequestMediation:  requestMediation,
@@ -2728,7 +2867,7 @@ func createConfigMapForDefinition(name, definition string) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
-			Kind:       constants.K8sKindConfigMap,
+			Kind:       constantscommon.KindConfigMap,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -2743,7 +2882,7 @@ func createConfigMapForGQlSchema(name, schema string) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
-			Kind:       constants.K8sKindConfigMap,
+			Kind:       constantscommon.KindConfigMap,
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,

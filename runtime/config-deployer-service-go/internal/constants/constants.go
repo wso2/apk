@@ -119,43 +119,8 @@ const (
 )
 
 const (
-	EnvoyGatewayBackendTrafficPolicy           = "BackendTrafficPolicy"
-	EnvoyGatewayBackendTrafficPolicyAPIVersion = "gateway.envoyproxy.io/v1alpha1"
-	EnvoyGatewayExtensionPolicy                = "EnvoyExtensionPolicy"
-	EnvoyGatewayExtensionPolicyAPIVersion      = "gateway.envoyproxy.io/v1alpha1"
-	EnvoyGatewayHTTPRouteFilter                = "HTTPRouteFilter"
-	EnvoyGatewayHTTPRouteFilterAPIVersion      = "gateway.envoyproxy.io/v1alpha1"
-
-	WSO2KubernetesGatewayRouteMetadataAPIVersion = "dp.wso2.com/v2alpha1"
-	WSO2KubernetesGatewayRouteMetadataKind       = "RouteMetadata"
-	WSO2KubernetesGatewayRouteMetadataGroup      = "dp.wso2.com"
-	WSO2KubernetesGatewayRoutePolicyAPIVersion   = "dp.wso2.com/v2alpha1"
-	WSO2KubernetesGatewayRoutePolicyKind         = "RoutePolicy"
-	WSO2KubernetesGatewayRoutePolicyGroup        = "dp.wso2.com"
-
-	K8sKindConfigMap              = "ConfigMap"
-	K8sKindHTTPRoute              = "HTTPRoute"
-	K8sKindGRPCRoute              = "GRPCRoute"
-	K8sKindService                = "Service"
-	K8sKindGateway                = "Gateway"
-	K8sKindBackend                = "Backend"
-	K8sKindSecurityPolicy         = "SecurityPolicy"
-	K8sKindBackendTLSPolicy       = "BackendTLSPolicy"
-	K8sAPIVersionHTTPRoute        = "gateway.networking.k8s.io/v1"
-	K8sGroupEnvoyGateway          = "gateway.envoyproxy.io"
-	K8sAPIVersionEnvoyGateway     = "gateway.envoyproxy.io/v1alpha1"
-	K8sGroupNetworking            = "gateway.networking.k8s.io"
-	K8sGatewayNamespace           = "choreo-egress-gateway"
-	K8sAPIVersionBackendTLSPolicy = "gateway.networking.k8s.io/v1alpha3"
-	K8sKindGatewayExtensionPolicy = "GatewayExtensionPolicy"
-	K8sAPIVersionGatewayExtension = "gateway.choreo.dev/v1alpha1"
-	K8sGroupGatewayExtension      = "gateway.choreo.dev"
-	K8sKindReferenceGrant         = "ReferenceGrant"
-	K8sAPIVersionReferenceGrant   = "gateway.networking.k8s.io/v1beta1"
-
 	K8sHTTPRouteEnvTypeAnnotation = "gateway.envoyproxy.io/kgw-envtype"
-
-	K8sMaxAnnotationLength = 10000
+	K8sMaxAnnotationLength        = 10000
 )
 
 const (
