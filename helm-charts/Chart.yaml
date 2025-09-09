@@ -2,8 +2,8 @@ apiVersion: v2
 name: kubernetes-gateway-helm
 description: A Helm umbrella chart that installs my-app and Envoy Gateway
 type: application
-version: 2.0.0-alpha
-appVersion: "2.0.0-alpha"
+version: 2.0.0-alpha2
+appVersion: "2.0.0-alpha2"
 dependencies:
   - name: gateway-helm
     version: "1.4.2"
