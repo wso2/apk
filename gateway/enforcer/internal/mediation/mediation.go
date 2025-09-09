@@ -39,6 +39,8 @@ const (
 	MediationURLGuardrail = constantscommon.MediationURLGuardrail
 	// MediationRegexGuardrail holds the name of the Regex Guardrail mediation policy.
 	MediationRegexGuardrail = constantscommon.MediationRegexGuardrail
+	// MediationExternalCustom is a sample external custom mediation policy that delegates to a subprocess runner.
+	MediationExternalCustom = "ExternalCustom"
 )
 
 // MediationAndRequestHeaderProcessing defines the mediation and request header processing
@@ -57,6 +59,7 @@ var MediationAndRequestHeaderProcessing = map[string]bool{
 	MediationPIIMaskingGuardrail:    false,
 	MediationURLGuardrail:           false,
 	MediationRegexGuardrail:         false,
+	MediationExternalCustom:         true,
 }
 
 // MediationAndRequestBodyProcessing defines the mediation and request header processing
@@ -75,6 +78,7 @@ var MediationAndRequestBodyProcessing = map[string]bool{
 	MediationPIIMaskingGuardrail:    true,
 	MediationURLGuardrail:           true,
 	MediationRegexGuardrail:         true,
+	MediationExternalCustom:         true,
 }
 
 // MediationAndResponseHeaderProcessing defines the mediation and request header processing
@@ -94,6 +98,7 @@ var MediationAndResponseHeaderProcessing = map[string]bool{
 	MediationPIIMaskingGuardrail:    false,
 	MediationURLGuardrail:           false,
 	MediationRegexGuardrail:         false,
+	MediationExternalCustom:         true,
 }
 
 // MediationAndResponseBodyProcessing defines the mediation and response body processing
@@ -113,6 +118,7 @@ var MediationAndResponseBodyProcessing = map[string]bool{
 	MediationPIIMaskingGuardrail:    true,
 	MediationURLGuardrail:           true,
 	MediationRegexGuardrail:         true,
+	MediationExternalCustom:         true,
 }
 
 // Result holds the result of mediation processing.
@@ -206,6 +212,10 @@ func CreateMediation(mediationFromCluster *dpv2alpha1.Mediation) Mediation {
 		return mediation
 	case MediationRegexGuardrail:
 		mediation := NewRegexGuardrail(mediationFromCluster)
+		MediationMap[mediationFromCluster] = mediation
+		return mediation
+	case MediationExternalCustom:
+		mediation := NewExternalCustom(mediationFromCluster)
 		MediationMap[mediationFromCluster] = mediation
 		return mediation
 	default:
