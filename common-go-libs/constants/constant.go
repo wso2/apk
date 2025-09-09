@@ -158,6 +158,8 @@ const (
 	MediationAITokenRatelimit = "AITokenRatelimit"
 	// MediationAIProvider holds the name of the AI Provider mediation policy.
 	MediationAIProvider = "AIProvider"
+	// MediationBackendBasicSecurity holds the name of the Backend Basic Auth mediation policy.
+	MediationBackendBasicSecurity = "BackendBasicAuth"
 	// MediationBackendAPIKey holds the name of the Backend API Key mediation policy.
 	MediationBackendAPIKey = "BackendAPIKey"
 	// MediationWordCountGuardrail holds the name of the Word Count Guardrail mediation policy.
@@ -206,6 +208,6 @@ const (
 )
 
 const (
-	DIRECTION_REQUEST  = "Request"
-	DIRECTION_RESPONSE = "Response"
+	REQUEST_FLOW  = "Request"
+	RESPONSE_FLOW = "Response"
 )

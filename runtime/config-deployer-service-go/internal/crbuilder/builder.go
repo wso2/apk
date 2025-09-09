@@ -919,8 +919,22 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 					endpointSecurityType, _ := securityType(ec.EndpointSecurity.SecurityType)
 					switch endpointSecurityType {
 					case securityTypeBasic:
-						// Handle Basic endpoint security
-						// Access fields: securityType.UserNameKey, securityType.PasswordKey
+						basicSecurity, ok := ec.EndpointSecurity.SecurityType.(*model.BasicEndpointSecurity)
+						if !ok {
+							if securityMap, mapOk := ec.EndpointSecurity.SecurityType.(map[string]interface{}); mapOk {
+								basicSecurity = convertMapToBasicEndpointSecurity(securityMap)
+							} else {
+								logger.Sugar().Errorf("Failed to convert endpoint security to BasicEndpointSecurity for endpoint %v", ec.Endpoint)
+								continue
+							}
+						}
+						uniqueHash := generateBasicSecurityHash(basicSecurity)
+						if routePoliciesL[uniqueHash] == nil {
+							basicSecurityPolicy := createBasicEndpointSecurityMediationPolicy(uniqueHash, ec.EndpointSecurity, basicSecurity)
+							routePoliciesL[uniqueHash] = basicSecurityPolicy
+							objects = append(objects, basicSecurityPolicy)
+						}
+						delete(routePoliciesL, constants.BaseRoutePolicy)
 					case securityTypeAPIKey:
 						apiKeySecurity, ok := ec.EndpointSecurity.SecurityType.(*model.APIKeyEndpointSecurity)
 						if !ok {
@@ -1031,7 +1045,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 								routePoliciesL[modelBasedRoundRobinPolicy.Name] = modelBasedRoundRobinPolicy
 								objects = append(objects, modelBasedRoundRobinPolicy)
 							case *model.CommonPolicy:
-								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.DIRECTION_REQUEST)
+								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.REQUEST_FLOW)
 								routePoliciesL[aiGuardrailPolicy.Name] = aiGuardrailPolicy
 								objects = append(objects, aiGuardrailPolicy)
 							}
@@ -1064,7 +1078,7 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 							case *model.LuaInterceptorPolicy, *model.WASMInterceptorPolicy:
 								interceptorPolicyList = append(interceptorPolicyList, &policy)
 							case *model.CommonPolicy:
-								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.DIRECTION_RESPONSE)
+								aiGuardrailPolicy := generateAIGuardrailPolicy(policy, constantscommon.RESPONSE_FLOW)
 								routePoliciesL[aiGuardrailPolicy.Name] = aiGuardrailPolicy
 								objects = append(objects, aiGuardrailPolicy)
 							}
@@ -2230,6 +2244,98 @@ func securityType(securityType interface{}) (string, error) {
 	}
 }
 
+// convertMapToBasicEndpointSecurity converts a map representation of BasicEndpointSecurity to the struct.
+func convertMapToBasicEndpointSecurity(securityMap map[string]interface{}) *model.BasicEndpointSecurity {
+	basicSecurity := &model.BasicEndpointSecurity{}
+
+	if secretName, exists := securityMap["secretName"]; exists {
+		if secretNameStr, ok := secretName.(string); ok {
+			basicSecurity.SecretName = secretNameStr
+		}
+	}
+
+	if userNameKey, exists := securityMap["userNameKey"]; exists {
+		if apiKeyNameKeyStr, ok := userNameKey.(string); ok {
+			basicSecurity.UserNameKey = apiKeyNameKeyStr
+		}
+	}
+
+	if passwordKey, exists := securityMap["passwordKey"]; exists {
+		if apiKeyValueKeyStr, ok := passwordKey.(string); ok {
+			basicSecurity.PasswordKey = apiKeyValueKeyStr
+		}
+	}
+
+	return basicSecurity
+}
+
+// generateBasicSecurityHash generates a SHA256 hash for the given APIKeyEndpointSecurity configuration.
+func generateBasicSecurityHash(apiKeySecurity *model.BasicEndpointSecurity) string {
+	if apiKeySecurity == nil {
+		return ""
+	}
+
+	// Concatenate all fields in a consistent order
+	hashInput := fmt.Sprintf("%s|%s|%s",
+		apiKeySecurity.SecretName,
+		apiKeySecurity.UserNameKey,
+		apiKeySecurity.PasswordKey,
+	)
+
+	// Generate SHA256 hash
+	hasher := sha256.New()
+	hasher.Write([]byte(hashInput))
+	hashBytes := hasher.Sum(nil)
+
+	// Return hex encoded hash
+	return hex.EncodeToString(hashBytes)
+}
+
+// createBasicEndpointSecurityMediationPolicy creates a Mediation policy for API Key security.
+func createBasicEndpointSecurityMediationPolicy(name string, endpointSecurity *model.EndpointSecurity,
+	basicSecurity *model.BasicEndpointSecurity) *dpv2alpha1.RoutePolicy {
+	basicAuthMediationPolicy := &dpv2alpha1.Mediation{
+		PolicyName:    constantscommon.MediationBackendBasicSecurity,
+		PolicyID:      "",
+		PolicyVersion: "",
+		Parameters: []*dpv2alpha1.Parameter{
+			{
+				Key:   "Enabled",
+				Value: strconv.FormatBool(*endpointSecurity.Enabled),
+			},
+			{
+				Key:   "UserNameKey",
+				Value: basicSecurity.UserNameKey,
+			},
+			{
+				Key:   "PasswordKey",
+				Value: basicSecurity.PasswordKey,
+			},
+			{
+				Key: "BasicAuth",
+				ValueRef: &gwapiv1a2.LocalObjectReference{
+					Name: gwapiv1a2.ObjectName(basicSecurity.SecretName),
+					Kind: constantscommon.KindSecret,
+				},
+			},
+		},
+	}
+	routePolicy := &dpv2alpha1.RoutePolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		TypeMeta: metav1.TypeMeta{
+			Kind:       constants.WSO2KubernetesGatewayRoutePolicyKind,
+			APIVersion: constants.WSO2KubernetesGatewayRoutePolicyAPIVersion,
+		},
+		Spec: dpv2alpha1.RoutePolicySpec{
+			RequestMediation:  []*dpv2alpha1.Mediation{basicAuthMediationPolicy},
+			ResponseMediation: make([]*dpv2alpha1.Mediation, 0),
+		},
+	}
+	return routePolicy
+}
+
 // convertMapToAPIKeyEndpointSecurity converts a map representation of APIKeyEndpointSecurity to the struct.
 func convertMapToAPIKeyEndpointSecurity(securityMap map[string]interface{}) *model.APIKeyEndpointSecurity {
 	apiKeySecurity := &model.APIKeyEndpointSecurity{}
@@ -2537,7 +2643,7 @@ func generateAIGuardrailPolicy(policy *model.CommonPolicy, direction string) *dp
 	}
 	name := util.GeneratePolicyHash(policy)
 	var requestMediation, responseMediation []*dpv2alpha1.Mediation
-	if direction == constantscommon.DIRECTION_REQUEST {
+	if direction == constantscommon.REQUEST_FLOW {
 		requestMediation = []*dpv2alpha1.Mediation{aiGuardrailPolicy}
 		responseMediation = make([]*dpv2alpha1.Mediation, 0)
 	} else {
