@@ -70,7 +70,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/kgw-envoy-gateway-extension-server:2.0.0-alpha
+          image: wso2/kgw-envoy-gateway-extension-server:2.0.0-alpha2
           security:
             sslHostname: "adapter"
         service:
@@ -96,7 +96,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/kgw-config-deployer-service:2.0.0-alpha
+          image: wso2/kgw-config-deployer-service:2.0.0-alpha2
           # debug: true
           # configs:
           #   tls:
@@ -122,7 +122,7 @@ wso2:
           strategy: RollingUpdate
           replicas: 1
           imagePullPolicy: Always
-          image: wso2/kgw-common-controller:2.0.0-alpha
+          image: wso2/kgw-common-controller:2.0.0-alpha2
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -149,7 +149,7 @@ wso2:
               failureThreshold: 5
             strategy: RollingUpdate
             imagePullPolicy: Always
-            image: wso2/kgw-enforcer:2.0.0-alpha
+            image: wso2/kgw-enforcer:2.0.0-alpha2
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -334,7 +334,7 @@ idp:
       strategy: RollingUpdate
       replicas: 1
       imagePullPolicy: Always
-      image: wso2/kgw-idp-domain-service:2.0.0-alpha
+      image: wso2/kgw-idp-domain-service:2.0.0-alpha2
 
 certmanager:
   enabled: true
