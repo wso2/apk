@@ -50,7 +50,7 @@ func (a *Analytics) Process(requestConfig *requestconfig.Holder) *Result {
 	// This is a placeholder implementation
 	result := NewResult()
 	var err error
-	result.Metadata[analytics.APIIDKey], err = structpb.NewValue("value")
+	result.Metadata[analytics.APIIDKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Name)
 	if err != nil {
 		a.logger.Sugar().Errorf("Error creating structpb value for APIIDKey: %v", err)
 	}
@@ -71,8 +71,8 @@ func (a *Analytics) Process(requestConfig *requestconfig.Holder) *Result {
 	if err != nil {
 		a.logger.Sugar().Errorf("Error creating structpb value for APITypeKey: %v", err)
 	}
-	// result.Metadata[analytics.ApiCreatorKey], err = structpb.NewValue(s.requestConfigHolder.MatchedAPI.Creator)
-	// result.Metadata[analytics.ApiCreatorTenantDomainKey], err = structpb.NewValue(s.requestConfigHolder.MatchedAPI.CreatorTenant)
+	result.Metadata[analytics.APICreatorKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.APICreator)
+	result.Metadata[analytics.APICreatorTenantDomainKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.APICreatorTenantDomain)
 	result.Metadata[analytics.APIOrganizationIDKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Organization)
 	if err != nil {
 		a.logger.Sugar().Errorf("Error creating structpb value for APIOrganizationIDKey: %v", err)
@@ -116,6 +116,5 @@ func (a *Analytics) Process(requestConfig *requestconfig.Holder) *Result {
 			a.logger.Sugar().Errorf("Error creating structpb value for AppOwnerKey: %v", err)
 		}
 	}
-
 	return result
 }

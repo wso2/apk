@@ -59,9 +59,17 @@ type Server struct {
 	RedisCaCertFile                  string `envconfig:"REDIS_CA_CERT_FILE" default:"/home/wso2/security/redis/ca.crt"`
 	RevokedTokenCleanupInterval      int    `envconfig:"REVOKED_TOKEN_CLEANUP_INTERVAL" default:"3600"` // seconds
 	TokenRevocationEnabled           bool   `envconfig:"TOKEN_REVOCATION_ENABLED" default:"false"`
+	AnalyticsEnabled                 bool   `envconfig:"ANALYTICS_ENABLED" default:"false"`
+	ForceAnalyticsToAllAPIs          bool   `envconfig:"FORCE_ANALYTICS_TO_ALL_APIS" default:"true"`
+	ChoreoAnalyticsEnabled           bool   `envconfig:"CHOREO_ANALYTICS_ENABLED" default:"false"`
+	ChoreoAnalyticsLogLevel          string `envconfig:"CHOREO_ANALYTICS_LOG_LEVEL" default:"INFO"`
 	ChoreoAnalyticsAuthToken         string `envconfig:"CHOREO_ANALYTICS_AUTH_TOKEN" default:""`
 	ChoreoAnalyticsAuthURL           string `envconfig:"CHOREO_ANALYTICS_AUTH_URL" default:""`
+	MoesifAnalyticsEnabled           bool   `envconfig:"MOESIF_ANALYTICS_ENABLED" default:"false"`
+	MoesifAnalyticsLogLevel          string `envconfig:"MOESIF_ANALYTICS_LOG_LEVEL" default:"INFO"`
 	MoesifToken                      string `envconfig:"MOESIF_TOKEN" default:""`
+	ELKAnalyticsEnabled              bool   `envconfig:"ELK_ANALYTICS_ENABLED" default:"false"`
+	ELKAnalyticsLogLevel             string `envconfig:"ELK_ANALYTICS_LOG_LEVEL" default:"INFO"`
 	LogLevel                         string `envconfig:"LOG_LEVEL" default:"INFO"`
 	ExternalProcessingPort           string `envconfig:"EXTERNAL_PROCESSING_PORT" default:"8081"`
 	AccessLogServiceServerPort       string `envconfig:"ACCESS_LOG_SERVICE_SERVER_PORT" default:"18090"`
@@ -75,6 +83,7 @@ type Server struct {
 	EventhubPublishInterval          int    `envconfig:"EVENTHUB_PUBLISH_INTERVAL" default:"5"` // seconds
 	MoesifPublishInterval            int    `envconfig:"MOESIF_PUBLISH_INTERVAL" default:"5"`   // seconds
 	ExternalCustomMediationEnabled   bool   `envconfig:"EXTERNAL_CUSTOM_MEDIATION_ENABLED" default:"true"`
+	ALSPlainText                     bool   `envconfig:"ALS_PLAINTEXT" default:"true"`
 }
 
 type metrics struct {

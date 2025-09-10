@@ -56,6 +56,11 @@ func main() {
 	go extproc.StartExternalProcessingServer(cfg, subAppDatastore, routePolicyAndMetadataDS, revokedJTIStore)
 	go jwtbackend.StartJWKSServer(cfg)
 
+	if cfg.AnalyticsEnabled {
+		// Start the access log service server
+		go grpc.StartAccessLogServiceServer(cfg)
+	}
+
 	// Start the metrics server
 	if cfg.Metrics.Enabled && strings.EqualFold(cfg.Metrics.Type, "prometheus") {
 		metrics.RegisterDataSources(subAppDatastore)
