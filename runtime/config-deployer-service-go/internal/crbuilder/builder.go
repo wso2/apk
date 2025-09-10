@@ -553,9 +553,6 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 	cors := apiResourceBundle.APKConf.CorsConfiguration
 	if cors != nil && !cors.CorsConfigurationEnabled {
 		cors = nil
-	} else if cors != nil && cors.CorsConfigurationEnabled {
-		optionsHttpRoute := GenerateOptionsHTTPRoute(apiResourceBundle, environment, routePolicies, routeMetadataList)
-		objects = append(objects, optionsHttpRoute)
 	}
 
 	// Operation level security
@@ -580,7 +577,6 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		sp := generateSecurityPolicy(spName, isSecured, scopes, targetRefs, cors, apiResourceBundle.APKConf.KeyManagers,
 			apiResourceBundle.APKConf.Authentication, apiResourceBundle.Namespace)
 		objects = append(objects, sp)
-
 	}
 
 	// Append all BackendTrafficPolicy objects
@@ -1150,6 +1146,17 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						Method: method,
 					},
 				}
+				if bundle.APKConf.CorsConfiguration != nil && bundle.APKConf.CorsConfiguration.CorsConfigurationEnabled {
+					rule.Matches = append(rule.Matches,
+						gatewayv1.HTTPRouteMatch{
+							Path: &gatewayv1.HTTPPathMatch{
+								Type:  ptrTo(pathMatchType),
+								Value: ptrTo(path),
+							},
+							Method: ptrTo(gatewayv1.HTTPMethodOptions),
+						},
+					)
+				}
 
 				if requestRedirectFilter == nil {
 					// Create backend reference
@@ -1268,142 +1275,6 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 		}
 	}
 	return routesMap, objects
-}
-
-// GenerateOptionsHTTPRoute generates an HTTPRoute object for handling OPTIONS requests for CORS preflight.
-func GenerateOptionsHTTPRoute(bundle *dto.APIResourceBundle, environment string, routePolicies map[string]*dpv2alpha1.RoutePolicy,
-	routeMetadataList []*dpv2alpha1.RouteMetadata) client.Object {
-	crName := util.GenerateCRName(bundle.APKConf.Name, environment, bundle.APKConf.Version, bundle.Organization)
-	parentName := config.GetConfig().ParentGatewayName
-	parentNamespace := bundle.Namespace
-	parentSectionName := config.GetConfig().ParentGatewaySectionName
-	isDefaultVersioned := bundle.APKConf.DefaultVersion
-	baseRouteName := getHTTPRouteCRName(crName, 0, 0, !isDefaultVersioned)
-	optionsRouteName := baseRouteName + "-options"
-	route := gatewayv1.HTTPRoute{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: constantscommon.K8sGatewayAPIV1,
-			Kind:       constantscommon.KindHTTPRoute,
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: optionsRouteName,
-			Annotations: map[string]string{
-				constants.K8sHTTPRouteEnvTypeAnnotation: strings.ToUpper(environment),
-			},
-		},
-		Spec: gatewayv1.HTTPRouteSpec{
-			Hostnames: func() []gatewayv1.Hostname {
-				var hostnames []gatewayv1.Hostname
-				gatewayHostName := config.GetConfig().GatewayHostName
-				if bundle.APKConf.EndpointConfigurations.Production != nil && len(bundle.APKConf.EndpointConfigurations.Production) > 0 {
-					productionHostname := fmt.Sprintf("%s.%s", bundle.Organization, gatewayHostName)
-					hostnames = append(hostnames, gatewayv1.Hostname(productionHostname))
-				}
-				if bundle.APKConf.EndpointConfigurations.Sandbox != nil && len(bundle.APKConf.EndpointConfigurations.Sandbox) > 0 {
-					sandboxHostname := fmt.Sprintf("%s.%s.%s", bundle.Organization, constants.SANDBOX_TYPE, gatewayHostName)
-					hostnames = append(hostnames, gatewayv1.Hostname(sandboxHostname))
-				}
-				return hostnames
-			}(),
-			CommonRouteSpec: gatewayv1.CommonRouteSpec{
-				ParentRefs: []gatewayv1.ParentReference{
-					{
-						Name:        gatewayv1.ObjectName(parentName),
-						Group:       ptrTo(gatewayv1.Group(constantscommon.K8sGroupNetworking)),
-						Kind:        ptrTo(gatewayv1.Kind(constantscommon.KindGateway)),
-						Namespace:   ptrTo(gatewayv1.Namespace(parentNamespace)),
-						SectionName: ptrTo(gatewayv1.SectionName(parentSectionName)),
-					},
-				},
-			},
-			Rules: []gatewayv1.HTTPRouteRule{},
-		},
-	}
-	ruleWithVersion := gatewayv1.HTTPRouteRule{}
-	var optionsRouteRules []gatewayv1.HTTPRouteRule
-	apiBasePath := fmt.Sprintf("%s/%s",
-		strings.TrimSuffix(bundle.APKConf.BasePath, "/"),
-		strings.TrimPrefix(bundle.APKConf.Version, "/"),
-	)
-	ruleWithVersion.Matches = []gatewayv1.HTTPRouteMatch{
-		{
-			Path: &gatewayv1.HTTPPathMatch{
-				Type:  ptrTo(gatewayv1.PathMatchPathPrefix),
-				Value: ptrTo(apiBasePath),
-			},
-			Method: ptrTo(gatewayv1.HTTPMethodOptions),
-		},
-	}
-	optionsRouteRules = append(optionsRouteRules, ruleWithVersion)
-	if isDefaultVersioned {
-		ruleWithoutVersion := gatewayv1.HTTPRouteRule{}
-		apiBasePath = strings.TrimSuffix(bundle.APKConf.BasePath, "/")
-		ruleWithoutVersion.Matches = []gatewayv1.HTTPRouteMatch{
-			{
-				Path: &gatewayv1.HTTPPathMatch{
-					Type:  ptrTo(gatewayv1.PathMatchPathPrefix),
-					Value: ptrTo(apiBasePath),
-				},
-				Method: ptrTo(gatewayv1.HTTPMethodOptions),
-			},
-		}
-		optionsRouteRules = append(optionsRouteRules, ruleWithoutVersion)
-	}
-	for _, rule := range optionsRouteRules {
-		op := bundle.CombinedResources[0].APKOperations[0]
-		var ecs []model.EndpointConfiguration
-		if op.EndpointConfigurations.Sandbox != nil && len(op.EndpointConfigurations.Sandbox) > 0 {
-			ecs = op.EndpointConfigurations.Sandbox
-		}
-		if op.EndpointConfigurations.Production != nil && len(op.EndpointConfigurations.Production) > 0 {
-			ecs = op.EndpointConfigurations.Production
-		}
-		backendHostname, err := extractBackendHostname(op, environment)
-		if err != nil {
-			logger.Sugar().Errorf("Error extracting backend hostname for operation %s: %v", *op.Target, err)
-			continue
-		}
-		backendMap := make(map[string]map[string]*eg.Backend)
-		httpBackendRefs := createBackendRefs(ecs, backendMap, baseRouteName)
-		if len(httpBackendRefs) > 0 {
-			rule.BackendRefs = httpBackendRefs
-		}
-		for _, policy := range routePolicies {
-			rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
-				Type: gatewayv1.HTTPRouteFilterExtensionRef,
-				ExtensionRef: &gatewayv1.LocalObjectReference{
-					Group: constantscommon.WSO2KubernetesGateway,
-					Kind:  constantscommon.KindRoutePolicy,
-					Name:  gatewayv1.ObjectName(policy.Name),
-				},
-			})
-		}
-		for _, metadata := range routeMetadataList {
-			rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
-				Type: gatewayv1.HTTPRouteFilterExtensionRef,
-				ExtensionRef: &gatewayv1.LocalObjectReference{
-					Group: constantscommon.WSO2KubernetesGateway,
-					Kind:  constantscommon.KindRouteMetadata,
-					Name:  gatewayv1.ObjectName(metadata.Name),
-				},
-			})
-		}
-		urlRewrite := &gatewayv1.HTTPURLRewriteFilter{
-			Path: &gatewayv1.HTTPPathModifier{
-				Type:               gatewayv1.PrefixMatchHTTPPathModifier,
-				ReplacePrefixMatch: ptrTo("/"),
-			},
-		}
-		if backendHostname != "" {
-			urlRewrite.Hostname = ptrTo(gatewayv1.PreciseHostname(backendHostname))
-		}
-		rule.Filters = append(rule.Filters, gatewayv1.HTTPRouteFilter{
-			Type:       gatewayv1.HTTPRouteFilterURLRewrite,
-			URLRewrite: urlRewrite,
-		})
-		route.Spec.Rules = append(route.Spec.Rules, rule)
-	}
-	return &route
 }
 
 // generateEnvoyExtensionPolicy generates an EnvoyExtensionPolicy for a given LuaInterceptorPolicy or WASMInterceptorPolicy
