@@ -18,6 +18,9 @@ apiVersion: cert-manager.io/v1
 kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
 metadata:
   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-selfsigned-issuer
+  {{- if ne (.Values.certmanager.issuerKind | default "ClusterIssuer") "ClusterIssuer" }}
+  namespace: {{ .Release.Namespace }}
+  {{- end }}
 spec:
   ca:
     secretName: {{.Values.certmanager.rootCaSecretName}}
