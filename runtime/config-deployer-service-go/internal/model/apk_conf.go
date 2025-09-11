@@ -603,25 +603,55 @@ func NewRateLimit(requestsPerUnit int, unit string) *RateLimit {
 	}
 }
 
-// AuthenticationRequest represents common type for all authentication types
-type AuthenticationRequest interface{}
+// AuthName represents enum for all possible auth types.
+type AuthName string
 
-// Authentication represents configuration for authentication types
-type Authentication struct {
-	AuthType string `json:"authType,omitempty" yaml:"authType,omitempty"`
-	Enabled  bool   `json:"enabled" yaml:"enabled"`
+const (
+	AuthNameOAuth2 AuthName = "OAuth2"
+	AuthNameJWT    AuthName = "JWT"
+	AuthNameMTLS   AuthName = "mTLS"
+	AuthNameAPIKey AuthName = "APIKey"
+)
+
+// BaseAuthentication represents common configuration for authentication types
+type BaseAuthentication struct {
+	AuthType AuthName `json:"authType,omitempty" yaml:"authType,omitempty"`
+	Enabled  bool     `json:"enabled" yaml:"enabled"`
+}
+
+type Authentication interface {
+	GetAuthType() AuthName
+	IsEnabled() bool
+}
+
+// AuthenticationRequest represents authentication types
+type AuthenticationRequest struct {
+	OAuth2Authentication *OAuth2Authentication `json:"oauth2,omitempty" yaml:"oauth2,omitempty"`
+	JWTAuthentication    *JWTAuthentication    `json:"jwt,omitempty" yaml:"jwt,omitempty"`
+	APIKeyAuthentication *APIKeyAuthentication `json:"apiKey,omitempty" yaml:"apiKey,omitempty"`
+	MTLSAuthentication   *MTLSAuthentication   `json:"mtls,omitempty" yaml:"mtls,omitempty"`
+}
+
+// GetAuthType implements Authentication interface
+func (b BaseAuthentication) GetAuthType() AuthName {
+	return b.AuthType
+}
+
+// IsEnabled implements Authentication interface
+func (b BaseAuthentication) IsEnabled() bool {
+	return b.IsEnabled()
 }
 
 // NewAuthentication creates a new Authentication with default values
-func NewAuthentication() *Authentication {
-	return &Authentication{
+func NewAuthentication() *BaseAuthentication {
+	return &BaseAuthentication{
 		Enabled: true,
 	}
 }
 
 // OAuth2Authentication represents configuration of OAuth2 Authentication type
 type OAuth2Authentication struct {
-	Authentication
+	BaseAuthentication
 	Required            string `json:"required" yaml:"required"`
 	SendTokenToUpstream bool   `json:"sendTokenToUpstream" yaml:"sendTokenToUpstream"`
 	HeaderName          string `json:"headerName" yaml:"headerName"`
@@ -631,7 +661,7 @@ type OAuth2Authentication struct {
 // NewOAuth2Authentication creates a new OAuth2Authentication with default values
 func NewOAuth2Authentication() *OAuth2Authentication {
 	return &OAuth2Authentication{
-		Authentication:      *NewAuthentication(),
+		BaseAuthentication:  *NewAuthentication(),
 		Required:            "mandatory",
 		SendTokenToUpstream: false,
 		HeaderName:          "Authorization",
@@ -641,7 +671,7 @@ func NewOAuth2Authentication() *OAuth2Authentication {
 
 // JWTAuthentication represents configuration of JWT Authentication type
 type JWTAuthentication struct {
-	Authentication
+	BaseAuthentication
 	Required            string   `json:"required" yaml:"required"`
 	SendTokenToUpstream bool     `json:"sendTokenToUpstream" yaml:"sendTokenToUpstream"`
 	HeaderName          string   `json:"headerName" yaml:"headerName"`
@@ -652,7 +682,7 @@ type JWTAuthentication struct {
 // NewJWTAuthentication creates a new JWTAuthentication with default values
 func NewJWTAuthentication() *JWTAuthentication {
 	return &JWTAuthentication{
-		Authentication:      *NewAuthentication(),
+		BaseAuthentication:  *NewAuthentication(),
 		Required:            "mandatory",
 		SendTokenToUpstream: false,
 		HeaderName:          "Authorization",
@@ -663,7 +693,7 @@ func NewJWTAuthentication() *JWTAuthentication {
 
 // APIKeyAuthentication represents configuration for API Key Auth Type
 type APIKeyAuthentication struct {
-	Authentication
+	BaseAuthentication
 	Required            string `json:"required" yaml:"required"`
 	SendTokenToUpstream bool   `json:"sendTokenToUpstream" yaml:"sendTokenToUpstream"`
 	HeaderName          string `json:"headerName" yaml:"headerName"`
@@ -675,7 +705,7 @@ type APIKeyAuthentication struct {
 // NewAPIKeyAuthentication creates a new APIKeyAuthentication with default values
 func NewAPIKeyAuthentication() *APIKeyAuthentication {
 	return &APIKeyAuthentication{
-		Authentication:      *NewAuthentication(),
+		BaseAuthentication:  *NewAuthentication(),
 		Required:            "optional",
 		SendTokenToUpstream: false,
 		HeaderName:          "apiKey",
@@ -687,7 +717,7 @@ func NewAPIKeyAuthentication() *APIKeyAuthentication {
 
 // MTLSAuthentication represents Mutual SSL configuration of this API
 type MTLSAuthentication struct {
-	Authentication
+	BaseAuthentication
 	Required     string         `json:"required" yaml:"required"`
 	Certificates []ConfigMapRef `json:"certificates" yaml:"certificates"`
 }
@@ -695,10 +725,52 @@ type MTLSAuthentication struct {
 // NewMTLSAuthentication creates a new MTLSAuthentication with default values
 func NewMTLSAuthentication(certificates []ConfigMapRef) *MTLSAuthentication {
 	return &MTLSAuthentication{
-		Authentication: *NewAuthentication(),
-		Required:       "optional",
-		Certificates:   certificates,
+		BaseAuthentication: *NewAuthentication(),
+		Required:           "optional",
+		Certificates:       certificates,
 	}
+}
+
+// UnmarshalJSON provides custom unmarshaling for AuthenticationRequest
+func (p *AuthenticationRequest) UnmarshalJSON(data []byte) error {
+	var base BaseAuthentication
+	if err := json.Unmarshal(data, &base); err != nil {
+		return err
+	}
+
+	switch base.AuthType {
+	case AuthNameOAuth2:
+		p.OAuth2Authentication = &OAuth2Authentication{}
+		return json.Unmarshal(data, p.OAuth2Authentication)
+	case AuthNameJWT:
+		p.JWTAuthentication = &JWTAuthentication{}
+		return json.Unmarshal(data, p.JWTAuthentication)
+	case AuthNameMTLS:
+		p.MTLSAuthentication = &MTLSAuthentication{}
+		return json.Unmarshal(data, p.MTLSAuthentication)
+	case AuthNameAPIKey:
+		p.APIKeyAuthentication = &APIKeyAuthentication{}
+		return json.Unmarshal(data, p.APIKeyAuthentication)
+	}
+
+	return nil
+}
+
+// GetAuthType returns the active policy for authentication request
+func (p *AuthenticationRequest) GetAuthType() Authentication {
+	if p.OAuth2Authentication != nil {
+		return p.OAuth2Authentication
+	}
+	if p.JWTAuthentication != nil {
+		return p.JWTAuthentication
+	}
+	if p.MTLSAuthentication != nil {
+		return p.MTLSAuthentication
+	}
+	if p.APIKeyAuthentication != nil {
+		return p.APIKeyAuthentication
+	}
+	return nil
 }
 
 // ConfigMapRef represents configuration for K8s ConfigMap
