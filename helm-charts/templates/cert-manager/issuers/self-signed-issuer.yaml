@@ -13,9 +13,9 @@
 # KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations
 # under the License.
-{{ if and .Values.certmanager .Values.certmanager.enableClusterIssuer }}
+{{ if and .Values.certmanager .Values.certmanager.enableIssuer }}
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: {{ .Values.certmanager.issuerKind | default "ClusterIssuer" }}
 metadata:
   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-selfsigned-issuer
 spec:
