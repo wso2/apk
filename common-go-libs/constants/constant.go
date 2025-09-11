@@ -153,7 +153,6 @@ const (
 	KindReferenceGrant         = "ReferenceGrant"
 	KindRouteMetadata          = "RouteMetadata"
 	KindRoutePolicy            = "RoutePolicy"
-	KindGatewayExtensionPolicy = "GatewayExtensionPolicy"
 )
 
 // Version constants for various Kubernetes resources

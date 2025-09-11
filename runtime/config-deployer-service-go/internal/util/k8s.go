@@ -119,9 +119,12 @@ func GetCRsFromLabels(filteredLabels map[string]string, namespace string,
 		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindHTTPRouteFilter},
 		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindSecurityPolicy},
 		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindBackendTrafficPolicy},
-		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindGatewayExtensionPolicy},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindClientTrafficPolicy},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindEnvoyExtensionPolicy},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindEnvoyPatchPolicy},
 		{Group: "", Version: "v1", Kind: constantscommon.KindService},
 		{Group: "", Version: "v1", Kind: constantscommon.KindConfigMap},
+		{Group: "", Version: "v1", Kind: constantscommon.KindSecret},
 	}
 
 	for _, gvk := range resourceTypes {
