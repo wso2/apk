@@ -6,7 +6,7 @@ version: 2.0.0-alpha2
 appVersion: "2.0.0-alpha2"
 dependencies:
   - name: gateway-helm
-    version: "1.4.2"
+    version: "1.5.0"
     repository: "oci://docker.io/envoyproxy"
     alias: envoy     # optional, gives it a nicer sub-chart name
     condition: envoy.enabled # optional: only pull if values.envoy.enabled == true
