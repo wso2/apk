@@ -1726,34 +1726,34 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 			Name: h,
 		})
 	}
-	isAuthEnable := false
+	isAuthEnabled := len(auths) == 0
 	for _, auth := range auths {
 		authType := auth.GetAuthType()
 		switch a := authType.(type) {
 		case *model.OAuth2Authentication:
 			if a.Enabled {
-				isAuthEnable = true
+				isAuthEnabled = true
 				break
 			}
 		case *model.JWTAuthentication:
 			if a.Enabled {
-				isAuthEnable = true
+				isAuthEnabled = true
 				break
 			}
 		case *model.APIKeyAuthentication:
 			if a.Enabled {
-				isAuthEnable = true
+				isAuthEnabled = true
 				break
 			}
 		case *model.MTLSAuthentication:
 			if a.Enabled {
-				isAuthEnable = true
+				isAuthEnabled = true
 				break
 			}
 		}
 	}
 
-	if isSecured && isAuthEnable {
+	if isSecured && isAuthEnabled {
 		if len(kms) == 0 {
 			defaultIDPKM := generateDefaultIDPKeyManager(namespace)
 			kms = append(kms, defaultIDPKM)
