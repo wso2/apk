@@ -4,7 +4,7 @@ info:
   description: 'A simple HTTP Request & Response Service'
   version: 2.0.0
 servers:
-- url: https://httpbin.org
+- url: http://backend.apk-integration-test.svc.cluster.local:80/anything
 tags:
 - name: HTTP Methods
   description: Testing different HTTP verbs

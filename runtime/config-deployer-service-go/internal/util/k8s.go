@@ -27,7 +27,6 @@ import (
 	"github.com/wso2/apk/common-go-libs/apis/dp/v2alpha1"
 	constantscommon "github.com/wso2/apk/common-go-libs/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/config"
-	"github.com/wso2/apk/config-deployer-service-go/internal/constants"
 	"github.com/wso2/apk/config-deployer-service-go/internal/dto"
 	"github.com/wso2/apk/config-deployer-service-go/internal/model"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -111,18 +110,21 @@ func GetCRsFromLabels(filteredLabels map[string]string, namespace string,
 
 	// Define the custom resource types you want to search
 	resourceTypes := []schema.GroupVersionKind{
-		{Group: constants.WSO2KubernetesGatewayRouteMetadataGroup, Version: "v2alpha1", Kind: constants.WSO2KubernetesGatewayRouteMetadataKind},
-		{Group: constants.WSO2KubernetesGatewayRoutePolicyGroup, Version: "v2alpha1", Kind: constants.WSO2KubernetesGatewayRoutePolicyKind},
-		{Group: constants.K8sGroupNetworking, Version: "v1", Kind: constants.K8sKindHTTPRoute},
-		{Group: constants.K8sGroupNetworking, Version: "v1", Kind: constants.K8sKindGRPCRoute},
-		{Group: constants.K8sGroupNetworking, Version: "v1alpha3", Kind: constants.K8sKindBackendTLSPolicy},
-		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.K8sKindBackend},
-		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.EnvoyGatewayHTTPRouteFilter},
-		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.K8sKindSecurityPolicy},
-		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.EnvoyGatewayBackendTrafficPolicy},
-		{Group: constants.K8sGroupEnvoyGateway, Version: "v1alpha1", Kind: constants.EnvoyGatewayExtensionPolicy},
-		{Group: "", Version: "v1", Kind: constants.K8sKindService},
-		{Group: "", Version: "v1", Kind: constants.K8sKindConfigMap},
+		{Group: constantscommon.WSO2KubernetesGateway, Version: "v2alpha1", Kind: constantscommon.KindRouteMetadata},
+		{Group: constantscommon.WSO2KubernetesGateway, Version: "v2alpha1", Kind: constantscommon.KindRoutePolicy},
+		{Group: constantscommon.K8sGroupNetworking, Version: "v1", Kind: constantscommon.KindHTTPRoute},
+		{Group: constantscommon.K8sGroupNetworking, Version: "v1", Kind: constantscommon.KindGRPCRoute},
+		{Group: constantscommon.K8sGroupNetworking, Version: "v1alpha3", Kind: constantscommon.KindBackendTLSPolicy},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindBackend},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindHTTPRouteFilter},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindSecurityPolicy},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindBackendTrafficPolicy},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindClientTrafficPolicy},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindEnvoyExtensionPolicy},
+		{Group: constantscommon.EnvoyGateway, Version: "v1alpha1", Kind: constantscommon.KindEnvoyPatchPolicy},
+		{Group: "", Version: "v1", Kind: constantscommon.KindService},
+		{Group: "", Version: "v1", Kind: constantscommon.KindConfigMap},
+		{Group: "", Version: "v1", Kind: constantscommon.KindSecret},
 	}
 
 	for _, gvk := range resourceTypes {

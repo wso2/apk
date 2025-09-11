@@ -6,10 +6,10 @@ type: "REST"
 endpointConfigurations:
     production:
       - endpoint:
-            name: "sample"
-            namespace: "apk"
-            protocol: "http"
-            port: 55
+          name: "backend"
+          namespace: "apk-integration-test"
+          port: 80
+          protocol: "http"
 operations:
     - target: "/anything"
       verb: "GET"
@@ -18,7 +18,7 @@ operations:
 corsConfiguration:
   corsConfigurationEnabled: true
   accessControlAllowOrigins:
-    - "abc.com"
+    - "https://abc.com"
   accessControlAllowCredentials: true
   accessControlAllowHeaders:
     - "Content-Type"
@@ -28,4 +28,4 @@ corsConfiguration:
     - "POST"
     - "PUT"
     - "DELETE"
-  accessControlAllowMaxAge: 3600
+  accessControlAllowMaxAge: 7200
