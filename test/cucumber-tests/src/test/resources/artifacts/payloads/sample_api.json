@@ -6,10 +6,10 @@
   "endpointConfig": {
       "endpoint_type": "http",
       "sandbox_endpoints": {
-          "url": "http://backend.default.svc.cluster.local"
+          "url": "http://backend.apk.svc.cluster.local"
       },
       "production_endpoints": {
-          "url": "http://backend.default.svc.cluster.local"
+          "url": "http://backend.apk.svc.cluster.local"
       }
   },
   "policies": [
