@@ -23,6 +23,7 @@ metadata:
     api-name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deploy-api"
     api-version: "2.0.0"
     managed-by: "kgw"
+    systemAPI: "true"
 spec:
   api:
     name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-config-deploy-api

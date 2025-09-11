@@ -24,6 +24,7 @@ metadata:
     api-name: "{{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api"
     api-version: "1.0.0"
     managed-by: "kgw"
+    systemAPI: "true"
 spec:
   api:
     name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-notification-api
