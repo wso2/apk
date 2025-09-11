@@ -20,8 +20,13 @@ metadata:
   name: {{ .Values.wso2.kgw.dp.envoyProxy.name | default "wso2-kgw-envoy-proxy-default" }}
   namespace: {{ .Release.Namespace }}
 spec:
-{{- if and .Values.wso2.kgw.dp.gatewayRuntime.analytics .Values.wso2.kgw.dp.gatewayRuntime.analytics.enabled}}
+{{- if or 
+      (and .Values.wso2.kgw.dp.gatewayRuntime.analytics .Values.wso2.kgw.dp.gatewayRuntime.analytics.enabled) 
+      (.Values.wso2.kgw.dp.gatewayRuntime.tracing) 
+      (.Values.wso2.kgw.dp.gatewayRuntime.metrics) 
+}}
   telemetry:
+{{- if and .Values.wso2.kgw.dp.gatewayRuntime.analytics .Values.wso2.kgw.dp.gatewayRuntime.analytics.enabled}}
     accessLog:
       settings:
         - sinks:
@@ -32,6 +37,15 @@ spec:
                     namespace: {{ .Release.Namespace }}
                     port: 18090
                 type: HTTP
+{{- end }}
+{{- if .Values.wso2.kgw.dp.gatewayRuntime.tracing}}
+    tracing:
+{{ toYaml .Values.wso2.kgw.dp.gatewayRuntime.tracing | indent 6 }}
+{{- end }}
+{{- if .Values.wso2.kgw.dp.gatewayRuntime.metrics}}
+    metrics:
+{{ toYaml .Values.wso2.kgw.dp.gatewayRuntime.metrics | indent 6 }}
+{{- end }}
 {{- end }}
   logging:
     level:
