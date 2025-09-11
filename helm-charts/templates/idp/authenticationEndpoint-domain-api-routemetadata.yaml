@@ -23,6 +23,7 @@ metadata:
     api-name: "idp-domain-service"
     api-version: "1.0.0"
     managed-by: "kgw"
+    systemAPI: "true"
 spec:
   api:
     name: idp-domain-service
