@@ -20,14 +20,12 @@ package analytics
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	v3 "github.com/envoyproxy/go-control-plane/envoy/data/accesslog/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics/dto"
 	analytics_publisher "github.com/wso2/apk/gateway/enforcer/internal/analytics/publishers"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
-	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 )
 
 // EventCategory represents the category of an event.
@@ -76,50 +74,37 @@ const (
 type Analytics struct {
 	// cfg represents the server configuration.
 	cfg *config.Server
-	// configStore represents the configuration store.
-	configStore *datastore.ConfigStore
 	// publishers represents the publishers.
 	publishers []analytics_publisher.Publisher
 }
 
 // NewAnalytics creates a new instance of Analytics.
-func NewAnalytics(cfg *config.Server, configStore *datastore.ConfigStore) *Analytics {
+func NewAnalytics(cfg *config.Server) *Analytics {
 	publishers := make([]analytics_publisher.Publisher, 0)
-	if len(configStore.GetConfigs()) != 0 {
-		config := configStore.GetConfigs()[0]
-		if config.Analytics.Enabled {
-			for _, pub := range config.Analytics.AnalyticsPublisher {
-				cfg.Logger.Sugar().Debug(fmt.Sprintf("Publisher type: %s", pub.Type))
-				switch strings.ToLower(pub.Type) {
-				case strings.ToLower(ELKAnalyticsPublisher):
-					logLevel := "INFO"
-					if level, exists := pub.ConfigProperties["logLevel"]; exists {
-						logLevel = level
-					}
-					publishers = append(publishers, analytics_publisher.NewELK(cfg, logLevel))
-					cfg.Logger.Sugar().Debug(fmt.Sprintf("ELK publisher added with log level: %s", logLevel))
-				case strings.ToLower(MoesifAnalyticsPublisher):
-					publisher := analytics_publisher.NewMoesif(cfg)
-					publishers = append(publishers, publisher)
-					cfg.Logger.Info("Moesif publisher added")
-				case strings.ToLower(DefaultAnalyticsPublisher):
-					publisher := analytics_publisher.NewChoreo(cfg, cfg.ChoreoAnalyticsAuthURL, cfg.ChoreoAnalyticsAuthToken)
-					if publisher == nil {
-						cfg.Logger.Error(nil, "Error while creating Choreo publisher")
-					} else {
-						publishers = append(publishers, publisher)
-						cfg.Logger.Info("Choreo publisher added")
-					}
-				}
-			}
-		}
+	if cfg.ELKAnalyticsEnabled {
+		publishers = append(publishers, analytics_publisher.NewELK(cfg, cfg.ELKAnalyticsLogLevel))
+		cfg.Logger.Sugar().Debug(fmt.Sprintf("ELK publisher added with log level: %s", cfg.ELKAnalyticsLogLevel))
 	}
+	if cfg.MoesifAnalyticsEnabled {
+		publisher := analytics_publisher.NewMoesif(cfg)
+		publishers = append(publishers, publisher)
+		cfg.Logger.Info("Moesif publisher added")
+	}
+	if cfg.ChoreoAnalyticsEnabled {
+		publisher := analytics_publisher.NewChoreo(cfg, cfg.ChoreoAnalyticsAuthURL, cfg.ChoreoAnalyticsAuthToken)
+		if publisher == nil {
+			cfg.Logger.Error(nil, "Error while creating Choreo publisher")
+		} else {
+			publishers = append(publishers, publisher)
+			cfg.Logger.Info("Choreo publisher added")
+		}
+	}	
+	
 	if len(publishers) == 0 {
 		cfg.Logger.Sugar().Debug("No analytics publishers found. Analytics will not be published.")
 	}
 	return &Analytics{
 		cfg:         cfg,
-		configStore: configStore,
 		publishers:  publishers,
 	}
 }

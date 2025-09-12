@@ -86,7 +86,7 @@ const (
 	// ExtAuthMetadataContextKey is the context key for external authorization metadata.
 	ExtAuthMetadataContextKey = "envoy.filters.http.ext_authz"
 	// ExtProcMetadataContextKey is the context key for external processing metadata.
-	ExtProcMetadataContextKey = "envoy.filters.http.ext_proc"
+	ExtProcMetadataContextKey = "com.wso2.kgw.ext_proc"
 	// Wso2MetadataPrefix is the prefix for WSO2 metadata.
 	Wso2MetadataPrefix = "x-wso2-"
 	// APIIDKey is the key for the API ID.

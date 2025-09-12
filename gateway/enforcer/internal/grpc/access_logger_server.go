@@ -26,7 +26,6 @@ import (
 	v3 "github.com/envoyproxy/go-control-plane/envoy/service/accesslog/v3"
 	"github.com/wso2/apk/gateway/enforcer/internal/analytics"
 	"github.com/wso2/apk/gateway/enforcer/internal/config"
-	"github.com/wso2/apk/gateway/enforcer/internal/datastore"
 	"github.com/wso2/apk/gateway/enforcer/internal/util"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
@@ -36,16 +35,14 @@ import (
 type AccessLogServiceServer struct {
 	cfg         *config.Server
 	analytics   *analytics.Analytics
-	configStore *datastore.ConfigStore
 }
 
 // newAccessLogServiceServer creates a new instance of the Access Log Service Server.
-func newAccessLogServiceServer(cfg *config.Server, configStore *datastore.ConfigStore) *AccessLogServiceServer {
-	analytics := analytics.NewAnalytics(cfg, configStore)
+func newAccessLogServiceServer(cfg *config.Server) *AccessLogServiceServer {
+	analytics := analytics.NewAnalytics(cfg)
 	return &AccessLogServiceServer{
 		cfg:         cfg,
 		analytics:   analytics,
-		configStore: configStore,
 	}
 }
 
@@ -67,16 +64,16 @@ func (s *AccessLogServiceServer) StreamAccessLogs(stream v3.AccessLogService_Str
 }
 
 // StartAccessLogServiceServer starts the Access Log Service Server.
-func StartAccessLogServiceServer(cfg *config.Server, configStore *datastore.ConfigStore) {
+func StartAccessLogServiceServer(cfg *config.Server) {
 	// Create a new instance of the Access Log Service Server
-	accessLogServiceServer := newAccessLogServiceServer(cfg, configStore)
+	accessLogServiceServer := newAccessLogServiceServer(cfg)
 
 	kaParams := keepalive.ServerParameters{
 		Time:    time.Duration(cfg.ExternalProcessingKeepAliveTime) * time.Hour, // Ping the client if it is idle for 2 hours
 		Timeout: 20 * time.Second,
 	}
 	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath,
-		cfg.EnforcerPrivateKeyPath,
+		cfg.EnforcerPrivateKeyPath, cfg.ALSPlainText,
 		grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize),
 		grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)),
 		grpc.KeepaliveParams(kaParams))

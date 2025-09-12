@@ -46,75 +46,59 @@ func NewAnalytics(mediation *dpv2alpha1.Mediation) *Analytics {
 
 // Process processes the request configuration for analytics.
 func (a *Analytics) Process(requestConfig *requestconfig.Holder) *Result {
-	// Implement the logic to process the requestConfig for analytics
-	// This is a placeholder implementation
 	result := NewResult()
-	var err error
-	result.Metadata[analytics.APIIDKey], err = structpb.NewValue("value")
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for APIIDKey: %v", err)
-	}
-	result.Metadata[analytics.APIContextKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Context)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for APIContextKey: %v", err)
-	}
-	// result.Metadata[organizationMetadataKey], err = structpb.NewValue(requestConfigHolder.MatchedAPI.OrganizationID)
-	result.Metadata[analytics.APINameKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Name)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for APINameKey: %v", err)
-	}
-	result.Metadata[analytics.APIVersionKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Version)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for APIVersionKey: %v", err)
-	}
-	result.Metadata[analytics.APITypeKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Type)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for APITypeKey: %v", err)
-	}
-	// result.Metadata[analytics.ApiCreatorKey], err = structpb.NewValue(s.requestConfigHolder.MatchedAPI.Creator)
-	// result.Metadata[analytics.ApiCreatorTenantDomainKey], err = structpb.NewValue(s.requestConfigHolder.MatchedAPI.CreatorTenant)
-	result.Metadata[analytics.APIOrganizationIDKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Organization)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for APIOrganizationIDKey: %v", err)
+
+	// Early return if requestConfig itself is nil
+	if requestConfig == nil {
+		return result
 	}
 
-	result.Metadata[analytics.CorrelationIDKey], err = structpb.NewValue(requestConfig.RequestAttributes.RequestID)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for CorrelationIDKey: %v", err)
+	// Safe helpers
+	addMetadata := func(key string, val string) {
+		if val == "" {
+			return
+		}
+		v, err := structpb.NewValue(val)
+		if err != nil {
+			a.logger.Sugar().Errorf("Error creating structpb value for %s: %v", key, err)
+			return
+		}
+		result.Metadata[key] = v
 	}
-	result.Metadata[analytics.RegionKey], err = structpb.NewValue(a.cfg.EnforcerRegionID)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for RegionKey: %v", err)
+
+	// Safely extract API metadata
+	if requestConfig.RouteMetadata != nil {
+		api := requestConfig.RouteMetadata.Spec.API
+		addMetadata(analytics.APIIDKey, api.Name)
+		addMetadata(analytics.APIContextKey, api.Context)
+		addMetadata(analytics.APINameKey, api.Name)
+		addMetadata(analytics.APIVersionKey, api.Version)
+		addMetadata(analytics.APITypeKey, api.Type)
+		addMetadata(analytics.APICreatorKey, api.APICreator)
+		addMetadata(analytics.APICreatorTenantDomainKey, api.APICreatorTenantDomain)
+		addMetadata(analytics.APIOrganizationIDKey, api.Organization)
+		addMetadata(analytics.APIEnvironmentKey, api.Environment)
 	}
-	// result.Metadata[analytics.UserAgentKey], err = structpb.NewValue(s.requestConfigHolder.Metadata.UserAgent)
-	// result.Metadata[analytics.ClientIpKey], err = structpb.NewValue(s.requestConfigHolder.Metadata.ClientIP)
-	// result.Metadata[analytics.ApiResourceTemplateKey], err = structpb.NewValue(s.requestConfigHolder.ApiResourceTemplate)
-	// result.Metadata[analytics.Destination], err = structpb.NewValue(s.requestConfigHolder.Metadata.Destination)
-	result.Metadata[analytics.APIEnvironmentKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Environment)
-	if err != nil {
-		a.logger.Sugar().Errorf("Error creating structpb value for APIEnvironmentKey: %v", err)
+
+	// Request attributes
+	if requestConfig.RequestAttributes != nil {
+		addMetadata(analytics.CorrelationIDKey, requestConfig.RequestAttributes.RequestID)
 	}
+
+	// Region
+	addMetadata(analytics.RegionKey, a.cfg.EnforcerRegionID)
+
+	// Application info
 	if requestConfig.MatchedApplication != nil {
-		result.Metadata[analytics.AppIDKey], err = structpb.NewValue(requestConfig.MatchedApplication.UUID)
-		if err != nil {
-			a.logger.Sugar().Errorf("Error creating structpb value for AppIDKey: %v", err)
+		app := requestConfig.MatchedApplication
+		addMetadata(analytics.AppIDKey, app.UUID)
+		addMetadata(analytics.AppUUIDKey, app.UUID)
+		// AppKeyType currently reused from API environment
+		if requestConfig.RouteMetadata != nil {
+			addMetadata(analytics.AppKeyTypeKey, requestConfig.RouteMetadata.Spec.API.Environment)
 		}
-		result.Metadata[analytics.AppUUIDKey], err = structpb.NewValue(requestConfig.MatchedApplication.UUID)
-		if err != nil {
-			a.logger.Sugar().Errorf("Error creating structpb value for AppUUIDKey: %v", err)
-		}
-		result.Metadata[analytics.AppKeyTypeKey], err = structpb.NewValue(requestConfig.RouteMetadata.Spec.API.Environment)
-		if err != nil {
-			a.logger.Sugar().Errorf("Error creating structpb value for AppKeyTypeKey: %v", err)
-		}
-		result.Metadata[analytics.AppNameKey], err = structpb.NewValue(requestConfig.MatchedApplication.Name)
-		if err != nil {
-			a.logger.Sugar().Errorf("Error creating structpb value for AppNameKey: %v", err)
-		}
-		result.Metadata[analytics.AppOwnerKey], err = structpb.NewValue(requestConfig.MatchedApplication.Owner)
-		if err != nil {
-			a.logger.Sugar().Errorf("Error creating structpb value for AppOwnerKey: %v", err)
-		}
+		addMetadata(analytics.AppNameKey, app.Name)
+		addMetadata(analytics.AppOwnerKey, app.Owner)
 	}
 
 	return result
