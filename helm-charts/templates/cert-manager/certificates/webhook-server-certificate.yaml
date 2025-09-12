@@ -23,6 +23,9 @@ kind: Certificate
 metadata:
   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-webhook-server-cert
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "1"
 spec:
   dnsNames:
   - {{ template "kubernetes-gateway-helm.resource.prefix" . }}-common-controller-service.{{ .Release.Namespace }}.svc
