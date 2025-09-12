@@ -1723,11 +1723,38 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 	jwtHeaderExtractors := make([]eg.JWTHeaderExtractor, 0, len(headerNames))
 	for _, h := range headerNames {
 		jwtHeaderExtractors = append(jwtHeaderExtractors, eg.JWTHeaderExtractor{
-			Name: h,
+			Name:        h,
+			ValuePrefix: ptrTo("Bearer "),
 		})
 	}
-	// TODO - consider the Enabled in Authentication of AuthenticationRequest
-	if isSecured {
+	isAuthEnabled := len(auths) == 0
+	for _, auth := range auths {
+		authType := auth.GetAuthType()
+		switch a := authType.(type) {
+		case *model.OAuth2Authentication:
+			if a.Enabled {
+				isAuthEnabled = true
+				break
+			}
+		case *model.JWTAuthentication:
+			if a.Enabled {
+				isAuthEnabled = true
+				break
+			}
+		case *model.APIKeyAuthentication:
+			if a.Enabled {
+				isAuthEnabled = true
+				break
+			}
+		case *model.MTLSAuthentication:
+			if a.Enabled {
+				isAuthEnabled = true
+				break
+			}
+		}
+	}
+
+	if isSecured && isAuthEnabled {
 		if len(kms) == 0 {
 			defaultIDPKM := generateDefaultIDPKeyManager(namespace)
 			kms = append(kms, defaultIDPKM)
@@ -1847,7 +1874,8 @@ func convertIntPtrToDurationSecondsForMaxAge(ptr *int, defaultValue int) *gatewa
 func extractHeaderNames(auths []model.AuthenticationRequest) []string {
 	headerNames := make([]string, 0)
 	for _, auth := range auths {
-		switch v := auth.(type) {
+		authType := auth.GetAuthType()
+		switch v := authType.(type) {
 		case *model.OAuth2Authentication:
 			headerNames = append(headerNames, v.HeaderName)
 		case *model.JWTAuthentication:
