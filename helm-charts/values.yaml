@@ -338,7 +338,7 @@ idp:
 
 certmanager:
   enabled: true
-  enableClusterIssuer: true
+  enableIssuer: true
   enableRootCa: true
   rootCaSecretName: "kgw-root-certificate"
 

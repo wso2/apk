@@ -349,6 +349,7 @@ gatewaySystem:
 certmanager:
   enabled: true
   enableClusterIssuer: true
+  enableIssuer: true
   enableRootCa: true
   rootCaSecretName: "apk-root-certificate"
 
