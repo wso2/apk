@@ -1723,7 +1723,8 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 	jwtHeaderExtractors := make([]eg.JWTHeaderExtractor, 0, len(headerNames))
 	for _, h := range headerNames {
 		jwtHeaderExtractors = append(jwtHeaderExtractors, eg.JWTHeaderExtractor{
-			Name: h,
+			Name:        h,
+			ValuePrefix: ptrTo("Bearer "),
 		})
 	}
 	isAuthEnabled := len(auths) == 0
