@@ -549,6 +549,11 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		}
 	}
 
+	// Append all BackendTrafficPolicy objects
+	for _, b := range btpByName {
+		objects = append(objects, b)
+	}
+
 	// CORS
 	cors := apiResourceBundle.APKConf.CorsConfiguration
 	if cors != nil && !cors.CorsConfigurationEnabled {
@@ -577,11 +582,6 @@ func createResourcesForEnvironment(apiResourceBundle *dto.APIResourceBundle, env
 		sp := generateSecurityPolicy(spName, isSecured, scopes, targetRefs, cors, apiResourceBundle.APKConf.KeyManagers,
 			apiResourceBundle.APKConf.Authentication, apiResourceBundle.Namespace)
 		objects = append(objects, sp)
-	}
-
-	// Append all BackendTrafficPolicy objects
-	for _, b := range btpByName {
-		objects = append(objects, b)
 	}
 
 	return objects, nil

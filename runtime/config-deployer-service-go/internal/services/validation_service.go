@@ -136,6 +136,10 @@ func ValidateAndRetrieveAPKConfiguration(apkConfJson string) (*model.APKConf, er
 		if len(errors) > 0 {
 			return nil, fmt.Errorf("APK configuration endpoint validation failed: %v", errors)
 		}
+		err = apkConfValidator.ValidateRateLimit(apkConf.RateLimit, apkConf.Operations)
+		if err != nil {
+			return nil, fmt.Errorf("APK configuration rate limit validation failed: %w", err)
+		}
 		return &apkConf, nil
 	} else {
 		if validationResponse.ErrorItems != nil && len(validationResponse.ErrorItems) > 0 {
