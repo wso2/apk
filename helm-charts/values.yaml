@@ -45,7 +45,7 @@ wso2:
       envoyProxy:
         name: "wso2-kgw-envoy-proxy-default"
       envoyGateway:
-        namespace: "default"
+        namespace: "apk-integration-test"
         clusterRoleName: "envoy-gateway-cluster-role"
         clusterRoleBindingName: "envoy-gateway-cluster-role-binding"
       envoyGatewayExtensionServer:
@@ -69,8 +69,9 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/kgw-envoy-gateway-extension-server:2.0.0-alpha2
+
+          imagePullPolicy: IfNotPresent
+          image: kgw-envoy-gateway-extension-server:2.0.0-SNAPSHOT
           security:
             sslHostname: "adapter"
         service:
@@ -95,8 +96,11 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/kgw-config-deployer-service:2.0.0-alpha2
+
+          imagePullPolicy: IfNotPresent
+          image: kgw-config-deployer-service:2.0.0-SNAPSHOT
+          env:
+            K8S_RELEASE_NAME: "apk-test-setup"
           # debug: true
           # configs:
           #   tls:
@@ -121,8 +125,8 @@ wso2:
             failureThreshold: 5
           strategy: RollingUpdate
           replicas: 1
-          imagePullPolicy: Always
-          image: wso2/kgw-common-controller:2.0.0-alpha2
+          imagePullPolicy: IfNotPresent
+          image: kgw-common-controller:2.0.0-SNAPSHOT
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -148,8 +152,9 @@ wso2:
               periodSeconds: 20
               failureThreshold: 5
             strategy: RollingUpdate
-            imagePullPolicy: Always
-            image: wso2/kgw-enforcer:2.0.0-alpha2
+
+            imagePullPolicy: IfNotPresent
+            image: kgw-enforcer:2.0.0-SNAPSHOT
             security:
               sslHostname: "enforcer"
 #            logging:
@@ -253,13 +258,13 @@ envoy:
             - HTTPListener
         service:
           fqdn:
-            hostname: envoy-gateway-extension-server-service.default.svc.cluster.local
+            hostname: envoy-gateway-extension-server-service.apk-integration-test.svc.cluster.local
             port: 5005
       rateLimit:
         backend:
           type: Redis
           redis:
-            url: redis-master.default.svc.cluster.local:6379
+            url: redis-master.apk-integration-test.svc.cluster.local:6379
 
   createNamespace: false
 
@@ -333,8 +338,9 @@ idp:
         failureThreshold: 5
       strategy: RollingUpdate
       replicas: 1
-      imagePullPolicy: Always
-      image: wso2/kgw-idp-domain-service:2.0.0-alpha2
+
+      imagePullPolicy: IfNotPresent
+      image: kgw-idp-domain-service:2.0.0-SNAPSHOT
 
 certmanager:
   enabled: true
