@@ -157,6 +157,7 @@ func (apiClient *APIClient) GenerateK8sArtifacts(apkConf *model.APKConf, definit
 	} else {
 		apkConf.ID = uniqueId
 	}
+	apkConf = apkConfUtil.AddOptionsResources(apkConf)
 	apiResourceBundle := apkConfUtil.CreateAPIResourceBundle(apkConf, organization, cpInitiated, namespace, definition)
 	k8sArtifacts, err := crbuilder.CreateResources(&apiResourceBundle)
 	if err != nil {

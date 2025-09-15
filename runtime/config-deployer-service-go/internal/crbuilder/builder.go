@@ -1146,17 +1146,17 @@ func GenerateHTTPRoutes(bundle *dto.APIResourceBundle, withVersion bool, environ
 						Method: method,
 					},
 				}
-				if bundle.APKConf.CorsConfiguration != nil && bundle.APKConf.CorsConfiguration.CorsConfigurationEnabled {
-					rule.Matches = append(rule.Matches,
-						gatewayv1.HTTPRouteMatch{
-							Path: &gatewayv1.HTTPPathMatch{
-								Type:  ptrTo(pathMatchType),
-								Value: ptrTo(path),
-							},
-							Method: ptrTo(gatewayv1.HTTPMethodOptions),
-						},
-					)
-				}
+				//if bundle.APKConf.CorsConfiguration != nil && bundle.APKConf.CorsConfiguration.CorsConfigurationEnabled {
+				//	rule.Matches = append(rule.Matches,
+				//		gatewayv1.HTTPRouteMatch{
+				//			Path: &gatewayv1.HTTPPathMatch{
+				//				Type:  ptrTo(pathMatchType),
+				//				Value: ptrTo(path),
+				//			},
+				//			Method: ptrTo(gatewayv1.HTTPMethodOptions),
+				//		},
+				//	)
+				//}
 
 				if requestRedirectFilter == nil {
 					// Create backend reference
@@ -1601,7 +1601,7 @@ func generateRatelimitRules(rlConf *model.RateLimit) []eg.RateLimitRule {
 	return ratelimitRules
 }
 
-// generateRatelimitRules generates the rate limit rules based on the RatelimitConfiguration.
+// generateAIRatelimitRules generates the rate limit rules based on the RatelimitConfiguration.
 func generateAIRatelimitRules(rlConf *model.AIRatelimit) []eg.RateLimitRule {
 	var ratelimitRules []eg.RateLimitRule
 
@@ -1721,10 +1721,14 @@ func generateSecurityPolicy(name string, isSecured bool, scopes []string, target
 	}
 	headerNames := extractHeaderNames(auths)
 	jwtHeaderExtractors := make([]eg.JWTHeaderExtractor, 0, len(headerNames))
-	for _, h := range headerNames {
+	for h, authType := range headerNames {
+		var valuePrefix *string
+		if authType != model.AuthNameAPIKey {
+			valuePrefix = ptrTo("Bearer ")
+		}
 		jwtHeaderExtractors = append(jwtHeaderExtractors, eg.JWTHeaderExtractor{
 			Name:        h,
-			ValuePrefix: ptrTo("Bearer "),
+			ValuePrefix: valuePrefix,
 		})
 	}
 	isAuthEnabled := len(auths) == 0
@@ -1871,18 +1875,22 @@ func convertIntPtrToDurationSecondsForMaxAge(ptr *int, defaultValue int) *gatewa
 	return &dur
 }
 
-func extractHeaderNames(auths []model.AuthenticationRequest) []string {
-	headerNames := make([]string, 0)
+func extractHeaderNames(auths []model.AuthenticationRequest) map[string]model.AuthName {
+	headerNames := make(map[string]model.AuthName)
 	for _, auth := range auths {
 		authType := auth.GetAuthType()
 		switch v := authType.(type) {
 		case *model.OAuth2Authentication:
-			headerNames = append(headerNames, v.HeaderName)
+			if v.HeaderEnable {
+				headerNames[v.HeaderName] = auth.GetAuthType().GetAuthType()
+			}
 		case *model.JWTAuthentication:
-			headerNames = append(headerNames, v.HeaderName)
+			if v.HeaderEnable {
+				headerNames[v.HeaderName] = auth.GetAuthType().GetAuthType()
+			}
 		case *model.APIKeyAuthentication:
 			if v.HeaderEnable {
-				headerNames = append(headerNames, v.HeaderName)
+				headerNames[v.HeaderName] = auth.GetAuthType().GetAuthType()
 			}
 		}
 	}

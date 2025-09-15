@@ -91,6 +91,23 @@ func (apkConfUtil *APKConfUtil) GetResourceLevelEndpointConfig(operations []mode
 	return endpointConfigurationsList
 }
 
+// AddOptionsResources adds OPTIONS method resources to the APK configuration if CORS is enabled.
+func (apkConfUtil *APKConfUtil) AddOptionsResources(apkConf *model.APKConf) *model.APKConf {
+	if apkConf.CorsConfiguration != nil && apkConf.CorsConfiguration.CorsConfigurationEnabled {
+		options := "OPTIONS"
+		optionsResources := make([]model.APKOperations, 0)
+		for _, op := range apkConf.Operations {
+			if *op.Verb != options {
+				optionsOp := op
+				optionsOp.Verb = &options
+				optionsResources = append(optionsResources, optionsOp)
+			}
+		}
+		apkConf.Operations = append(apkConf.Operations, optionsResources...)
+	}
+	return apkConf
+}
+
 // CreateAPIResourceBundle creates a resource bundle for the API artifact based on the APK configuration and definition.
 func (apkConfUtil *APKConfUtil) CreateAPIResourceBundle(apkConf *model.APKConf, organization *dto.Organization,
 	cpInitiated bool, namespace, definition string) dto.APIResourceBundle {
