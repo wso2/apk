@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # Source: cert-manager/templates/crds.yaml
-{{- if and .Values.certmanager.enabled .Values.certmanager.crdsEnabled }}
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -24,9 +23,6 @@ metadata:
     app.kubernetes.io/instance: 'cert-manager'
     # Generated labels
     app.kubernetes.io/version: "v1.10.1"
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-5"
 spec:
   group: cert-manager.io
   names:
@@ -1318,9 +1314,6 @@ metadata:
     app.kubernetes.io/instance: 'cert-manager'
     # Generated labels
     app.kubernetes.io/version: "v1.10.1"
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-5"
 spec:
   group: acme.cert-manager.io
   names:
@@ -2385,9 +2378,6 @@ metadata:
     app.kubernetes.io/instance: 'cert-manager'
     # Generated labels
     app.kubernetes.io/version: "v1.10.1"
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-5"
 spec:
   group: cert-manager.io
   names:
@@ -2588,9 +2578,6 @@ metadata:
     app.kubernetes.io/instance: 'cert-manager'
     # Generated labels
     app.kubernetes.io/version: "v1.10.1"
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-5"
 spec:
   group: cert-manager.io
   names:
@@ -3882,9 +3869,6 @@ metadata:
     app.kubernetes.io/instance: 'cert-manager'
     # Generated labels
     app.kubernetes.io/version: "v1.10.1"
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-5"
 spec:
   group: cert-manager.io
   names:
@@ -4258,9 +4242,6 @@ metadata:
     app.kubernetes.io/instance: 'cert-manager'
     # Generated labels
     app.kubernetes.io/version: "v1.10.1"
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-weight": "-5"
 spec:
   group: acme.cert-manager.io
   names:
@@ -4431,4 +4412,3 @@ spec:
                   type: string
       served: true
       storage: true
-{{- end -}}
