@@ -114,7 +114,7 @@ func StartExternalProcessingServer(cfg *config.Server,
 		Timeout: 20 * time.Second,
 	}
 	server, err := util.CreateGRPCServer(cfg.EnforcerPublicKeyPath,
-		cfg.EnforcerPrivateKeyPath,
+		cfg.EnforcerPrivateKeyPath, false,
 		grpc.MaxRecvMsgSize(cfg.ExternalProcessingMaxMessageSize),
 		grpc.MaxHeaderListSize(uint32(cfg.ExternalProcessingMaxHeaderLimit)),
 		grpc.KeepaliveParams(kaParams))
@@ -333,7 +333,32 @@ func (s *ExternalProcessingServer) Process(srv envoy_service_proc_v3.ExternalPro
 				ResponseHeaderMode: responseHeaderMode,
 				ResponseBodyMode:   responseBodyMode,
 			}
-
+			if s.cfg.AnalyticsEnabled && s.cfg.ForceAnalyticsToAllAPIs {
+				s.log.Sugar().Debug("Forcing analytics for all APIs")
+				analytics := mediation.NewAnalytics(&dpv2alpha1.Mediation{
+					PolicyName:    "Analytics",
+					PolicyID:      "analytics",
+					PolicyVersion: "v1",
+					Parameters: []*dpv2alpha1.Parameter{
+						{
+							Key:   mediation.MediationAnalyticsPolicyKeyEnabled,
+							Value: "true",
+						},
+					},
+				})
+				if analytics != nil {
+					result := analytics.Process(requestConfigHolder)
+					s.log.Sugar().Debugf("Analytics Mediation Result: %+v", result)
+					s.updateRequestConfigBasedOnMediationResults(result, requestConfigHolder, requestconfig.ProcessingPhaseRequestHeaders)
+					s.processMediationResultAndPrepareResponse(
+						result,
+						resp,
+						requestconfig.ProcessingPhaseRequestHeaders,
+						metadata)
+				} else {
+					s.log.Sugar().Error("Failed to create analytics mediation")
+				}
+			}
 			if requestConfigHolder.RoutePolicy != nil {
 				s.log.Sugar().Debugf("RoutePolicy: %+v", requestConfigHolder.RoutePolicy)
 				if requestConfigHolder.RoutePolicy.Spec.RequestMediation != nil {

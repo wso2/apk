@@ -27,4 +27,8 @@ spec:
     - name: servlet-https
       protocol: TCP
       port: 8081
+    - name: access-logger
+      protocol: TCP
+      port: 18090
+      appProtocol: grpc
 {{- end -}}

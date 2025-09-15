@@ -20,9 +20,36 @@ metadata:
   name: {{ .Values.wso2.kgw.dp.envoyProxy.name | default "wso2-kgw-envoy-proxy-default" }}
   namespace: {{ .Release.Namespace }}
 spec:
+{{- if or 
+      (and .Values.wso2.kgw.dp.gatewayRuntime.analytics .Values.wso2.kgw.dp.gatewayRuntime.analytics.enabled) 
+      (.Values.wso2.kgw.dp.gatewayRuntime.tracing) 
+      (.Values.wso2.kgw.dp.gatewayRuntime.metrics) 
+}}
+  telemetry:
+{{- if and .Values.wso2.kgw.dp.gatewayRuntime.analytics .Values.wso2.kgw.dp.gatewayRuntime.analytics.enabled}}
+    accessLog:
+      settings:
+        - sinks:
+            - type: ALS
+              als:
+                backendRefs:
+                  - name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-enforcer-grpc-service
+                    namespace: {{ .Release.Namespace }}
+                    port: 18090
+                type: HTTP
+{{- end }}
+{{- if .Values.wso2.kgw.dp.gatewayRuntime.tracing}}
+    tracing:
+{{ toYaml .Values.wso2.kgw.dp.gatewayRuntime.tracing | indent 6 }}
+{{- end }}
+{{- if .Values.wso2.kgw.dp.gatewayRuntime.metrics}}
+    metrics:
+{{ toYaml .Values.wso2.kgw.dp.gatewayRuntime.metrics | indent 6 }}
+{{- end }}
+{{- end }}
   logging:
     level:
-      default: warn
+      default: debug
       {{- if .Values.wso2.kgw.dp.gatewayRuntime.deployment.enforcer.debug }}
       ext_proc: debug
       jwt: debug
@@ -158,6 +185,82 @@ spec:
                         - name: REVOKED_TOKEN_CLEANUP_INTERVAL
                           value: "3600"
                         {{- end }}
+
+                        {{- if and .Values.wso2.kgw.dp.gatewayRuntime.analytics .Values.wso2.kgw.dp.gatewayRuntime.analytics.enabled }}
+                        - name: ANALYTICS_ENABLED
+                          value: "true"
+                        {{- $publishers := .Values.wso2.kgw.dp.gatewayRuntime.analytics.publishers | default list -}}
+
+                        {{- $s := dict -}}
+                        {{- $_ := set $s "foundDefault" false -}}
+                        {{- $_ := set $s "default" dict -}}
+                        {{- $_ := set $s "foundMoesif" false -}}
+                        {{- $_ := set $s "moesif" dict -}}
+                        {{- $_ := set $s "foundElk" false -}}
+
+                        {{- range $i, $p := $publishers }}
+                          {{- if and (eq $p.type "default") ($p.enabled) (not (index $s "foundDefault")) }}
+                            {{- $_ := set $s "foundDefault" true -}}
+                            {{- $_ := set $s "default" $p -}}
+                          {{- end }}
+                          {{- if and (eq $p.type "moesif") ($p.enabled) (not (index $s "foundMoesif")) }}
+                            {{- $_ := set $s "foundMoesif" true -}}
+                            {{- $_ := set $s "moesif" $p -}}
+                          {{- end }}
+                          {{- if and (eq $p.type "elk") ($p.enabled) (not (index $s "foundElk")) }}
+                            {{- $_ := set $s "foundElk" true -}}
+                          {{- end }}
+                        {{- end }}
+
+                        {{- if (index $s "foundDefault") }}
+                          {{- $first := index $s "default" }}
+                          {{- $sn := coalesce $first.secretName "choreo-analytics-secret" }}
+                          {{- $sk := coalesce $first.secretKey $first.key "authToken" }}
+                          {{- $auk := coalesce $first.authURLKey "authURL" }}
+                          {{- $logLevelChoreo := coalesce $first.logLevel "INFO" }}
+                        - name: CHOREO_ANALYTICS_ENABLED
+                          value: "true"
+                        - name: CHOREO_ANALYTICS_LOG_LEVEL
+                          value: {{ $logLevelChoreo | quote }}
+                        - name: CHOREO_ANALYTICS_AUTH_TOKEN
+                          valueFrom:
+                            secretKeyRef:
+                              name: {{ $sn | quote }}
+                              key: {{ $sk | quote }}
+                        - name: CHOREO_ANALYTICS_AUTH_URL
+                          valueFrom:
+                            secretKeyRef:
+                              name: {{ $sn | quote }}
+                              key: {{ $auk | quote }}
+                        {{- end }}
+
+                        {{- if (index $s "foundMoesif") }}
+                          {{- $first := index $s "moesif" }}
+                          {{- $sn := coalesce $first.secretName "moesif-secret" }}
+                          {{- $sk := coalesce $first.secretKey $first.key "moesifToken" }}
+                          {{- $logLevelMoesif := coalesce $first.logLevel "INFO" }}
+                        - name: MOESIF_ANALYTICS_ENABLED
+                          value: "true"
+                        - name: MOESIF_ANALYTICS_LOG_LEVEL
+                          value: {{ $logLevelMoesif | quote }}
+                        - name: MOESIF_TOKEN
+                          valueFrom:
+                            secretKeyRef:
+                              name: {{ $sn | quote }}
+                              key: {{ $sk | quote }}
+                        {{- end }}
+
+                        {{- if (index $s "foundElk") }}
+                          {{- $first := index $s "elk" }}
+                          {{- $logLevelElk := coalesce $first.logLevel "INFO" }}
+                        - name: ELK_ANALYTICS_ENABLED
+                          value: "true"
+                        - name: ELK_ANALYTICS_LOG_LEVEL
+                          value: {{ $logLevelElk | quote }}
+                        {{- end }}
+                        {{- end }}
+
+
                       volumeMounts:
                         - name: tmp
                           mountPath: /tmp
