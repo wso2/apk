@@ -188,7 +188,7 @@
   ],
   "endpointConfig": {
     "endpoint_type": "http",
-    "sandbox_endpoints": { "url": "http://graphql-faker-service:9002/graphql" },
-    "production_endpoints": { "url": "http://graphql-faker-service:9002/graphql" }
+    "sandbox_endpoints": { "url": "http://graphql-faker-service.apk.svc.cluster.local:9002/graphql" },
+    "production_endpoints": { "url": "http://graphql-faker-service.apk.svc.cluster.local:9002/graphql" }
   }
 }
