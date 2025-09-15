@@ -23,6 +23,9 @@ kind: Certificate
 metadata:
   name: {{ template "kubernetes-gateway-helm.resource.prefix" . }}-idp-listener-cert
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "1"
 spec:
   dnsNames:
   - "*.{{ .Values.idp.listener.hostname | default "idp.am.wso2.com"}}"

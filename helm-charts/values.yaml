@@ -361,6 +361,10 @@ certmanager:
   enableRootCa: true
   rootCaSecretName: "kgw-root-certificate"
 
+cert-manager:
+  crds:
+    enabled: true
+
 postgresql:
   enabled: true
   fullnameOverride: "wso2kgw-db-service"
