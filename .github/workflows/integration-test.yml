@@ -139,6 +139,7 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
+        kubectl apply -f certmanager-crds/certmanager-crds.yaml
         helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
@@ -268,6 +269,7 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
+        kubectl apply -f certmanager-crds/certmanager-crds.yaml
         helm install apk-test-setup -n apk-integration-test . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
@@ -417,6 +419,7 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
+        kubectl apply -f certmanager-crds/certmanager-crds.yaml
         helm install apk -n apk . --debug --wait --timeout 15m0s \
         --set wso2.subscription.imagePullSecrets=azure-registry \
         --set wso2.kgw.dp.configdeployer.deployment.image=${{ secrets.AZURE_ACR_NAME }}.azurecr.io/kgw-config-deployer-service:${{ github.sha }} \
