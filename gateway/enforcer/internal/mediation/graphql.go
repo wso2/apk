@@ -192,18 +192,25 @@ func (g *GraphQL) Process(requestConfig *requestconfig.Holder) *Result {
 }
 
 func unzipGzip(compressedData []byte) (string, error) {
-	reader, err := gzip.NewReader(bytes.NewBuffer(compressedData))
-	if err != nil {
-		return "", fmt.Errorf("error creating gzip reader: %v", err)
-	}
-	defer reader.Close()
+	// Check if data starts with gzip magic number (0x1f, 0x8b)
+	if len(compressedData) >= 2 && compressedData[0] == 0x1f && compressedData[1] == 0x8b {
+		// Data appears to be gzip compressed
+		reader, err := gzip.NewReader(bytes.NewBuffer(compressedData))
+		if err != nil {
+			return "", fmt.Errorf("error creating gzip reader: %v", err)
+		}
+		defer reader.Close()
 
-	// Read the decompressed data
-	schemaString, err := io.ReadAll(reader)
-	if err != nil {
-		return "", fmt.Errorf("error reading decompressed data of the apiDefinition: %v", err)
+		// Read the decompressed data
+		schemaString, err := io.ReadAll(reader)
+		if err != nil {
+			return "", fmt.Errorf("error reading decompressed data of the apiDefinition: %v", err)
+		}
+		return string(schemaString), nil
 	}
-	return string(schemaString), nil
+	
+	// Data is not gzip compressed, return as plain text
+	return string(compressedData), nil
 }
 
 // GQLRequest is to unmarshal the request body into

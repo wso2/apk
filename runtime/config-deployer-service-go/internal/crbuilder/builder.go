@@ -43,6 +43,9 @@ var allowedMethods = map[string]gatewayv1.HTTPMethod{
 	"HEAD":    gatewayv1.HTTPMethodHead,
 	"OPTIONS": gatewayv1.HTTPMethodOptions,
 	"TRACE":   gatewayv1.HTTPMethodTrace,
+	"QUERY":        gatewayv1.HTTPMethodPost,
+	"MUTATION":     gatewayv1.HTTPMethodPost,
+	"SUBSCRIPTION": gatewayv1.HTTPMethodPost,
 }
 
 var logger logging.Logger
