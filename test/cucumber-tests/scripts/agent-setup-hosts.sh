@@ -5,7 +5,7 @@ kubectl wait --timeout=5m -n apk deployment/apk-wso2-apk-adapter-deployment --fo
 kubectl wait --timeout=15m -n apk deployment/apk-wso2-apk-gateway-runtime-deployment --for=condition=Available
 kubectl wait --timeout=5m -n apk deployment/apim-apk-agent --for=condition=Available
 IP=$(kubectl get svc apk-wso2-apk-gateway-service -n apk --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
-ING_IP=$(kubectl get ing -n apk apim-wso2am-cp-ingress --output=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+ING_IP=$(kubectl get ing -n apk apim-wso2am-acp-ingress --output=jsonpath='{.status.loadBalancer.ingress[0].ip}')
 CC_IP=$(kubectl get svc apk-wso2-apk-common-controller-web-server-service -n apk --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
 sudo echo "$IP localhost" | sudo tee -a /etc/hosts
 sudo echo "$IP idp.am.wso2.com" | sudo tee -a /etc/hosts
