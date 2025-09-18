@@ -110,7 +110,7 @@ wso2:
       enabled: true
       enableServiceAccountCreation: true
       enableClusterRoleCreation: true
-      serviceAccountName: wso2apk-platform
+      serviceAccountName: choreo-apk
       roleName: wso2apk-role
     listener:
       hostname: "api.am.wso2.com"
