@@ -103,7 +103,7 @@ wso2:
     helmHooks:
       webhooksCleanupEnabled: true
       webhooksCleanup:
-        image: "bitnami/kubectl:1.31.1"
+        image: "choreoanonymouspullable.azurecr.io/choreoipaas/kubectl:1.0.0"
     webhooks:
       validatingwebhookconfigurations: true
       mutatingwebhookconfigurations: true
