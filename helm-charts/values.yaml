@@ -102,6 +102,8 @@ wso2:
           path: ""
     helmHooks:
       webhooksCleanupEnabled: true
+      webhooksCleanup:
+        image: "bitnami/kubectl:1.31.1"
     webhooks:
       validatingwebhookconfigurations: true
       mutatingwebhookconfigurations: true
@@ -375,7 +377,6 @@ wso2:
 #              JWKSClient:
 #                skipSSLVerification: false
 #                hostnameVerifier: "AllowAll"
-
     metrics:
       enabled: false
       # configDSBalHost: 0.0.0.0
