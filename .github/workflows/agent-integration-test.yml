@@ -71,6 +71,11 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
+        helm install cert-manager jetstack/cert-manager \
+          --namespace apk-integration-test \
+          --create-namespace \
+          --version v1.17.1 \
+          --set crds.enabled=true
         helm install apk -n apk . --debug --wait --timeout 15m0s \
         --set wso2.apk.cp.enabledSubscription=true \
         --set wso2.apk.cp.host="apim-apk-agent-service.apk.svc.cluster.local" \
@@ -168,6 +173,11 @@ jobs:
         helm repo add bitnami https://charts.bitnami.com/bitnami
         helm repo add jetstack https://charts.jetstack.io
         helm dependency build
+        helm install cert-manager jetstack/cert-manager \
+          --namespace apk-integration-test \
+          --create-namespace \
+          --version v1.17.1 \
+          --set crds.enabled=true
         helm install apk -n apk . \
         --set wso2.apk.cp.enabledSubscription=true \
         --set wso2.apk.cp.enableApiPropagation=true \
