@@ -479,6 +479,10 @@ certmanager:
 
 postgresql:
   enabled: true
+  image:
+    # Use bitnamilegacy images as all existing container images have been migrated from the public catalog (docker.io/bitnami) to the “Bitnami Legacy” repository (docker.io/bitnamilegacy)
+    repository: "bitnamilegacy/postgresql"
+    debug: true
   fullnameOverride: "wso2apk-db-service"
   auth:
     database: WSO2AM_DB
@@ -507,11 +511,12 @@ postgresql:
         drop: ["ALL"]
       runAsUser: null
 
-  image:
-    debug: true
-
 redis:
   enabled: true
+  image:
+    # Use bitnamilegacy images as all existing container images have been migrated from the public catalog (docker.io/bitnami) to the “Bitnami Legacy” repository (docker.io/bitnamilegacy)
+    repository: "bitnamilegacy/redis"
+    debug: true
   architecture: standalone
   fullnameOverride: redis
   primary:
@@ -533,8 +538,11 @@ redis:
   auth:
     enabled: false
     usePasswordFiles: false
-  image:
-    debug: true
 
 integrationTest:
   addHelmConfigsRequiredForTests: true
+
+# This is to use bitnamilegacy images.
+global:
+  security:
+    allowInsecureImages: true
