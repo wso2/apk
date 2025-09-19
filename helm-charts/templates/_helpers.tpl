@@ -28,10 +28,9 @@ app.kubernetes.io/release: {{ .root.Release.Name }}
 Common labels
 */}}
 {{- define "apk-helm.labels" -}}
-choreo.component: choreo-apk
 {{- if .Values.labels }}
 {{- if .Values.labels.common }}
-{{- range $key, $val := .Values.labels.common }}
+{{- range $key, $val := .Values.labels.common -}}
 {{ $key }}: {{ $val }}
 {{- end }}
 {{- end }}
