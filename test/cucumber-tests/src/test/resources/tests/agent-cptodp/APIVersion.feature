@@ -54,12 +54,12 @@ Feature: Creating new versions of the APIs
     Then I delete the application "SampleApp" from devportal
     Then the response status code should be 200
     And I have a valid Publisher access token
-    Then I find the apiUUID of the API created with the name "1.0.0"
+    Then I find the apiUUID of the API created with the name "SwaggerPetstore" version "1.0.0"
     Then I undeploy the selected API
     Then the response status code should be 200
     And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/1.0.0/pet/4" with body ""
     And the response status code should be 404
-    Then I find the apiUUID of the API created with the name "2.0.0"
+    Then I find the apiUUID of the API created with the name "SwaggerPetstore" version "2.0.0"
     Then I undeploy the selected API
     Then the response status code should be 200
     And I send "GET" request to "https://default.gw.wso2.com:9095/petstore/2.0.0/pet/4" with body ""
@@ -124,13 +124,13 @@ Feature: Creating new versions of the APIs
     Then I delete the application "TestApp" from devportal
     Then the response status code should be 200
     And I have a valid Publisher access token
-    Then I find the apiUUID of the API created with the name "3.14"
+    Then I find the apiUUID of the API created with the name "StarWarsAPI" version "3.14"
     Then I undeploy the selected API
     Then the response status code should be 200
     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.14" with body "{\"query\":\"{ hero { name } }\"}"
     And I eventually receive 404 response code, not accepting
       |200|
-    Then I find the apiUUID of the API created with the name "3.2"
+    Then I find the apiUUID of the API created with the name "StarWarsAPI" version "3.2"
     Then I undeploy the selected API
     Then the response status code should be 200
     And I send "POST" request to "https://default.gw.wso2.com:9095/graphql/3.2" with body "{\"query\":\"{ hero { name } }\"}"

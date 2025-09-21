@@ -586,7 +586,25 @@ public class APIDeploymentSteps {
     
         sharedContext.setResponse(appSearchResponse);
         sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
-        sharedContext.setApiUUID(Utils.extractAPIUUID(sharedContext.getResponseBody()));
+        logger.info("API Search Response: " + sharedContext.getResponseBody());
+        sharedContext.setApiUUID(Utils.extractAPIUUID(sharedContext.getResponseBody(), apiName));
+        Thread.sleep(3000);
+    }
+
+    @Then("I find the apiUUID of the API created with the name {string} version {string}")
+    public void find_api_uuid_using_name(String apiName, String apiVersion) throws Exception {
+        logger.info("Fetching the APIs");
+    
+        Map<String, String> headers = new HashMap<>();
+        headers.put(Constants.REQUEST_HEADERS.AUTHORIZATION, "Bearer " + sharedContext.getPublisherAccessToken());
+        headers.put(Constants.REQUEST_HEADERS.HOST, Constants.DEFAULT_APIM_API_HOST);
+        
+        HttpResponse appSearchResponse = sharedContext.getHttpClient().doGet(Utils.getAPISearchEndpoint(apiName), headers);
+    
+        sharedContext.setResponse(appSearchResponse);
+        sharedContext.setResponseBody(SimpleHTTPClient.responseEntityBodyToString(sharedContext.getResponse()));
+        logger.info("API Search Response: " + sharedContext.getResponseBody());
+        sharedContext.setApiUUID(Utils.extractAPIUUIDByNameAndVersion(sharedContext.getResponseBody(), apiName, apiVersion));
         Thread.sleep(3000);
     }
 
