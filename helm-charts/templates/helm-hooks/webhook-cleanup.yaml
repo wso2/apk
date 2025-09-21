@@ -14,7 +14,7 @@ spec:
       serviceAccountName: "{{ template "apk-helm.resource.prefix" . }}-apk-wso2-cleanup-serviceaccount"
       containers:
       - name: cleanup
-        image: "bitnami/kubectl:1.31.1"
+        image: {{ .Values.wso2.apk.helmHooks.webhooksCleanup.image }}
         command:
           - "sh"
           - "-c"

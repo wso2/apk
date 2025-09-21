@@ -19,7 +19,7 @@ helm install cert-manager jetstack/cert-manager \
 helm upgrade -i apk-eg . \
     -n apk-egress-gateway \
     --create-namespace \
-    -f helm-charts/values-local.yaml
+    -f values-local.yaml
 ```
 
 ### Run Cucumber Tests

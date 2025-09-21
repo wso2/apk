@@ -33,6 +33,10 @@ wso2:
     helmHooks:
       # -- Helm hooks for cleaning up webhooks before installing, upgrading and uninstalling
       webhooksCleanupEnabled: true
+      # -- Webhook cleanup job
+      webhooksCleanup:
+        # -- Image
+        image: "choreoanonymouspullable.azurecr.io/choreoipaas/kubectl:1.0.0"
     webhooks:
       validatingwebhookconfigurations : true
       mutatingwebhookconfigurations : true
