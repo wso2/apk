@@ -79,7 +79,7 @@ Feature: CORS Policy handling
     Then I delete the application "SampleApp" from devportal
     Then the response status code should be 200
     And I have a valid Publisher access token
-    Then I find the apiUUID of the API created with the name "cors"
+    Then I find the apiUUID of the API created with the name "test-cors"
     Then I undeploy the selected API
     Then the response status code should be 200
     And I send "GET" request to "https://default.gw.wso2.com:9095/test_cors/2.0.0/anything/" with body ""

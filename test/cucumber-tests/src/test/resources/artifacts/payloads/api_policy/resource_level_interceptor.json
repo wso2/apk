@@ -1,111 +1,216 @@
 {
     "name": "ResourceLevelIntercepterAPI",
+    "displayName": "ResourceLevelIntercepterAPI",
+    "description": "A simple HTTP Request & Response Service",
     "context": "/rlintercepter",
     "version": "1.0.0",
     "provider": "admin",
+    "lifeCycleStatus": "CREATED",
+    "wsdlInfo": null,
+    "wsdlUrl": null,
+    "responseCachingEnabled": false,
+    "cacheTimeout": 300,
+    "hasThumbnail": false,
     "isDefaultVersion": false,
+    "isRevision": false,
+    "revisionedApiId": null,
+    "revisionId": 0,
+    "enableSchemaValidation": false,
+    "enableSubscriberVerification": false,
     "type": "HTTP",
     "audience": null,
-    "transport": ["http", "https"],
+    "audiences": [
+        "all"
+    ],
+    "transport": [
+        "http",
+        "https"
+    ],
     "tags": [],
-    "policies": ["Unlimited"],
+    "policies": [
+        "Unlimited"
+    ],
+    "organizationPolicies": [],
+    "apiThrottlingPolicy": null,
     "authorizationHeader": "Authorization",
     "apiKeyHeader": "ApiKey",
-    "securityScheme": ["oauth_basic_auth_api_key_mandatory", "oauth2"],
+    "securityScheme": [
+        "oauth_basic_auth_api_key_mandatory",
+        "oauth2"
+    ],
+    "maxTps": null,
+    "visibility": "PUBLIC",
+    "visibleRoles": [],
+    "visibleTenants": [],
+    "visibleOrganizations": [
+        "none"
+    ],
+    "mediationPolicies": [],
+    "apiPolicies": {
+        "request": [],
+        "response": [],
+        "fault": []
+    },
+    "subscriptionAvailability": "CURRENT_TENANT",
+    "subscriptionAvailableTenants": [],
     "additionalProperties": [
-      { "name": "APIGroup", "value": "Gold", "display": false },
-      { "name": "APITier", "value": "Unlimited", "display": false }
+        {
+            "name": "APITier",
+            "value": "Unlimited",
+            "display": false
+        },
+        {
+            "name": "APIGroup",
+            "value": "Gold",
+            "display": false
+        }
     ],
     "additionalPropertiesMap": {
-      "APIGroup": { "name": "APIGroup", "value": "Gold", "display": false },
-      "APITier": { "name": "APITier", "value": "Unlimited", "display": false }
+        "APITier": {
+            "name": "APITier",
+            "value": "Unlimited",
+            "display": false
+        },
+        "APIGroup": {
+            "name": "APIGroup",
+            "value": "Gold",
+            "display": false
+        }
     },
-    "apiPolicies": {
-      "request": [],
-      "response": [],
-      "fault": []
+    "monetization": null,
+    "accessControl": "NONE",
+    "accessControlRoles": [],
+    "businessInformation": {
+        "businessOwner": null,
+        "businessOwnerEmail": null,
+        "technicalOwner": null,
+        "technicalOwnerEmail": null
     },
     "corsConfiguration": {
-      "corsConfigurationEnabled": false,
-      "accessControlAllowOrigins": ["*"],
-      "accessControlAllowCredentials": false,
-      "accessControlAllowHeaders": [
-        "authorization",
-        "Access-Control-Allow-Origin",
-        "Content-Type",
-        "SOAPAction"
-      ],
-      "accessControlAllowMethods": [
-        "GET",
-        "PUT",
-        "POST",
-        "DELETE",
-        "PATCH",
-        "OPTIONS"
-      ]
+        "corsConfigurationEnabled": false,
+        "accessControlAllowOrigins": [
+            "*"
+        ],
+        "accessControlAllowCredentials": false,
+        "accessControlAllowHeaders": [
+            "authorization",
+            "Access-Control-Allow-Origin",
+            "Content-Type",
+            "SOAPAction"
+        ],
+        "accessControlAllowMethods": [
+            "GET",
+            "PUT",
+            "POST",
+            "DELETE",
+            "PATCH",
+            "OPTIONS"
+        ]
     },
+    "websubSubscriptionConfiguration": {
+        "enable": false,
+        "secret": "",
+        "signingAlgorithm": "SHA1",
+        "signatureHeader": "x-hub-signature"
+    },
+    "workflowStatus": null,
+    "createdTime": "1758259774641",
+    "lastUpdatedTimestamp": "1758259774651",
+    "lastUpdatedTime": "2025-09-19 05:29:34.651",
     "endpointConfig": {
-      "endpoint_type": "http",
-      "sandbox_endpoints": { "url": "http://backend.apk.svc.cluster.local" },
-      "production_endpoints": { "url": "http://backend.apk.svc.cluster.local" }
+        "endpoint_type": "http",
+        "sandbox_endpoints": {
+            "url": "http://backend.default.svc.cluster.local"
+        },
+        "production_endpoints": {
+            "url": "http://backend.default.svc.cluster.local"
+        }
     },
+    "primaryProductionEndpointId": null,
+    "primarySandboxEndpointId": null,
     "endpointImplementationType": "ENDPOINT",
+    "subtypeConfiguration": {
+        "subtype": "DEFAULT",
+        "configuration": null
+    },
     "scopes": [],
     "operations": [
-      {
-          "id": "",
-          "target": "/headers",
-          "verb": "GET",
-          "authType": "Application & Application User",
-          "throttlingPolicy": "Unlimited",
-          "scopes": [],
-          "usedProductIds": [],
-          "amznResourceName": null,
-          "amznResourceTimeout": null,
-          "amznResourceContentEncode": null,
-          "payloadSchema": null,
-          "uriMapping": null,
-          "operationPolicies": {
-            "request": [
-              {
-                "policyName": "ccCallInterceptorService",
-                "policyVersion": "v1",
-                "parameters": {
-                  "interceptorServiceURL": "http://interceptor-service.apk.svc.cluster.local:8443",
-                  "includes": "request_header,request_body"
-                }
-              }
-            ],
-            "response": [
-              {
-                "policyName": "ccCallInterceptorService",
-                "policyVersion": "v1",
-                "parameters": {
-                  "interceptorServiceURL": "http://interceptor-service.apk.svc.cluster.local:8443",
-                  "includes": "response_header,response_body"
-                }
-              }
-            ],
-            "fault": []
-          }
-      },
-      {
-        "id": "",
-        "target": "/get",
-        "verb": "GET",
-        "authType": "Application & Application User",
-        "throttlingPolicy": "Unlimited",
-        "scopes": [],
-        "usedProductIds": [],
-        "amznResourceName": null,
-        "amznResourceTimeout": null,
-        "amznResourceContentEncode": null,
-        "payloadSchema": null,
-        "uriMapping": null,
-        "operationPolicies": { "request": [], "response": [], "fault": [] }
-      }
+        {
+            "id": "",
+            "target": "/headers",
+            "verb": "GET",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [
+                    {
+                        "policyName": "apkCallInterceptorService",
+                        "policyId": "082b6f77-648a-4ed8-b0ba-a39b9f225831",
+                        "policyVersion": "v1",
+                        "parameters": {
+                            "interceptorServiceURL": "http://interceptor-service.default.svc.cluster.local:8443",
+                            "includes": "request_header,request_body"
+                        }
+                    }
+                ],
+                "response": [
+                    {
+                        "policyName": "apkCallInterceptorService",
+                        "policyId": "082b6f77-648a-4ed8-b0ba-a39b9f225831",
+                        "policyVersion": "v1",
+                        "parameters": {
+                            "interceptorServiceURL": "http://interceptor-service.default.svc.cluster.local:8443",
+                            "includes": "response_header,response_body"
+                        }
+                    }
+                ],
+                "fault": []
+            }
+        },
+        {
+            "id": "",
+            "target": "/get",
+            "verb": "GET",
+            "authType": "Application & Application User",
+            "throttlingPolicy": "Unlimited",
+            "scopes": [],
+            "usedProductIds": [],
+            "amznResourceName": null,
+            "amznResourceTimeout": null,
+            "amznResourceContentEncode": null,
+            "payloadSchema": null,
+            "uriMapping": null,
+            "operationPolicies": {
+                "request": [],
+                "response": [],
+                "fault": []
+            }
+        }
     ],
+    "threatProtectionPolicies": null,
+    "categories": [],
+    "keyManagers": [
+        "all"
+    ],
+    "serviceInfo": null,
+    "advertiseInfo": {
+        "advertised": false,
+        "apiExternalProductionEndpoint": null,
+        "apiExternalSandboxEndpoint": null,
+        "originalDevPortalUrl": null,
+        "apiOwner": "admin",
+        "vendor": "WSO2"
+    },
     "gatewayVendor": "wso2",
-    "gatewayType": "wso2/apk"
-  }
-  
+    "gatewayType": "wso2/apk",
+    "initiatedFromGateway": false,
+    "asyncTransportProtocols": [],
+    "egress": false
+}
