@@ -24,6 +24,9 @@ wso2:
     helmHooks:
       # -- Helm hooks for cleaning up webhooks before installing, upgrading and uninstalling
       webhooksCleanupEnabled: true
+      webhooksCleanup:
+        enabled : true
+        image: "bitnamilegacy/kubectl:1.31.1"
     webhooks:
       validatingwebhookconfigurations : true
       mutatingwebhookconfigurations : true
