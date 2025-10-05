@@ -52,13 +52,11 @@ wso2:
       #   jwksEndpoint: "https://idp.am.wso2.com:9095/oauth2/jwks"
       #   secretName: "wso2apk-idp-signing"
       #   fileName: "idp.crt"
-    # cp:
-    # enabledSubscription: true
-    # host: "apim-apk-agent-service.apk.svc.cluster.local"
-    # skipSSLVerification: true
-    #   skipSSLVerification: false
-    #   persistence:
-    #     type: "K8s"
+    cp:
+      enableApiPropagation: true
+      enabledSubscription: true
+      host: "apim-apk-agent-service.apk.svc.cluster.local"
+      skipSSLVerification: true
     dp:
       enabled: true
       gateway:
@@ -100,7 +98,7 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/apk-config-deployer-service:1.3.0
-        # debug: true
+          # debug: true
           # configs:
           #   tls:
           #     secretName: "my-secret"
@@ -130,9 +128,9 @@ wso2:
           security:
             sslHostname: "adapter"
           logging:
-            level: "DEBG" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
-        # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
-          configs: 
+            level: "INFO" # LogLevels can be "DEBG", "FATL", "ERRO", "WARN", "INFO", "PANC"
+          # #          logFormat: "TEXT" # Values can be "JSON", "TEXT"
+          configs:
             enableGatewayClassController: false
         #   apiNamespaces:
         #     - "apk-v12"
@@ -251,21 +249,21 @@ wso2:
             image: wso2/apk-enforcer:1.3.0
             security:
               sslHostname: "enforcer"
-#            logging:
-#              level: DEBUG
+            #            logging:
+            #              level: DEBUG
             env:
-              TOKEN_REVOCATION_ENABLED: "true" 
-#            configs:
-#              apiKey:
-#                enabled: true
-#                issuer: "https://localhost:9444/oauth2/token"
-#              tls:
-#                secretName: "router-cert"
-#                certKeyFilename: ""
-#                certFilename: ""
-#              JWKSClient:
-#                skipSSLVerification: false
-#                hostnameVerifier: "AllowAll"
+              TOKEN_REVOCATION_ENABLED: "true"
+            configs:
+              apiKey:
+                enabled: true
+                issuer: "https://am.wso2.com:443/oauth2/token"
+    #              tls:
+    #                secretName: "router-cert"
+    #                certKeyFilename: ""
+    #                certFilename: ""
+    #              JWKSClient:
+    #                skipSSLVerification: false
+    #                hostnameVerifier: "AllowAll"
 
     metrics:
       enabled: false
@@ -399,7 +397,6 @@ postgresql:
 
   image:
     debug: true
-    # Use bitnamilegacy images as all existing container images have been migrated from the public catalog (docker.io/bitnami) to the “Bitnami Legacy” repository (docker.io/bitnamilegacy)
     repository: "bitnamilegacy/postgresql"
 
 redis:
@@ -427,7 +424,6 @@ redis:
     usePasswordFiles: false
   image:
     debug: true
-    # Use bitnamilegacy images as all existing container images have been migrated from the public catalog (docker.io/bitnami) to the “Bitnami Legacy” repository (docker.io/bitnamilegacy)
     repository: "bitnamilegacy/redis"
 
 # This is to use bitnamilegacy images.
