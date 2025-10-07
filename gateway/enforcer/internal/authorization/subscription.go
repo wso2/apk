@@ -26,9 +26,9 @@ func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.
 		if rch.AuthenticatedAuthenticationType == authenticator.Oauth2AuthType {
 			clientID := rch.JWTValidationInfo.ClientID
 			if clientID != "" {
-				appID := getAppIDUsingConsumerKey(clientID, subAppDataStore, api, "OAuth2")
-				if appID != "" {
-					appMaps := subAppDataStore.GetApplicationMappings(api.OrganizationID, appID)
+				appKeyInfo := getAppIDUsingConsumerKey(clientID, subAppDataStore, api, "OAuth2", cfg)
+				if appKeyInfo != nil {
+					appMaps := subAppDataStore.GetApplicationMappings(api.OrganizationID, appKeyInfo.AppID)
 					for _, appMap := range appMaps {
 						subscriptions := subAppDataStore.GetSubscriptions(api.OrganizationID, appMap.SubscriptionRef)
 						for _, subscription := range subscriptions {
@@ -36,8 +36,18 @@ func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.
 							if subscribedAPI.Name == api.Name {
 								versionMatched, err := regexp.MatchString(subscribedAPI.Version, api.Version)
 								if err == nil && versionMatched {
+									// Check subscription status
+									cfg.Logger.Sugar().Debugf("Subscription status %+v, Environment: %s", subscription.SubStatus, appKeyInfo.KeyType)
+									if !isSubscriptionActive(subscription.SubStatus, appKeyInfo.KeyType) {
+										cfg.Logger.Sugar().Debugf("Subscription is not active. Status: %s, Key Type: %s", subscription.SubStatus, appKeyInfo.KeyType)
+										return &dto.ImmediateResponse{
+											StatusCode: 403,
+											Message:    string(forbiddenJSONMessage),
+										}
+									}
+									cfg.Logger.Sugar().Debugf("Subscription validation successful! Status: %s, Key Type: %s", subscription.SubStatus, appKeyInfo.KeyType)
 									rch.MatchedSubscription = subscription
-									rch.MatchedApplication = subAppDataStore.GetApplication(api.OrganizationID, appID)
+									rch.MatchedApplication = subAppDataStore.GetApplication(api.OrganizationID, appKeyInfo.AppID)
 									return nil
 								}
 							}
@@ -67,6 +77,16 @@ func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.
 								if subscribedAPI.Name == api.Name {
 									versionMatched, err := regexp.MatchString(subscribedAPI.Version, api.Version)
 									if err == nil && versionMatched {
+										// Check subscription status
+										keyType := "DEFAULT" // Default assumption, might need to be determined differently
+										cfg.Logger.Sugar().Debugf("Subscription status %+v, Key Type: %s (API Key)", subscription.SubStatus, keyType)
+										if !isSubscriptionActive(subscription.SubStatus, keyType) {
+											cfg.Logger.Sugar().Debugf("Subscription is not active. Status: %s", subscription.SubStatus)
+											return &dto.ImmediateResponse{
+												StatusCode: 403,
+												Message:    string(forbiddenJSONMessage),
+											}
+										}
 										rch.MatchedSubscription = subscription
 										rch.MatchedApplication = application
 										cfg.Logger.Sugar().Debugf("Matched Subscription %+v", rch.MatchedSubscription)
@@ -87,13 +107,48 @@ func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.
 	return nil
 }
 
-func getAppIDUsingConsumerKey(consumerKey string, subAppDatastore *datastore.SubscriptionApplicationDataStore, api *requestconfig.API, securityScheme string) string {
-	appKeyMapKey := util.PrepareApplicationKeyMappingCacheKey(consumerKey, api.EnvType, securityScheme, api.Environment)
-	appKeyMap := subAppDatastore.GetApplicationKeyMapping(api.OrganizationID, appKeyMapKey)
-	if appKeyMap != nil {
-		return appKeyMap.ApplicationUUID
+// Helper function to check if subscription status allows API access
+func isSubscriptionActive(subStatus string, keyType string) bool {
+	switch subStatus {
+	case "UNBLOCKED":
+		return true
+	case "BLOCKED":
+		return false
+	case "PROD_ONLY_BLOCKED":
+		return keyType == "SANDBOX"
+	default:
+		return true
 	}
-	return ""
+}
+
+// AppKeyInfo stores the application ID and key type
+type AppKeyInfo struct {
+	AppID   string
+	KeyType string
+}
+
+func getAppIDUsingConsumerKey(consumerKey string, subAppDatastore *datastore.SubscriptionApplicationDataStore, api *requestconfig.API, securityScheme string, cfg *config.Server) *AppKeyInfo {
+	// Try both possible key types since we don't know which one the client is using
+	keyTypes := []string{"PRODUCTION", "SANDBOX"}
+
+	cfg.Logger.Sugar().Debugf("Looking up application for consumerKey=%s, api.EnvType=%s, api.Environment=%s, securityScheme=%s",
+		consumerKey, api.EnvType, api.Environment, securityScheme)
+
+	for _, keyType := range keyTypes {
+		appKeyMapKey := util.PrepareApplicationKeyMappingCacheKey(consumerKey, keyType, securityScheme, api.Environment)
+		cfg.Logger.Sugar().Debugf("Trying cache key: %s (keyType=%s)", appKeyMapKey, keyType)
+		appKeyMap := subAppDatastore.GetApplicationKeyMapping(api.OrganizationID, appKeyMapKey)
+		if appKeyMap != nil {
+			cfg.Logger.Sugar().Debugf("Found app mapping: UUID=%s, KeyType=%s", appKeyMap.ApplicationUUID, appKeyMap.KeyType)
+			return &AppKeyInfo{
+				AppID:   appKeyMap.ApplicationUUID,
+				KeyType: appKeyMap.KeyType,
+			}
+		}
+	}
+	cfg.Logger.Sugar().Warnf("No application mapping found for consumerKey=%s with any key type", consumerKey)
+	return nil
+
 }
 func getApplicationForAPPUUID(api *requestconfig.API, applicationUUID string, subAppDatastore *datastore.SubscriptionApplicationDataStore) *subscription_model.Application {
 	return subAppDatastore.GetApplication(api.OrganizationID, applicationUUID)
