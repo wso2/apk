@@ -37,12 +37,6 @@ jobs:
         fetch-depth: "0"
         path: apk-repo
         token: ${{ secrets.APK_BOT_TOKEN }}
-    - name: Set release username and email
-      shell: sh
-      run: |
-        git config --global user.name ${{ secrets.APK_BOT_USER }}
-        git config --global user.email ${{ secrets.APK_BOT_EMAIL }}
-        git merge origin/main
     - name: Add hosts entries
       run: |
         sudo tee -a /etc/hosts > /dev/null <<EOF
