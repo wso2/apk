@@ -1,0 +1,93 @@
+name: verify qsg
+
+on:
+  schedule:
+    - cron: '30 12 * * *'  # Runs every day at 12:30 UTC (6 PM SLT)
+  workflow_dispatch:      # Optional: allows manual trigger
+
+jobs:
+  verify_qsg_on_KGW_1-3-0-1:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Create AKS Cluster and set context
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.72.0
+        inlineScript: |
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys 
+    - uses: azure/aks-set-context@v3
+      with:
+         resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
+         cluster-name: 'go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
+    - name: Create Namespace apk-integration-test
+      shell: sh
+      run: |
+        kubectl create namespace apk-integration-test
+        kubectl get ns 
+    - name: Create Image pull secret.
+      shell: sh
+      run: |
+        kubectl create secret docker-registry azure-registry --docker-server=${{ secrets.AZURE_ACR_NAME }}.azurecr.io --docker-username=${{ secrets.AZURE_ACR_USER }} --docker-password=${{ secrets.AZURE_ACR_PASSWORD }} --docker-email=${{ secrets.APK_BOT_EMAIL }} -n apk-integration-test
+    - name: Checkout apk-repo.
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: "0"
+        path: apk-repo
+        token: ${{ secrets.APK_BOT_TOKEN }}
+    - name: Set release username and email
+      shell: sh
+      run: |
+        git config --global user.name ${{ secrets.APK_BOT_USER }}
+        git config --global user.email ${{ secrets.APK_BOT_EMAIL }}
+        git merge origin/main
+    - name: Add hosts entries
+      run: |
+        sudo tee -a /etc/hosts > /dev/null <<EOF
+        127.0.0.1   api.example.com
+        127.0.0.1   idp.example.com
+        127.0.0.1   default.gw.example.com
+        EOF
+
+    - name: test qsg
+      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
+      shell: sh
+      run: |
+        set -e  # Exit immediately if any command fails
+        helm repo add wso2apk https://github.com/wso2/apk/releases/download/1.3.0-1
+        helm repo update
+        helm install apk wso2apk/apk-helm --version 1.3.0-1 -f https://raw.githubusercontent.com/wso2/apk/refs/heads/main/helm-charts/samples/apk/1.3.0-qsg-values.yaml --debug --wait --timeout 15m0s
+        kubectl port-forward svc/apk-wso2-apk-gateway-service 9095:9095 &
+        curl -O https://raw.githubusercontent.com/wso2/docs-apk/refs/heads/1.3.0/en/docs/assets/files/get-started/SampleAPIDefinition.json
+        curl -k --location 'https://api.example.com:9095/api/configurator/1.3.0/apis/generate-configuration' --header 'Host: api.example.com' --form 'definition=@"SampleAPIDefinition.json"' > SampleService.apk-conf
+        sed -i.bak 's|^\s*basePath:.*|basePath: "/sample-api"|' SampleService.apk-conf
+        # Optional: verify
+        cat SampleService.apk-conf
+
+        response=$(curl -s -k --location 'https://idp.example.com:9095/oauth2/token' \
+            --header 'Host: idp.example.com' \
+            --header 'Authorization: Basic NDVmMWM1YzgtYTkyZS0xMWVkLWFmYTEtMDI0MmFjMTIwMDAyOjRmYmQ2MmVjLWE5MmUtMTFlZC1hZmExLTAyNDJhYzEyMDAwMg==' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'grant_type=client_credentials' \
+            --data-urlencode 'scope=apk:api_create')
+
+        # Extract token using jq
+        token=$(echo "$response" | jq -r '.access_token')
+        echo $token
+
+
+        curl -f -k --location 'https://api.example.com:9095/api/deployer/1.3.0/apis/deploy' \
+        --header 'Host: api.example.com' \
+        --header "Authorization: Bearer $token" \
+        --form 'apkConfiguration=@"SampleService.apk-conf"' \
+        --form 'definitionFile=@"SampleAPIDefinition.json"'
+
+        curl -f -k --location 'https://default.gw.example.com:9095/sample-api/0.1.0/uuid' \
+        --header 'Host: default.gw.example.com' \
+        --header "Authorization: Bearer $token"
+
+        
+        
+    
