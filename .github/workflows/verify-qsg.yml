@@ -17,11 +17,11 @@ jobs:
       with:
         azcliversion: 2.72.0
         inlineScript: |
-          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys 
+          az aks create --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" --name "verify-qsg-kgw-${{ secrets.AKS_CLUSTER_NAME }}" --enable-cluster-autoscaler --min-count 1 --max-count 3 --location "southeastasia" --generate-ssh-keys 
     - uses: azure/aks-set-context@v3
       with:
          resource-group: '${{ secrets.AZURE_RESOURCE_GROUP }}'
-         cluster-name: 'go-integ-${{ secrets.AKS_CLUSTER_NAME }}-${{ github.event.number || github.run_id }}'
+         cluster-name: 'verify-qsg-kgw-${{ secrets.AKS_CLUSTER_NAME }}'
     - name: Create Namespace apk-integration-test
       shell: sh
       run: |
@@ -87,7 +87,31 @@ jobs:
         curl -f -k --location 'https://default.gw.example.com:9095/sample-api/0.1.0/uuid' \
         --header 'Host: default.gw.example.com' \
         --header "Authorization: Bearer $token"
-
+    - name: Helm release undeploy
+      if: always()
+      shell: sh
+      run: |
+        helm uninstall apk
+    - name: Delete AKS cluster
+      if: always()
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.72.0
+        inlineScript: |
+          az aks delete --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --name verify-qsg-kgw-${{ secrets.AKS_CLUSTER_NAME }} --yes
+    - name: Logout from azure
+      if: always()
+      uses: azure/CLI@v1
+      with:
+        azcliversion: 2.72.0
+        inlineScript: |
+          az logout
+    - name: Notify Google Chat on failure
+      if: failure()
+      run: |
+        curl -X POST -H 'Content-Type: application/json' \
+          --data '{"text":"⚠️ KGW QSG workflow failed! Check logs: '${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'"}' \
+          ${{ secrets.GCHAT_WEBHOOK_URL }}
         
         
     
