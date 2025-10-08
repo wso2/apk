@@ -5,6 +5,10 @@ on:
     - cron: '30 12 * * *'  # Runs every day at 12:30 UTC (6 PM SLT)
   workflow_dispatch:      # Optional: allows manual trigger
 
+concurrency: 
+  group: verify-kgw-qsg
+  cancel-in-progress: true
+
 jobs:
   verify_qsg_on_KGW_1-3-0-1:
     runs-on: ubuntu-latest
@@ -46,7 +50,6 @@ jobs:
         EOF
 
     - name: test qsg
-      if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
       shell: sh
       run: |
         set -e  # Exit immediately if any command fails
