@@ -109,7 +109,7 @@ jobs:
       if: failure()
       run: |
         curl -X POST -H 'Content-Type: application/json' \
-          --data '{"text":"⚠️ KGW QSG workflow failed! Check logs: '${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'"}' \
+          --data '{"text":"QSG verification failed"}' \
           ${{ secrets.GCHAT_WEBHOOK_URL }}
         
         
