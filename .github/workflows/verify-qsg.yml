@@ -56,7 +56,9 @@ jobs:
         helm repo add wso2apk https://github.com/wso2/apk/releases/download/1.3.0-1
         helm repo update
         helm install apk wso2apk/apk-helm --version 1.3.0-1 -f https://raw.githubusercontent.com/wso2/apk/refs/heads/main/helm-charts/samples/apk/1.3.0-qsg-values.yaml --debug --wait --timeout 15m0s
+        sleep 120
         kubectl port-forward svc/apk-wso2-apk-gateway-service 9095:9095 &
+        sleep 120
         curl -O https://raw.githubusercontent.com/wso2/docs-apk/refs/heads/1.3.0/en/docs/assets/files/get-started/SampleAPIDefinition.json
         curl -k --location 'https://api.example.com:9095/api/configurator/1.3.0/apis/generate-configuration' --header 'Host: api.example.com' --form 'definition=@"SampleAPIDefinition.json"' > SampleService.apk-conf
         sed -i.bak 's|^\s*basePath:.*|basePath: "/sample-api"|' SampleService.apk-conf
