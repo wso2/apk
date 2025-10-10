@@ -166,15 +166,15 @@ func (ds *SubscriptionApplicationDataStore) GetApplicationMappings(org string, a
 }
 
 // GetSubscriptions Get an Subscription by UUID
-func (ds *SubscriptionApplicationDataStore) GetSubscriptions(org string, subscriptionID string) []*subscription_model.Subscription {
+func (ds *SubscriptionApplicationDataStore) GetSubscriptions(org string, subscriptionID string) map[string]*subscription_model.Subscription {
 	ds.mu.RLock()
 	defer ds.mu.RUnlock()
-	if orgSubs, exists := ds.subscriptions[org]; exists {
-		if subscription, exists := orgSubs[subscriptionID]; exists {
-			return []*subscription_model.Subscription{subscription}
+	if _, exists := ds.subscriptions[org]; exists {
+		if _, exists := ds.subscriptions[org][subscriptionID]; exists {
+			return ds.subscriptions[org]
 		}
 	}
-	return []*subscription_model.Subscription{}
+	return nil
 }
 
 // GetSubscription Get an Subscription by UUID
