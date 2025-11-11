@@ -3734,6 +3734,7 @@ func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, stri
 				}
 				if authSpec.AuthTypes.APIKey != nil && len(authSpec.AuthTypes.APIKey.Keys) > 0 {
 					authSchemes = append(authSchemes, "api_key")
+					loggers.LoggerAPKOperator.Debugf("Adding API key authentication scheme with %d keys", len(authSpec.AuthTypes.APIKey.Keys))
 					for _, apiKey := range authSpec.AuthTypes.APIKey.Keys {
 						if apiKey.In == "Header" {
 							apiKeyHeader = apiKey.Name
