@@ -3732,7 +3732,7 @@ func prepareSecuritySchemeForCP(apiState *synchronizer.APIState) ([]string, stri
 						authSchemes = append(authSchemes, "mutualssl_optional")
 					}
 				}
-				if len(authSpec.AuthTypes.APIKey.Keys) > 0 {
+				if authSpec.AuthTypes.APIKey != nil && len(authSpec.AuthTypes.APIKey.Keys) > 0 {
 					authSchemes = append(authSchemes, "api_key")
 					for _, apiKey := range authSpec.AuthTypes.APIKey.Keys {
 						if apiKey.In == "Header" {
