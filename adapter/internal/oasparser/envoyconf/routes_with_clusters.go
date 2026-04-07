@@ -599,7 +599,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		var lbEPs []*endpointv3.LocalityLbEndpoints
 
 		// validating the basepath to be same for all upstreams of an api
-		if strings.TrimSuffix(ep.Basepath, "/") != basePath {
+		if strings.TrimSuffix(ep.Basepath, "/") != strings.TrimSuffix(basePath, "/") {
 			return nil, nil, errors.New("endpoint basepath mismatched for " + ep.RawURL + ". expected : " + basePath + " but found : " + ep.Basepath)
 		}
 		// create addresses for endpoints
@@ -1439,6 +1439,7 @@ func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, r
 					// which is in nano seconds, so multiplying it in seconds here
 					Timeout:         strconv.FormatInt((op.RequestTimeout * time.Second).Milliseconds(), 10),
 					AuthorityHeader: op.EndpointCluster.Endpoints[0].GetAuthorityHeader(),
+					ResourcePath:    op.ResourcePath,
 				},
 				Include: op.Includes,
 			}
@@ -1454,6 +1455,7 @@ func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, r
 					// which is in nano seconds, so multiplying it in seconds here
 					Timeout:         strconv.FormatInt((op.RequestTimeout * time.Second).Milliseconds(), 10),
 					AuthorityHeader: op.EndpointCluster.Endpoints[0].GetAuthorityHeader(),
+					ResourcePath:    op.ResourcePath,
 				},
 				Include: op.Includes,
 			}

@@ -240,6 +240,8 @@ func getInterceptorEndpoint(namespace string, interceptorRef *dpv1alpha4.Interce
 		Name:      interceptorRef.Name}.String()].Spec
 	endpoints := model.GetEndpoints(types.NamespacedName{Namespace: namespace, Name: interceptor.BackendRef.Name},
 		gatewayBackendMapping)
+	basePath := model.GetBackendBasePath(types.NamespacedName{Namespace: namespace, Name: interceptor.BackendRef.Name},
+		gatewayBackendMapping)
 	var clusterName string
 	if isReq {
 		clusterName = constants.GlobalRequestInterceptorClusterName
@@ -250,6 +252,10 @@ func getInterceptorEndpoint(namespace string, interceptorRef *dpv1alpha4.Interce
 		conf := config.ReadConfigs()
 		clusterTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
 		requestTimeoutV := conf.Envoy.ClusterTimeoutInSeconds
+		var resourcePath *string
+		if basePath != "" {
+			resourcePath = &basePath
+		}
 		return &model.InterceptEndpoint{
 			Enable:          true,
 			ClusterName:     clusterName,
@@ -257,6 +263,7 @@ func getInterceptorEndpoint(namespace string, interceptorRef *dpv1alpha4.Interce
 			ClusterTimeout:  clusterTimeoutV,
 			RequestTimeout:  requestTimeoutV,
 			Includes:        model.GenerateInterceptorIncludes(interceptor.Includes),
+			ResourcePath:    resourcePath,
 		}
 	}
 	return nil
