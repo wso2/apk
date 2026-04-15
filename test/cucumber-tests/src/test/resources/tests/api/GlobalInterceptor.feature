@@ -7,7 +7,7 @@ Feature: API Deployment with Global Interceptor
     And make the API deployment request
     Then the response status code should be 200
     And the response body should contain "579ba27a1e03e2fdf099d1b6745e265f2d495606"
-    And I wait for 1 minute
+    Then I wait for 60 seconds
     Then I set headers
       |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/globalinterceptor/1.0.0/get" with body ""

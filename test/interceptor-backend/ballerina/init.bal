@@ -20,9 +20,11 @@ listener http:Listener ep2 = new (8445, secureSocket = {
 
 function init() returns error? {
     check ep0.attach(interceptorService, "/api/v1");
+    check ep0.attach(customPathInterceptorService, "/custom/v2");
     check ep0.'start();
     runtime:registerListener(ep0);
     check ep1.attach(interceptorService, "/api/v1");
+    check ep1.attach(customPathInterceptorService, "/custom/v2");
     check ep1.'start();
     runtime:registerListener(ep1);
     check ep2.attach(gwInterceptorService, "/api/v1");

@@ -388,7 +388,7 @@ public class BaseSteps {
 
     @Then("I wait for {int} minute")
     public void waitForMinute(int minute) throws InterruptedException {
-        Thread.sleep(minute * 1000);
+        Thread.sleep(minute * 60 * 1000);
     }
 
     @Then("I wait for {int} seconds")

@@ -7,7 +7,7 @@ Feature: API Deployment with Resource Interceptor
     And make the API deployment request
     Then the response status code should be 200
     And the response body should contain "547961eeaafed989119c45ffc13f8b87bfda821d"
-    And I wait for 1 minute
+    Then I wait for 60 seconds
     Then I set headers
       |Authorization|Bearer ${accessToken}|
     And I send "GET" request to "https://default.gw.wso2.com:9095/interceptor/1.0.0/get" with body ""
