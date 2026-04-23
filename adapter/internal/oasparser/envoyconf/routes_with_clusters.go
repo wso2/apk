@@ -417,7 +417,8 @@ func getExistingClusterName(endpoint model.EndpointCluster, clusterEndpointMappi
 // CreateLuaCluster creates lua cluster configuration.
 func CreateLuaCluster(interceptorCerts map[string][]byte, endpoint model.InterceptEndpoint) ([]*clusterv3.Cluster, []*corev3.Address, error) {
 	logger.LoggerOasparser.Debug("creating a lua cluster ", endpoint.ClusterName)
-	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath, nil)
+	basePath := strings.TrimSuffix(endpoint.EndpointCluster.Endpoints[0].Basepath, "/")
+	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, basePath, nil)
 }
 
 // CreateRateLimitCluster creates cluster relevant to the rate limit service
@@ -599,7 +600,7 @@ func processEndpoints(clusterName string, clusterDetails *model.EndpointCluster,
 		var lbEPs []*endpointv3.LocalityLbEndpoints
 
 		// validating the basepath to be same for all upstreams of an api
-		if strings.TrimSuffix(ep.Basepath, "/") != strings.TrimSuffix(basePath, "/") {
+		if strings.TrimSuffix(ep.Basepath, "/") != basePath {
 			return nil, nil, errors.New("endpoint basepath mismatched for " + ep.RawURL + ". expected : " + basePath + " but found : " + ep.Basepath)
 		}
 		// create addresses for endpoints
