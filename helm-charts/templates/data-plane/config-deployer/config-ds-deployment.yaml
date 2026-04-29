@@ -31,8 +31,14 @@ spec:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "configdeployer-ds" ) | indent 8}}
+{{- with .Values.wso2.apk.dp.configdeployer.deployment.pod.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/data-plane/config-deployer/config-ds-configmap.yaml") . | sha256sum }}
+{{- with .Values.wso2.apk.dp.configdeployer.deployment.pod.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
     spec:
       affinity: {{- include "apk-helm.deployment.affinity" ( dict "value" .Values.wso2.apk.dp.configdeployer.deployment.affinity "app" "config-ds" "context" $) | nindent 8 }}
       {{- if .Values.wso2.apk.dp.configdeployer.deployment.nodeSelector }}

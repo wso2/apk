@@ -97,6 +97,14 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/apk-config-deployer-service:1.3.0
+          # Configure Node Selector for the deployment
+          nodeSelector: {}
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
         # debug: true
           # configs:
           #   tls:
@@ -124,6 +132,14 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/apk-adapter:1.3.0
+          # Configure Node Selector for the deployment
+          nodeSelector: {}
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
           security:
             sslHostname: "adapter"
           logging:
@@ -158,6 +174,14 @@ wso2:
           replicas: 1
           imagePullPolicy: Always
           image: wso2/apk-common-controller:1.3.0
+          # Configure Node Selector for the deployment
+          nodeSelector: {}
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
           security:
             sslHostname: "commoncontroller"
           # configs:
@@ -187,6 +211,14 @@ wso2:
           image: wso2/apk-ratelimiter:1.3.0
           security:
             sslHostname: "ratelimiter"
+          # Configure Node Selector for the deployment
+          nodeSelector: {}
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
           # configs:
           #   tls:
           #     secretName: "ratelimiter-cert"
@@ -196,6 +228,14 @@ wso2:
       gatewayRuntime:
         deployment:
           replicas: 1
+          # Configure Node Selector for the deployment
+          nodeSelector: {}
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
           router:
             resources:
               requests:
@@ -323,6 +363,14 @@ idp:
       replicas: 1
       imagePullPolicy: Always
       image: wso2/apk-idp-domain-service:1.3.0
+      # Configure Node Selector for the deployment
+      nodeSelector: {}
+      # Pod-specific configurations
+      pod:
+        # -- Annotations for pods
+        annotations: {}
+        # -- Labels for pods
+        labels: {}
   idpui:
     deployment:
       resources:
@@ -344,6 +392,14 @@ idp:
       replicas: 1
       imagePullPolicy: Always
       image: wso2/apk-idp-ui:1.3.0
+      # Configure Node Selector for the deployment
+      nodeSelector: {}
+      # Pod-specific configurations
+      pod:
+        # -- Annotations for pods
+        annotations: {}
+        # -- Labels for pods
+        labels: {}
     configs:
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"
       idpAuthCallBackUrl: "https://idp.am.wso2.com:9095/oauth2/auth-callback"
