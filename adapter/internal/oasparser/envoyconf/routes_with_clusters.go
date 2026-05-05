@@ -417,7 +417,8 @@ func getExistingClusterName(endpoint model.EndpointCluster, clusterEndpointMappi
 // CreateLuaCluster creates lua cluster configuration.
 func CreateLuaCluster(interceptorCerts map[string][]byte, endpoint model.InterceptEndpoint) ([]*clusterv3.Cluster, []*corev3.Address, error) {
 	logger.LoggerOasparser.Debug("creating a lua cluster ", endpoint.ClusterName)
-	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, endpoint.EndpointCluster.Endpoints[0].Basepath, nil)
+	basePath := strings.TrimSuffix(endpoint.EndpointCluster.Endpoints[0].Basepath, "/")
+	return processEndpoints(endpoint.ClusterName, &endpoint.EndpointCluster, endpoint.ClusterTimeout, basePath, nil)
 }
 
 // CreateRateLimitCluster creates cluster relevant to the rate limit service
@@ -1439,6 +1440,7 @@ func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, r
 					// which is in nano seconds, so multiplying it in seconds here
 					Timeout:         strconv.FormatInt((op.RequestTimeout * time.Second).Milliseconds(), 10),
 					AuthorityHeader: op.EndpointCluster.Endpoints[0].GetAuthorityHeader(),
+					ResourcePath:    op.ResourcePath,
 				},
 				Include: op.Includes,
 			}
@@ -1454,6 +1456,7 @@ func GetInlineLuaScript(requestInterceptor map[string]model.InterceptEndpoint, r
 					// which is in nano seconds, so multiplying it in seconds here
 					Timeout:         strconv.FormatInt((op.RequestTimeout * time.Second).Milliseconds(), 10),
 					AuthorityHeader: op.EndpointCluster.Endpoints[0].GetAuthorityHeader(),
+					ResourcePath:    op.ResourcePath,
 				},
 				Include: op.Includes,
 			}

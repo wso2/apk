@@ -255,11 +255,12 @@ type InterceptEndpoint struct {
 	RequestTimeout  time.Duration
 	// Level this is an enum allowing only values {api, resource, operation}
 	// to indicate from which level interceptor is added
-	Level string
+	Level           string
 	// Includes this is an enum allowing only values in
 	// {"request_headers", "request_body", "request_trailer", "response_headers", "response_body", "response_trailer",
 	//"invocation_context" }
-	Includes *interceptor.RequestInclusions
+	Includes        *interceptor.RequestInclusions
+	ResourcePath    *string
 }
 
 // Certificate contains information of a client certificate

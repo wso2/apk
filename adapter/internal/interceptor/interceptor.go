@@ -46,6 +46,7 @@ type HTTPCallConfig struct {
 	ClusterName     string
 	Timeout         string // in milli seconds
 	AuthorityHeader string
+	ResourcePath    *string
 }
 
 // RequestInclusions represents which should be included in the request payload to the interceptor service
@@ -111,7 +112,7 @@ var (
 	 {{- end -}}}
  local req_call_config = {  
 	 {{- range $key, $value := .RequestFlow -}} 
-		 {{- $key }} = {cluster_name = "{{$value.ExternalCall.ClusterName}}", timeout = {{$value.ExternalCall.Timeout}}, authority_header = "{{$value.ExternalCall.AuthorityHeader}}"}, 
+		 {{- $key }} = {cluster_name = "{{$value.ExternalCall.ClusterName}}", timeout = {{$value.ExternalCall.Timeout}}, authority_header = "{{$value.ExternalCall.AuthorityHeader}}", resource_path = "{{if $value.ExternalCall.ResourcePath}}{{$value.ExternalCall.ResourcePath}}{{end}}"}, 
 	 {{- end -}}}
  function envoy_on_request(request_handle)
 	 interceptor.handle_request_interceptor(
@@ -123,7 +124,7 @@ var (
 	responseInterceptorTemplate = `
  local res_call_config = {  
 	 {{- range $key, $value := .ResponseFlow -}} 
-		 {{- $key }} = {cluster_name = "{{$value.ExternalCall.ClusterName}}", timeout={{$value.ExternalCall.Timeout}}, authority_header = "{{$value.ExternalCall.AuthorityHeader}}"}, 
+		 {{- $key }} = {cluster_name = "{{$value.ExternalCall.ClusterName}}", timeout={{$value.ExternalCall.Timeout}}, authority_header = "{{$value.ExternalCall.AuthorityHeader}}", resource_path = "{{if $value.ExternalCall.ResourcePath}}{{$value.ExternalCall.ResourcePath}}{{end}}"}, 
 	 {{- end -}}}
  function envoy_on_response(response_handle)
 	 interceptor.handle_response_interceptor(

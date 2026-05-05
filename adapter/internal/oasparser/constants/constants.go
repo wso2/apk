@@ -86,6 +86,7 @@ const (
 	RewritePathType            string = "rewritePathType"
 	InterceptorServiceURL      string = "interceptorServiceURL"
 	InterceptorEndpoints       string = "interceptorEndpoints"
+	InterceptorBasePath        string = "interceptorBasePath"
 	InterceptorServiceIncludes string = "includes"
 	IncludeQueryParams         string = "includeQueryParams"
 	HeaderName                 string = "headerName"

@@ -44,7 +44,7 @@ Feature: API Definition Endpoint
     And the definition file "artifacts/definitions/employees_api.json"
     And make the API deployment request
     Then the response status code should be 200
-    And I wait for 1 minute
+    Then I wait for 60 seconds
     Then I set headers
       | Authorization | Bearer ${accessToken} |
     And I send "GET" request to "https://default.gw.wso2.com:9095/test-definition-default/3.14/api-definition" with body ""
@@ -63,7 +63,7 @@ Feature: API Definition Endpoint
     And the definition file "artifacts/definitions/employees_api.json"
     And make the API deployment request
     Then the response status code should be 200
-    And I wait for 1 minute
+    Then I wait for 60 seconds
     Then I set headers
       | Authorization | Bearer ${accessToken} |
     And I send "GET" request to "https://default.sandbox.gw.wso2.com:9095/test-definition-default/3.14/api-definition" with body ""

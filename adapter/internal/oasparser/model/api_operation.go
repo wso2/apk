@@ -163,6 +163,12 @@ func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoi
 									includesV = GenerateInterceptorIncludes(includes)
 								}
 							}
+							var resourcePath *string
+							if bp, ok := paramMap[constants.InterceptorBasePath]; ok {
+								if bpStr, ok := bp.(string); ok && bpStr != "" {
+									resourcePath = &bpStr
+								}
+							}
 							return InterceptEndpoint{
 								Enable:          true,
 								EndpointCluster: EndpointCluster{Endpoints: endpoints},
@@ -170,6 +176,7 @@ func (operation *Operation) GetCallInterceptorService(isIn bool) InterceptEndpoi
 								RequestTimeout:  requestTimeoutV,
 								Includes:        includesV,
 								Level:           constants.OperationLevelInterceptor,
+								ResourcePath:    resourcePath,
 							}
 						}
 					}

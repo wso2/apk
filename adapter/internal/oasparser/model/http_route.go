@@ -127,9 +127,11 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 				Namespace: namespace,
 			}
 			endpoints := GetEndpoints(backendName, backendMapping)
+			basePath := GetBackendBasePath(backendName, backendMapping)
 			if len(endpoints) > 0 {
 				policyParameters[constants.InterceptorEndpoints] = endpoints
 				policyParameters[constants.InterceptorServiceIncludes] = requestInterceptor.Includes
+				policyParameters[constants.InterceptorBasePath] = basePath
 				policies.Request = append(policies.Request, Policy{
 					PolicyName: constants.PolicyRequestInterceptor,
 					Action:     constants.ActionInterceptorService,
@@ -148,9 +150,11 @@ func addOperationLevelInterceptors(policies *OperationPolicies, apiPolicy *dpv1a
 				Namespace: namespace,
 			}
 			endpoints := GetEndpoints(backendName, backendMapping)
+			basePath := GetBackendBasePath(backendName, backendMapping)
 			if len(endpoints) > 0 {
 				policyParameters[constants.InterceptorEndpoints] = endpoints
 				policyParameters[constants.InterceptorServiceIncludes] = responseInterceptor.Includes
+				policyParameters[constants.InterceptorBasePath] = basePath
 				policies.Response = append(policies.Response, Policy{
 					PolicyName: constants.PolicyResponseInterceptor,
 					Action:     constants.ActionInterceptorService,

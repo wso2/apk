@@ -295,7 +295,7 @@ end
 
 ---interceptor handler for request flow
 ---@param request_handle table - request_handle
----@param intercept_service_list {method: {cluster_name: string, resource_path: string, timeout: number}}
+---@param intercept_service_list {method: {cluster_name: string, resource_path: string, timeout: number, authority_header: string}}
 ---@param req_flow_includes_list {method: {requestHeaders: boolean, requestBody: boolean, requestTrailer: boolean}}
 ---@param resp_flow_includes_list {method: {requestHeaders: boolean, requestBody: boolean, requestTrailer: boolean, responseHeaders: boolean, responseBody: boolean, responseTrailers: boolean}}
 ---@param inv_context table
@@ -377,7 +377,9 @@ function interceptor.handle_request_interceptor(request_handle, intercept_servic
     -- include request details: request headers, body and trailers to the interceptor_request_body
     include_request_info(req_flow_includes, interceptor_request_body, request_headers_table, request_body_base64, request_trailers_table)
 
-    intercept_service.resource_path = "/api/v1/handle-request"
+    if intercept_service.resource_path == nil or intercept_service.resource_path == "" then
+        intercept_service.resource_path = "/api/v1/handle-request"
+    end
     local interceptor_response_headers, interceptor_response_body_str = send_http_call(request_handle, interceptor_request_body, intercept_service)
     if check_interceptor_call_errors(request_handle, interceptor_response_headers, interceptor_response_body_str, shared_info, request_id, true) then
         return
@@ -421,7 +423,7 @@ end
 
 ---interceptor handler for response flow
 ---@param response_handle table - response_handle
----@param intercept_service_list {method: {cluster_name: string, resource_path: string, timeout: number}}
+---@param intercept_service_list {method: {cluster_name: string, resource_path: string, timeout: number, authority_header: string}}
 ---@param resp_flow_includes_list {method: {requestHeaders: boolean, requestBody: boolean, requestTrailer: boolean, responseHeaders: boolean, responseBody: boolean, responseTrailers: boolean}}
 function interceptor.handle_response_interceptor(response_handle, intercept_service_list, resp_flow_includes_list, wire_log_config)
     local meta = response_handle:streamInfo():dynamicMetadata():get(LUA_FILTER_NAME)
@@ -505,7 +507,9 @@ function interceptor.handle_response_interceptor(response_handle, intercept_serv
     end
     --#endregion
 
-    intercept_service.resource_path = "/api/v1/handle-response"
+    if intercept_service.resource_path == nil or intercept_service.resource_path == "" then
+        intercept_service.resource_path = "/api/v1/handle-response"
+    end
     local interceptor_response_headers, interceptor_response_body_str = send_http_call(response_handle, interceptor_request_body, intercept_service)
     if check_interceptor_call_errors(response_handle, interceptor_response_headers, interceptor_response_body_str, shared_info, request_id, false) then
         return
