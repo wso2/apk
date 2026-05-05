@@ -197,6 +197,8 @@ A Helm chart for APK components
 | wso2.apk.dp.gatewayRuntime.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
 | wso2.apk.dp.gatewayRuntime.deployment.pod.annotations | object | `{}` | Annotations for pods. |
 | wso2.apk.dp.gatewayRuntime.deployment.pod.labels | object | `{}` | Labels for pods. |
+| wso2.apk.dp.gatewayRuntime.deployment.extraContainers | list | `[]` | Extra sidecar containers to inject into the gateway runtime pod. |
+| wso2.apk.dp.gatewayRuntime.deployment.extraVolumes | list | `[]` | Extra volumes to add to the gateway runtime pod (used alongside extraContainers). |
 | wso2.apk.dp.gatewayRuntime.deployment.affinity | object | `{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/app","operator":"In","values":["gateway-runtime"]}]}}}]}}` | Configure Affinity for the deployment.  |
 | wso2.apk.dp.gatewayRuntime.deployment.router.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.router.resources.requests.cpu | string | `"100m"` | Memory request for the container |
@@ -321,7 +323,7 @@ A Helm chart for APK components
 | idp.idpds.deployment.replicas | int | `1` | Number of replicas |
 | idp.idpds.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | idp.idpds.deployment.image | string | `"wso2/apk-idp-domain-service:1.3.0"` | Image |
-| idp.idpds.deployment.nodeSelector | string | `{}` | Configure Node Selector for the deployment.  |
+| idp.idpds.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
 | idp.idpds.deployment.pod.annotations | object | `{}` | Annotations for pods. |
 | idp.idpds.deployment.pod.labels | object | `{}` | Labels for pods. |
 | idp.idpui.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
@@ -338,7 +340,7 @@ A Helm chart for APK components
 | idp.idpui.deployment.replicas | int | `1` | Number of replicas |
 | idp.idpui.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | idp.idpui.deployment.image | string | `"wso2/apk-idp-ui:1.3.0"` | Image |
-| idp.idpui.deployment.nodeSelector | string | `{}` | Configure Node Selector for the deployment.  |
+| idp.idpui.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
 | idp.idpui.deployment.pod.annotations | object | `{}` | Annotations for pods. |
 | idp.idpui.deployment.pod.labels | object | `{}` | Labels for pods. |
 | idp.idpui.configs.idpLoginUrl | string | `"https://idp.am.wso2.com:9095/commonauth/login"` | identity server Login URL |

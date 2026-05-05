@@ -421,6 +421,9 @@ spec:
             initialDelaySeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.periodSeconds }}
             failureThreshold: {{ .Values.wso2.apk.dp.gatewayRuntime.deployment.router.readinessProbe.failureThreshold }}
+      {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.extraContainers }}
+{{ toYaml .Values.wso2.apk.dp.gatewayRuntime.deployment.extraContainers | indent 8 }}
+      {{- end }}
       {{- if and .Values.wso2.subscription .Values.wso2.subscription.imagePullSecrets}}
       imagePullSecrets:
         - name: {{ .Values.wso2.subscription.imagePullSecrets }}
@@ -496,5 +499,8 @@ spec:
           {{ end }}
         - name: tmp
           emptyDir: {}
+      {{- if .Values.wso2.apk.dp.gatewayRuntime.deployment.extraVolumes }}
+{{ toYaml .Values.wso2.apk.dp.gatewayRuntime.deployment.extraVolumes | indent 8 }}
+      {{- end }}
           {{end}}
 {{ end }}

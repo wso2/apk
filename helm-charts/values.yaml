@@ -236,6 +236,10 @@ wso2:
             annotations: {}
             # -- Labels for pods
             labels: {}
+          # -- Extra sidecar containers to inject into the gateway runtime pod
+          extraContainers: []
+          # -- Extra volumes to add to the gateway runtime pod (used alongside extraContainers)
+          extraVolumes: []
           router:
             resources:
               requests:
