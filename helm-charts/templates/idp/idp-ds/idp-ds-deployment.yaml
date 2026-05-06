@@ -31,10 +31,19 @@ spec:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "idp-ds" ) | indent 8}}
+{{- with .Values.idp.idpds.deployment.pod.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/idp/idp-ds/idp-ds-configmap.yaml") . | sha256sum }}
+{{- with .Values.idp.idpds.deployment.pod.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
     spec:
       automountServiceAccountToken: false
+      {{- if .Values.idp.idpds.deployment.nodeSelector }}
+      nodeSelector: {{- include "apk-helm.deployment.nodeSelector" ( dict "value" .Values.idp.idpds.deployment.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
       initContainers:
         - name: init-db
           image: busybox:1.32

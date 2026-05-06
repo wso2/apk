@@ -204,6 +204,12 @@ wso2:
           imagePullPolicy: Always
           # -- Image
           image: wso2/apk-config-deployer-service:1.3.0
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
           configs:
             # -- Enable authorization for runtime api.
             authorization: true
@@ -259,6 +265,12 @@ wso2:
           imagePullPolicy: Always
           # -- Image
           image: wso2/apk-adapter:1.3.0
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
           security:
             # -- Enable security for adapter.
             sslHostname: "adapter"
@@ -330,6 +342,12 @@ wso2:
           imagePullPolicy: Always
           # -- Image
           image: wso2/apk-common-controller:1.3.0
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
           security:
             # -- hostname for the common controller
             sslHostname: "commoncontroller"
@@ -454,6 +472,12 @@ wso2:
                       - rate-limiter
           # -- Configure Node Selector for the deployment. 
           nodeSelector: {}
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
       gatewayRuntime:
         service:
           # -- Gateway service related annotations.
@@ -463,6 +487,12 @@ wso2:
           replicas: 1
           # -- Configure Node Selector for the deployment. 
           nodeSelector: {}
+          # Pod-specific configurations
+          pod:
+            # -- Annotations for pods
+            annotations: {}
+            # -- Labels for pods
+            labels: {}
           # -- Configure Affinity for the deployment. 
           affinity:
             podAntiAffinity:
@@ -474,6 +504,11 @@ wso2:
                       operator: In
                       values:
                       - gateway-runtime
+          # -- Extra sidecar containers to inject into the gateway runtime pod.
+          extraContainers: []
+          # -- Extra volumes to add to the gateway runtime pod (used alongside extraContainers).
+          # Volume names must match the volumeMounts defined in extraContainers.
+          extraVolumes: []
           router:
             resources:
               requests:
@@ -795,6 +830,14 @@ idp:
       imagePullPolicy: Always
       # -- Image
       image: wso2/apk-idp-domain-service:1.3.0
+      # -- Configure Node Selector for the deployment.
+      nodeSelector: {}
+      # Pod-specific configurations
+      pod:
+        # -- Annotations for pods
+        annotations: {}
+        # -- Labels for pods
+        labels: {}
   idpui:
     deployment:
       resources:
@@ -830,6 +873,14 @@ idp:
       imagePullPolicy: Always
       # -- Image
       image: wso2/apk-idp-ui:1.3.0
+      # -- Configure Node Selector for the deployment. 
+      nodeSelector: {}
+      # Pod-specific configurations
+      pod:
+        # -- Annotations for pods
+        annotations: {}
+        # -- Labels for pods
+        labels: {}
     configs:
       # -- identity server Login URL
       idpLoginUrl: "https://idp.am.wso2.com:9095/commonauth/login"

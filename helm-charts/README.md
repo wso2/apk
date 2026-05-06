@@ -77,6 +77,8 @@ A Helm chart for APK components
 | wso2.apk.dp.configdeployer.enabled | bool | `true` |  |
 | wso2.apk.dp.configdeployer.deployment.affinity | object | `{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/app","operator":"In","values":["config-ds"]}]}}}]}}` | Configure Affinity for the deployment.  |
 | wso2.apk.dp.configdeployer.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
+| wso2.apk.dp.configdeployer.deployment.pod.annotations | object | `{}` | Annotations for pods. |
+| wso2.apk.dp.configdeployer.deployment.pod.labels | object | `{}` | Labels for pods. |
 | wso2.apk.dp.configdeployer.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.configdeployer.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | wso2.apk.dp.configdeployer.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
@@ -114,6 +116,8 @@ A Helm chart for APK components
 | wso2.apk.dp.adapter.deployment.security.sslHostname | string | `"adapter"` | Enable security for adapter. |
 | wso2.apk.dp.adapter.deployment.affinity | object | `{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/app","operator":"In","values":["adapter"]}]}}}]}}` | Configure Affinity for the deployment.  |
 | wso2.apk.dp.adapter.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
+| wso2.apk.dp.adapter.deployment.pod.annotations | object | `{}` | Annotations for pods. |
+| wso2.apk.dp.adapter.deployment.pod.labels | object | `{}` | Labels for pods. |
 | wso2.apk.dp.adapter.configs.apiNamespaces | string | `nil` | Optionally configure namespaces to watch for apis. |
 | wso2.apk.dp.adapter.configs.tls.secretName | string | `""` | TLS secret name for adapter public certificate. |
 | wso2.apk.dp.adapter.configs.tls.certKeyFilename | string | `""` | TLS certificate file name. |
@@ -139,6 +143,8 @@ A Helm chart for APK components
 | wso2.apk.dp.commonController.deployment.configs.apiNamespaces | list | `["apk-v12"]` | Optionally configure namespaces to watch for apis,ratelimitpolicies,etc. |
 | wso2.apk.dp.commonController.deployment.affinity | object | `{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/app","operator":"In","values":["common-controller"]}]}}}]}}` | Configure Affinity for the deployment.  |
 | wso2.apk.dp.commonController.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
+| wso2.apk.dp.commonController.deployment.pod.annotations | object | `{}` | Annotations for pods. |
+| wso2.apk.dp.commonController.deployment.pod.labels | object | `{}` | Labels for pods. |
 | wso2.apk.dp.commonController.deployment.redis.host | string | `"redis-master"` | Redis host |
 | wso2.apk.dp.commonController.deployment.redis.port | string | `"6379"` | Redis port |
 | wso2.apk.dp.commonController.deployment.redis.username | string | `"default"` | Redis user name |
@@ -184,9 +190,15 @@ A Helm chart for APK components
 | wso2.apk.dp.ratelimiter.deployment.configs.tls.certCAFilename | string | `""` | TLS CA certificate file name. |
 | wso2.apk.dp.ratelimiter.deployment.affinity | object | `{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/app","operator":"In","values":["rate-limiter"]}]}}}]}}` | Configure Affinity for the deployment.  |
 | wso2.apk.dp.ratelimiter.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
+| wso2.apk.dp.ratelimiter.deployment.pod.annotations | object | `{}` | Annotations for pods. |
+| wso2.apk.dp.ratelimiter.deployment.pod.labels | object | `{}` | Labels for pods. |
 | wso2.apk.dp.gatewayRuntime.service.annotations | string | `nil` | Gateway service related annotations. |
 | wso2.apk.dp.gatewayRuntime.deployment.replicas | int | `1` | Number of replicas |
 | wso2.apk.dp.gatewayRuntime.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
+| wso2.apk.dp.gatewayRuntime.deployment.pod.annotations | object | `{}` | Annotations for pods. |
+| wso2.apk.dp.gatewayRuntime.deployment.pod.labels | object | `{}` | Labels for pods. |
+| wso2.apk.dp.gatewayRuntime.deployment.extraContainers | list | `[]` | Extra sidecar containers to inject into the gateway runtime pod. |
+| wso2.apk.dp.gatewayRuntime.deployment.extraVolumes | list | `[]` | Extra volumes to add to the gateway runtime pod (used alongside extraContainers). |
 | wso2.apk.dp.gatewayRuntime.deployment.affinity | object | `{"podAntiAffinity":{"preferredDuringSchedulingIgnoredDuringExecution":[{"podAffinityTerm":{"labelSelector":{"matchExpressions":[{"key":"app.kubernetes.io/app","operator":"In","values":["gateway-runtime"]}]}}}]}}` | Configure Affinity for the deployment.  |
 | wso2.apk.dp.gatewayRuntime.deployment.router.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | wso2.apk.dp.gatewayRuntime.deployment.router.resources.requests.cpu | string | `"100m"` | Memory request for the container |
@@ -311,6 +323,9 @@ A Helm chart for APK components
 | idp.idpds.deployment.replicas | int | `1` | Number of replicas |
 | idp.idpds.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | idp.idpds.deployment.image | string | `"wso2/apk-idp-domain-service:1.3.0"` | Image |
+| idp.idpds.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
+| idp.idpds.deployment.pod.annotations | object | `{}` | Annotations for pods. |
+| idp.idpds.deployment.pod.labels | object | `{}` | Labels for pods. |
 | idp.idpui.deployment.resources.requests.memory | string | `"128Mi"` | CPU request for the container |
 | idp.idpui.deployment.resources.requests.cpu | string | `"100m"` | Memory request for the container |
 | idp.idpui.deployment.resources.limits.memory | string | `"1028Mi"` | CPU limit for the container |
@@ -325,6 +340,9 @@ A Helm chart for APK components
 | idp.idpui.deployment.replicas | int | `1` | Number of replicas |
 | idp.idpui.deployment.imagePullPolicy | string | `"Always"` | Image pull policy |
 | idp.idpui.deployment.image | string | `"wso2/apk-idp-ui:1.3.0"` | Image |
+| idp.idpui.deployment.nodeSelector | object | `{}` | Configure Node Selector for the deployment.  |
+| idp.idpui.deployment.pod.annotations | object | `{}` | Annotations for pods. |
+| idp.idpui.deployment.pod.labels | object | `{}` | Labels for pods. |
 | idp.idpui.configs.idpLoginUrl | string | `"https://idp.am.wso2.com:9095/commonauth/login"` | identity server Login URL |
 | idp.idpui.configs.idpAuthCallBackUrl | string | `"https://idp.am.wso2.com:9095/oauth2/auth-callback"` | identity server authCallBackUrl |
 | gatewaySystem.enabled | bool | `true` | Enable gateway system to install gateway system components |

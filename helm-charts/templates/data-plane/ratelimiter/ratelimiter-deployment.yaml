@@ -31,6 +31,13 @@ spec:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "ratelimiter" ) | indent 8}}
+{{- with .Values.wso2.apk.dp.ratelimiter.deployment.pod.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- if .Values.wso2.apk.dp.ratelimiter.deployment.pod.annotations }}
+      annotations:
+{{ toYaml .Values.wso2.apk.dp.ratelimiter.deployment.pod.annotations | indent 8 }}
+{{- end }}
     spec:
       affinity: {{- include "apk-helm.deployment.affinity" ( dict "value" .Values.wso2.apk.dp.ratelimiter.deployment.affinity "app" "rate-limiter" "context" $) | nindent 8 }}
       {{- if .Values.wso2.apk.dp.ratelimiter.deployment.nodeSelector }}

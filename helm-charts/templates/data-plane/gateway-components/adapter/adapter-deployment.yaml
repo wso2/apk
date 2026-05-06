@@ -31,8 +31,14 @@ spec:
     metadata:
       labels:
 {{ include "apk-helm.pod.selectorLabels" (dict "root" . "app" "adapter" ) | indent 8}}
+{{- with .Values.wso2.apk.dp.adapter.deployment.pod.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/data-plane/gateway-components/log-conf.yaml") . | sha256sum }}
+{{- with .Values.wso2.apk.dp.adapter.deployment.pod.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
     spec:
       affinity: {{- include "apk-helm.deployment.affinity" ( dict "value" .Values.wso2.apk.dp.adapter.deployment.affinity "app" "adapter" "context" $) | nindent 8 }}
       {{- if .Values.wso2.apk.dp.adapter.deployment.nodeSelector }}
