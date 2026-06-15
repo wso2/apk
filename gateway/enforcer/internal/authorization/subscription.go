@@ -30,16 +30,18 @@ func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.
 				if appID != "" {
 					appMaps := subAppDataStore.GetApplicationMappings(api.OrganizationID, appID)
 					for _, appMap := range appMaps {
-						subscriptions := subAppDataStore.GetSubscriptions(api.OrganizationID, appMap.SubscriptionRef)
-						for _, subscription := range subscriptions {
-							subscribedAPI := subscription.SubscribedAPI
-							if subscribedAPI.Name == api.Name {
-								versionMatched, err := regexp.MatchString(subscribedAPI.Version, api.Version)
-								if err == nil && versionMatched {
-									rch.MatchedSubscription = subscription
-									rch.MatchedApplication = subAppDataStore.GetApplication(api.OrganizationID, appID)
-									return nil
-								}
+						subscription := subAppDataStore.GetSubscription(api.OrganizationID, appMap.SubscriptionRef)
+						if subscription == nil {
+							cfg.Logger.Sugar().Debugf("No subscription found for subscriptionRef %s", appMap.SubscriptionRef)
+							continue
+						}
+						subscribedAPI := subscription.SubscribedAPI
+						if subscribedAPI.Name == api.Name {
+							versionMatched, err := regexp.MatchString(subscribedAPI.Version, api.Version)
+							if err == nil && versionMatched {
+								rch.MatchedSubscription = subscription
+								rch.MatchedApplication = subAppDataStore.GetApplication(api.OrganizationID, appID)
+								return nil
 							}
 						}
 					}
@@ -60,18 +62,19 @@ func ValidateSubscription(rch *requestconfig.Holder, subAppDataStore *datastore.
 					cfg.Logger.Sugar().Debugf("Application Mappings %+v", applicationMappings)
 					if applicationMappings != nil && len(applicationMappings) > 0 {
 						for _, applicationMapping := range applicationMappings {
-							subscriptions := subAppDataStore.GetSubscriptions(api.OrganizationID, applicationMapping.SubscriptionRef)
-							cfg.Logger.Sugar().Debugf("Subscriptions %+v", subscriptions)
-							for _, subscription := range subscriptions {
-								subscribedAPI := subscription.SubscribedAPI
-								if subscribedAPI.Name == api.Name {
-									versionMatched, err := regexp.MatchString(subscribedAPI.Version, api.Version)
-									if err == nil && versionMatched {
-										rch.MatchedSubscription = subscription
-										rch.MatchedApplication = application
-										cfg.Logger.Sugar().Debugf("Matched Subscription %+v", rch.MatchedSubscription)
-										return nil
-									}
+							subscription := subAppDataStore.GetSubscription(api.OrganizationID, applicationMapping.SubscriptionRef)
+							cfg.Logger.Sugar().Debugf("Subscription %+v", subscription)
+							if subscription == nil {
+								continue
+							}
+							subscribedAPI := subscription.SubscribedAPI
+							if subscribedAPI.Name == api.Name {
+								versionMatched, err := regexp.MatchString(subscribedAPI.Version, api.Version)
+								if err == nil && versionMatched {
+									rch.MatchedSubscription = subscription
+									rch.MatchedApplication = application
+									cfg.Logger.Sugar().Debugf("Matched Subscription %+v", rch.MatchedSubscription)
+									return nil
 								}
 							}
 						}
