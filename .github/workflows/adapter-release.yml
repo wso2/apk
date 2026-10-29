@@ -59,6 +59,7 @@ jobs:
         with:
           fetch-depth: "0"
           path: apk-repo
+          ref: ${{ github.event.pull_request.base.ref || github.ref }}
           token: ${{ secrets.APK_BOT_TOKEN }}
       - name: Set release username and email
         shell: sh
@@ -90,7 +91,7 @@ jobs:
         run: |
           cd apk-repo/adapter
           ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=latest -PmultiArch=true
-          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.sha }} -PmultiArch=true
+          ./gradlew docker_push -Pdocker_organization=${{ secrets.DOCKER_ORGANIZATION }} -Pdocker_username=${{ secrets.DOCKER_USERNAME }} -Pdocker_password=${{ secrets.DOCKER_PASSWORD }} -Pimage_version=${{ github.event.pull_request.merge_commit_sha }} -PmultiArch=true
 
       - name: Login to azure.
         if: ${{inputs.aks_deployment}}

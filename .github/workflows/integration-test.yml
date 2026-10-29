@@ -1,5 +1,6 @@
 name: start and run cucumber and go integration tests
 on:
+  workflow_call:
   workflow_dispatch:
   pull_request_target:
     types: [labeled]
@@ -11,7 +12,7 @@ env:
 jobs:
   build_adapter:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-    uses: ./.github/workflows/adapter-release.yml
+    uses: wso2/apk/.github/workflows/adapter-release.yml@choreo
     with:
       aks_deployment: true
     secrets:
@@ -23,7 +24,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_common_controller:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-    uses: ./.github/workflows/common-controller-release.yml
+    uses: wso2/apk/.github/workflows/common-controller-release.yml@choreo
     with:
       aks_deployment: true
     secrets:
@@ -35,7 +36,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_enforcer:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-    uses: ./.github/workflows/enforcer-release.yml
+    uses: wso2/apk/.github/workflows/enforcer-release.yml@choreo
     with:
       aks_deployment: true
     secrets:
@@ -48,7 +49,7 @@ jobs:
     
   build_router:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-    uses: ./.github/workflows/router-release.yml
+    uses: wso2/apk/.github/workflows/router-release.yml@choreo
     with:
       aks_deployment: true
     secrets:
@@ -60,7 +61,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_ratelimiter:
       if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-      uses: ./.github/workflows/ratelimiter-release.yml
+      uses: wso2/apk/.github/workflows/ratelimiter-release.yml@choreo
       with:
         aks_deployment: true
       secrets:
@@ -72,7 +73,7 @@ jobs:
         AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_config:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-    uses: ./.github/workflows/config-deployer-release.yml
+    uses: wso2/apk/.github/workflows/config-deployer-release.yml@choreo
     with:
       aks_deployment: true
     secrets:
@@ -84,7 +85,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}      
   build_idpds:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-    uses: ./.github/workflows/idp-domain-service-release.yml
+    uses: wso2/apk/.github/workflows/idp-domain-service-release.yml@choreo
     with:
       aks_deployment: true
     secrets:
@@ -96,7 +97,7 @@ jobs:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
   build_idpui:
     if: github.event_name == 'pull_request_target' && contains(github.event.label.name, 'trigger-action')
-    uses: ./.github/workflows/idp-ui-release.yml
+    uses: wso2/apk/.github/workflows/idp-ui-release.yml@choreo
     with:
       aks_deployment: true
     secrets:
