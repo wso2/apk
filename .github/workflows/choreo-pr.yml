@@ -1,0 +1,115 @@
+# pull_request_target always runs workflows from the default branch, so the
+# choreo branch's own workflows never trigger for PRs into choreo. This hands
+# those PRs to the choreo branch's workflows, pinned with @choreo.
+name: choreo PR workflows
+on:
+  pull_request_target:
+    types: [labeled, closed]
+    branches:
+      - 'choreo'
+jobs:
+  integration_test:
+    if: github.event.action == 'labeled' && contains(github.event.label.name, 'trigger-action')
+    uses: wso2/apk/.github/workflows/integration-test.yml@choreo
+    secrets: inherit
+
+  # Reproduces the paths filters of the choreo release workflows, which a
+  # workflow_call does not apply.
+  changed_components:
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      adapter: ${{ steps.filter.outputs.adapter }}
+      common_controller: ${{ steps.filter.outputs.common_controller }}
+      config_deployer: ${{ steps.filter.outputs.config_deployer }}
+      enforcer: ${{ steps.filter.outputs.enforcer }}
+      idp_domain_service: ${{ steps.filter.outputs.idp_domain_service }}
+      idp_ui: ${{ steps.filter.outputs.idp_ui }}
+      management_server: ${{ steps.filter.outputs.management_server }}
+      ratelimiter: ${{ steps.filter.outputs.ratelimiter }}
+      router: ${{ steps.filter.outputs.router }}
+    steps:
+      - id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.number }}/files" --jq '.[].filename' > files.txt
+          check() {
+            if grep -qE "$2" files.txt; then echo "$1=true" >> "$GITHUB_OUTPUT"; else echo "$1=false" >> "$GITHUB_OUTPUT"; fi
+          }
+          check adapter '(^|/)(adapter|common-go-libs)/'
+          check common_controller '(^|/)(common-controller|common-go-libs)/'
+          check config_deployer '(^|/)(runtime/config-deployer-service|common-bal-libs)/'
+          check enforcer '(^|/)gateway/enforcer/'
+          check idp_domain_service '(^|/)idp/idp-domain-service/'
+          check idp_ui '(^|/)idp/idp-ui/'
+          check management_server '(^|/)management-server/'
+          check ratelimiter '(^|/)ratelimiter/'
+          check router '(^|/)gateway/router'
+          cat "$GITHUB_OUTPUT"
+
+  release_adapter:
+    needs: changed_components
+    if: needs.changed_components.outputs.adapter == 'true'
+    uses: wso2/apk/.github/workflows/adapter-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
+  release_common_controller:
+    needs: changed_components
+    if: needs.changed_components.outputs.common_controller == 'true'
+    uses: wso2/apk/.github/workflows/common-controller-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
+  release_config_deployer:
+    needs: changed_components
+    if: needs.changed_components.outputs.config_deployer == 'true'
+    uses: wso2/apk/.github/workflows/config-deployer-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
+  release_enforcer:
+    needs: changed_components
+    if: needs.changed_components.outputs.enforcer == 'true'
+    uses: wso2/apk/.github/workflows/enforcer-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
+  release_idp_domain_service:
+    needs: changed_components
+    if: needs.changed_components.outputs.idp_domain_service == 'true'
+    uses: wso2/apk/.github/workflows/idp-domain-service-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
+  release_idp_ui:
+    needs: changed_components
+    if: needs.changed_components.outputs.idp_ui == 'true'
+    uses: wso2/apk/.github/workflows/idp-ui-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
+  release_management_server:
+    needs: changed_components
+    if: needs.changed_components.outputs.management_server == 'true'
+    uses: wso2/apk/.github/workflows/management-server-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
+  release_ratelimiter:
+    needs: changed_components
+    if: needs.changed_components.outputs.ratelimiter == 'true'
+    uses: wso2/apk/.github/workflows/ratelimiter-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
+  release_router:
+    needs: changed_components
+    if: needs.changed_components.outputs.router == 'true'
+    uses: wso2/apk/.github/workflows/router-release.yml@choreo
+    with:
+      aks_deployment: false
+    secrets: inherit
