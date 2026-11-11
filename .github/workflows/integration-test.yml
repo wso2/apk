@@ -113,6 +113,10 @@ jobs:
     needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
     runs-on: ubuntu-latest
     steps:
+    - name: Set up Helm 3
+      uses: azure/setup-helm@v5
+      with:
+        version: v3.22.1
     - uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -246,6 +250,10 @@ jobs:
     needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
     runs-on: ubuntu-latest
     steps:
+    - name: Set up Helm 3
+      uses: azure/setup-helm@v5
+      with:
+        version: v3.22.1
     - uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
