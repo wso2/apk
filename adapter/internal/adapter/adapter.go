@@ -15,7 +15,7 @@
  *
  */
 
-// Package adapter contains the implementation to start the adapter
+// Package adapter contains the implementation to start the adapter and its related services.
 package adapter
 
 import (

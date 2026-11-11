@@ -17,6 +17,7 @@ import (
 	"github.com/wso2/apk/gateway/enforcer/internal/xds"
 )
 
+// main starts the enforcer and its related services.
 func main() {
 	cfg := config.GetConfig()
 	port := cfg.CommonControllerXdsPort
