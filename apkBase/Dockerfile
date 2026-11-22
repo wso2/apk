@@ -9,18 +9,18 @@ RUN apt-get update \
     && locale-gen en_US.UTF-8 \
     && rm -rf /var/lib/apt/lists/*
 
-ENV JAVA_VERSION jdk-11.0.20+8
+ENV JAVA_VERSION jdk-11.0.33.1+1
 
 RUN set -eux; \
     ARCH="$(dpkg --print-architecture)"; \
     case "${ARCH}" in \
         amd64|i386:x86-64) \
-            ESUM='ffb070c26ea22771f78769c569c9db3412e6486434dc6df1fd3c3438285766e7'; \
-            BINARY_URL='https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jre_x64_linux_hotspot_11.0.20_8.tar.gz'; \
+            ESUM='e32167b352a56497b0ac401409321c00948e0a4131d9d1f92abf0f901e7bf62d'; \
+            BINARY_URL='https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.33.1%2B1/OpenJDK11U-jre_x64_linux_hotspot_11.0.33.1_1.tar.gz'; \
             ;; \
         aarch64|arm64) \
-            ESUM='45e190920fb3ec61ee5213a7bd98553abf2ae7692eb9daa504fcdc9d59a7cfc4'; \
-            BINARY_URL='https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.20%2B8/OpenJDK11U-jre_aarch64_linux_hotspot_11.0.20_8.tar.gz'; \
+            ESUM='9691319ce9c30abe24abf679409c48467f8476b5c87ff24735efae63036e0e6b'; \
+            BINARY_URL='https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.33%2B10/OpenJDK11U-jre_aarch64_linux_hotspot_11.0.33_10.tar.gz'; \
             ;; \
         *) \
             echo "Unsupported arch: ${ARCH}"; \
