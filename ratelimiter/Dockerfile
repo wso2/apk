@@ -14,10 +14,14 @@
 # limitations under the License.
 # -----------------------------------------------------------------------
 
-FROM envoyproxy/ratelimit:80b15778
+FROM envoyproxy/ratelimit:a7a61514 AS ratelimit
+
+FROM alpine:3.22
 LABEL maintainer="WSO2 Docker Maintainers <wso2.com>"
 
-RUN apk update && apk upgrade --no-cache
+RUN apk update && apk upgrade --no-cache && apk add --no-cache ca-certificates
+
+COPY --from=ratelimit /bin/ratelimit /bin/ratelimit
 
 ENV LANG=C.UTF-8
 

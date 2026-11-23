@@ -4,7 +4,7 @@ FROM alpine:3.21.3
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 # Install required dependencies
-RUN apk add --no-cache \
+RUN apk upgrade --no-cache && apk add --no-cache \
     bash \
     curl \
     tzdata \

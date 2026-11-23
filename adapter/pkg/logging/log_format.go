@@ -71,7 +71,7 @@ func init() {
 
 // Format sets a custom format for loggers.
 func (f *plainFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	timestamp := fmt.Sprintf(entry.Time.Format(f.TimestampFormat))
+	timestamp := entry.Time.Format(f.TimestampFormat)
 	return []byte(fmt.Sprintf("%s %s [%s:%d] - [%s] [-] %s [%s]\n",
 		timestamp,
 		f.LevelDesc[entry.Level],
