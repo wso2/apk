@@ -185,7 +185,7 @@ func TestCreateRoutesWithClustersWithExactAndRegularExpressionRules(t *testing.T
 	assert.NotEqual(t, routes[2].GetMatch().GetSafeRegex().Regex, routes[3].GetMatch().GetSafeRegex().Regex,
 		"The route regex for the two paths should not be the same")
 	for _, route := range routes {
-		loggers.LoggerAPKOperator.Infof("routes ==" + route.GetMatch().GetSafeRegex().Regex)
+		loggers.LoggerAPKOperator.Info("routes ==" + route.GetMatch().GetSafeRegex().Regex)
 	}
 }
 

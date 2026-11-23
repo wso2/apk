@@ -469,7 +469,7 @@ func UpdateEnforcerConfig(configFile *config.Config) {
 	}
 
 	enforcerLabelMap[label].configs = configs
-	logger.LoggerXds.Infof("New Config cache update for the label: " + label + " version: " + fmt.Sprint(version))
+	logger.LoggerXds.Info("New Config cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
 // UpdateEnforcerApis Sets new update to the enforcer's Apis
@@ -488,7 +488,7 @@ func UpdateEnforcerApis(label string, apis []types.Resource, version string) {
 	if errSetSnap != nil {
 		logger.LoggerXds.ErrorC(logging.PrintError(logging.Error1414, logging.MAJOR, "Error while setting the snapshot : %v", errSetSnap.Error()))
 	}
-	logger.LoggerXds.Infof("New API cache update for the label: " + label + " version: " + fmt.Sprint(version))
+	logger.LoggerXds.Info("New API cache update for the label: " + label + " version: " + fmt.Sprint(version))
 
 }
 
@@ -547,7 +547,7 @@ func UpdateEnforcerJWTIssuers(jwtIssuers map[string]*v1alpha1.ResolvedJWTIssuer)
 	}
 	enforcerLabelMap[label].jwtIssuers = jwtIssuerList
 	loggers.LoggerXds.Debugf("Enforcer Label Map: %s ", enforcerLabelMap[label].jwtIssuers)
-	logger.LoggerXds.Debugf("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
+	logger.LoggerXds.Debug("New JWTIssuer cache update for the label: " + label + " version: " + fmt.Sprint(version))
 }
 
 // UpdateXdsCacheWithLock uses mutex and lock to avoid different go routines updating XDS at the same time
