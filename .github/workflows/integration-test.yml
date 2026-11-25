@@ -250,6 +250,11 @@ jobs:
     needs: [build_adapter, build_common_controller, build_enforcer, build_router, build_config,build_idpds,build_idpui,build_ratelimiter]
     runs-on: ubuntu-latest
     steps:
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
     - name: Set up Helm 3
       uses: azure/setup-helm@v5
       with:
